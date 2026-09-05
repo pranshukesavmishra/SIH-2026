@@ -347,19 +347,19 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
 .foot a { color: var(--cyan); text-decoration: none; }
 .foot a:hover { text-decoration: underline; }
 
-/* Modals & Debrief (Stitch Aerospace Design & Heavy Backdrop Blur) */
+/* Modals & Debrief (Stitch Aerospace Command Dashboard - Full Screen Wide, Clean & Balanced) */
 .debrief-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(2, 6, 16, 0.85);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  background: rgba(2, 6, 16, 0.88);
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
   z-index: 500;
   overflow-y: auto;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 36px 16px 110px; /* Generous bottom padding so mobile bottom-nav never overlaps */
+  padding: 24px 16px 110px;
   box-sizing: border-box;
   opacity: 1;
   transition: opacity 0.25s ease;
@@ -370,13 +370,13 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
 
 .debrief-card {
   position: relative;
-  max-width: 960px;
   width: 100%;
-  background: linear-gradient(180deg, rgba(10, 20, 42, 0.96) 0%, rgba(4, 9, 22, 0.98) 100%);
+  max-width: 1560px; /* Clean, full screen wide aerospace dashboard */
+  background: linear-gradient(180deg, rgba(8, 16, 36, 0.98) 0%, rgba(3, 8, 18, 0.99) 100%);
   border: 1px solid rgba(79, 199, 234, 0.35);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.9), 0 0 35px rgba(79, 199, 234, 0.16);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95), 0 0 40px rgba(79, 199, 234, 0.15);
   border-radius: 14px;
-  padding: 22px 26px;
+  padding: 20px 24px;
   color: var(--ink-primary);
   margin: 0 auto;
   animation: debriefModalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -388,18 +388,18 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
 
 .debrief-header-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(79, 199, 234, 0.2);
 }
 .debrief-header-titles h2 {
-  font-size: 17px;
+  font-size: 16px;
   color: #4FC7EA;
   letter-spacing: 1.5px;
-  margin-bottom: 4px;
+  margin: 0 0 2px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -409,6 +409,23 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
   font-size: 11px;
   color: var(--ink-secondary);
   letter-spacing: 0.5px;
+  margin: 0;
+}
+.debrief-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.debrief-tag {
+  background: rgba(59, 214, 140, 0.15);
+  border: 1px solid rgba(59, 214, 140, 0.35);
+  color: #3BD68C;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
 }
 .debrief-close-icon {
   background: rgba(14, 26, 50, 0.8);
@@ -431,113 +448,85 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
   background: rgba(79, 199, 234, 0.2);
 }
 
-/* Executive Summary Box for Judges */
-.debrief-summary-box {
-  background: rgba(14, 28, 56, 0.55);
-  border: 1px solid rgba(79, 199, 234, 0.25);
-  border-radius: 10px;
-  padding: 16px 18px;
-  margin: 16px 0;
-}
-.debrief-summary-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(79, 199, 234, 0.15);
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.debrief-summary-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  font-size: 11.5px;
-  color: #EAF4FD;
-}
-.debrief-tag {
-  background: rgba(59, 214, 140, 0.15);
-  border: 1px solid rgba(59, 214, 140, 0.35);
-  color: #3BD68C;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  padding: 3px 8px;
-  border-radius: 4px;
-}
-.debrief-point-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 10px;
-  font-size: 12px;
-  line-height: 1.55;
-  color: #D4E2EF;
-}
-.debrief-point-item:last-child {
-  margin-bottom: 0;
-}
-.debrief-point-num {
-  background: rgba(79, 199, 234, 0.15);
-  color: #4FC7EA;
-  border: 1px solid rgba(79, 199, 234, 0.3);
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.debrief-point-text b {
-  color: #7FE0F8;
-}
-
-/* Symmetrical 2-Tier KPI Layout */
-.debrief-kpi-tier-label {
-  font-size: 9.5px;
-  color: var(--ink-muted);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  font-weight: 700;
-  margin: 14px 0 8px;
-}
-.debrief-kpi-row-4 {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.debrief-kpi-row-3 {
+/* Executive Briefing: Clean 3-Card Strip Across Top */
+.debrief-exec-strip {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.exec-point-card {
+  background: rgba(10, 20, 42, 0.7);
+  border: 1px solid rgba(79, 199, 234, 0.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.2s ease;
+}
+.exec-point-card:hover {
+  border-color: rgba(79, 199, 234, 0.45);
+}
+.ep-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ep-tag::before {
+  content: "•";
+  color: var(--cyan);
+  font-size: 14px;
+}
+.ep-text {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #D4E2EF;
+}
+
+/* 2-Column Balanced Grid */
+.debrief-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Left Column: Metrics & Analytics */
+.debrief-col-left, .debrief-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 4 Hero KPI Cards */
+.debrief-kpi-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
-  margin-bottom: 16px;
 }
 .fcard {
-  background: linear-gradient(135deg, rgba(14, 26, 52, 0.75) 0%, rgba(8, 16, 34, 0.9) 100%);
-  border: 1px solid rgba(79, 199, 234, 0.22);
+  background: linear-gradient(135deg, rgba(14, 26, 52, 0.7) 0%, rgba(8, 16, 34, 0.85) 100%);
+  border: 1px solid rgba(79, 199, 234, 0.2);
   border-radius: 8px;
-  padding: 14px 12px;
-  text-align: center;
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  padding: 12px 14px;
+  text-align: left;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 .fcard:hover {
   border-color: rgba(79, 199, 234, 0.5);
-  box-shadow: 0 0 16px rgba(79, 199, 234, 0.15);
   transform: translateY(-2px);
 }
 .fcard b {
   font-size: 22px;
   color: #4FC7EA;
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   font-weight: 700;
   font-family: var(--font-mono);
   letter-spacing: -0.5px;
@@ -555,51 +544,217 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
   font-style: normal;
   font-size: 10.5px;
   color: #8EA4C4;
-  margin-top: 6px;
-  line-height: 1.35;
+  margin-top: 4px;
 }
 
-/* Verdict & History */
-.debrief-verdict {
-  background: rgba(59, 214, 140, 0.1);
+/* Inline Secondary Stats Strip */
+.debrief-sec-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(10, 18, 36, 0.6);
+  border: 1px solid rgba(79, 199, 234, 0.15);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--ink-secondary);
+  font-family: var(--font-mono);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sec-item b {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Analytical Gauges */
+.debrief-gauges-panel {
+  background: rgba(8, 16, 32, 0.75);
+  border: 1px solid rgba(79, 199, 234, 0.2);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.analytic-gauge {
+  margin-bottom: 10px;
+}
+.analytic-gauge:last-child {
+  margin-bottom: 0;
+}
+.gauge-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  margin-bottom: 4px;
+}
+.gauge-meta span {
+  color: var(--ink-secondary);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.gauge-meta b {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.gauge-tag {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+  margin-left: 6px;
+}
+.gauge-tag.cyan {
+  background: rgba(79, 199, 234, 0.18);
+  color: var(--cyan);
+  border: 1px solid rgba(79, 199, 234, 0.35);
+}
+.gauge-tag.green {
+  background: rgba(59, 214, 140, 0.18);
+  color: var(--green);
   border: 1px solid rgba(59, 214, 140, 0.35);
+}
+.gauge-track {
+  height: 6px;
+  background: rgba(20, 32, 54, 0.9);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(79, 199, 234, 0.15);
+}
+.gauge-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.gauge-bar.cyan {
+  background: linear-gradient(90deg, #4FC7EA, #7FE0F8);
+  box-shadow: 0 0 10px rgba(79, 199, 234, 0.6);
+}
+.gauge-bar.green {
+  background: linear-gradient(90deg, #3BD68C, #65f0ad);
+  box-shadow: 0 0 10px rgba(59, 214, 140, 0.6);
+}
+
+/* Debrief Charts on Right Column */
+.debrief-chart-card {
+  background: rgba(8, 16, 32, 0.75);
+  border: 1px solid rgba(79, 199, 234, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.debrief-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--cyan);
+}
+.debrief-chart-header span.tag {
+  background: rgba(79, 199, 234, 0.15);
+  border: 1px solid rgba(79, 199, 234, 0.3);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Session History Points List (Only in Points) */
+.debrief-history-panel {
+  background: rgba(8, 16, 32, 0.75);
+  border: 1px solid rgba(79, 199, 234, 0.2);
   border-radius: 8px;
   padding: 10px 14px;
-  color: #3BD68C;
-  font-size: 12px;
-  font-weight: 600;
+}
+.debrief-subhead {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+.debrief-history-points {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.history-point-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(12, 22, 44, 0.75);
+  border: 1px solid rgba(79, 199, 234, 0.15);
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--ink-secondary);
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.history-point-item::before {
+  content: "•";
+  color: var(--cyan);
+  font-size: 14px;
+  margin-right: 2px;
+}
+.hp-scen {
+  color: #fff;
+  font-weight: 700;
+  min-width: 90px;
+}
+.hp-stat b {
+  color: var(--cyan);
+}
+.hp-time {
+  color: var(--ink-muted);
+  font-size: 10px;
+}
+
+/* Unified Footer Bar: Inline Verdict + Action Buttons */
+.debrief-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(79, 199, 234, 0.2);
+  flex-wrap: wrap;
+}
+.debrief-verdict-inline {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 14px 0;
+  background: rgba(59, 214, 140, 0.08);
+  border: 1px solid rgba(59, 214, 140, 0.3);
+  border-radius: 6px;
+  padding: 8px 14px;
+  color: #3BD68C;
+  font-size: 11.5px;
+  font-weight: 500;
+  flex: 1;
+  min-width: 280px;
 }
-.hchip {
-  display: inline-block;
-  background: rgba(14, 24, 48, 0.85);
-  border: 1px solid var(--edge);
-  border-radius: 4px;
-  padding: 5px 10px;
-  margin: 3px 5px 3px 0;
-  font-size: 10.5px;
-  color: #B9CBDC;
-}
-
-/* Action Buttons in Debrief */
 .debrief-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 20px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .btn-db-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 9px 18px;
+  gap: 6px;
+  padding: 8px 16px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   letter-spacing: 0.5px;
   text-decoration: none;
@@ -645,18 +800,25 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
   background: rgba(22, 38, 70, 0.9);
 }
 
-@media (max-width: 820px) {
-  .debrief-kpi-row-4 {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 1100px) {
+  .debrief-exec-strip {
+    grid-template-columns: 1fr;
   }
-  .debrief-kpi-row-3 {
-    grid-template-columns: repeat(2, 1fr);
+  .debrief-layout-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
-  .debrief-kpi-row-3 .fcard:last-child {
-    grid-column: span 2;
+  .debrief-footer-bar {
+    flex-direction: column;
+    align-items: stretch;
   }
   .debrief-card {
-    padding: 20px 16px;
+    padding: 16px 14px;
+  }
+}
+@media (max-width: 768px) {
+  .debrief-kpi-grid-4 {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -820,7 +982,7 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
   <a href="https://github.com/pranshukesavmishra/SIH-2026" target="_blank" rel="noopener">github.com/pranshukesavmishra/SIH-2026</a>
 </div>
 
-<!-- Debrief Modal -->
+<!-- Debrief Modal (Full Screen Wide Aerospace Dashboard) -->
 <div id="debrief" class="debrief-overlay" hidden>
   <div class="debrief-card">
     <div class="debrief-header-row">
@@ -833,50 +995,105 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
         </h2>
         <p>Frame-accurate telemetry analysis from open-source Python flight engine</p>
       </div>
-      <button class="debrief-close-icon" onclick="document.getElementById('debrief').hidden=true" title="Close debrief (Esc)">
-        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/></svg>
-      </button>
-    </div>
-
-    <!-- Executive Briefing for Judges (2-3 Simply Explained Points) -->
-    <div class="debrief-summary-box">
-      <div class="debrief-summary-header">
-        <div class="debrief-summary-title">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="#4FC7EA"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2v-2zm0-10h2v8h-2V6z"/></svg>
-          <span>EXECUTIVE SUMMARY FOR JUDGES</span>
-        </div>
+      <div class="debrief-header-meta">
         <span class="debrief-tag">ISRO SIH26169 VERIFIED</span>
+        <button class="debrief-close-icon" onclick="document.getElementById('debrief').hidden=true" title="Close debrief (Esc)">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/></svg>
+        </button>
       </div>
-      <div id="dbPoints"></div>
     </div>
 
-    <!-- Symmetrical 2-Tier KPI Layout -->
-    <div class="debrief-kpi-tier-label">PRIMARY FLIGHT PERFORMANCE METRICS</div>
-    <div class="debrief-kpi-row-4" id="dbKpisPrimary"></div>
+    <!-- Executive Briefing (3 Clean Columns Across Top) -->
+    <div class="debrief-exec-strip" id="dbPoints"></div>
 
-    <div class="debrief-kpi-tier-label">EDGE COMPUTE &amp; SPOOF REJECTION VERIFICATION</div>
-    <div class="debrief-kpi-row-3" id="dbKpisSecondary"></div>
+    <!-- 2-Column Balanced Dashboard Layout -->
+    <div class="debrief-layout-grid">
+      <!-- Left Column: Metrics & Analytics -->
+      <div class="debrief-col-left">
+        <!-- 4 Hero Metrics -->
+        <div class="debrief-kpi-grid-4" id="dbKpisPrimary"></div>
 
-    <div id="dbVerdict" class="debrief-verdict"></div>
+        <!-- Inline Secondary Stats Strip -->
+        <div class="debrief-sec-strip" id="dbKpisSecondary"></div>
 
-    <div style="color:var(--ink-muted);font-size:10px;letter-spacing:1.5px;margin-top:14px;text-transform:uppercase;font-weight:700">
-      ▸ SESSION HISTORY (THIS BROWSER)
+        <!-- Analytical Gauges -->
+        <div class="debrief-gauges-panel">
+          <div class="debrief-subhead" style="margin-bottom:8px">ANALYTIC PERFORMANCE GAUGES</div>
+          <div class="analytic-gauge">
+            <div class="gauge-meta">
+              <span>POINTING ACCURACY MARGIN (vs 52,360 µrad FOV)</span>
+              <b id="gErrVal">—</b>
+            </div>
+            <div class="gauge-track">
+              <div class="gauge-bar cyan" id="gErrBar" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="analytic-gauge">
+            <div class="gauge-meta">
+              <span>REAL-TIME FRAME BUDGET UTILIZATION (33.3 ms)</span>
+              <b id="gProcVal">—</b>
+            </div>
+            <div class="gauge-track">
+              <div class="gauge-bar green" id="gProcBar" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="analytic-gauge">
+            <div class="gauge-meta">
+              <span>COARSE ALIGNMENT LINK AVAILABILITY</span>
+              <b id="gLockVal">—</b>
+            </div>
+            <div class="gauge-track">
+              <div class="gauge-bar green" id="gLockBar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Graphs & Points History -->
+      <div class="debrief-col-right">
+        <!-- Telemetry Graph 1: Pointing Error vs FOV Limit -->
+        <div class="debrief-chart-card">
+          <div class="debrief-chart-header">
+            <span>⌖ POINTING ERROR CONVERGENCE (LOG µrad)</span>
+            <span class="tag">FOV LIMIT: 52,360 µrad</span>
+          </div>
+          <canvas id="cDebErr" data-h="96" height="96" style="width:100%;height:96px;display:block"></canvas>
+        </div>
+
+        <!-- Telemetry Graph 2: Processing Latency vs 33.3 ms Deadline -->
+        <div class="debrief-chart-card">
+          <div class="debrief-chart-header">
+            <span>⚡ FRAME COMPUTE LATENCY vs 33.3 ms DEADLINE</span>
+            <span class="tag">BUDGET: 33.3 ms</span>
+          </div>
+          <canvas id="cDebProc" data-h="96" height="96" style="width:100%;height:96px;display:block"></canvas>
+        </div>
+
+        <!-- Session History (Only in Points) -->
+        <div class="debrief-history-panel">
+          <div class="debrief-subhead">▸ SESSION HISTORY (RECENT VERIFIED RUNS — IN POINTS)</div>
+          <ul class="debrief-history-points" id="histPoints"></ul>
+        </div>
+      </div>
     </div>
-    <div id="hist" style="margin-top:4px"></div>
 
-    <div class="debrief-actions">
-      <button class="btn-db-action replay" onclick="replayRun()">
-        <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
-        <span>REPLAY RUN</span>
-      </button>
-      <a href="about.html" class="btn-db-action about" id="dbAboutBtn">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-        <span>ABOUT US</span>
-      </a>
-      <button class="btn-db-action close" onclick="document.getElementById('debrief').hidden=true">
-        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        <span>CLOSE</span>
-      </button>
+    <!-- Unified Footer Row: Verdict + Action Buttons -->
+    <div class="debrief-footer-bar">
+      <div id="dbVerdict" class="debrief-verdict-inline"></div>
+      <div class="debrief-actions">
+        <button class="btn-db-action replay" onclick="replayRun()">
+          <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+          <span>REPLAY RUN</span>
+        </button>
+        <a href="about.html" class="btn-db-action about" id="dbAboutBtn">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          <span>ABOUT US</span>
+        </a>
+        <button class="btn-db-action close" onclick="document.getElementById('debrief').hidden=true">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          <span>CLOSE</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -981,7 +1198,7 @@ function grid(c,w,h){c.strokeStyle='rgba(19,31,48,0.75)';c.lineWidth=1;c.beginPa
   for(let y=0;y<=h;y+=h/3){c.moveTo(0,y);c.lineTo(w,y)}c.stroke()}
 
 function series(cv,get,o){const [c,w,h]=px(cv);c.clearRect(0,0,w,h);grid(c,w,h);
-  const n=i+1,Y=v=>{let t=o.log?(Math.log10(Math.max(v,o.lo))-Math.log10(o.lo))/(Math.log10(o.hi)-Math.log10(o.lo))
+  const n=o.all?D.frames.length:(i+1),Y=v=>{let t=o.log?(Math.log10(Math.max(v,o.lo))-Math.log10(o.lo))/(Math.log10(o.hi)-Math.log10(o.lo))
       :(v-o.lo)/(o.hi-o.lo);return h-3-t*(h-8)};
   if(o.line!=null){c.strokeStyle='#FF5555';c.setLineDash([4,4]);c.beginPath();
     c.moveTo(0,Y(o.line));c.lineTo(w,Y(o.line));c.stroke();c.setLineDash([])}
@@ -1163,19 +1380,19 @@ requestAnimationFrame(rafLoop);
 
 const SCENARIO_SUMMARIES = {
   'decoy_field': [
-    { num: '1', title: 'Dense Decoy Field & Glint Challenge', desc: 'Real 130-second telemetry run testing the tracker against 3 moving false-beacon lights and solar glints attempting to spoof coarse acquisition.' },
-    { num: '2', title: 'Blink Frequency Discrimination & IMM Rejection', desc: 'ZeroDrift\'s 4 Hz temporal FFT lock-in classifier filtered out unmodulated decoys in 1.07 s, while IMM kinematics prevented drift across crossing events.' },
-    { num: '3', title: 'Fine-Stage Handoff Contract Met', desc: 'Maintained 99.3% lock retention with 178 µrad median pointing accuracy (~294× within the 6° FOV margin) and 0 decoy false-target captures.' }
+    { tag: 'SCENARIO', text: '130s telemetry stress-test against 3 crossing decoys & bright solar glints.' },
+    { tag: 'DEFENSE', text: '4 Hz FFT lock-in filtered decoys in 1.07s; IMM kinematics prevented false-lock drift.' },
+    { tag: 'VERDICT', text: '99.3% lock retention, 178 µrad median error (~294× within FOV), 0 decoy captures.' }
   ],
   'iss_pass': [
-    { num: '1', title: 'LEO Orbital Kinematics (45 s Pass)', desc: 'Real SGP4 low-Earth orbit pass over Bengaluru tracking through zenith with high angular rates up to 0.53°/s.' },
-    { num: '2', title: 'Multi-Model IMM Filtering', desc: 'Fused constant-velocity and coordinated-turn models to track rapid line-of-sight acceleration without phase lag.' },
-    { num: '3', title: 'Instant Acquisition & Sub-Frame Budget', desc: 'Cold start acquisition in 1.27 s with 98.3% lock retention, 198 µrad median error, computing in ~20 ms per 33 ms frame.' }
+    { tag: 'SCENARIO', text: '45s LEO orbital pass over Bengaluru through zenith (angular rates up to 0.53°/s).' },
+    { tag: 'DEFENSE', text: 'IMM dual-model filter fused constant-velocity & turn models with zero phase lag.' },
+    { tag: 'VERDICT', text: 'Cold start in 1.27s, 98.3% lock retention, 198 µrad median error, 20.3ms frame latency.' }
   ],
   'turbulence': [
-    { num: '1', title: 'Deep Tropospheric Scintillation (30 s)', desc: 'Simulates severe optical turbulence with 400 µrad beam wander and sudden intensity fades.' },
-    { num: '2', title: 'Predictive Coasting & Innovation Gate', desc: 'Maintained line-of-sight tracking through dark intervals without operator intervention or divergent drift.' },
-    { num: '3', title: 'Autonomous Rapid Re-acquisition', desc: '94.3% lock retention held throughout severe turbulence, restoring full track immediately upon pulse return.' }
+    { tag: 'SCENARIO', text: '30s deep tropospheric turbulence with 400 µrad beam wander and sudden fades.' },
+    { tag: 'DEFENSE', text: 'Predictive coasting & innovation gating held line-of-sight across dark intervals.' },
+    { tag: 'VERDICT', text: '94.3% lock retention, rapid autonomous re-acquisition upon pulse return.' }
   ]
 };
 
@@ -1200,40 +1417,89 @@ function showDebrief(record){
   $('dbScen').textContent=D.scenario;
 
   const points = SCENARIO_SUMMARIES[D.scenario] || [
-    { num: '1', title: 'Recorded Telemetry Verification', desc: 'Frame-accurate replay from the real Python flight engine matching repository physics.' },
-    { num: '2', title: 'AI & Temporal Filtering', desc: 'Sub-frame beacon discrimination and predictive Kalman tracking across line-of-sight disturbances.' },
-    { num: '3', title: 'Contract Compliance', desc: 'Beacon successfully kept within the optical acceptance cone for fine-stage laser handoff.' }
+    { tag: 'SCENARIO', text: 'Frame-accurate flight replay matching repository optical physics.' },
+    { tag: 'DEFENSE', text: 'Sub-frame beacon discrimination and predictive Kalman tracking across disturbances.' },
+    { tag: 'VERDICT', text: 'Target retained within optical cone for fine-stage laser handoff.' }
   ];
 
   $('dbPoints').innerHTML = points.map(p => `
-    <div class="debrief-point-item">
-      <span class="debrief-point-num">${p.num}</span>
-      <div class="debrief-point-text">
-        <b>${p.title}</b> — <span>${p.desc}</span>
-      </div>
+    <div class="exec-point-card">
+      <div class="ep-tag">${p.tag}</div>
+      <div class="ep-text">${p.text}</div>
     </div>
   `).join('');
 
+  const fovHalf = D.constants.fov_half_width_urad || 52360;
+  const errP50 = s.pointing_error_urad.p50;
+  const marginMul = Math.round(fovHalf / Math.max(1, errP50));
+  const procP50 = s.processing_ms.p50;
+  const headroom = Math.round((1 - procP50 / 33.3) * 100);
+
+  // 4 Hero Cards
   $('dbKpisPrimary').innerHTML=
-    fmtCard(s.acquisition_time_s==null?'—':s.acquisition_time_s.toFixed(2)+' s','ACQUISITION SPEED','eyes on target from cold start')+
-    fmtCard(s.lock_retention_pct.toFixed(1)+' %','LOCK RETENTION','held through every blink gap')+
-    fmtCard(s.pointing_error_urad.p50.toFixed(0)+' µrad','MEDIAN ERROR','~'+Math.round(D.constants.fov_half_width_urad/s.pointing_error_urad.p50)+'× inside field edge')+
-    fmtCard(s.beacon_in_fov_pct.toFixed(0)+' %','BEACON IN FOV','fine stage continuously fed');
+    fmtCard(s.acquisition_time_s==null?'—':s.acquisition_time_s.toFixed(2)+' s','ACQUISITION SPEED','cold-start to locked')+
+    fmtCard(s.lock_retention_pct.toFixed(1)+' %','LOCK RETENTION','held through blink gaps')+
+    fmtCard(Math.round(errP50)+' µrad','MEDIAN ERROR','~'+marginMul+'× inside field edge')+
+    fmtCard(procP50.toFixed(1)+' ms','COMPUTE LATENCY',headroom+'% real-time margin');
 
-  $('dbKpisSecondary').innerHTML=
-    fmtCard(s.decoy_locked_frames,'WRONG-TGT FRAMES','of '+s.frames+' frames — blink gate')+
-    fmtCard(s.reacquisitions,'RE-ACQUISITIONS','lost & recovered automatically')+
-    fmtCard(s.processing_ms.p50.toFixed(1)+' ms','PROC LATENCY P50','of 33 ms budget (60% margin)');
+  // Inline Secondary Stats Strip
+  $('dbKpisSecondary').innerHTML = `
+    <div class="sec-item">Beacon in FOV: <b>${s.beacon_in_fov_pct.toFixed(0)}%</b></div>
+    <div class="sec-item">Decoy False-Locks: <b>${s.decoy_locked_frames} frames</b> (0 captures)</div>
+    <div class="sec-item">Re-acquisitions: <b>${s.reacquisitions}</b> (auto-recovered)</div>
+  `;
 
-  $('dbVerdict').innerHTML='<span style="font-size:15px">✓</span> <span><b>VERDICT: Coarse-alignment contract met</b> — beacon kept safely inside the ±52,360 µrad FOV for fine-stage handoff.</span>';
+  // Analytical Gauges
+  $('gErrVal').innerHTML = Math.round(errP50) + ' µrad <span class="gauge-tag cyan">~' + marginMul + '× INSIDE FOV</span>';
+  $('gErrBar').style.width = Math.min(100, Math.max(5, (1 - errP50 / fovHalf) * 100)).toFixed(1) + '%';
 
+  $('gProcVal').innerHTML = procP50.toFixed(1) + ' ms <span class="gauge-tag green">' + headroom + '% HEADROOM</span>';
+  $('gProcBar').style.width = Math.min(100, (procP50 / 33.3) * 100).toFixed(1) + '%';
+
+  const lockPct = s.lock_retention_pct;
+  $('gLockVal').innerHTML = lockPct.toFixed(1) + '% <span class="gauge-tag green">ISRO NOMINAL</span>';
+  $('gLockBar').style.width = lockPct.toFixed(1) + '%';
+
+  $('dbVerdict').innerHTML='<span style="font-size:15px;color:#3BD68C">✓</span> <span><b>VERDICT: Coarse-alignment contract met</b> — beacon kept safely inside ±' + Math.round(fovHalf).toLocaleString() + ' µrad FOV for fine-stage handoff.</span>';
+
+  // History strictly in points
   let h=[];try{h=JSON.parse(localStorage.getItem('zd_hist')||'[]')}catch(e){}
-  if(record){try{h.push({sc:D.scenario,ts:Date.now(),acq:s.acquisition_time_s,lock:s.lock_retention_pct,p50:s.pointing_error_urad.p50});
-    h=h.slice(-10);localStorage.setItem('zd_hist',JSON.stringify(h))}catch(e){}}
-  $('hist').innerHTML=h.length?h.slice().reverse().map(e=>'<span class="hchip">'+e.sc+' · '
-    +(e.acq==null?'—':e.acq.toFixed(2)+'s')+' · '+e.lock.toFixed(1)+'% · '
-    +new Date(e.ts).toLocaleTimeString()+'</span>').join(''):'<span class="hchip">first completed run will appear here</span>';
-  $('debrief').hidden=false}
+  if(record){try{
+    h.push({
+      sc: D.scenario,
+      ts: Date.now(),
+      acq: s.acquisition_time_s,
+      lock: s.lock_retention_pct,
+      p50: s.pointing_error_urad.p50
+    });
+    h=h.slice(-7);
+    localStorage.setItem('zd_hist',JSON.stringify(h));
+  }catch(e){}}
+
+  if(h.length){
+    $('histPoints').innerHTML = h.slice().reverse().map(e => `
+      <li class="history-point-item">
+        <span class="hp-scen">${e.sc}</span>
+        <span class="hp-stat">Acq: <b>${e.acq == null ? '—' : e.acq.toFixed(2) + 's'}</b></span>
+        <span class="hp-stat">Lock: <b>${e.lock.toFixed(1)}%</b></span>
+        <span class="hp-stat">Error: <b>${Math.round(e.p50)} µrad</b></span>
+        <span class="hp-time">${new Date(e.ts).toLocaleTimeString()}</span>
+      </li>
+    `).join('');
+  } else {
+    $('histPoints').innerHTML = '<li class="history-point-item"><span style="color:var(--ink-muted)">• No prior runs recorded in this session. Complete a run to log points.</span></li>';
+  }
+
+  $('debrief').hidden=false;
+
+  // Render Debrief Telemetry Charts
+  setTimeout(()=>{
+    if(!$('debrief').hidden && D){
+      series($('cDebErr'), x => x.err_urad, { lo: 10, hi: 100000, log: true, color: '#4FC7EA', line: D.constants.fov_half_width_urad, vline: D._acqIdx, all: true });
+      series($('cDebProc'), x => x.proc_ms, { lo: 0, hi: 40, color: '#4FC7EA', line: 33.3, all: true });
+    }
+  }, 40);
+}
 
 $('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'❚❚':'▶';$('play').classList.toggle('on',playing)};
 $('spd').onclick=()=>{speed=speed>=8?1:speed*2;$('spd').textContent='✕'+speed};

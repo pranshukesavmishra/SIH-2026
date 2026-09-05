@@ -260,14 +260,70 @@ button.tog.on {
   border-color: var(--cyan);
   box-shadow: 0 0 8px rgba(79, 199, 234, 0.2);
 }
-input[type=range] {
+.seek-wrap {
+  position: relative;
   flex: 1;
   min-width: 140px;
+  display: flex;
+  align-items: center;
+}
+.seek-wrap input[type=range] {
+  width: 100%;
+  margin: 0;
   accent-color: #4FC7EA;
   height: 5px;
   background: var(--panel-solid);
   border-radius: 2px;
   cursor: pointer;
+}
+.decoy-dot-marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 9px;
+  height: 9px;
+  background: #FF3B30;
+  border: 1.5px solid #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #FF3B30, 0 0 12px rgba(255, 59, 48, 0.6);
+  cursor: pointer;
+  z-index: 5;
+  animation: pulseRedDot 2s infinite;
+  transition: transform 0.15s ease;
+}
+.decoy-dot-marker:hover {
+  transform: translate(-50%, -50%) scale(1.4);
+  box-shadow: 0 0 10px #FF3B30, 0 0 18px rgba(255, 59, 48, 0.9);
+}
+@keyframes pulseRedDot {
+  0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7), 0 0 6px #FF3B30; }
+  70% { box-shadow: 0 0 0 7px rgba(255, 59, 48, 0), 0 0 6px #FF3B30; }
+  100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0), 0 0 6px #FF3B30; }
+}
+.decoy-dot-marker::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 16, 28, 0.95);
+  border: 1px solid rgba(255, 59, 48, 0.7);
+  color: #FF5555;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+.decoy-dot-marker:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
 }
 
 /* KPI Summary Stats */
@@ -931,7 +987,10 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
     <button id="stepF" title="frame forward [→]">⏭</button>
     <button id="spd" title="playback speed">✕1</button>
     <button id="loop" class="tog on" title="loop at end">⟳</button>
-    <input type="range" id="seek" min="0" max="100" value="0">
+    <div class="seek-wrap">
+      <input type="range" id="seek" min="0" max="100" value="0">
+      <div class="decoy-dot-marker" id="decoyDot" data-tip="3 DECOYS ENTRY" style="display:none"></div>
+    </div>
     <button id="tTrail" class="tog on" title="beacon path trail">∿ TRAIL</button>
     <button id="tDecoy" class="tog on" title="show decoys">◇ DECOYS</button>
     <button id="tGrid" class="tog" title="viewport grid">▦ GRID</button>
@@ -1159,6 +1218,24 @@ function setup(d){
   D=d;i=0;ph=0;frac=0;delete D._debriefed;$('seek').max=d.frames.length-1;delete D._stars;
   D._dIdx=d.frames.map((f,k)=>((f.dpx&&f.dpx.length)?k:-1)).filter(k=>k>=0);
   D._acqIdx=d.frames.findIndex(f=>f.state==='TRACK');lastState=null;lockPulse=null;
+  const dot=$('decoyDot');
+  if(dot){
+    if(D._dIdx&&D._dIdx.length){
+      const k0=D._dIdx[0];
+      const fracPos=k0/(d.frames.length-1);
+      dot.style.display='block';
+      dot.style.left='calc(8px + (100% - 16px) * '+fracPos.toFixed(4)+')';
+      const tipText='T+'+d.frames[k0].t.toFixed(1)+'s · 3 DECOYS ENTRY';
+      dot.setAttribute('data-tip',tipText);
+      dot.title=tipText+' (click to jump)';
+      dot.onclick=(e)=>{
+        e.stopPropagation();
+        i=k0;ph=k0;frac=0;draw();
+      };
+    }else{
+      dot.style.display='none';
+    }
+  }
   const nd=d.frames.reduce((a,f)=>a+((f.dpx&&f.dpx.length)?1:0),0);
   const db=$('tDecoy');db.disabled=!nd;db.style.opacity=nd?1:0.35;
   db.textContent=nd?'◇ DECOYS':'◇ NO DECOYS';
@@ -1355,6 +1432,14 @@ function draw(){
   if(D._acqIdx>=0){const ax=D._acqIdx/D.frames.length*w;
     c.fillStyle='#3BD68C';c.fillRect(ax-1,1,2,h-2);
     c.font='8px monospace';c.fillText('▲ACQ',ax+3,h-3)}
+  if(D._dIdx&&D._dIdx.length){
+    const dx=D._dIdx[0]/D.frames.length*w;
+    c.fillStyle='#FF3B30';
+    c.fillRect(dx-1,1,2,h-2);
+    c.beginPath();c.arc(dx,4,3,0,6.28);c.fill();
+    c.strokeStyle='#fff';c.lineWidth=0.8;c.stroke();
+    c.font='8px monospace';c.fillText('◆DECOYS',dx+4,h-3);
+  }
   c.fillStyle='#fff';c.fillRect(i/D.frames.length*w-1,1,2,h-2);
 }
 

@@ -12,3 +12,7 @@ dist/
 
 # Personal contact details - never commit to a public repo
 team_private/
+
+# Local deployment and temporary screenshot
+.netlify/
+image.png

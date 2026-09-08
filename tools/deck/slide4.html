@@ -1,0 +1,171 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  :root{
+    --navy:#0F2E4E; --navy2:#173F66; --blue:#1B75BB; --blueL:#EAF3FB;
+    --cyan:#0E9BC4; --green:#1E9E63; --greenL:#E8F6EF; --amber:#DE8A22;
+    --amberL:#FDF3E4; --red:#C8443C; --ink:#14202C; --muted:#5C6B7A;
+    --line:#D9E3ED; --panel:#F6F9FC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:2320px;height:1040px}
+  body{font-family:"Liberation Sans",Arial,"DejaVu Sans",sans-serif;color:var(--ink);background:#fff;
+       -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;height:1040px}
+  .eyebrow{font-size:24px;font-weight:700;letter-spacing:2.1px;text-transform:uppercase;color:var(--blue);white-space:nowrap}
+  .eyebrow.amber{color:#B96F12}
+  .eyebrow.green{color:#12603D}
+  .rule{height:3px;flex:1;border-radius:2px;
+        background:linear-gradient(90deg,var(--blue),#8FC3E8 60%,rgba(255,255,255,0))}
+  .rule.amber{background:linear-gradient(90deg,var(--amber),#F0CB94 60%,rgba(255,255,255,0))}
+  .rule.green{background:linear-gradient(90deg,var(--green),#9ED8BC 60%,rgba(255,255,255,0))}
+  .plabel{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+
+  .topline{display:flex;align-items:center;gap:14px}
+  .topline .note{font-size:24px;color:var(--muted);white-space:nowrap}
+  .topline .note b{color:var(--navy)}
+
+  /* proof tiles */
+  .proof{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:2px;flex:0 0 auto}
+  .tile{border:1.5px solid var(--line);border-radius:14px;background:#fff;padding:22px 22px;
+        display:flex;align-items:center;gap:16px;box-shadow:0 2px 5px rgba(16,40,66,.05)}
+  .tile .txt .v{font-size:40px;font-weight:700;color:var(--navy);line-height:1.05;letter-spacing:-.3px}
+  .tile .txt .v em{font-style:normal;color:var(--green)}
+  .tile .txt .l{font-size:24px;color:var(--muted);margin-top:6px;line-height:1.28}
+  .tile.wide{grid-column:span 1}
+
+  /* risk / strategy */
+  .pairs{display:flex;flex-direction:column;gap:16px;flex:1 1 auto;margin-bottom:18px}
+  .pair{display:grid;grid-template-columns:1fr 54px 1.32fr;align-items:stretch;gap:0;flex:1 1 auto}
+  .risk{background:var(--amberL);border:1.5px solid #F0D6AC;border-left:8px solid var(--amber);
+        border-radius:12px;padding:14px 20px;display:flex;flex-direction:column;justify-content:center}
+  .risk .t{font-size:29px;font-weight:700;color:#7A4A08}
+  .risk .d{font-size:24px;color:#8C6636;margin-top:4px;line-height:1.27}
+  .arr{display:flex;align-items:center;justify-content:center}
+  .arr svg{display:block}
+  .fix{background:var(--greenL);border:1.5px solid #BFE5D2;border-left:8px solid var(--green);
+       border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:18px}
+  .fix .body{flex:1 1 auto}
+  .fix .t{font-size:29px;font-weight:700;color:#0E5636}
+  .fix .d{font-size:24px;color:#3C6B55;margin-top:4px;line-height:1.27}
+  .ev{flex:0 0 auto;background:var(--navy);color:#fff;border-radius:9px;padding:11px 16px;
+      font-size:24px;font-weight:700;text-align:center;line-height:1.22;max-width:360px}
+
+  /* bottom worst-case */
+  .worst{flex:0 0 auto;border:1.5px solid var(--line);border-radius:14px;background:var(--panel);
+         display:flex;align-items:center;gap:0;overflow:hidden}
+  .worst .lead{background:var(--navy);color:#fff;padding:20px 24px;align-self:stretch;display:flex;
+               flex-direction:column;justify-content:center;flex:0 0 350px}
+  .worst .lead .a{font-size:26px;font-weight:700;line-height:1.15}
+  .worst .lead .b{font-size:22px;color:#A8C2D8;margin-top:3px}
+  .worst .cells{display:grid;grid-template-columns:repeat(4,1fr);flex:1 1 auto}
+  .cell{padding:19px 22px;border-left:1px solid var(--line)}
+  .cell .v{font-size:37px;font-weight:700;color:var(--navy);line-height:1.05}
+  .cell .l{font-size:23px;color:var(--muted);margin-top:5px;line-height:1.28}
+</style>
+
+<div class="plabel">
+  <div class="eyebrow">Analysis of the feasibility of the idea</div>
+  <div class="rule"></div>
+  <div class="note" style="font-size:24px;color:#5C6B7A">not a plan — a <b>working system</b>, already measured</div>
+</div>
+
+<div class="proof">
+  <div class="tile">
+    <svg width="104" height="104" viewBox="0 0 86 86">
+      <circle cx="43" cy="43" r="34" fill="none" stroke="#E4EBF2" stroke-width="11"/>
+      <circle cx="43" cy="43" r="34" fill="none" stroke="#1E9E63" stroke-width="11"
+              stroke-dasharray="213.6 213.6" stroke-dashoffset="0" transform="rotate(-90 43 43)" stroke-linecap="round"/>
+      <text x="43" y="50" text-anchor="middle" font-size="23" font-weight="bold" fill="#0F2E4E"
+            font-family="Liberation Sans">100%</text>
+    </svg>
+    <div class="txt"><div class="v">73 / 73</div><div class="l">automated tests pass<br>on every push</div></div>
+  </div>
+  <div class="tile">
+    <svg width="104" height="104" viewBox="0 0 86 86">
+      <circle cx="43" cy="43" r="34" fill="none" stroke="#E4EBF2" stroke-width="11"/>
+      <circle cx="43" cy="43" r="34" fill="none" stroke="#1B75BB" stroke-width="11"
+              stroke-dasharray="213.6 213.6" transform="rotate(-90 43 43)" stroke-linecap="round"/>
+      <text x="43" y="50" text-anchor="middle" font-size="23" font-weight="bold" fill="#0F2E4E"
+            font-family="Liberation Sans">100%</text>
+    </svg>
+    <div class="txt"><div class="v">64 / 64</div><div class="l">randomised runs<br>acquired the beacon</div></div>
+  </div>
+  <div class="tile">
+    <svg width="104" height="104" viewBox="0 0 86 86">
+      <path d="M43 8l28 11v22c0 18-12 31-28 37-16-6-28-19-28-37V19z" fill="#E8F6EF" stroke="#1E9E63" stroke-width="3.5"/>
+      <path d="M30 44l9 10 18-21" fill="none" stroke="#1E9E63" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="txt"><div class="v"><em>0</em> wrong locks</div><div class="l">across all 64 runs —<br>decoys never fooled it</div></div>
+  </div>
+  <div class="tile">
+    <div style="flex:1 1 auto">
+      <div class="v" style="font-size:34px;font-weight:700;color:var(--navy);line-height:1.05">8–21 ms<span
+        style="font-size:23px;color:#5C6B7A;font-weight:400"> of the 33 ms frame</span></div>
+      <svg width="100%" height="30" viewBox="0 0 340 30" style="margin-top:9px">
+        <rect x="0" y="7" width="340" height="16" rx="8" fill="#E4EBF2"/>
+        <rect x="0" y="7" width="216" height="16" rx="8" fill="#1B75BB"/>
+        <line x1="216" y1="2" x2="216" y2="28" stroke="#0F2E4E" stroke-width="2.5"/>
+        <text x="226" y="21" font-size="17" fill="#5C6B7A" font-family="Liberation Sans">headroom</text>
+      </svg>
+      <div class="l" style="font-size:21px;color:var(--muted);margin-top:5px">two CPU cores — no GPU, no cloud, no dataset</div>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 54px 1.32fr;margin-top:26px;flex:0 0 auto">
+  <div class="plabel" style="margin-bottom:7px"><div class="eyebrow amber">Potential challenges and risks</div><div class="rule amber"></div></div>
+  <div></div>
+  <div class="plabel" style="margin-bottom:7px"><div class="eyebrow green">Strategies for overcoming these challenges</div><div class="rule green"></div></div>
+</div>
+
+<div class="pairs">
+<div class="pair">
+  <div class="risk"><div class="t">Heavy turbulence</div><div class="d">dims the beacon and shakes it across the frame</div></div>
+  <div class="arr"><svg width="30" height="22"><path d="M0 11h20M14 4l7 7-7 7" fill="none" stroke="#9AAABA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="fix">
+    <div class="body"><div class="t">Coast through the fade, then re-acquire</div>
+      <div class="d">motion model bridges dark half-cycles; spiral search restarts automatically</div></div>
+    <div class="ev">hard-turbulence run<br>1.27 s · 94.3 % lock</div>
+  </div>
+</div>
+
+<div class="pair">
+  <div class="risk"><div class="t">Bright decoys &amp; sun-glint</div><div class="d">confusers that look exactly like the beacon</div></div>
+  <div class="arr"><svg width="30" height="22"><path d="M0 11h20M14 4l7 7-7 7" fill="none" stroke="#9AAABA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="fix">
+    <div class="body"><div class="t">4 Hz blink-signature hard gate + AI verifier</div>
+      <div class="d">a steady light scores zero; our 497-parameter net double-checks every lock</div></div>
+    <div class="ev">0 wrong locks / 64<br>AUC 0.957 vs 0.900</div>
+  </div>
+</div>
+
+<div class="pair">
+  <div class="risk"><div class="t">40 ms of mount latency</div><div class="d">high-gain loops oscillate; the mount lags the target</div></div>
+  <div class="arr"><svg width="30" height="22"><path d="M0 11h20M14 4l7 7-7 7" fill="none" stroke="#9AAABA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="fix">
+    <div class="body"><div class="t">Two-path Smith predictor</div>
+      <div class="d">predicts around the dead time instead of fighting it</div></div>
+    <div class="ev">4.2 µrad steady lag<br>at 0.75 °/s slew</div>
+  </div>
+</div>
+
+<div class="pair">
+  <div class="risk"><div class="t">Sharp UAV manoeuvres</div><div class="d">single-model filters lag hard direction changes</div></div>
+  <div class="arr"><svg width="30" height="22"><path d="M0 11h20M14 4l7 7-7 7" fill="none" stroke="#9AAABA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="fix">
+    <div class="body"><div class="t">Dual-model IMM estimator</div>
+      <div class="d">steady and manoeuvring models re-weighted every single frame</div></div>
+    <div class="ev">UAV-relay scenario<br>in the standard suite</div>
+  </div>
+</div>
+</div>
+
+<div class="worst">
+  <div class="lead"><div class="a">Worst case of all<br>64 randomised runs</div><div class="b">not the average — the worst</div></div>
+  <div class="cells">
+    <div class="cell"><div class="v">4.0 s</div><div class="l">slowest acquisition<br>(median 1.27 s)</div></div>
+    <div class="cell"><div class="v">91.6 %</div><div class="l">lowest lock retention<br>(median 97.6 %)</div></div>
+    <div class="cell"><div class="v">2.8 s</div><div class="l">a 0.53× dim beacon under<br>1.74× turbulence still acquired</div></div>
+    <div class="cell"><div class="v">1 command</div><div class="l">regenerates every figure —<br>each random draw is logged</div></div>
+  </div>
+</div>

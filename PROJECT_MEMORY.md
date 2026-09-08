@@ -50,7 +50,17 @@ graph TD
 | 73 tests | `pytest` |
 An audit workflow enforced this (2026-08-29): fixed 14 ms→20 ms, IMM 0.3 s→reworded, chips 1.1/98.8→1.27/98.3, faster-than-real-time→8–21 ms of budget, worst-case relabel, chart margin, caption run-neutral.
 
-## Deck build system (scratchpad — recreate if container lost)
+## Deck build system — CURRENT (2026-09-08, in-repo, reproducible)
+Slides 2, 4 and 5 are now designed as HTML in `tools/deck/` and rendered with
+headless Chromium at ≈360 dpi; `tools/deck/build.py` drops them into the body
+area of the team's PowerPoint deck and writes `docs/submission/ZeroDrift_SIH26169.pdf`
+(6 pages, 8.6 MB). Slides 1, 3 and 6 pass through pixel-identical — verified.
+Mandatory template pointers appear verbatim on every rebuilt slide and are also
+written as an invisible text layer so they still extract. See `tools/deck/README.md`.
+NOTE: `docs/submission/ZeroDrift_SIH26169.pptx` is the OLDER (3 Sept) deck and no
+longer matches the PDF — the team's newer PowerPoint source lives outside the repo.
+
+## Deck build system (older scratchpad flow — superseded by tools/deck/)
 `/tmp/.../scratchpad/ppt/`: `template.pptx` (official, MD5 90028af7…), `build_deck.py` (single source; rebuilds deck from template each run), `make_chart2.py` (chart from telemetry_run.json), `make_logo2.py`, `make_sidelabel.py`, `validate.py`. Flow: edit build_deck.py → run → validate.py → soffice → pdftoppm → eyeball renders. Outputs copied to `docs/submission/`. If scratchpad is gone: these five scripts must be re-created or recovered from session history; deck pptx in docs/submission still opens fine in PowerPoint for manual edits.
 
 ## Hosted demo

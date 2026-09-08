@@ -30,7 +30,7 @@
          border-radius:11px;padding:11px 14px}
   .hstep .n{font-size:19px;font-weight:700;color:#7FA8C8;letter-spacing:1.4px}
   .hstep .t{font-size:23px;font-weight:700;color:#E4EEF7;margin-top:3px;line-height:1.2}
-  .hstep .d{font-size:20px;color:#96B2CA;margin-top:3px;line-height:1.25}
+  .hstep .d{font-size:21px;color:#96B2CA;margin-top:3px;line-height:1.25}
   .harr{display:flex;align-items:center;color:#5F7D99;font-size:26px;font-weight:700}
   .brow{margin-bottom:26px}
   .brow:last-child{margin-bottom:0}
@@ -67,9 +67,10 @@
   .vrow .vp{font-size:38px;font-weight:700;letter-spacing:-.4px}
   .vrow.old .vp{color:#C8443C}
   .vrow.new .vp{color:var(--green)}
-  .vrow .vd{font-size:23px;margin-top:6px;line-height:1.33}
+  .vrow .vd{font-size:25px;margin-top:6px;line-height:1.33}
   .vrow.old .vd{color:#8A5B56}
   .vrow.new .vd{color:#3C6B55}
+  .costbar{width:100%;height:16px;display:block;margin-top:14px}
   .chips{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
   .ch{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 13px;
       font-size:21px;font-weight:700;color:var(--navy)}
@@ -83,7 +84,7 @@
   .ben:nth-child(4){border-top-color:var(--amber)}
   .ben .bh{display:flex;align-items:center;gap:11px}
   .ben .bh h3{font-size:25px;font-weight:700;color:var(--navy);letter-spacing:.4px}
-  .ben p{font-size:22px;color:#33475B;line-height:1.32;margin-top:8px}
+  .ben p{font-size:24px;color:#33475B;line-height:1.32;margin-top:8px}
 
   /* audience */
   .aud{display:flex;align-items:center;gap:14px;margin-top:16px;flex:0 0 auto}
@@ -95,37 +96,36 @@
 <div class="plabel">
   <div class="eyebrow">Potential impact on the target audience</div>
   <div class="rule"></div>
-  <div class="note">the two-stage architecture, <b>justified by measurement</b></div>
+  <div class="note">two-stage architecture, <b>justified by measurement</b></div>
 </div>
 
 <div class="mid">
   <div class="hero">
     <div>
       <div class="ht">Does the optical link actually close?</div>
-      <div class="hs">A gigabit FSOC beam is only worth anything while it stays on target. This is the fraction
-        of a real ISS pass during which the modelled link stays closed.</div>
+      <div class="hs">Fraction of a real ISS pass with the modelled link closed.</div>
       <div class="handoff">
         <div class="hstep"><div class="n">STAGE 1</div><div class="t">ZeroDrift — coarse</div>
-          <div class="d">finds the beacon and holds it inside the field of view</div></div>
+          <div class="d">holds the beacon in view</div></div>
         <div class="harr">→</div>
         <div class="hstep"><div class="n">STAGE 2</div><div class="t">Fine steering mirror</div>
-          <div class="d">modelled: 3 mrad throw, 300 Hz, honest saturation limits</div></div>
+          <div class="d">modelled: 3 mrad, 300 Hz</div></div>
         <div class="harr">→</div>
-        <div class="hstep"><div class="n">RESULT</div><div class="t">The link stays closed</div>
-          <div class="d">neither stage can do it alone — that is the architecture</div></div>
+        <div class="hstep"><div class="n">RESULT</div><div class="t">Link stays closed</div>
+          <div class="d">neither stage alone can</div></div>
       </div>
     </div>
     <div class="bars">
       <div class="brow">
         <div class="bhead">
-          <div class="bname">Coarse alignment alone<small>the beam is far narrower than coarse pointing can hold</small></div>
+          <div class="bname">Coarse alignment alone</div>
           <div class="bval low">14.7 %</div>
         </div>
         <div class="track"><div class="fill low"></div></div>
       </div>
       <div class="brow">
         <div class="bhead">
-          <div class="bname">Coarse + modelled fine stage<small>ZeroDrift hands a fine steering mirror a target it can hold</small></div>
+          <div class="bname">Coarse + modelled fine stage</div>
           <div class="bval high">99.3 %</div>
         </div>
         <div class="track"><div class="fill high"></div></div>
@@ -133,8 +133,7 @@
     </div>
     <div class="hfoot">
       <div class="delta">6.8× more link time</div>
-      <div class="fc">Tracked ISS pass · 250 µrad beam · 15 cm aperture · 3.1 dB mean margin · zero outages.
-        <b>Measured against ground truth the tracker never sees — not asserted.</b></div>
+      <div class="fc">Tracked ISS pass · 250 µrad beam · 3.1 dB margin · zero outages.<br><b>Measured, not asserted.</b></div>
     </div>
   </div>
 
@@ -143,13 +142,13 @@
     <div class="vs">
       <div class="vrow old">
         <div class="vh"><div class="vn">An optical test bench</div><div class="vp">₹ lakhs</div></div>
-        <div class="vd">Cameras, gimbals, optics and lab time — procured before a single pointing algorithm
-          can be tried, and one team can use it at a time.</div>
+        <div class="vd">Cameras, gimbals, optics, lab time. One team at a time.</div>
+        <svg class="costbar" viewBox="0 0 400 16" preserveAspectRatio="none"><rect width="400" height="16" rx="8" fill="#EFD6D3"/><rect width="400" height="16" rx="8" fill="#C8443C"/></svg>
       </div>
       <div class="vrow new">
         <div class="vh"><div class="vn">ZeroDrift</div><div class="vp">₹ 0</div></div>
-        <div class="vd">A laptop you already own. Clone, run one command, and the whole develop–test–validate
-          cycle runs — for an entire class at once.</div>
+        <div class="vd">A laptop you already own. One command. A whole class at once.</div>
+        <svg class="costbar" viewBox="0 0 400 16" preserveAspectRatio="none"><rect width="400" height="16" rx="8" fill="#D5EBE0"/><rect width="7" height="16" rx="3.5" fill="#1E9E63"/></svg>
       </div>
     </div>
     <div class="chips">
@@ -171,8 +170,7 @@
         fill="#EAF3FB" stroke="#1B75BB" stroke-width="2.2"/></svg>
       <h3>STRATEGIC</h3>
     </div>
-    <p>Sovereign FSOC pointing capability for India's next-generation space and defence links — developed
-      here, without importing an optical test bench.</p>
+    <p>Sovereign FSOC pointing capability, developed in India.</p>
   </div>
   <div class="ben">
     <div class="bh">
@@ -180,8 +178,7 @@
         <text x="17" y="24" text-anchor="middle" font-size="19" font-weight="bold" fill="#1E9E63" font-family="DejaVu Sans">₹</text></svg>
       <h3>ECONOMIC</h3>
     </div>
-    <p>A laptop replaces lakhs of rupees of hardware, and the whole develop–test–validate cycle runs at
-      zero recurring cost.</p>
+    <p>Lakhs of rupees of hardware → zero recurring cost.</p>
   </div>
   <div class="ben">
     <div class="bh">
@@ -189,8 +186,7 @@
         <path d="M30 8H19a4 4 0 00-4 4v16a4 4 0 014-3h11z" fill="#E6F6FA" stroke="#0E9BC4" stroke-width="2.2"/></svg>
       <h3>RESEARCH &amp; EDUCATION</h3>
     </div>
-    <p>Any student or ISRO lab can develop and compare PAT algorithms instantly — reproducible scenarios,
-      honest ground-truth scoring.</p>
+    <p>Any lab or student can test PAT algorithms today.</p>
   </div>
   <div class="ben">
     <div class="bh">
@@ -198,8 +194,7 @@
         fill="#FDF3E4" stroke="#DE8A22" stroke-width="2.2" stroke-linejoin="round"/></svg>
       <h3>SCALABLE &amp; GREEN</h3>
     </div>
-    <p>One engine already covers satellite, UAV, ground and maritime links — pure software, so no
-      consumables, no lab energy, no e-waste.</p>
+    <p>Satellite, UAV, ground, maritime — one pure-software engine.</p>
   </div>
 </div>
 

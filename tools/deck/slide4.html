@@ -38,17 +38,17 @@
   .pair{display:grid;grid-template-columns:1fr 54px 1.32fr;align-items:stretch;gap:0;flex:1 1 auto}
   .risk{background:var(--amberL);border:1.5px solid #F0D6AC;border-left:8px solid var(--amber);
         border-radius:12px;padding:14px 20px;display:flex;flex-direction:column;justify-content:center}
-  .risk .t{font-size:29px;font-weight:700;color:#7A4A08}
-  .risk .d{font-size:24px;color:#8C6636;margin-top:4px;line-height:1.27}
+  .risk .t{font-size:31px;font-weight:700;color:#7A4A08}
+  .risk .d{font-size:25px;color:#8C6636;margin-top:4px;line-height:1.27}
   .arr{display:flex;align-items:center;justify-content:center}
   .arr svg{display:block}
   .fix{background:var(--greenL);border:1.5px solid #BFE5D2;border-left:8px solid var(--green);
        border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:18px}
   .fix .body{flex:1 1 auto}
-  .fix .t{font-size:29px;font-weight:700;color:#0E5636}
+  .fix .t{font-size:32px;font-weight:700;color:#0E5636}
   .fix .d{font-size:24px;color:#3C6B55;margin-top:4px;line-height:1.27}
-  .ev{flex:0 0 auto;background:var(--navy);color:#fff;border-radius:9px;padding:11px 16px;
-      font-size:24px;font-weight:700;text-align:center;line-height:1.22;max-width:360px}
+  .ev{flex:0 0 auto;background:var(--navy);color:#fff;border-radius:9px;padding:12px 18px;
+      font-size:25px;font-weight:700;text-align:center;line-height:1.22;max-width:360px}
 
   /* bottom worst-case */
   .worst{flex:0 0 auto;border:1.5px solid var(--line);border-radius:14px;background:var(--panel);
@@ -66,7 +66,7 @@
 <div class="plabel">
   <div class="eyebrow">Analysis of the feasibility of the idea</div>
   <div class="rule"></div>
-  <div class="note" style="font-size:24px;color:#5C6B7A">not a plan — a <b>working system</b>, already measured</div>
+  <div class="note" style="font-size:24px;color:#5C6B7A">not a plan — a <b>working system</b></div>
 </div>
 
 <div class="proof">
@@ -78,7 +78,7 @@
       <text x="43" y="50" text-anchor="middle" font-size="23" font-weight="bold" fill="#0F2E4E"
             font-family="Liberation Sans">100%</text>
     </svg>
-    <div class="txt"><div class="v">73 / 73</div><div class="l">automated tests pass<br>on every push</div></div>
+    <div class="txt"><div class="v">73 / 73</div><div class="l">automated tests pass</div></div>
   </div>
   <div class="tile">
     <svg width="104" height="104" viewBox="0 0 86 86">
@@ -88,14 +88,14 @@
       <text x="43" y="50" text-anchor="middle" font-size="23" font-weight="bold" fill="#0F2E4E"
             font-family="Liberation Sans">100%</text>
     </svg>
-    <div class="txt"><div class="v">64 / 64</div><div class="l">randomised runs<br>acquired the beacon</div></div>
+    <div class="txt"><div class="v">64 / 64</div><div class="l">runs acquired the beacon</div></div>
   </div>
   <div class="tile">
     <svg width="104" height="104" viewBox="0 0 86 86">
       <path d="M43 8l28 11v22c0 18-12 31-28 37-16-6-28-19-28-37V19z" fill="#E8F6EF" stroke="#1E9E63" stroke-width="3.5"/>
       <path d="M30 44l9 10 18-21" fill="none" stroke="#1E9E63" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <div class="txt"><div class="v"><em>0</em> wrong locks</div><div class="l">across all 64 runs —<br>decoys never fooled it</div></div>
+    <div class="txt"><div class="v"><em>0</em> wrong locks</div><div class="l">in 64 randomised runs</div></div>
   </div>
   <div class="tile">
     <div style="flex:1 1 auto">
@@ -107,7 +107,7 @@
         <line x1="216" y1="2" x2="216" y2="28" stroke="#0F2E4E" stroke-width="2.5"/>
         <text x="226" y="21" font-size="17" fill="#5C6B7A" font-family="Liberation Sans">headroom</text>
       </svg>
-      <div class="l" style="font-size:21px;color:var(--muted);margin-top:5px">two CPU cores — no GPU, no cloud, no dataset</div>
+      <div class="l" style="font-size:21px;color:var(--muted);margin-top:5px">no GPU · no cloud · no dataset</div>
     </div>
   </div>
 </div>
@@ -120,52 +120,48 @@
 
 <div class="pairs">
 <div class="pair">
-  <div class="risk"><div class="t">Heavy turbulence</div><div class="d">dims the beacon and shakes it across the frame</div></div>
+  <div class="risk"><div class="t">Heavy turbulence</div><div class="d">dims and shakes the beacon</div></div>
   <div class="arr"><svg width="30" height="22"><path d="M0 11h20M14 4l7 7-7 7" fill="none" stroke="#9AAABA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
   <div class="fix">
-    <div class="body"><div class="t">Coast through the fade, then re-acquire</div>
-      <div class="d">motion model bridges dark half-cycles; spiral search restarts automatically</div></div>
-    <div class="ev">hard-turbulence run<br>1.27 s · 94.3 % lock</div>
+    <div class="body"><div class="t">Coast through the fade, then re-spiral</div></div>
+    <div class="ev">1.27 s · 94.3 % lock<br>in hard turbulence</div>
   </div>
 </div>
 
 <div class="pair">
-  <div class="risk"><div class="t">Bright decoys &amp; sun-glint</div><div class="d">confusers that look exactly like the beacon</div></div>
+  <div class="risk"><div class="t">Decoys &amp; sun-glint</div><div class="d">brighter than the real beacon</div></div>
   <div class="arr"><svg width="30" height="22"><path d="M0 11h20M14 4l7 7-7 7" fill="none" stroke="#9AAABA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
   <div class="fix">
-    <div class="body"><div class="t">4 Hz blink-signature hard gate + AI verifier</div>
-      <div class="d">a steady light scores zero; our 497-parameter net double-checks every lock</div></div>
-    <div class="ev">0 wrong locks / 64<br>AUC 0.957 vs 0.900</div>
+    <div class="body"><div class="t">4 Hz blink gate + AI verifier</div></div>
+    <div class="ev">0 / 64 wrong locks<br>AUC 0.957 vs 0.900</div>
   </div>
 </div>
 
 <div class="pair">
-  <div class="risk"><div class="t">40 ms of mount latency</div><div class="d">high-gain loops oscillate; the mount lags the target</div></div>
+  <div class="risk"><div class="t">40 ms mount latency</div><div class="d">loops oscillate and lag</div></div>
   <div class="arr"><svg width="30" height="22"><path d="M0 11h20M14 4l7 7-7 7" fill="none" stroke="#9AAABA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
   <div class="fix">
-    <div class="body"><div class="t">Two-path Smith predictor</div>
-      <div class="d">predicts around the dead time instead of fighting it</div></div>
-    <div class="ev">4.2 µrad steady lag<br>at 0.75 °/s slew</div>
+    <div class="body"><div class="t">Two-path Smith predictor</div></div>
+    <div class="ev">4.2 µrad lag<br>at 0.75 °/s</div>
   </div>
 </div>
 
 <div class="pair">
-  <div class="risk"><div class="t">Sharp UAV manoeuvres</div><div class="d">single-model filters lag hard direction changes</div></div>
+  <div class="risk"><div class="t">Sharp UAV manoeuvres</div><div class="d">simple filters fall behind</div></div>
   <div class="arr"><svg width="30" height="22"><path d="M0 11h20M14 4l7 7-7 7" fill="none" stroke="#9AAABA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
   <div class="fix">
-    <div class="body"><div class="t">Dual-model IMM estimator</div>
-      <div class="d">steady and manoeuvring models re-weighted every single frame</div></div>
-    <div class="ev">UAV-relay scenario<br>in the standard suite</div>
+    <div class="body"><div class="t">Dual-model IMM estimator</div></div>
+    <div class="ev">re-weighted<br>every frame</div>
   </div>
 </div>
 </div>
 
 <div class="worst">
-  <div class="lead"><div class="a">Worst case of all<br>64 randomised runs</div><div class="b">not the average — the worst</div></div>
+  <div class="lead"><div class="a">Worst of 64 runs</div><div class="b">not the average</div></div>
   <div class="cells">
-    <div class="cell"><div class="v">4.0 s</div><div class="l">slowest acquisition<br>(median 1.27 s)</div></div>
-    <div class="cell"><div class="v">91.6 %</div><div class="l">lowest lock retention<br>(median 97.6 %)</div></div>
-    <div class="cell"><div class="v">2.8 s</div><div class="l">a 0.53× dim beacon under<br>1.74× turbulence still acquired</div></div>
-    <div class="cell"><div class="v">1 command</div><div class="l">regenerates every figure —<br>each random draw is logged</div></div>
+    <div class="cell"><div class="v">4.0 s</div><div class="l">slowest acquisition<br>median 1.27 s</div></div>
+    <div class="cell"><div class="v">91.6 %</div><div class="l">lowest lock held<br>median 97.6 %</div></div>
+    <div class="cell"><div class="v">2.8 s</div><div class="l">dim beacon, heavy<br>turbulence — still acquired</div></div>
+    <div class="cell"><div class="v">1 command</div><div class="l">regenerates<br>every figure</div></div>
   </div>
 </div>

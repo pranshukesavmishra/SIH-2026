@@ -25,7 +25,8 @@
   .hero .ht{font-size:34px;font-weight:700;letter-spacing:-.2px}
   .hero .hs{font-size:23px;color:#A8C2D8;margin-top:5px;line-height:1.3}
   .bars{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;padding:12px 0 4px}
-  .handoff{display:flex;align-items:stretch;gap:10px;margin-top:16px}
+  .beam{margin-top:10px}
+  .beam svg{width:100%;display:block}
   .hstep{flex:1 1 0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.19);
          border-radius:11px;padding:11px 14px}
   .hstep .n{font-size:19px;font-weight:700;color:#7FA8C8;letter-spacing:1.4px}
@@ -104,15 +105,22 @@
     <div>
       <div class="ht">Does the optical link actually close?</div>
       <div class="hs">Fraction of a real ISS pass with the modelled link closed.</div>
-      <div class="handoff">
-        <div class="hstep"><div class="n">STAGE 1</div><div class="t">ZeroDrift — coarse</div>
-          <div class="d">holds the beacon in view</div></div>
-        <div class="harr">→</div>
-        <div class="hstep"><div class="n">STAGE 2</div><div class="t">Fine steering mirror</div>
-          <div class="d">modelled: 3 mrad, 300 Hz</div></div>
-        <div class="harr">→</div>
-        <div class="hstep"><div class="n">RESULT</div><div class="t">Link stays closed</div>
-          <div class="d">neither stage alone can</div></div>
+      <div class="beam">
+        <svg viewBox="0 0 900 210">
+          <g transform="translate(150,105)">
+            <circle r="88" fill="none" stroke="#FF9C95" stroke-width="3" stroke-dasharray="9 8"/>
+            <circle r="30" fill="none" stroke="#4FC7EA" stroke-width="4"/>
+            <circle r="23" fill="#6EE0AE" opacity=".85"/>
+          </g>
+          <g font-family="Liberation Sans" font-size="24" fill="#BAD1E3">
+            <path d="M238 40h58" stroke="#FF9C95" stroke-width="2.5"/>
+            <text x="308" y="48" fill="#FF9C95" font-weight="bold">coarse wanders to 762 µrad (p95)</text>
+            <path d="M186 105h110" stroke="#4FC7EA" stroke-width="2.5"/>
+            <text x="308" y="113" fill="#8FE6FF" font-weight="bold">comms beam — only 250 µrad wide</text>
+            <path d="M172 168h124" stroke="#6EE0AE" stroke-width="2.5"/>
+            <text x="308" y="176" fill="#6EE0AE" font-weight="bold">ZeroDrift median error 198 µrad</text>
+          </g>
+        </svg>
       </div>
     </div>
     <div class="bars">

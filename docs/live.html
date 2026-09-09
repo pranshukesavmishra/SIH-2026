@@ -215,6 +215,27 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
           does not need to be exact.</p>
       </div>
 
+      <div class="card" id="calCard" style="display:none">
+        <h3>RIG CALIBRATION</h3>
+        <p style="color:var(--ink-muted);font-size:11.5px;line-height:1.55;margin-bottom:10px">
+          If the laser moves <b style="color:var(--ink-primary)">the wrong way</b> relative to the
+          beacon, the camera and servo axes are mirrored for your physical mount — flip these
+          until it tracks correctly. Use <b style="color:var(--ink-primary)">TEST RIG</b> first to
+          confirm the servos move at all.</p>
+        <label style="display:flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-secondary);padding:6px 0">
+          <input type="checkbox" id="invPan"> INVERT PAN (left/right)</label>
+        <label style="display:flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-secondary);padding:6px 0">
+          <input type="checkbox" id="invTilt"> INVERT TILT (up/down)</label>
+        <label style="display:flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-secondary);padding:6px 0">
+          <input type="checkbox" id="swapAxes"> SWAP PAN/TILT (camera rotated 90°)</label>
+        <div style="margin-top:10px">
+          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--ink-muted)">STEERING GAIN <b id="gainVal" style="color:var(--ink-primary)">0.020</b></span>
+          <input type="range" id="gainSlider" min="0.005" max="0.06" step="0.005" value="0.02" style="margin-top:6px">
+        </div>
+        <button class="btn ghost" id="centreBtn" style="margin-top:11px">
+          <svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0-6a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1z"/></svg>CENTRE (90°/90°)</button>
+      </div>
+
       <div id="noteSlot"></div>
     </div>
   </div>
@@ -289,7 +310,38 @@ const els = {
   note: document.getElementById('noteSlot'),
   overlay: document.getElementById('beaconOverlay'),
   beaconExit: document.getElementById('beaconExit'),
+  calCard: document.getElementById('calCard'),
+  invPan: document.getElementById('invPan'),
+  invTilt: document.getElementById('invTilt'),
+  swapAxes: document.getElementById('swapAxes'),
+  gainSlider: document.getElementById('gainSlider'),
+  gainVal: document.getElementById('gainVal'),
+  centre: document.getElementById('centreBtn'),
 };
+
+/* Calibration is a per-rig physical fact (how the camera happens to be
+   mounted relative to the servos), not a session setting -- keep it across
+   reloads so it does not have to be rediscovered every time the page opens. */
+const cal = {
+  invPan: localStorage.getItem('zd_invPan') === '1',
+  invTilt: localStorage.getItem('zd_invTilt') === '1',
+  swap: localStorage.getItem('zd_swap') === '1',
+  gain: parseFloat(localStorage.getItem('zd_gain') || '0.02'),
+};
+els.invPan.checked = cal.invPan;
+els.invTilt.checked = cal.invTilt;
+els.swapAxes.checked = cal.swap;
+els.gainSlider.value = cal.gain;
+els.gainVal.textContent = cal.gain.toFixed(3);
+els.invPan.onchange = () => { cal.invPan = els.invPan.checked; localStorage.setItem('zd_invPan', cal.invPan ? '1' : '0'); };
+els.invTilt.onchange = () => { cal.invTilt = els.invTilt.checked; localStorage.setItem('zd_invTilt', cal.invTilt ? '1' : '0'); };
+els.swapAxes.onchange = () => { cal.swap = els.swapAxes.checked; localStorage.setItem('zd_swap', cal.swap ? '1' : '0'); };
+els.gainSlider.oninput = () => {
+  cal.gain = parseFloat(els.gainSlider.value);
+  els.gainVal.textContent = cal.gain.toFixed(3);
+  localStorage.setItem('zd_gain', cal.gain);
+};
+els.centre.onclick = () => { pan = 90; tilt = 90; sendRig(90, 90, laserOn); };
 
 const ring = new Float32Array(N * P);   // rolling window of downscaled frames
 const stamps = new Float64Array(N);
@@ -540,6 +592,7 @@ async function connectRig() {
     els.rigState.textContent = 'connected';
     els.rigState.className = 'good';
     els.testRig.disabled = false;
+    els.calCard.style.display = 'block';
     note('Rig connected. It will steer the laser onto the beacon whenever the status reads LOCKED.');
     setTimeout(() => sendRig(90, 90, false), 1800);   // the Nano reboots on open
   } catch (e) {
@@ -562,25 +615,37 @@ function sendRig(p, t, laser) {
 
 async function testRig() {
   if (!serialWriter) { note('Connect the rig first.', true); return; }
-  note('Testing rig: sweeping both servos and blinking the laser…');
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  for (const [p, t] of [[60,90],[120,90],[90,70],[90,110],[90,90]]) {
-    sendRig(p, t, true); await wait(600);
-  }
+  note('Watch the laser dot now: pan only (left/right) for 2s, then tilt only (up/down) for 2s…');
+  await wait(400);
+  sendRig(60, 90, true); await wait(900);
+  sendRig(120, 90, true); await wait(900);         // pan sweep -- note which way the dot went
+  sendRig(90, 70, true); await wait(900);
+  sendRig(90, 110, true); await wait(900);          // tilt sweep -- note which way the dot went
+  sendRig(90, 90, true); await wait(300);
   for (let i = 0; i < 6; i++) { sendRig(90, 90, i % 2 === 0); await wait(250); }
   sendRig(90, 90, false);
   pan = 90; tilt = 90;
-  note('Rig test finished. If the servos moved and the laser blinked, the hardware '
-     + 'link is good and anything left is a tracking problem, not a wiring one.');
+  note('Done. If pan moved the dot up/down instead of left/right (or vice versa), check '
+     + '<b>SWAP PAN/TILT</b>. If a direction was backwards, check the matching '
+     + '<b>INVERT</b> box. If nothing moved or blinked at all, it is a wiring/connection '
+     + 'problem, not a calibration one.');
 }
 
 function steer() {
   // Aim where the beacon is heading, not where it was: a proportional loop on
   // the current position alone always trails a moving target.
-  const ex = pos.x + 2.5 * vel.x - els.view.width / 2;
-  const ey = pos.y + 2.5 * vel.y - els.view.height / 2;
-  pan = Math.max(20, Math.min(160, pan - 0.02 * ex));
-  tilt = Math.max(40, Math.min(140, tilt + 0.02 * ey));
+  let ex = pos.x + 2.5 * vel.x - els.view.width / 2;
+  let ey = pos.y + 2.5 * vel.y - els.view.height / 2;
+  // Which camera axis drives which servo, and which direction is "positive",
+  // depends entirely on how this specific rig's camera and bracket are
+  // mounted relative to each other -- that's a mechanical fact, not something
+  // derivable from the video, so it's corrected here from the calibration
+  // panel rather than guessed at in code.
+  if (cal.swap) { const t = ex; ex = ey; ey = t; }
+  const sp = cal.invPan ? 1 : -1, st = cal.invTilt ? -1 : 1;
+  pan = Math.max(20, Math.min(160, pan + sp * cal.gain * ex));
+  tilt = Math.max(40, Math.min(140, tilt + st * cal.gain * ey));
   sendRig(pan, tilt, true);
 }
 

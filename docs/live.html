@@ -184,6 +184,8 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>START CAMERA</button>
         <button class="btn ghost" id="rigBtn" title="Chrome or Edge only">
           <svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v14l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>CONNECT RIG</button>
+        <button class="btn ghost" id="testRigBtn" disabled>
+          <svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>TEST RIG (no camera)</button>
         <button class="btn ghost" id="beaconBtn">
           <svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>USE AS BEACON</button>
       </div>
@@ -274,6 +276,7 @@ const els = {
   placeholder: document.getElementById('placeholder'),
   start: document.getElementById('startBtn'),
   rig: document.getElementById('rigBtn'),
+  testRig: document.getElementById('testRigBtn'),
   beacon: document.getElementById('beaconBtn'),
   chip: document.getElementById('stateChip'),
   chipText: document.getElementById('stateText'),
@@ -536,6 +539,7 @@ async function connectRig() {
     serialWriter = port.writable.getWriter();
     els.rigState.textContent = 'connected';
     els.rigState.className = 'good';
+    els.testRig.disabled = false;
     note('Rig connected. It will steer the laser onto the beacon whenever the status reads LOCKED.');
     setTimeout(() => sendRig(90, 90, false), 1800);   // the Nano reboots on open
   } catch (e) {
@@ -546,8 +550,28 @@ async function connectRig() {
 function sendRig(p, t, laser) {
   if (!serialWriter) return;
   const enc = new TextEncoder();
+  // Every command needs its own newline: the firmware only acts on a buffered
+  // line when it sees one, so an unterminated "L1" gets glued onto the front
+  // of the next position command and that movement is silently discarded.
   serialWriter.write(enc.encode('P' + Math.round(p) + ' T' + Math.round(t) + '\n'));
-  if (laser !== laserOn) { serialWriter.write(enc.encode(laser ? 'L1' : 'L0')); laserOn = laser; }
+  if (laser !== laserOn) {
+    serialWriter.write(enc.encode((laser ? 'L1' : 'L0') + '\n'));
+    laserOn = laser;
+  }
+}
+
+async function testRig() {
+  if (!serialWriter) { note('Connect the rig first.', true); return; }
+  note('Testing rig: sweeping both servos and blinking the laser…');
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  for (const [p, t] of [[60,90],[120,90],[90,70],[90,110],[90,90]]) {
+    sendRig(p, t, true); await wait(600);
+  }
+  for (let i = 0; i < 6; i++) { sendRig(90, 90, i % 2 === 0); await wait(250); }
+  sendRig(90, 90, false);
+  pan = 90; tilt = 90;
+  note('Rig test finished. If the servos moved and the laser blinked, the hardware '
+     + 'link is good and anything left is a tracking problem, not a wiring one.');
 }
 
 function steer() {
@@ -580,6 +604,7 @@ function beaconOff() {
 
 els.start.onclick = start;
 els.rig.onclick = connectRig;
+els.testRig.onclick = testRig;
 els.beacon.onclick = beaconOn;
 els.beaconExit.onclick = beaconOff;
 els.overlay.onclick = beaconOff;

@@ -199,6 +199,7 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
           <div class="readout"><span>DETECTED RATE</span><b id="rFreq">—</b></div>
           <div class="readout"><span>FRAME RATE</span><b id="rFps">—</b></div>
           <div class="readout"><span>RIG</span><b id="rRig">not connected</b></div>
+          <div class="readout"><span>EXPOSURE</span><b id="rExp">—</b></div>
         </div>
       </div>
 
@@ -317,6 +318,7 @@ const els = {
   freq: document.getElementById('rFreq'),
   fps: document.getElementById('rFps'),
   rigState: document.getElementById('rRig'),
+  exp: document.getElementById('rExp'),
   hz: document.getElementById('hzSel'),
   note: document.getElementById('noteSlot'),
   overlay: document.getElementById('beaconOverlay'),
@@ -434,8 +436,21 @@ async function start() {
   els.start.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>STOP CAMERA';
   els.start.disabled = false;
   els.start.onclick = stop;
-  note('Camera running. Show it a blinking light — open this page on your phone and press '
-     + '<b>USE AS BEACON</b> if you do not have a strobe app.');
+  els.exp.textContent = exposurePinned ? 'pinned (manual)' : 'auto — browser cannot pin';
+  els.exp.className = exposurePinned ? 'good' : 'warn';
+  if (exposurePinned) {
+    note('Camera running with exposure pinned. Show it a blinking light — open this page on '
+       + 'your phone and press <b>USE AS BEACON</b> if you do not have a strobe app.');
+  } else {
+    // Worth saying plainly: this is the known weak point of running in a
+    // browser rather than a fault in the tracking, and it is why the desktop
+    // version can be steadier in a difficult room.
+    note('Camera running, but this browser will not let the page fix the exposure, so the '
+       + 'camera keeps auto-adjusting to the blinking beacon. The maths compensates for '
+       + 'that, but in a dark or strongly backlit room it is the most likely reason a lock '
+       + 'is slow or unsteady. <b>Even, indirect light and a beacon that fills more of the '
+       + 'frame both help a lot.</b>');
+  }
   pump();
 }
 

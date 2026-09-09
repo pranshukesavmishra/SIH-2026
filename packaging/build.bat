@@ -6,10 +6,10 @@ rem Requires: python 3.10+ on PATH.
 python -m venv .venv-build || goto :error
 call .venv-build\Scripts\activate.bat
 pip install -e . pyinstaller PySide6 pyqtgraph || goto :error
-pyinstaller --noconfirm --clean packaging\fsoc-pat.spec || goto :error
+pyinstaller --noconfirm --clean --onefile --noconsole --name fsoc-pat ^
+    --distpath dist --workpath build packaging\entry_gui.py || goto :error
 echo.
-echo Build complete: dist\fsoc-pat\fsoc-pat.exe
-echo Ship the whole dist\fsoc-pat folder (zip it for submission).
+echo Build complete: dist\fsoc-pat.exe
 goto :eof
 :error
 echo BUILD FAILED

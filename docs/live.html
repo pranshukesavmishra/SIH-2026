@@ -285,12 +285,18 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
        with tens of thousands of pixels the best pure-noise pixel scores
        higher than intuition suggests.
 ------------------------------------------------------------------- */
-const W = 128, H = 96, P = W * H;   // analysis resolution
-const N = 64;                        // frames per window
+/* Cost of one analysis pass is bins x N x P, all in scalar JS on the main
+   thread -- every millisecond here is a millisecond the video, the HUD and
+   the servo commands are all frozen. These are sized so a pass stays a few
+   milliseconds rather than a visible stall. */
+const W = 96, H = 72, P = W * H;    // analysis resolution
+const N = 48;                        // frames per window
+const BAND_STEP = 0.5;               // Hz between candidate frequencies
 const LOCK_MIN = 0.34;               // absolute floor on in-band fraction
 const CFAR = 2.6;                    // peak must beat the background by this
 const MIN_DEPTH = 0.22;              // real blinkers swing a lot of their own brightness
-const ANALYSE_EVERY = 6;
+const ANALYSE_EVERY = 5;
+const TRACK_ROI = 46;                // px radius for the cheap per-frame follow
 
 const els = {
   view: document.getElementById('view'),
@@ -346,6 +352,17 @@ els.centre.onclick = () => { pan = 90; tilt = 90; sendRig(90, 90, laserOn); };
 const ring = new Float32Array(N * P);   // rolling window of downscaled frames
 const stamps = new Float64Array(N);
 const frameMean = new Float32Array(N);
+
+/* Scratch space for the analysis, allocated once. Re-allocating these per
+   pass churns well over a megabyte every few frames, and the resulting
+   garbage collections are exactly the periodic stalls that make the tracker
+   feel slow even when the arithmetic itself is fast. */
+const buf = {
+  pmean: new Float32Array(P), cen: new Float32Array(N * P), g: new Float64Array(N),
+  coef: new Float32Array(P), power: new Float32Array(P), best: new Float32Array(P),
+  re: new Float32Array(P), im: new Float32Array(P),
+  cs: new Float32Array(N), sn: new Float32Array(N), sortBuf: new Float32Array(P),
+};
 let filled = 0, head = 0, frameNo = 0;
 
 let video, work, workCtx, outCtx, stream = null;
@@ -422,11 +439,11 @@ function analyse() {
 
   const target = parseFloat(els.hz.value);
   const band = [];
-  for (let f = target - 1; f <= target + 1.001; f += 0.25) if (f > 0.5) band.push(f);
+  for (let f = target - 1; f <= target + 1.001; f += BAND_STEP) if (f > 0.5) band.push(f);
   if (fps < 2.5 * (target + 1)) return;      // below Nyquist plus margin
 
   // Per-pixel mean of the mean-normalised frames.
-  const pmean = new Float32Array(P);
+  const pmean = buf.pmean; pmean.fill(0);
   for (let i = 0; i < N; i++) {
     const off = ((head + i) % N) * P, inv = 1 / (frameMean[(head + i) % N] + 1e-6);
     for (let p = 0; p < P; p++) pmean[p] += ring[off + p] * inv;
@@ -435,7 +452,7 @@ function analyse() {
 
   // Centre, and measure the residual global swing (what survives dividing by
   // the frame mean, e.g. clipped highlights riding the camera's gain).
-  const cen = new Float32Array(N * P), g = new Float64Array(N);
+  const cen = buf.cen, g = buf.g;
   for (let i = 0; i < N; i++) {
     const src = ((head + i) % N) * P, inv = 1 / (frameMean[(head + i) % N] + 1e-6);
     let acc = 0;
@@ -447,7 +464,7 @@ function analyse() {
   }
   let gg = 0; for (let i = 0; i < N; i++) gg += g[i] * g[i];
   if (gg > 1e-12) {                           // regress the common mode out
-    const coef = new Float32Array(P);
+    const coef = buf.coef; coef.fill(0);
     for (let i = 0; i < N; i++) {
       const gi = g[i], base = i * P;
       for (let p = 0; p < P; p++) coef[p] += cen[base + p] * gi;
@@ -459,25 +476,25 @@ function analyse() {
     }
   }
 
-  const power = new Float32Array(P);
+  const power = buf.power; power.fill(0);
   for (let i = 0; i < N; i++) {
     const base = i * P;
     for (let p = 0; p < P; p++) { const v = cen[base + p]; power[p] += v * v; }
   }
 
-  const best = new Float32Array(P);
+  const best = buf.best; best.fill(0);
   let bestFreq = target;
   const t0 = stamps[head % N];
   for (const f of band) {
     // Non-uniform DFT on real timestamps: browsers do not deliver frames on a
     // perfectly even cadence, and assuming they do smears the very signal we
     // are trying to measure.
-    const cs = new Float32Array(N), sn = new Float32Array(N);
+    const cs = buf.cs, sn = buf.sn;
     for (let i = 0; i < N; i++) {
       const th = -2 * Math.PI * f * (stamps[(head + i) % N] - t0);
       cs[i] = Math.cos(th); sn[i] = Math.sin(th);
     }
-    const re = new Float32Array(P), im = new Float32Array(P);
+    const re = buf.re, im = buf.im; re.fill(0); im.fill(0);
     for (let i = 0; i < N; i++) {
       const base = i * P, c = cs[i], s = sn[i];
       for (let p = 0; p < P; p++) { const v = cen[base + p]; re[p] += v * c; im[p] += v * s; }
@@ -497,7 +514,7 @@ function analyse() {
   // Peak, and the background it has to beat (99th percentile ~ CFAR reference).
   let peak = 0, peakIdx = 0;
   for (let p = 0; p < P; p++) if (best[p] > peak) { peak = best[p]; peakIdx = p; }
-  const sorted = Float32Array.from(best).sort();
+  buf.sortBuf.set(best); const sorted = buf.sortBuf.sort();
   const bg = sorted[Math.floor(P * 0.99)] + 1e-6;
 
   score = peak; margin = peak / bg;
@@ -539,6 +556,12 @@ function loop() {
   if (++frameNo % ANALYSE_EVERY === 0) analyse();
 
   outCtx.drawImage(video, 0, 0, els.view.width, els.view.height);
+  // The modulation map says *which* light is the beacon, but only every few
+  // frames and at a coarse resolution where one cell spans several display
+  // pixels. Following the actual bright spot at full resolution every frame
+  // is what makes the marker sit on the beacon instead of near it, and what
+  // keeps the servos moving smoothly between analyses.
+  if (state === 'LOCKED' && pos) refine();
   drawHud();
   if (state === 'LOCKED' && pos && serialWriter) steer();
 
@@ -549,6 +572,40 @@ function loop() {
   els.freq.textContent = state === 'LOCKED' ? detectedHz.toFixed(2) + ' Hz' : '—';
   els.fps.textContent = fps.toFixed(0);
   els.fps.className = (fps && fps < 2.5 * (parseFloat(els.hz.value) + 1)) ? 'warn' : '';
+}
+
+function refine() {
+  const w = els.view.width, h = els.view.height;
+  const x0 = Math.max(0, Math.round(pos.x) - TRACK_ROI);
+  const y0 = Math.max(0, Math.round(pos.y) - TRACK_ROI);
+  const x1 = Math.min(w, Math.round(pos.x) + TRACK_ROI);
+  const y1 = Math.min(h, Math.round(pos.y) + TRACK_ROI);
+  const rw = x1 - x0, rh = y1 - y0;
+  if (rw < 4 || rh < 4) return;
+  const d = outCtx.getImageData(x0, y0, rw, rh).data;
+
+  // Brightness-weighted centroid of the brightest region, not just the single
+  // hottest pixel: a saturated LED is a blob of equal 255s, and picking any
+  // one of them makes the marker jitter around inside it.
+  let peak = 0;
+  for (let i = 0; i < d.length; i += 4) {
+    const v = d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114;
+    if (v > peak) peak = v;
+  }
+  const cut = Math.max(40, peak * 0.8);
+  let sx = 0, sy = 0, sw = 0;
+  for (let y = 0; y < rh; y++) {
+    for (let x = 0; x < rw; x++) {
+      const q = (y * rw + x) << 2;
+      const v = d[q] * 0.299 + d[q+1] * 0.587 + d[q+2] * 0.114;
+      if (v >= cut) { const wgt = v - cut + 1; sx += x * wgt; sy += y * wgt; sw += wgt; }
+    }
+  }
+  if (sw <= 0) return;
+  const nx = x0 + sx / sw, ny = y0 + sy / sw;
+  vel.x = 0.6 * vel.x + 0.4 * (nx - pos.x);
+  vel.y = 0.6 * vel.y + 0.4 * (ny - pos.y);
+  pos = { x: nx, y: ny };
 }
 
 function drawHud() {
@@ -579,6 +636,18 @@ function drawHud() {
 }
 
 /* ---------------- optional: drive the rig over USB ---------------- */
+async function openPort(port, silent) {
+  await port.open({ baudRate: 115200 });
+  serialWriter = port.writable.getWriter();
+  els.rigState.textContent = 'connected';
+  els.rigState.className = 'good';
+  els.testRig.disabled = false;
+  els.calCard.style.display = 'block';
+  els.rig.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>RIG CONNECTED';
+  if (!silent) note('Rig connected. It will steer the laser onto the beacon whenever the status reads LOCKED.');
+  setTimeout(() => sendRig(90, 90, false), 1800);     // the Nano reboots on open
+}
+
 async function connectRig() {
   if (!('serial' in navigator)) {
     note('Your browser has no Web Serial support. Use Chrome or Edge to drive the physical rig — '
@@ -586,18 +655,33 @@ async function connectRig() {
     return;
   }
   try {
-    const port = await navigator.serial.requestPort();
-    await port.open({ baudRate: 115200 });
-    serialWriter = port.writable.getWriter();
-    els.rigState.textContent = 'connected';
-    els.rigState.className = 'good';
-    els.testRig.disabled = false;
-    els.calCard.style.display = 'block';
-    note('Rig connected. It will steer the laser onto the beacon whenever the status reads LOCKED.');
-    setTimeout(() => sendRig(90, 90, false), 1800);   // the Nano reboots on open
+    await openPort(await navigator.serial.requestPort(), false);
   } catch (e) {
     note('Rig not connected: ' + e.message, true);
   }
+}
+
+/* Browsers will not hand a page a USB device without an explicit click the
+   first time -- that permission cannot be skipped. But once granted, the port
+   comes back from getPorts() on later visits, so the click is a one-time cost
+   per device rather than something to repeat before every demo. */
+async function autoConnectRig() {
+  if (!('serial' in navigator)) return;
+  try {
+    const ports = await navigator.serial.getPorts();
+    if (ports.length) await openPort(ports[0], true);
+  } catch (e) { /* fall back to the button */ }
+}
+
+if ('serial' in navigator) {
+  navigator.serial.addEventListener('connect', e => { if (!serialWriter) openPort(e.target, true).catch(() => {}); });
+  navigator.serial.addEventListener('disconnect', () => {
+    serialWriter = null;
+    els.rigState.textContent = 'disconnected';
+    els.rigState.className = 'warn';
+    els.testRig.disabled = true;
+  });
+  autoConnectRig();
 }
 
 function sendRig(p, t, laser) {

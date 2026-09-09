@@ -292,11 +292,16 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
 const W = 96, H = 72, P = W * H;    // analysis resolution
 const N = 48;                        // frames per window
 const BAND_STEP = 0.5;               // Hz between candidate frequencies
-const LOCK_MIN = 0.34;               // absolute floor on in-band fraction
-const CFAR = 2.6;                    // peak must beat the background by this
+const LOCK_MIN = 0.36;               // absolute floor on in-band fraction
+const CFAR = 3.2;                    // peak must beat the background by this
 const MIN_DEPTH = 0.22;              // real blinkers swing a lot of their own brightness
 const ANALYSE_EVERY = 5;
 const TRACK_ROI = 46;                // px radius for the cheap per-frame follow
+const HOLD_MIN = 0.20;               // once locked, what it takes to stay locked
+const HOLD_CFAR = 1.9;
+const CONFIRM_HITS = 3;              // analyses agreeing before a lock is believed
+const CONFIRM_RADIUS = 45;           // px the peak may wander and still be "the same thing"
+const DROP_MISSES = 4;               // analyses without it before the lock is abandoned
 
 const els = {
   view: document.getElementById('view'),
@@ -367,11 +372,37 @@ let filled = 0, head = 0, frameNo = 0;
 
 let video, work, workCtx, outCtx, stream = null;
 let state = 'SEARCHING', pos = null, vel = {x: 0, y: 0};
+let cand = null, confirm = 0;        // peak awaiting confirmation, and its hit count
+let exposurePinned = false;
 let score = 0, margin = 0, detectedHz = 0, fps = 0;
 let serialWriter = null, pan = 90, tilt = 90, laserOn = false;
 
 function note(msg, isErr) {
   els.note.innerHTML = '<div class="note' + (isErr ? ' err' : '') + '">' + msg + '</div>';
+}
+
+/* Ask the camera to stop adjusting itself.
+
+   Auto-exposure is the worst thing that can happen to this measurement: the
+   camera reacts to the beacon's own blink, so the whole frame brightens and
+   darkens in step with it and *every* pixel looks like it is modulating at
+   the beacon frequency. Not every browser or webcam allows manual control, so
+   the common-mode maths still has to cope -- but where it is offered, taking
+   it removes the problem at the source rather than correcting for it. */
+async function pinExposure() {
+  const track = stream.getVideoTracks()[0];
+  if (!track || !track.getCapabilities) return;
+  let caps = {};
+  try { caps = track.getCapabilities() || {}; } catch (e) { return; }
+  const wanted = [];
+  if (caps.exposureMode && caps.exposureMode.includes('manual')) wanted.push({ exposureMode: 'manual' });
+  if (caps.whiteBalanceMode && caps.whiteBalanceMode.includes('manual')) wanted.push({ whiteBalanceMode: 'manual' });
+  if (caps.focusMode && caps.focusMode.includes('manual')) wanted.push({ focusMode: 'manual' });
+  if (!wanted.length) { exposurePinned = false; return; }
+  try {
+    await track.applyConstraints({ advanced: wanted });
+    exposurePinned = true;
+  } catch (e) { exposurePinned = false; }
 }
 
 /* ---------------- camera ---------------- */
@@ -390,6 +421,7 @@ async function start() {
   video = document.createElement('video');
   video.srcObject = stream; video.playsInline = true; video.muted = true;
   await video.play();
+  await pinExposure();
 
   work = document.createElement('canvas'); work.width = W; work.height = H;
   workCtx = work.getContext('2d', { willReadFrequently: true });
@@ -518,21 +550,80 @@ function analyse() {
   const bg = sorted[Math.floor(P * 0.99)] + 1e-6;
 
   score = peak; margin = peak / bg;
-  if (peak > LOCK_MIN && margin > CFAR) {
-    const px = (peakIdx % W) * (els.view.width / W);
-    const py = Math.floor(peakIdx / W) * (els.view.height / H);
-    if (pos) { vel.x = px - pos.x; vel.y = py - pos.y; }
-    pos = { x: px, y: py };
-    detectedHz = bestFreq;
-    setState('LOCKED');
-  } else if (state === 'LOCKED') {
-    setState('SEARCHING'); pos = null; vel = {x: 0, y: 0};
+
+  // The search grid is deliberately coarse to keep the whole-frame pass cheap,
+  // but that makes the reported rate land on the nearest grid line (4.5 Hz for
+  // a 4.2 Hz beacon). Re-sweeping finely costs nothing at a single pixel, and
+  // the displayed frequency is a number people read off the screen.
+  if (peak > 0) {
+    const t0f = stamps[head % N];
+    let bf = bestFreq, bv = -1;
+    for (let f = bestFreq - 0.3; f <= bestFreq + 0.3001; f += 0.05) {
+      let re = 0, im = 0;
+      for (let i = 0; i < N; i++) {
+        const th = -2 * Math.PI * f * (stamps[(head + i) % N] - t0f);
+        const v = cen[i * P + peakIdx];
+        re += v * Math.cos(th); im += v * Math.sin(th);
+      }
+      const mag = re * re + im * im;
+      if (mag > bv) { bv = mag; bf = f; }
+    }
+    bestFreq = bf;
+  }
+
+  // Clearing the thresholds once is not evidence. Measured on a real webcam
+  // with nothing in front of it, sensor noise alone reaches score 0.34 and
+  // ~3x the background -- enough to trip any single-shot test, which is
+  // exactly what "it locks onto nothing" looks like. The thing noise cannot
+  // do is keep producing its winner in the SAME PLACE: a real beacon stays
+  // put while noise scatters. So a peak has to be confirmed several analyses
+  // running, near where it last appeared, before it counts.
+  // Acquiring and holding are different jobs. Getting in must be strict, or
+  // noise walks in. Staying in must be forgiving, or ordinary frame-to-frame
+  // fluctuation throws away a lock that is still perfectly good -- which reads
+  // as flickering rather than tracking. Same reason the simulator has a COAST
+  // state instead of dropping straight back to SEARCH.
+  const locked = state === 'LOCKED';
+  const strong = locked ? (peak > HOLD_MIN && margin > HOLD_CFAR)
+                        : (peak > LOCK_MIN && margin > CFAR);
+  const px = (peakIdx % W) * (els.view.width / W);
+  const py = Math.floor(peakIdx / W) * (els.view.height / H);
+
+  if (strong) {
+    if (cand && Math.hypot(px - cand.x, py - cand.y) < CONFIRM_RADIUS) {
+      cand.hits++; cand.misses = 0; cand.x = px; cand.y = py; cand.freq = bestFreq;
+    } else {
+      cand = { x: px, y: py, hits: 1, misses: 0, freq: bestFreq };
+    }
+  } else if (cand) {
+    cand.misses++;
+    if (cand.misses > DROP_MISSES) cand = null;
+  }
+
+  confirm = cand ? cand.hits : 0;
+
+  if (state !== 'LOCKED') {
+    if (cand && cand.hits >= CONFIRM_HITS) {
+      pos = { x: cand.x, y: cand.y };
+      vel = { x: 0, y: 0 };
+      detectedHz = cand.freq;
+      setState('LOCKED');
+    } else {
+      setState(cand ? 'CONFIRMING' : 'SEARCHING');
+    }
+  } else if (!cand) {
+    setState('SEARCHING'); pos = null; vel = { x: 0, y: 0 };
+  } else {
+    detectedHz = cand.freq;
   }
 }
 
 function setState(s) {
   state = s === 'STANDBY' ? 'SEARCHING' : s;
-  els.chipText.textContent = s;
+  // Showing the confirmation count makes it visible that a candidate is being
+  // checked rather than silently ignored -- and makes a near-miss diagnosable
+  // instead of looking like the tracker simply does nothing.
+  els.chipText.textContent = s === 'CONFIRMING' ? `CONFIRMING ${confirm}/${CONFIRM_HITS}` : s;
   els.chip.className = 'state-chip ' + (s === 'LOCKED' ? 'locked' : 'searching');
 }
 
@@ -569,7 +660,7 @@ function loop() {
   els.score.className = score > LOCK_MIN ? 'good' : '';
   els.margin.textContent = margin.toFixed(1) + '×';
   els.margin.className = margin > CFAR ? 'good' : '';
-  els.freq.textContent = state === 'LOCKED' ? detectedHz.toFixed(2) + ' Hz' : '—';
+  els.freq.textContent = state === 'LOCKED' ? detectedHz.toFixed(1) + ' Hz' : '—';
   els.fps.textContent = fps.toFixed(0);
   els.fps.className = (fps && fps < 2.5 * (parseFloat(els.hz.value) + 1)) ? 'warn' : '';
 }
@@ -615,11 +706,11 @@ function drawHud() {
   c.fillRect(0, 0, w, 46);
   c.font = '600 15px ui-monospace, monospace';
   c.fillStyle = state === 'LOCKED' ? '#3BD68C' : '#8EA4C4';
-  c.fillText(state, 14, 29);
+  c.fillText(state === 'CONFIRMING' ? `CONFIRMING ${confirm}/${CONFIRM_HITS}` : state, 14, 29);
   c.font = '13px ui-monospace, monospace';
   c.fillStyle = '#EAF4FD';
   c.fillText('blink ' + score.toFixed(2) + '   ' + margin.toFixed(1) + '× noise   '
-           + (state === 'LOCKED' ? detectedHz.toFixed(2) + ' Hz' : '--')
+           + (state === 'LOCKED' ? detectedHz.toFixed(1) + ' Hz' : '--')
            + '   ' + fps.toFixed(0) + ' fps', 110, 29);
 
   c.strokeStyle = 'rgba(140,150,165,.5)'; c.lineWidth = 1;

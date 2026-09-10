@@ -139,6 +139,17 @@ def main(argv=None) -> int:
     gimbal.centre()
     time.sleep(1.5)
 
+    # Hardware safety limiter -- independent of whatever the tracker's own
+    # search/estimator logic decides, so a bad estimate (or a search pattern
+    # tuned for the simulator's assumed frame timing, not this webcam's
+    # actual, variable capture rate) can never slam the servo hard or fast.
+    # The tilt servo has already failed once from being driven into a bind;
+    # this makes that class of failure physically impossible from software.
+    SAFETY_MAX_STEP_DEG = 4.0        # max degrees moved per actual command
+    SAFETY_MIN_INTERVAL_S = 0.12     # >= ~8 Hz cap on commands sent to the wire
+    last_sent_pan, last_sent_tilt = 90.0, 90.0
+    last_sent_time = 0.0
+
     index = 0
     laser_on = False
     t0 = time.perf_counter()
@@ -152,10 +163,26 @@ def main(argv=None) -> int:
                               image=image, pointing_true=pointing,
                               pointing_reported=pointing)
             az, el = tracker.update(frame)
-            gimbal.command(az, el)
+
+            now = time.perf_counter()
+            want_pan = 90.0 + np.degrees(az - gimbal.offset[0]) * gimbal.scale[0]
+            want_tilt = 90.0 + np.degrees(el - gimbal.offset[1]) * gimbal.scale[1]
+            if now - last_sent_time >= SAFETY_MIN_INTERVAL_S:
+                step_pan = float(np.clip(want_pan - last_sent_pan,
+                                         -SAFETY_MAX_STEP_DEG, SAFETY_MAX_STEP_DEG))
+                step_tilt = float(np.clip(want_tilt - last_sent_tilt,
+                                          -SAFETY_MAX_STEP_DEG, SAFETY_MAX_STEP_DEG))
+                if abs(step_pan) > 0.3 or abs(step_tilt) > 0.3:
+                    last_sent_pan += step_pan
+                    last_sent_tilt += step_tilt
+                    gimbal.raw_command(last_sent_pan, last_sent_tilt)
+                    last_sent_time = now
 
             telem = tracker.telemetry[-1]
-            want_laser = telem.locked
+            # Only trust a sustained TRACK, not a transient ACQUIRE/COAST
+            # flicker, before lighting up the laser -- avoids it firing on
+            # noise the detector briefly mistook for the beacon.
+            want_laser = telem.state.value == "TRACK"
             if want_laser != laser_on:
                 gimbal.laser(want_laser)
                 laser_on = want_laser
@@ -175,6 +202,8 @@ def main(argv=None) -> int:
                     break
                 elif key == ord('c'):
                     gimbal.centre()
+                    last_sent_pan, last_sent_tilt = 90.0, 90.0
+                    last_sent_time = now
                 elif key == ord('l'):
                     laser_on = not laser_on
                     gimbal.laser(laser_on)

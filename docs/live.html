@@ -197,6 +197,7 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
           <div class="readout"><span>BLINK MATCH</span><b id="rScore">—</b></div>
           <div class="readout"><span>MARGIN vs NOISE</span><b id="rMargin">—</b></div>
           <div class="readout"><span>MOD. DEPTH</span><b id="rDepth">—</b></div>
+          <div class="readout"><span>BRIGHTNESS</span><b id="rBright">—</b></div>
           <div class="readout"><span>DETECTED RATE</span><b id="rFreq">—</b></div>
           <div class="readout"><span>FRAME RATE</span><b id="rFps">—</b></div>
           <div class="readout"><span>RIG</span><b id="rRig">not connected</b></div>
@@ -215,6 +216,23 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
         <p style="color:var(--ink-muted);font-size:11.5px;margin-top:10px;line-height:1.55">
           Must match the blink rate of your beacon. A band around this value is searched, so it
           does not need to be exact.</p>
+      </div>
+
+      <div class="card">
+        <h3>DETECTION TUNING</h3>
+        <p style="color:var(--ink-muted);font-size:11.5px;line-height:1.55;margin-bottom:10px">
+          The right values depend on the room, so tune these live on-site rather than trusting a
+          fixed default. <b style="color:var(--ink-primary)">Locks the wrong thing</b> (a face,
+          shirt, wall)? Raise brightness and/or depth. <b style="color:var(--ink-primary)">Won't
+          lock the real beacon</b> in a bright room? Lower them — starting with brightness.</p>
+        <div>
+          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--ink-muted)">MIN BRIGHTNESS <b id="brightVal" style="color:var(--ink-primary)">165</b></span>
+          <input type="range" id="brightSlider" min="80" max="250" step="5" value="165" style="margin-top:6px">
+        </div>
+        <div style="margin-top:8px">
+          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--ink-muted)">MIN DEPTH <b id="depthVal" style="color:var(--ink-primary)">0.30</b></span>
+          <input type="range" id="depthSlider" min="0.10" max="0.70" step="0.05" value="0.30" style="margin-top:6px">
+        </div>
       </div>
 
       <div class="card" id="calCard" style="display:none">
@@ -306,6 +324,13 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
    thread -- every millisecond here is a millisecond the video, the HUD and
    the servo commands are all frozen. These are sized so a pass stays a few
    milliseconds rather than a visible stall. */
+// Tried raising this to fight depth dilution on a small beacon; it cost real
+// performance (18fps, 92ms worst-case analysis) without fixing the actual
+// test case, so the dilution isn't primarily a resolution problem -- reverted.
+// Brightness no longer depends on this resolution at all (it samples the
+// full-resolution video directly at the candidate location); only depth still
+// does, and that's compensated by keeping MIN_DEPTH live-adjustable rather
+// than by paying for a bigger grid that didn't actually help.
 const W = 96, H = 72, P = W * H;    // analysis resolution
 const N = 40;                        // frames per window
 const BAND_STEP = 0.5;               // Hz between candidate frequencies
@@ -335,7 +360,33 @@ const CFAR = 3.8;                    // peak must beat its background by this
    flicker on a diffusely-lit surface is a much shallower fraction of it.
    0.22 let real flicker through; raised well above typical flicker depth
    while staying under what an actual on/off source produces. */
-const MIN_DEPTH = 0.55;
+/* A beacon's "off" state is not actually dark in a lit room -- ambient light
+   still fills that spot -- so its swing as a fraction of its own brightness
+   shrinks well below what the same beacon shows in a dark room. 0.55 was
+   tuned against one failure mode (ambient flicker false-locking) and broke
+   the opposite case (a real beacon losing contrast under room lighting): a
+   beacon with realistic reduced depth under bright ambient light measured
+   0 here against real data.
+
+   The edge-of-band rejection now does most of the work against aliased
+   ambient flicker (it targets where the false signal sits in frequency, not
+   how strong it is), so depth no longer has to carry that defense alone and
+   can go back to being permissive. Live-adjustable below since the actual
+   venue's lighting can't be replicated here -- raise it if something
+   ambient locks, lower it if the real beacon does not. */
+let MIN_DEPTH = 0.30;
+// A real camera flash saturates; a shirt, wall, or face essentially never
+// does. Live-adjustable for the same reason as MIN_DEPTH -- the actual venue
+// can't be tested from here. Lower if a dim real beacon (e.g. a phone
+// screen, not the flash) is being rejected; raise if something merely
+// bright but not the beacon keeps winning.
+let MIN_BRIGHT = 165;
+// The window's darkest reading at the candidate must drop to at most this
+// fraction of its brightest -- a real beacon's off phase is genuinely dim,
+// not just slightly less saturated. Not exposed as a slider: unlike
+// MIN_DEPTH/MIN_BRIGHT this isn't a room-lighting tradeoff, it's a direct
+// physical property of a real on/off beacon.
+const MAX_OFF_RATIO = 0.75;
 const ANALYSE_EVERY = 4;
 const TRACK_ROI = 46;                // px radius for the cheap per-frame follow
 const HOLD_MIN = 0.07;               // once locked, what it takes to stay locked
@@ -356,6 +407,7 @@ const els = {
   score: document.getElementById('rScore'),
   margin: document.getElementById('rMargin'),
   depth: document.getElementById('rDepth'),
+  bright: document.getElementById('rBright'),
   freq: document.getElementById('rFreq'),
   fps: document.getElementById('rFps'),
   rigState: document.getElementById('rRig'),
@@ -375,6 +427,10 @@ const els = {
   trimTilt: document.getElementById('trimTilt'),
   trimTiltVal: document.getElementById('trimTiltVal'),
   centre: document.getElementById('centreBtn'),
+  brightSlider: document.getElementById('brightSlider'),
+  brightVal: document.getElementById('brightVal'),
+  depthSlider: document.getElementById('depthSlider'),
+  depthVal: document.getElementById('depthVal'),
 };
 
 /* Calibration is a per-rig physical fact (how the camera happens to be
@@ -421,6 +477,27 @@ els.gainSlider.oninput = () => {
 };
 els.centre.onclick = () => { pan = 90; tilt = 90; sendRig(90, 90, laserOn); };
 
+/* Same reasoning as the calibration block above: the right detection
+   thresholds depend on the actual room, which can't be tested from outside
+   it, so they're tunable live rather than baked in. Persisted so a value
+   found during on-site setup survives a reload. */
+MIN_BRIGHT = parseFloat(localStorage.getItem('zd_minBright') || '165');
+MIN_DEPTH = parseFloat(localStorage.getItem('zd_minDepth') || '0.30');
+els.brightSlider.value = MIN_BRIGHT;
+els.brightVal.textContent = MIN_BRIGHT.toFixed(0);
+els.depthSlider.value = MIN_DEPTH;
+els.depthVal.textContent = MIN_DEPTH.toFixed(2);
+els.brightSlider.oninput = () => {
+  MIN_BRIGHT = parseFloat(els.brightSlider.value);
+  els.brightVal.textContent = MIN_BRIGHT.toFixed(0);
+  localStorage.setItem('zd_minBright', MIN_BRIGHT);
+};
+els.depthSlider.oninput = () => {
+  MIN_DEPTH = parseFloat(els.depthSlider.value);
+  els.depthVal.textContent = MIN_DEPTH.toFixed(2);
+  localStorage.setItem('zd_minDepth', MIN_DEPTH);
+};
+
 const ring = new Float32Array(N * P);   // rolling window of downscaled frames
 const stamps = new Float64Array(N);
 const frameMean = new Float32Array(N);
@@ -438,11 +515,12 @@ const buf = {
 };
 let filled = 0, head = 0, frameNo = 0;
 
-let video, work, workCtx, outCtx, stream = null;
+let video, work, workCtx, outCtx, probe, probeCtx, stream = null;
+const PROBE_SIZE = 24;
 let state = 'SEARCHING', pos = null, vel = {x: 0, y: 0};
 let cand = null, confirm = 0;        // peak awaiting confirmation, and its hit count
 let exposurePinned = false;
-let score = 0, margin = 0, detectedHz = 0, fps = 0, peakDepth = 0;
+let score = 0, margin = 0, detectedHz = 0, fps = 0, peakDepth = 0, peakBright = 0;
 let serialWriter = null, pan = 90, tilt = 90, laserOn = false;
 
 function note(msg, isErr) {
@@ -493,6 +571,13 @@ async function start() {
 
   work = document.createElement('canvas'); work.width = W; work.height = H;
   workCtx = work.getContext('2d', { willReadFrequently: true });
+  // A small full-resolution crop straight from the video, used only to get
+  // an undiluted brightness reading at a candidate point -- the W x H
+  // analysis buffer is downsampled for speed, which spreads out a small
+  // beacon's true peak value across neighbouring cells before any brightness
+  // check ever sees it.
+  probe = document.createElement('canvas'); probe.width = probe.height = PROBE_SIZE;
+  probeCtx = probe.getContext('2d', { willReadFrequently: true });
 
   els.view.width = video.videoWidth || 640;
   els.view.height = video.videoHeight || 480;
@@ -633,6 +718,69 @@ function analyse() {
 
   bestFreq = peak > 0 ? buf.bestFreqAt[peakIdx] : target;
 
+  // Pure modulation-timing analysis has no idea what a beacon actually looks
+  // like -- it will happily pick a shirt or a wall over the real flash if
+  // that surface shows a stronger relative swing, e.g. from bloom/AGC ripple
+  // sympathetic to the true source nearby. A phone's camera flash is one of
+  // the few things that hits genuine sensor saturation; ordinary room
+  // surfaces essentially never do. Requiring real brightness, not just
+  // relative modulation, throws out candidates no actual beacon would ever
+  // produce.
+  //
+  // This must be the PEAK (on-state) brightness, not the time-average, and it
+  // must come from the REAL video, not the WxH analysis buffer.
+  //   - Time-average: a first version used it and broke on the exact case it
+  //     was meant to fix -- a ~50%-duty beacon averages to roughly HALF its
+  //     peak brightness, so a 255/0 beacon averages ~127 and a threshold
+  //     meant to demand "hits near-white when lit" rejects it outright.
+  //   - Analysis-buffer dilution: even reading the window's true max, a
+  //     small beacon's peak gets spread across neighbouring cells by the
+  //     downsample (needed for speed), understating it there specifically.
+  //     A synthetic beacon genuinely peaking near 205 measured only ~123 in
+  //     the analysis buffer -- diluted below any threshold that could still
+  //     reject a shirt.
+  // Cropping straight from the live video at the candidate's position avoids
+  // both: real peak, real resolution.
+  if (peak > 0) {
+    const fx = Math.round((peakIdx % W) * (els.view.width / W));
+    const fy = Math.round(Math.floor(peakIdx / W) * (els.view.height / H));
+    const half = PROBE_SIZE / 2;
+    const sx = Math.min(Math.max(0, fx - half), els.view.width - PROBE_SIZE);
+    const sy = Math.min(Math.max(0, fy - half), els.view.height - PROBE_SIZE);
+    probeCtx.drawImage(video, sx, sy, PROBE_SIZE, PROBE_SIZE, 0, 0, PROBE_SIZE, PROBE_SIZE);
+    const d = probeCtx.getImageData(0, 0, PROBE_SIZE, PROBE_SIZE).data;
+    let maxRaw = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      const v = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      if (v > maxRaw) maxRaw = v;
+    }
+    peakBright = maxRaw;
+    if (peakBright < MIN_BRIGHT) peak = 0;
+  } else {
+    peakBright = 0;
+  }
+
+  // The mathematical hole that let a STEADY, saturated ceiling light lock: the
+  // score is a fraction of the pixel's OWN variance sitting at the target
+  // frequency -- it never checks whether that variance is large in absolute
+  // terms. A pixel pinned near 255 has very little total variance to begin
+  // with, so a tiny clipping-boundary wiggle (a barely-saturated pixel
+  // flickering between "fully clipped" and "just under") can BE nearly all of
+  // that pixel's variance, scoring as confidently as a real 12-to-205 swing.
+  // Brightness alone doesn't catch this either, since the light genuinely is
+  // bright. A real beacon does one thing a steady light structurally cannot:
+  // it turns off. Require the window to actually contain a dark reading, not
+  // just a statistically well-correlated one.
+  if (peak > 0) {
+    let winMin = Infinity, winMax = -Infinity;
+    for (let i = 0; i < N; i++) {
+      const v = ring[((head + i) % N) * P + peakIdx];
+      if (v < winMin) winMin = v;
+      if (v > winMax) winMax = v;
+    }
+    if (winMin > winMax * MAX_OFF_RATIO) peak = 0;
+  }
+
   // Two real false locks so far both won at exactly the edge of the searched
   // band (5.0 Hz once, ~3.0 Hz another time) rather than somewhere inside it.
   // A beacon genuinely near the selected rate produces an interior peak; a
@@ -760,6 +908,8 @@ function loop() {
   els.margin.className = margin > CFAR ? 'good' : '';
   els.depth.textContent = peakDepth.toFixed(2);
   els.depth.className = peakDepth >= MIN_DEPTH ? 'good' : '';
+  els.bright.textContent = peakBright.toFixed(0);
+  els.bright.className = peakBright >= MIN_BRIGHT ? 'good' : '';
   els.freq.textContent = state === 'LOCKED' ? detectedHz.toFixed(1) + ' Hz' : '—';
   els.fps.textContent = fps.toFixed(0);
   els.fps.className = (fps && fps < 2.5 * (parseFloat(els.hz.value) + 1)) ? 'warn' : '';
@@ -803,16 +953,19 @@ function drawHud() {
   const c = outCtx, w = els.view.width, h = els.view.height;
   c.save();
   c.fillStyle = 'rgba(4,9,21,.72)';
-  c.fillRect(0, 0, w, 46);
+  c.fillRect(0, 0, w, 64);
   c.font = '600 15px ui-monospace, monospace';
   c.fillStyle = state === 'LOCKED' ? '#3BD68C' : '#8EA4C4';
   c.fillText(state === 'CONFIRMING' ? `CONFIRMING ${confirm}/${CONFIRM_HITS}` : state, 14, 29);
-  c.font = '13px ui-monospace, monospace';
+  c.font = '12px ui-monospace, monospace';
   c.fillStyle = '#EAF4FD';
-  c.fillText('blink ' + score.toFixed(2) + '   depth ' + peakDepth.toFixed(2) + '   '
-           + margin.toFixed(1) + '× noise   '
-           + (state === 'LOCKED' ? detectedHz.toFixed(1) + ' Hz' : '--')
-           + '   ' + fps.toFixed(0) + ' fps   tilt:' + (cal.invTilt ? 'INV' : 'norm'), 110, 29);
+  c.fillText('blink ' + score.toFixed(2) + '   depth ' + peakDepth.toFixed(2)
+           + '   bright ' + peakBright.toFixed(0)
+           + '   ' + (state === 'LOCKED' ? detectedHz.toFixed(1) + ' Hz' : '--')
+           + '   ' + fps.toFixed(0) + ' fps', 110, 24);
+  c.fillStyle = '#8EA4C4';
+  c.fillText('gate: bright>=' + MIN_BRIGHT.toFixed(0) + '  depth>=' + MIN_DEPTH.toFixed(2)
+           + '   tilt:' + (cal.invTilt ? 'INV' : 'norm'), 110, 44);
 
   c.strokeStyle = 'rgba(140,150,165,.5)'; c.lineWidth = 1;
   c.beginPath(); c.moveTo(w/2 - 13, h/2); c.lineTo(w/2 + 13, h/2);

@@ -9,6 +9,32 @@
 > already works.
 
 ---
+## 0. Status as of 2026-09-10 — read this first if resuming
+
+- **Firmware**: flashed and working. Pan servo + laser confirmed via direct
+  serial commands.
+- **Tilt servo**: original unit stripped its gears (motor spins, shaft
+  doesn't turn) after a too-tight pivot screw caused a stall. Replacement
+  SG90 ordered; swap is plug-and-play, no wiring/firmware change.
+- **Software identification, validated against a real webcam** (not just
+  synthetic data): `locked_fraction: 0.0` with no beacon present — zero
+  false locks on real camera noise. `exposure_locked: True` when run via
+  `tools/rig/rig_track.py` directly (desktop OpenCV can pin exposure; a
+  browser-based camera feed cannot, so always test with the desktop script).
+- **Remaining untested link**: a real blinking beacon held in front of the
+  real webcam, end-to-end to `LOCKED`. Every attempt so far was interrupted
+  before this step (blocked camera, no beacon in view, or the laptop went
+  to sleep mid-session and dropped the connection).
+- **COM port**: if `rig_track.py --port COM5` fails and Device Manager shows
+  the FTDI/CH340 adapter present but greyed out, check Windows Problem Code
+  via `Get-PnpDevice` — Code 45 ("phantom device / not connected") means the
+  USB link is physically broken *right now*, not a wrong port number or a
+  driver issue. Reseat the cable directly into the PC (skip hubs/extensions)
+  and check the Nano's power LED.
+- **If testing over a remote/cloud Claude Code session tied to this laptop**:
+  disable sleep (Settings → Power → sleep → Never) before starting — an idle
+  screen has repeatedly dropped the connection mid-test.
+
 ## 1. What you are building
 
 **Phone flashlight blinking at 4 Hz** (the beacon) → **laptop webcam**
@@ -101,6 +127,8 @@ python tools/rig/rig_track.py --port /dev/ttyUSB0  # Linux/Mac
 | Never says LOCKED | Phone strobe closer to 4 Hz; move closer; dim room lights |
 | Locks onto tube-light | It won't stay locked — score decays; if it does, raise threshold 0.35→0.5 in script |
 | Laser dot far from phone | Normal small offset (parallax); mount laser closer to webcam |
+| `SerialException` opening COM port | Check Device Manager Problem Code (`Get-PnpDevice` in PowerShell). Code 45 = USB physically disconnected right now — reseat cable, plug directly into PC, check Nano's power LED |
+| Remote session says "can't reach your computer" mid-test | Laptop went to sleep — disable sleep while testing |
 
 ## 9. Video & reading references (real links, verified via search)
 - YouTube — [OpenCV object tracking · Arduino laser pan/tilt](https://www.youtube.com/watch?v=1X-xxgN4n8M)

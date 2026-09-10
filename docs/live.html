@@ -432,7 +432,7 @@ const frameMean = new Float32Array(N);
 const buf = {
   pmean: new Float32Array(P), cen: new Float32Array(N * P), g: new Float64Array(N),
   coef: new Float32Array(P), power: new Float32Array(P), best: new Float32Array(P),
-  bestDepth: new Float32Array(P),
+  bestDepth: new Float32Array(P), bestFreqAt: new Float32Array(P),
   re: new Float32Array(P), im: new Float32Array(P),
   cs: new Float32Array(N), sn: new Float32Array(N), sortBuf: new Float32Array(P),
 };
@@ -612,16 +612,17 @@ function analyse() {
       const base = i * P, c = cs[i], s = sn[i];
       for (let p = 0; p < P; p++) { const v = cen[base + p]; re[p] += v * c; im[p] += v * s; }
     }
-    let improved = false;
     for (let p = 0; p < P; p++) {
       const mag2 = re[p] * re[p] + im[p] * im[p];
       const frac = Math.min(1, (2 * mag2 / N) / (power[p] + 1e-9));
       const depth = (2 * Math.sqrt(mag2) / N) / (pmean[p] + 1e-6);
       const ok = depth >= MIN_DEPTH && Math.sqrt(power[p] / N) >= 0.03;
       const val = ok ? frac : 0;
-      if (val > best[p]) { best[p] = val; buf.bestDepth[p] = depth; improved = true; }
+      // Per-pixel, not "whichever frequency last improved anything in the
+      // whole frame" -- that global tracker could attribute a completely
+      // different pixel's winning frequency to the actual peak.
+      if (val > best[p]) { best[p] = val; buf.bestDepth[p] = depth; buf.bestFreqAt[p] = f; }
     }
-    if (improved) bestFreq = f;
   }
 
   // Peak, and the background it has to beat (99th percentile ~ CFAR reference).
@@ -630,7 +631,22 @@ function analyse() {
   buf.sortBuf.set(best); const sorted = buf.sortBuf.sort();
   const bg = sorted[Math.floor(P * 0.99)] + 1e-6;
 
-  score = peak; margin = peak / bg;
+  bestFreq = peak > 0 ? buf.bestFreqAt[peakIdx] : target;
+
+  // Two real false locks so far both won at exactly the edge of the searched
+  // band (5.0 Hz once, ~3.0 Hz another time) rather than somewhere inside it.
+  // A beacon genuinely near the selected rate produces an interior peak; a
+  // peak that only ever sits at the boundary means the true energy source is
+  // OUTSIDE the searched range and this is its rolloff, not its centre --
+  // most likely mains-powered room lighting aliasing in, which can hit
+  // near-100% modulation depth on cheap drivers and so isn't caught by the
+  // depth gate alone.
+  const edgeLo = target - 1, edgeHi = target + 1, edgeMargin = 0.2;
+  if (peak > 0 && (bestFreq <= edgeLo + edgeMargin || bestFreq >= edgeHi - edgeMargin)) {
+    peak = 0;
+  }
+
+  score = peak; margin = peak > 0 ? peak / bg : 0;
   peakDepth = peak > 0 ? buf.bestDepth[peakIdx] : 0;
 
   // The search grid is deliberately coarse to keep the whole-frame pass cheap,

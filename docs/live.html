@@ -233,6 +233,21 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
           <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--ink-muted)">STEERING GAIN <b id="gainVal" style="color:var(--ink-primary)">0.020</b></span>
           <input type="range" id="gainSlider" min="0.005" max="0.06" step="0.005" value="0.02" style="margin-top:6px">
         </div>
+
+        <p style="color:var(--ink-muted);font-size:11.5px;line-height:1.55;margin:14px 0 8px;border-top:1px solid var(--edge);padding-top:12px">
+          <b style="color:var(--ink-primary)">Once the laser is mounted permanently:</b> the camera
+          and laser sit at slightly different points, so even a perfect track lands the dot a
+          little off the beacon (parallax). Lock onto a real beacon, then nudge these until the
+          dot sits exactly on it — that offset stays fixed after that.</p>
+        <div>
+          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--ink-muted)">PAN TRIM <b id="trimPanVal" style="color:var(--ink-primary)">0°</b></span>
+          <input type="range" id="trimPan" min="-20" max="20" step="0.5" value="0" style="margin-top:6px">
+        </div>
+        <div style="margin-top:8px">
+          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--ink-muted)">TILT TRIM <b id="trimTiltVal" style="color:var(--ink-primary)">0°</b></span>
+          <input type="range" id="trimTilt" min="-20" max="20" step="0.5" value="0" style="margin-top:6px">
+        </div>
+
         <button class="btn ghost" id="centreBtn" style="margin-top:11px">
           <svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0-6a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1z"/></svg>CENTRE (90°/90°)</button>
       </div>
@@ -341,6 +356,10 @@ const els = {
   swapAxes: document.getElementById('swapAxes'),
   gainSlider: document.getElementById('gainSlider'),
   gainVal: document.getElementById('gainVal'),
+  trimPan: document.getElementById('trimPan'),
+  trimPanVal: document.getElementById('trimPanVal'),
+  trimTilt: document.getElementById('trimTilt'),
+  trimTiltVal: document.getElementById('trimTiltVal'),
   centre: document.getElementById('centreBtn'),
 };
 
@@ -352,10 +371,30 @@ const cal = {
   invTilt: localStorage.getItem('zd_invTilt') === '1',
   swap: localStorage.getItem('zd_swap') === '1',
   gain: parseFloat(localStorage.getItem('zd_gain') || '0.02'),
+  // A fixed servo-degree offset, not a tracking correction -- it compensates
+  // for the camera and laser never sitting at exactly the same point in
+  // space (parallax), which stays constant once the mount is fixed and so
+  // is set once here rather than computed per frame.
+  trimPan: parseFloat(localStorage.getItem('zd_trimPan') || '0'),
+  trimTilt: parseFloat(localStorage.getItem('zd_trimTilt') || '0'),
 };
 els.invPan.checked = cal.invPan;
 els.invTilt.checked = cal.invTilt;
 els.swapAxes.checked = cal.swap;
+els.trimPan.value = cal.trimPan;
+els.trimPanVal.textContent = cal.trimPan.toFixed(1) + '°';
+els.trimTilt.value = cal.trimTilt;
+els.trimTiltVal.textContent = cal.trimTilt.toFixed(1) + '°';
+els.trimPan.oninput = () => {
+  cal.trimPan = parseFloat(els.trimPan.value);
+  els.trimPanVal.textContent = cal.trimPan.toFixed(1) + '°';
+  localStorage.setItem('zd_trimPan', cal.trimPan);
+};
+els.trimTilt.oninput = () => {
+  cal.trimTilt = parseFloat(els.trimTilt.value);
+  els.trimTiltVal.textContent = cal.trimTilt.toFixed(1) + '°';
+  localStorage.setItem('zd_trimTilt', cal.trimTilt);
+};
 els.gainSlider.value = cal.gain;
 els.gainVal.textContent = cal.gain.toFixed(3);
 els.invPan.onchange = () => { cal.invPan = els.invPan.checked; localStorage.setItem('zd_invPan', cal.invPan ? '1' : '0'); };
@@ -846,9 +885,14 @@ function steer() {
   // panel rather than guessed at in code.
   if (cal.swap) { const t = ex; ex = ey; ey = t; }
   const sp = cal.invPan ? 1 : -1, st = cal.invTilt ? -1 : 1;
+  // pan/tilt are the tracking loop's own running state and must stay
+  // trim-free, or a fixed bias re-added every frame would accumulate as
+  // drift instead of staying a constant offset. Trim is mixed in only on
+  // the value actually sent to the servo.
   pan = Math.max(20, Math.min(160, pan + sp * cal.gain * ex));
   tilt = Math.max(40, Math.min(140, tilt + st * cal.gain * ey));
-  sendRig(pan, tilt, true);
+  sendRig(Math.max(20, Math.min(160, pan + cal.trimPan)),
+          Math.max(40, Math.min(140, tilt + cal.trimTilt)), true);
 }
 
 /* ---------------- beacon mode ---------------- */

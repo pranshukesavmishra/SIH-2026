@@ -196,6 +196,7 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
         <div style="margin-top:13px">
           <div class="readout"><span>BLINK MATCH</span><b id="rScore">—</b></div>
           <div class="readout"><span>MARGIN vs NOISE</span><b id="rMargin">—</b></div>
+          <div class="readout"><span>MOD. DEPTH</span><b id="rDepth">—</b></div>
           <div class="readout"><span>DETECTED RATE</span><b id="rFreq">—</b></div>
           <div class="readout"><span>FRAME RATE</span><b id="rFps">—</b></div>
           <div class="readout"><span>RIG</span><b id="rRig">not connected</b></div>
@@ -322,7 +323,19 @@ const BAND_STEP = 0.5;               // Hz between candidate frequencies
    requirement to reappear in the same place several analyses running. */
 const LOCK_MIN = 0.12;               // sanity floor only -- NOT the discriminator
 const CFAR = 3.8;                    // peak must beat its background by this
-const MIN_DEPTH = 0.22;              // real blinkers swing a lot of their own brightness
+/* A face locked at 5.0 Hz -- the exact edge of the default 3-5 Hz search band
+   -- with a large margin (10.7x). That pattern is the signature of genuine
+   periodic light (e.g. LED room lighting flicker aliasing into the search
+   range), not sensor noise: a bright, reflective surface like skin shows the
+   LARGEST ABSOLUTE swing under ambient flicker simply because it is bright,
+   even though the light source, not the face, is what's actually modulating.
+   Margin over background can't tell those apart -- both are real, spatially
+   local peaks. What does distinguish them is RELATIVE depth: a deliberate
+   on/off beacon swings close to 100% of its own brightness, while ambient
+   flicker on a diffusely-lit surface is a much shallower fraction of it.
+   0.22 let real flicker through; raised well above typical flicker depth
+   while staying under what an actual on/off source produces. */
+const MIN_DEPTH = 0.55;
 const ANALYSE_EVERY = 4;
 const TRACK_ROI = 46;                // px radius for the cheap per-frame follow
 const HOLD_MIN = 0.07;               // once locked, what it takes to stay locked
@@ -342,6 +355,7 @@ const els = {
   chipText: document.getElementById('stateText'),
   score: document.getElementById('rScore'),
   margin: document.getElementById('rMargin'),
+  depth: document.getElementById('rDepth'),
   freq: document.getElementById('rFreq'),
   fps: document.getElementById('rFps'),
   rigState: document.getElementById('rRig'),
@@ -418,6 +432,7 @@ const frameMean = new Float32Array(N);
 const buf = {
   pmean: new Float32Array(P), cen: new Float32Array(N * P), g: new Float64Array(N),
   coef: new Float32Array(P), power: new Float32Array(P), best: new Float32Array(P),
+  bestDepth: new Float32Array(P),
   re: new Float32Array(P), im: new Float32Array(P),
   cs: new Float32Array(N), sn: new Float32Array(N), sortBuf: new Float32Array(P),
 };
@@ -427,7 +442,7 @@ let video, work, workCtx, outCtx, stream = null;
 let state = 'SEARCHING', pos = null, vel = {x: 0, y: 0};
 let cand = null, confirm = 0;        // peak awaiting confirmation, and its hit count
 let exposurePinned = false;
-let score = 0, margin = 0, detectedHz = 0, fps = 0;
+let score = 0, margin = 0, detectedHz = 0, fps = 0, peakDepth = 0;
 let serialWriter = null, pan = 90, tilt = 90, laserOn = false;
 
 function note(msg, isErr) {
@@ -604,7 +619,7 @@ function analyse() {
       const depth = (2 * Math.sqrt(mag2) / N) / (pmean[p] + 1e-6);
       const ok = depth >= MIN_DEPTH && Math.sqrt(power[p] / N) >= 0.03;
       const val = ok ? frac : 0;
-      if (val > best[p]) { best[p] = val; improved = true; }
+      if (val > best[p]) { best[p] = val; buf.bestDepth[p] = depth; improved = true; }
     }
     if (improved) bestFreq = f;
   }
@@ -616,6 +631,7 @@ function analyse() {
   const bg = sorted[Math.floor(P * 0.99)] + 1e-6;
 
   score = peak; margin = peak / bg;
+  peakDepth = peak > 0 ? buf.bestDepth[peakIdx] : 0;
 
   // The search grid is deliberately coarse to keep the whole-frame pass cheap,
   // but that makes the reported rate land on the nearest grid line (4.5 Hz for
@@ -726,6 +742,8 @@ function loop() {
   els.score.className = score > LOCK_MIN ? 'good' : '';
   els.margin.textContent = margin.toFixed(1) + '×';
   els.margin.className = margin > CFAR ? 'good' : '';
+  els.depth.textContent = peakDepth.toFixed(2);
+  els.depth.className = peakDepth >= MIN_DEPTH ? 'good' : '';
   els.freq.textContent = state === 'LOCKED' ? detectedHz.toFixed(1) + ' Hz' : '—';
   els.fps.textContent = fps.toFixed(0);
   els.fps.className = (fps && fps < 2.5 * (parseFloat(els.hz.value) + 1)) ? 'warn' : '';
@@ -775,9 +793,10 @@ function drawHud() {
   c.fillText(state === 'CONFIRMING' ? `CONFIRMING ${confirm}/${CONFIRM_HITS}` : state, 14, 29);
   c.font = '13px ui-monospace, monospace';
   c.fillStyle = '#EAF4FD';
-  c.fillText('blink ' + score.toFixed(2) + '   ' + margin.toFixed(1) + '× noise   '
+  c.fillText('blink ' + score.toFixed(2) + '   depth ' + peakDepth.toFixed(2) + '   '
+           + margin.toFixed(1) + '× noise   '
            + (state === 'LOCKED' ? detectedHz.toFixed(1) + ' Hz' : '--')
-           + '   ' + fps.toFixed(0) + ' fps', 110, 29);
+           + '   ' + fps.toFixed(0) + ' fps   tilt:' + (cal.invTilt ? 'INV' : 'norm'), 110, 29);
 
   c.strokeStyle = 'rgba(140,150,165,.5)'; c.lineWidth = 1;
   c.beginPath(); c.moveTo(w/2 - 13, h/2); c.lineTo(w/2 + 13, h/2);
@@ -884,7 +903,13 @@ function steer() {
   // derivable from the video, so it's corrected here from the calibration
   // panel rather than guessed at in code.
   if (cal.swap) { const t = ex; ex = ey; ey = t; }
-  const sp = cal.invPan ? 1 : -1, st = cal.invTilt ? -1 : 1;
+  // Tilt direction was reported backwards twice, identically: beacon low ->
+  // laser high, beacon high -> laser low. That is a consistent mechanical
+  // fact about this one physical rig, not something to keep asking the user
+  // to toggle a checkbox for -- the default is corrected here so it is right
+  // out of the box; INVERT TILT now un-does this if a different mount ever
+  // needs the other polarity.
+  const sp = cal.invPan ? 1 : -1, st = cal.invTilt ? 1 : -1;
   // pan/tilt are the tracking loop's own running state and must stay
   // trim-free, or a fixed bias re-added every frame would accumulate as
   // drift instead of staying a constant offset. Trim is mixed in only on

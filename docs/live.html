@@ -387,6 +387,13 @@ let MIN_BRIGHT = 165;
 // MIN_DEPTH/MIN_BRIGHT this isn't a room-lighting tradeoff, it's a direct
 // physical property of a real on/off beacon.
 const MAX_OFF_RATIO = 0.75;
+// Fraction of frames where a candidate's bright/dark state must match our
+// own recorded laser-on/off history before it's rejected as "that's just our
+// laser." A genuine external beacon's timing is unrelated to our own output,
+// so it matches our laser history only by chance (~50%); only something
+// that's actually tracking OUR toggle sequence -- i.e. is our own laser seen
+// by the camera -- will consistently clear a high bar like this.
+const SELF_LASER_MATCH = 0.85;
 const ANALYSE_EVERY = 4;
 const TRACK_ROI = 46;                // px radius for the cheap per-frame follow
 const HOLD_MIN = 0.07;               // once locked, what it takes to stay locked
@@ -501,6 +508,11 @@ els.depthSlider.oninput = () => {
 const ring = new Float32Array(N * P);   // rolling window of downscaled frames
 const stamps = new Float64Array(N);
 const frameMean = new Float32Array(N);
+// Our own record of whether WE commanded the laser on or off each frame --
+// ground truth no external analysis could have, and the direct fix for the
+// camera locking onto its own laser: a candidate whose brightness pattern
+// matches this recorded sequence isn't a beacon, it's a reflection of us.
+const laserHist = new Uint8Array(N);
 
 /* Scratch space for the analysis, allocated once. Re-allocating these per
    pass churns well over a megabyte every few frames, and the resulting
@@ -771,6 +783,7 @@ function analyse() {
   // bright. A real beacon does one thing a steady light structurally cannot:
   // it turns off. Require the window to actually contain a dark reading, not
   // just a statistically well-correlated one.
+  let selfMatch = 0;
   if (peak > 0) {
     let winMin = Infinity, winMax = -Infinity;
     for (let i = 0; i < N; i++) {
@@ -779,6 +792,28 @@ function analyse() {
       if (v > winMax) winMax = v;
     }
     if (winMin > winMax * MAX_OFF_RATIO) peak = 0;
+
+    // The camera can see the laser it's pointing. If the tracker's own lock
+    // state ever flickers (e.g. a marginal real signal hovering near the
+    // hold threshold), the laser toggles with it, and that toggle is a
+    // perfect digital on/off with none of the noise real light has --
+    // exactly the kind of clean signal this analysis is built to find. Left
+    // unchecked, the tracker can end up locking onto its own laser spot and
+    // sustaining the loop indefinitely. We have the one piece of ground
+    // truth no passive analysis could ever get: our own laser command
+    // history. If a candidate's bright/dark pattern matches it almost
+    // exactly, it isn't a beacon, it's a mirror.
+    if (peak > 0) {
+      const mid = (winMin + winMax) / 2;
+      let matches = 0;
+      for (let i = 0; i < N; i++) {
+        const v = ring[((head + i) % N) * P + peakIdx];
+        const candOn = v > mid ? 1 : 0;
+        if (candOn === laserHist[(head + i) % N]) matches++;
+      }
+      selfMatch = matches / N;
+      if (selfMatch > SELF_LASER_MATCH) peak = 0;
+    }
   }
 
   // Two real false locks so far both won at exactly the edge of the searched
@@ -888,6 +923,7 @@ function loop() {
   }
   frameMean[idx] = sum / P + 1e-6;
   stamps[idx] = performance.now() / 1000;
+  laserHist[idx] = laserOn ? 1 : 0;
   if (filled < N) filled++; else head = (head + 1) % N;
 
   if (++frameNo % ANALYSE_EVERY === 0) analyse();

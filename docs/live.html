@@ -291,15 +291,27 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
    the servo commands are all frozen. These are sized so a pass stays a few
    milliseconds rather than a visible stall. */
 const W = 96, H = 72, P = W * H;    // analysis resolution
-const N = 48;                        // frames per window
+const N = 40;                        // frames per window
 const BAND_STEP = 0.5;               // Hz between candidate frequencies
-const LOCK_MIN = 0.36;               // absolute floor on in-band fraction
-const CFAR = 3.2;                    // peak must beat the background by this
+/* Which statistic actually separates a beacon from noise, measured on real
+   hardware rather than assumed:
+
+       sensor noise, no beacon : score 0.344, margin 3.13x
+       real beacon on camera   : score 0.22 , margin 4.90x
+
+   The absolute score is worse than useless here -- noise scored HIGHER than a
+   genuine beacon, so a floor set above 0.22 rejects the real thing while
+   letting noise through. It only earns its keep as a sanity floor against
+   dead-flat pixels. The margin over the surrounding background is what
+   actually discriminates, so that carries the decision, backed by the
+   requirement to reappear in the same place several analyses running. */
+const LOCK_MIN = 0.12;               // sanity floor only -- NOT the discriminator
+const CFAR = 3.8;                    // peak must beat its background by this
 const MIN_DEPTH = 0.22;              // real blinkers swing a lot of their own brightness
-const ANALYSE_EVERY = 5;
+const ANALYSE_EVERY = 4;
 const TRACK_ROI = 46;                // px radius for the cheap per-frame follow
-const HOLD_MIN = 0.20;               // once locked, what it takes to stay locked
-const HOLD_CFAR = 1.9;
+const HOLD_MIN = 0.07;               // once locked, what it takes to stay locked
+const HOLD_CFAR = 2.2;
 const CONFIRM_HITS = 3;              // analyses agreeing before a lock is believed
 const CONFIRM_RADIUS = 45;           // px the peak may wander and still be "the same thing"
 const DROP_MISSES = 4;               // analyses without it before the lock is abandoned

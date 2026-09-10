@@ -58,7 +58,7 @@ def main(argv=None) -> int:
         if before is None:
             print("no beacon visible; aim the rig first")
             return 1
-        gimbal.ser.write(f"P {dp:.2f} {dt:.2f}\n".encode())
+        gimbal.raw_command(90.0 + dp, 90.0 + dt)
         time.sleep(1.2)
         after = brightest(detector, camera.read())
         gimbal.centre()
@@ -74,7 +74,7 @@ def main(argv=None) -> int:
     for _ in range(5):
         before = brightest(detector, camera.read())
         t0 = time.perf_counter()
-        gimbal.ser.write(f"P {args.step_deg:.2f} 0\n".encode())
+        gimbal.raw_command(90.0 + args.step_deg, 90.0)
         while time.perf_counter() - t0 < 1.0:
             det = brightest(detector, camera.read())
             if det and before and abs(det.u - before.u) > 3.0:

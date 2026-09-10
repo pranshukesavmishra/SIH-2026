@@ -203,15 +203,30 @@ def main(argv=None) -> int:
                 gimbal.laser(want_laser)
                 laser_on = want_laser
 
+            # Raw detections for display only -- shows every candidate the
+            # detector saw this frame (yellow), regardless of whether the
+            # tracker accepted one as the beacon. This is the circle the
+            # standalone rig_track.py had and this rewrite had dropped:
+            # without it there is no way to see whether the CFAR threshold
+            # is even seeing your beacon at all, versus seeing it but not
+            # converging, versus not seeing it.
+            dets = tracker.detector.detect(image)
+
             if show_window:
                 disp = (image >> 4).astype(np.uint8)
                 disp = cv2.cvtColor(disp, cv2.COLOR_GRAY2BGR)
+                for d in dets:
+                    cv2.circle(disp, (int(d.u), int(d.v)), 10, (0, 220, 220), 1)
                 col = (80, 220, 120) if telem.locked else (60, 60, 230)
+                err_txt = f"{np.degrees(telem.error_rad):.2f}deg" if telem.error_rad is not None else "--"
+                snr_txt = f"{telem.detection_snr:.1f}" if telem.detection_snr is not None else "--"
                 cv2.putText(disp,
                             f"{telem.state.value:9} det {telem.n_detections}  "
-                            f"laser {'ON' if laser_on else 'off'}  "
-                            f"t={telem.time_s:5.1f}s",
-                            (12, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.65, col, 2)
+                            f"err {err_txt}  snr {snr_txt}",
+                            (12, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.6, col, 2)
+                cv2.putText(disp,
+                            f"laser {'ON' if laser_on else 'off'}  t={telem.time_s:5.1f}s",
+                            (12, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, col, 2)
                 cv2.imshow("ZeroDrift live console", disp)
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('q'):
@@ -226,8 +241,10 @@ def main(argv=None) -> int:
 
             index += 1
             if index % 30 == 0:
+                err_txt = f"{np.degrees(telem.error_rad):.2f}deg" if telem.error_rad is not None else "--"
+                snr_txt = f"{telem.detection_snr:.1f}" if telem.detection_snr is not None else "--"
                 print(f"  t={telem.time_s:5.1f}s {telem.state.value:9} "
-                      f"det {telem.n_detections}", flush=True)
+                      f"det {telem.n_detections}  err {err_txt}  snr {snr_txt}", flush=True)
     finally:
         gimbal.laser(False)
         gimbal.centre()

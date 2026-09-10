@@ -94,6 +94,21 @@ def main(argv=None) -> int:
                              "on every beacon blink")
     parser.add_argument("--no-window", action="store_true",
                         help="headless: skip the live cv2 display")
+    parser.add_argument("--cfar-k", type=float, default=8.0,
+                        help="detection threshold (std devs above background). "
+                             "Default is stricter than the simulator's 5.0 -- "
+                             "the CFAR detector was only ever tuned against clean "
+                             "synthetic frames in the test suite, and a real webcam "
+                             "sensor's noise floor is coarser, so a low threshold "
+                             "here means the tracker chases noise around the frame "
+                             "when no beacon is present. Raise further if it still "
+                             "grabs onto false targets; lower if it's missing a "
+                             "real, dim beacon.")
+    parser.add_argument("--lock-frames", type=int, default=8,
+                        help="consecutive good frames required before committing "
+                             "to TRACK (and firing the laser). Higher = slower to "
+                             "lock but far less prone to locking onto a one-frame "
+                             "noise spike; default raised from the simulator's 5.")
     args = parser.parse_args(argv)
 
     port = _resolve_port(args.port)
@@ -120,7 +135,8 @@ def main(argv=None) -> int:
     gimbal = SerialGimbal(port)
     camera = UsbCamera(camera_index, exposure=exposure)
     tracker = CoarseAlignmentTracker(cfg, fou_radius_deg=8.0,
-                                     search_centre=(0.0, 0.0))
+                                     search_centre=(0.0, 0.0),
+                                     cfar_k=args.cfar_k, lock_frames=args.lock_frames)
 
     show_window = not args.no_window
     cv2 = None

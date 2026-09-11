@@ -248,9 +248,18 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
           <input type="checkbox" id="invTilt"> INVERT TILT (up/down)</label>
         <label style="display:flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-secondary);padding:6px 0">
           <input type="checkbox" id="swapAxes"> SWAP PAN/TILT (camera rotated 90°)</label>
-        <div style="margin-top:10px">
-          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--ink-muted)">STEERING GAIN <b id="gainVal" style="color:var(--ink-primary)">0.020</b></span>
-          <input type="range" id="gainSlider" min="0.005" max="0.06" step="0.005" value="0.02" style="margin-top:6px">
+        <p style="color:var(--ink-muted);font-size:11.5px;line-height:1.55;margin:12px 0 8px">
+          <b style="color:var(--ink-primary)">Camera field of view</b> — how many degrees the full
+          frame covers. This converts the beacon's pixel position into a real angle for the laser,
+          so if the dot consistently lands <i>too far</i> from the beacon, lower these; if it
+          doesn't move <i>far enough</i>, raise them.</p>
+        <div>
+          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--ink-muted)">FOV HORIZONTAL <b id="fovHVal" style="color:var(--ink-primary)">60°</b></span>
+          <input type="range" id="fovHSlider" min="30" max="90" step="1" value="60" style="margin-top:6px">
+        </div>
+        <div style="margin-top:8px">
+          <span style="font-family:var(--font-mono);font-size:10.5px;color:var(--ink-muted)">FOV VERTICAL <b id="fovVVal" style="color:var(--ink-primary)">45°</b></span>
+          <input type="range" id="fovVSlider" min="20" max="70" step="1" value="45" style="margin-top:6px">
         </div>
 
         <p style="color:var(--ink-muted);font-size:11.5px;line-height:1.55;margin:14px 0 8px;border-top:1px solid var(--edge);padding-top:12px">
@@ -396,6 +405,17 @@ const MAX_OFF_RATIO = 0.75;
 const SELF_LASER_MATCH = 0.85;
 const ANALYSE_EVERY = 4;
 const TRACK_ROI = 46;                // px radius for the cheap per-frame follow
+// The per-frame follower is allowed to sharpen the position, never to decide
+// it. These three numbers are what keep it subordinate to the modulation map:
+const ANCHOR_MAX = 38;               // px it may sit from the last confirmed detection
+const ANCHOR_PULL = 0.25;            // how hard the map pulls when brightness says nothing
+const REFINE_STEP = 22;              // px of motion in one frame that is still "the beacon moved"
+const REFINE_SMOOTH = 0.4;           // fraction of the way to the new estimate per frame
+const OFF_PHASE_RATIO = 0.55;        // below this share of the beacon's own ON contrast = dark
+const MIN_CONTRAST = 10;             // luma above local background that counts as "lit at all"
+const LOCAL_R = 12;                  // px around the lock that counts as "the tracked light itself"
+const FOCUS_SIGMA = 8;               // px; how fast a neighbour's vote falls off with distance
+const MIN_WEIGHT = 6;                // too little evidence to move on -- hold instead
 const HOLD_MIN = 0.07;               // once locked, what it takes to stay locked
 const HOLD_CFAR = 2.2;
 const CONFIRM_HITS = 3;              // analyses agreeing before a lock is believed
@@ -427,8 +447,10 @@ const els = {
   invPan: document.getElementById('invPan'),
   invTilt: document.getElementById('invTilt'),
   swapAxes: document.getElementById('swapAxes'),
-  gainSlider: document.getElementById('gainSlider'),
-  gainVal: document.getElementById('gainVal'),
+  fovHSlider: document.getElementById('fovHSlider'),
+  fovHVal: document.getElementById('fovHVal'),
+  fovVSlider: document.getElementById('fovVSlider'),
+  fovVVal: document.getElementById('fovVVal'),
   trimPan: document.getElementById('trimPan'),
   trimPanVal: document.getElementById('trimPanVal'),
   trimTilt: document.getElementById('trimTilt'),
@@ -447,13 +469,20 @@ const cal = {
   invPan: localStorage.getItem('zd_invPan') === '1',
   invTilt: localStorage.getItem('zd_invTilt') === '1',
   swap: localStorage.getItem('zd_swap') === '1',
-  gain: parseFloat(localStorage.getItem('zd_gain') || '0.02'),
   // A fixed servo-degree offset, not a tracking correction -- it compensates
   // for the camera and laser never sitting at exactly the same point in
   // space (parallax), which stays constant once the mount is fixed and so
   // is set once here rather than computed per frame.
   trimPan: parseFloat(localStorage.getItem('zd_trimPan') || '0'),
   trimTilt: parseFloat(localStorage.getItem('zd_trimTilt') || '0'),
+  // How many degrees of the real world the camera's full frame width/height
+  // covers. This is what converts "beacon is 150 px right of centre" into
+  // "beacon is 14 degrees right of the camera axis", so the laser can be
+  // commanded to that angle directly. Laptop webcams vary (roughly 50-70
+  // degrees horizontally), and getting it wrong scales every pointing
+  // command -- so it's adjustable rather than hard-coded.
+  fovH: parseFloat(localStorage.getItem('zd_fovH') || '60'),
+  fovV: parseFloat(localStorage.getItem('zd_fovV') || '45'),
 };
 els.invPan.checked = cal.invPan;
 els.invTilt.checked = cal.invTilt;
@@ -472,15 +501,22 @@ els.trimTilt.oninput = () => {
   els.trimTiltVal.textContent = cal.trimTilt.toFixed(1) + '°';
   localStorage.setItem('zd_trimTilt', cal.trimTilt);
 };
-els.gainSlider.value = cal.gain;
-els.gainVal.textContent = cal.gain.toFixed(3);
+els.fovHSlider.value = cal.fovH;
+els.fovHVal.textContent = cal.fovH.toFixed(0) + '°';
+els.fovVSlider.value = cal.fovV;
+els.fovVVal.textContent = cal.fovV.toFixed(0) + '°';
 els.invPan.onchange = () => { cal.invPan = els.invPan.checked; localStorage.setItem('zd_invPan', cal.invPan ? '1' : '0'); };
 els.invTilt.onchange = () => { cal.invTilt = els.invTilt.checked; localStorage.setItem('zd_invTilt', cal.invTilt ? '1' : '0'); };
 els.swapAxes.onchange = () => { cal.swap = els.swapAxes.checked; localStorage.setItem('zd_swap', cal.swap ? '1' : '0'); };
-els.gainSlider.oninput = () => {
-  cal.gain = parseFloat(els.gainSlider.value);
-  els.gainVal.textContent = cal.gain.toFixed(3);
-  localStorage.setItem('zd_gain', cal.gain);
+els.fovHSlider.oninput = () => {
+  cal.fovH = parseFloat(els.fovHSlider.value);
+  els.fovHVal.textContent = cal.fovH.toFixed(0) + '°';
+  localStorage.setItem('zd_fovH', cal.fovH);
+};
+els.fovVSlider.oninput = () => {
+  cal.fovV = parseFloat(els.fovVSlider.value);
+  els.fovVVal.textContent = cal.fovV.toFixed(0) + '°';
+  localStorage.setItem('zd_fovV', cal.fovV);
 };
 els.centre.onclick = () => { pan = 90; tilt = 90; sendRig(90, 90, laserOn); };
 
@@ -537,6 +573,19 @@ const PROBE_SIZE = 24;
 const MIRROR_VIEW = true;
 let state = 'SEARCHING', pos = null, vel = {x: 0, y: 0};
 let cand = null, confirm = 0;        // peak awaiting confirmation, and its hit count
+// Where the modulation map last said the beacon is -- the only evidence in
+// this program that actually identifies the beacon. The per-frame follower is
+// tethered to it so a run of bad frames cannot walk the lock away.
+let anchor = null;
+// How far this particular beacon rises ABOVE its own local background when
+// lit -- learned from the beacon itself rather than assumed. Contrast, not
+// absolute brightness: in a lit hall the bare wall already reads 120, so any
+// fixed brightness bar is cleared by the empty room and stops meaning
+// anything. What still separates a lit beacon from a dark one is that it
+// stands out from what surrounds it.
+let onContrast = 0;
+// Reused so the per-frame background estimate allocates nothing.
+const bgHist = new Uint16Array(256);
 let exposurePinned = false;
 let score = 0, margin = 0, detectedHz = 0, fps = 0, peakDepth = 0, peakBright = 0;
 let serialWriter = null, pan = 90, tilt = 90, laserOn = false;
@@ -895,6 +944,8 @@ function analyse() {
   if (state !== 'LOCKED') {
     if (cand && cand.hits >= CONFIRM_HITS) {
       pos = { x: cand.x, y: cand.y };
+      anchor = { x: cand.x, y: cand.y };
+      onContrast = 0;                 // relearned from the first lit frames
       vel = { x: 0, y: 0 };
       detectedHz = cand.freq;
       setState('LOCKED');
@@ -902,8 +953,13 @@ function analyse() {
       setState(cand ? 'CONFIRMING' : 'SEARCHING');
     }
   } else if (!cand) {
-    setState('SEARCHING'); pos = null; vel = { x: 0, y: 0 };
+    setState('SEARCHING'); pos = null; anchor = null; onContrast = 0; vel = { x: 0, y: 0 };
   } else {
+    // Still locked: re-tether to where the modulation map says the beacon is
+    // now. Without this the per-frame follower is the only thing moving `pos`
+    // after acquisition, and nothing ever pulls a drifting lock back onto the
+    // one light that is actually blinking at the target frequency.
+    anchor = { x: cand.x, y: cand.y };
     detectedHz = cand.freq;
   }
 }
@@ -970,10 +1026,11 @@ function loop() {
 
 function refine() {
   const w = els.view.width, h = els.view.height;
-  const x0 = Math.max(0, Math.round(pos.x) - TRACK_ROI);
-  const y0 = Math.max(0, Math.round(pos.y) - TRACK_ROI);
-  const x1 = Math.min(w, Math.round(pos.x) + TRACK_ROI);
-  const y1 = Math.min(h, Math.round(pos.y) + TRACK_ROI);
+  const bx = anchor ? anchor.x : pos.x, by = anchor ? anchor.y : pos.y;
+  const x0 = Math.max(0, Math.round(bx) - TRACK_ROI);
+  const y0 = Math.max(0, Math.round(by) - TRACK_ROI);
+  const x1 = Math.min(w, Math.round(bx) + TRACK_ROI);
+  const y1 = Math.min(h, Math.round(by) + TRACK_ROI);
   const rw = x1 - x0, rh = y1 - y0;
   if (rw < 4 || rh < 4) return;
   // Sample the VIDEO, not the display canvas. The display is mirrored for the
@@ -983,28 +1040,130 @@ function refine() {
   trackCtx.drawImage(video, x0, y0, rw, rh, 0, 0, rw, rh);
   const d = trackCtx.getImageData(0, 0, rw, rh).data;
 
-  // Brightness-weighted centroid of the brightest region, not just the single
-  // hottest pixel: a saturated LED is a blob of equal 255s, and picking any
-  // one of them makes the marker jitter around inside it.
-  let peak = 0;
-  for (let i = 0; i < d.length; i += 4) {
-    const v = d[i] * 0.299 + d[i+1] * 0.587 + d[i+2] * 0.114;
-    if (v > peak) peak = v;
-  }
-  const cut = Math.max(40, peak * 0.8);
-  let sx = 0, sy = 0, sw = 0;
+  // Two questions, and telling them apart is the whole fix. The ROI-wide peak
+  // answers "is anything near the lock bright?" -- which a ceiling lamp two
+  // centimetres away answers yes to, forever. The LOCAL peak answers "is the
+  // light I am actually tracking lit right now?", which is the only useful one.
+  // Alongside it, the background level of the surrounding box, because in a
+  // lit room brightness alone cannot answer either question (see below).
+  // Everything below measures from the ANCHOR, not from pos. Centring on pos
+  // is self-reinforcing: the moment the estimate drifts a few pixels toward a
+  // neighbouring lamp, that lamp enters the disc, defeats the gate, and pulls
+  // the estimate further in -- which was measured, as capture within half a
+  // second whenever a lamp sat inside about 25 px. The anchor cannot drift,
+  // because the modulation map recomputes it from the blink itself. That makes
+  // this function structurally a refiner: it can sharpen the map's answer, and
+  // it cannot walk away from it.
+  const cx = anchor ? anchor.x : pos.x, cy = anchor ? anchor.y : pos.y;
+  let localPeak = 0, nBg = 0;
+  bgHist.fill(0);
+  const lr2 = LOCAL_R * LOCAL_R;
   for (let y = 0; y < rh; y++) {
+    const gy = y0 + y, dy = gy - cy;
     for (let x = 0; x < rw; x++) {
       const q = (y * rw + x) << 2;
       const v = d[q] * 0.299 + d[q+1] * 0.587 + d[q+2] * 0.114;
-      if (v >= cut) { const wgt = v - cut + 1; sx += x * wgt; sy += y * wgt; sw += wgt; }
+      const gx = x0 + x, dx = gx - cx;
+      if (dx * dx + dy * dy <= lr2) { if (v > localPeak) localPeak = v; }
+      // Every second pixel is plenty for a median and halves the cost.
+      else if (((x ^ y) & 1) === 0) { bgHist[v | 0]++; nBg++; }
     }
   }
-  if (sw <= 0) return;
-  const nx = x0 + sx / sw, ny = y0 + sy / sw;
-  vel.x = 0.6 * vel.x + 0.4 * (nx - pos.x);
-  vel.y = 0.6 * vel.y + 0.4 * (ny - pos.y);
-  pos = { x: nx, y: ny };
+  // Median of the surroundings via histogram -- no sort, no allocation. The
+  // median rather than the mean because a lamp in the box would drag a mean
+  // upward, which is exactly the case this has to survive.
+  let bg = 0, acc = 0, halfBg = nBg >> 1;
+  for (let i = 0; i < 256; i++) { acc += bgHist[i]; if (acc >= halfBg) { bg = i; break; } }
+  const contrast = localPeak - bg;
+
+  // THE defect this block exists to fix. A beacon blinking at 4 Hz is dark for
+  // about half of every quarter-second -- four frames in a row at 30 fps.
+  // Chasing "the brightest thing near the lock" through those frames means
+  // chasing whatever the background offers: a window, a screen edge, a face.
+  // Every dark phase nudges the marker a little off target; once it is off,
+  // the beacon is outside the search box and it never comes back. That is a
+  // marker visibly wandering away from a light that is still blinking fine.
+  //
+  // The test has to be CONTRAST against the immediate surroundings, not raw
+  // brightness. Measured on the synthetic bright-hall case: a lit hall's bare
+  // background reads about 120, so an absolute bar of 115 is cleared by the
+  // empty room and the gate never once fired -- the marker crept 0.5, then
+  // 0.6, then 0.9 px per dark frame onto a nearby lamp and was captured inside
+  // half a second. Contrast has no such floor: a dark beacon stops standing
+  // out from its surroundings no matter how bright the room is.
+  //
+  // A beacon that is off carries no position information, so use none of it.
+  // But do not merely freeze: freezing alone deadlocks, because a stranded
+  // lock stares at dark background forever and never re-lights. Fall back on
+  // the one thing that still knows where the beacon is -- the modulation map,
+  // which is measuring the blink regardless of this frame.
+  if (contrast < Math.max(MIN_CONTRAST, onContrast * OFF_PHASE_RATIO)) {
+    if (anchor) {
+      pos = { x: pos.x + (anchor.x - pos.x) * ANCHOR_PULL,
+              y: pos.y + (anchor.y - pos.y) * ANCHOR_PULL };
+    }
+    return;
+  }
+  onContrast = Math.max(contrast, onContrast * 0.995);
+
+  // Brightness-weighted centroid of the tracked blob, not just its hottest
+  // pixel: a saturated LED is a patch of equal 255s and picking any one of
+  // them makes the marker jitter inside it.
+  // The distance term is what keeps a BRIGHTER neighbour from dragging the
+  // centroid: this refines the light we are on, it does not average it with
+  // whatever else clears the threshold. Thresholding against the local peak
+  // rather than the ROI peak matters for the same reason -- a brighter lamp
+  // nearby would otherwise raise the bar until the beacon itself fell under it.
+  // Relative for the same reason the gate is: an absolute cut in a bright room
+  // either admits the entire background or, if the beacon is the dimmer light,
+  // excludes the beacon itself.
+  const cut = bg + Math.max(4, contrast * 0.5);
+  let sx = 0, sy = 0, sw = 0;
+  for (let y = 0; y < rh; y++) {
+    const gy = y0 + y, dy = gy - cy;
+    for (let x = 0; x < rw; x++) {
+      const q = (y * rw + x) << 2;
+      const v = d[q] * 0.299 + d[q+1] * 0.587 + d[q+2] * 0.114;
+      if (v < cut) continue;
+      const gx = x0 + x, dx = gx - cx;
+      const wgt = (v - cut + 1) * Math.exp(-(dx * dx + dy * dy) / (2 * FOCUS_SIGMA * FOCUS_SIGMA));
+      sx += gx * wgt; sy += gy * wgt; sw += wgt;
+    }
+  }
+  if (sw <= MIN_WEIGHT) return;
+  let nx = sx / sw, ny = sy / sw;
+
+  // Never let one frame teleport the marker. A jump this big is not the beacon
+  // moving -- at 30 fps that would be an implausible speed -- it is a different
+  // object having entered the box. Step toward it rather than onto it, so a
+  // genuine move still tracks within a few frames while a passing reflection
+  // cannot capture the lock in one.
+  const jump = Math.hypot(nx - pos.x, ny - pos.y);
+  if (jump > REFINE_STEP) {
+    const k = REFINE_STEP / jump;
+    nx = pos.x + (nx - pos.x) * k;
+    ny = pos.y + (ny - pos.y) * k;
+  }
+
+  let px = pos.x + (nx - pos.x) * REFINE_SMOOTH;
+  let py = pos.y + (ny - pos.y) * REFINE_SMOOTH;
+
+  // The tether. The modulation map is the only thing in this program that
+  // knows WHICH light is the beacon; brightness alone does not. So the
+  // follower may sharpen the position within a small radius of the last
+  // confirmed detection and no further: bounded correction, never a free walk.
+  if (anchor) {
+    const dx = px - anchor.x, dy = py - anchor.y;
+    const r = Math.hypot(dx, dy);
+    if (r > ANCHOR_MAX) {
+      px = anchor.x + dx * (ANCHOR_MAX / r);
+      py = anchor.y + dy * (ANCHOR_MAX / r);
+    }
+  }
+
+  vel.x = 0.6 * vel.x + 0.4 * (px - pos.x);
+  vel.y = 0.6 * vel.y + 0.4 * (py - pos.y);
+  pos = { x: px, y: py };
 }
 
 function drawHud() {
@@ -1124,31 +1283,40 @@ async function testRig() {
 }
 
 function steer() {
-  // Aim where the beacon is heading, not where it was: a proportional loop on
-  // the current position alone always trails a moving target.
-  let ex = pos.x + 2.5 * vel.x - els.view.width / 2;
-  let ey = pos.y + 2.5 * vel.y - els.view.height / 2;
-  // Which camera axis drives which servo, and which direction is "positive",
-  // depends entirely on how this specific rig's camera and bracket are
-  // mounted relative to each other -- that's a mechanical fact, not something
-  // derivable from the video, so it's corrected here from the calibration
-  // panel rather than guessed at in code.
-  if (cal.swap) { const t = ex; ex = ey; ey = t; }
-  // Tilt direction was reported backwards twice, identically: beacon low ->
-  // laser high, beacon high -> laser low. That is a consistent mechanical
-  // fact about this one physical rig, not something to keep asking the user
-  // to toggle a checkbox for -- the default is corrected here so it is right
-  // out of the box; INVERT TILT now un-does this if a different mount ever
-  // needs the other polarity.
+  /* The camera does NOT move with the laser on this rig -- the webcam is
+     fixed to the laptop lid and only the laser rides the pan/tilt.
+
+     That makes an incremental controller (pan += gain * error, which this
+     used to be) structurally wrong, not merely mistuned. Adding a fraction
+     of the error each frame assumes moving the servo changes what the camera
+     sees, so the error shrinks and the loop settles. Here, panning the laser
+     never changes a fixed camera's view: the error stays exactly the same
+     next frame, the same correction is added again, and the servo integrates
+     straight into its end stop and parks there -- pointing somewhere with no
+     relationship to the beacon at all. That is the "laser points in a
+     completely different direction" symptom.
+
+     With a fixed camera the relationship is direct, not iterative: a beacon
+     at a known pixel offset IS at a known angle off the camera's axis, given
+     the camera's field of view. So command that angle absolutely, every
+     frame, rather than creeping toward it. No accumulation, no end-stop
+     drift, and it re-points correctly the instant the beacon moves. */
+  const w = els.view.width, h = els.view.height;
+  let ax = ((pos.x - w / 2) / w) * cal.fovH;   // degrees off-axis, horizontal
+  let ay = ((pos.y - h / 2) / h) * cal.fovV;   // degrees off-axis, vertical
+
+  // Which camera axis drives which servo, and which direction counts as
+  // positive, is a fact about how this bracket is physically mounted -- not
+  // derivable from the video, so it stays on the calibration panel.
+  if (cal.swap) { const t = ax; ax = ay; ay = t; }
   const sp = cal.invPan ? 1 : -1, st = cal.invTilt ? 1 : -1;
-  // pan/tilt are the tracking loop's own running state and must stay
-  // trim-free, or a fixed bias re-added every frame would accumulate as
-  // drift instead of staying a constant offset. Trim is mixed in only on
-  // the value actually sent to the servo.
-  pan = Math.max(20, Math.min(160, pan + sp * cal.gain * ex));
-  tilt = Math.max(40, Math.min(140, tilt + st * cal.gain * ey));
-  sendRig(Math.max(20, Math.min(160, pan + cal.trimPan)),
-          Math.max(40, Math.min(140, tilt + cal.trimTilt)), true);
+
+  // Absolute angle from centre, plus the fixed parallax trim (camera and
+  // laser are not at the same point in space, and on this rig they are a
+  // good 20 cm apart vertically).
+  pan  = Math.max(20, Math.min(160, 90 + sp * ax + cal.trimPan));
+  tilt = Math.max(40, Math.min(140, 90 + st * ay + cal.trimTilt));
+  sendRig(pan, tilt, true);
 }
 
 /* ---------------- beacon mode ---------------- */

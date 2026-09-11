@@ -1105,11 +1105,11 @@ function loop() {
 
 function refine() {
   const w = els.view.width, h = els.view.height;
-  const bx = anchor ? anchor.x : pos.x, by = anchor ? anchor.y : pos.y;
-  const x0 = Math.max(0, Math.round(bx) - TRACK_ROI);
-  const y0 = Math.max(0, Math.round(by) - TRACK_ROI);
-  const x1 = Math.min(w, Math.round(bx) + TRACK_ROI);
-  const y1 = Math.min(h, Math.round(by) + TRACK_ROI);
+  const cx = anchor ? anchor.x : pos.x, cy = anchor ? anchor.y : pos.y;
+  const x0 = Math.max(0, Math.round(cx) - TRACK_ROI);
+  const y0 = Math.max(0, Math.round(cy) - TRACK_ROI);
+  const x1 = Math.min(w, Math.round(cx) + TRACK_ROI);
+  const y1 = Math.min(h, Math.round(cy) + TRACK_ROI);
   const rw = x1 - x0, rh = y1 - y0;
   if (rw < 4 || rh < 4) return;
   // Sample the VIDEO, not the display canvas. The display is mirrored for the
@@ -1133,7 +1133,6 @@ function refine() {
   // because the modulation map recomputes it from the blink itself. That makes
   // this function structurally a refiner: it can sharpen the map's answer, and
   // it cannot walk away from it.
-  const cx = anchor ? anchor.x : pos.x, cy = anchor ? anchor.y : pos.y;
   const rs = resScale();
   const LOCAL_R = LOCAL_R_REF * rs, FOCUS_SIGMA = FOCUS_SIGMA_REF * rs;
   let localPeak = 0, nBg = 0;
@@ -1153,7 +1152,15 @@ function refine() {
   // Median of the surroundings via histogram -- no sort, no allocation. The
   // median rather than the mean because a lamp in the box would drag a mean
   // upward, which is exactly the case this has to survive.
-  let bg = 0, acc = 0, halfBg = nBg >> 1;
+  // Guard the degenerate case. Against a frame edge the box gets cropped, and
+  // if almost all of what survives falls inside the local disc there is no
+  // background left to compare against. The median of nothing is 0, which
+  // makes contrast equal the raw peak and holds the gate permanently open --
+  // the exact failure this gate exists to prevent, arriving silently. With no
+  // background to judge by, judge nothing: hold and wait for a better frame.
+  if (nBg < 8) return;
+  let bg = 0, acc = 0;
+  const halfBg = nBg >> 1;
   for (let i = 0; i < 256; i++) { acc += bgHist[i]; if (acc >= halfBg) { bg = i; break; } }
   const contrast = localPeak - bg;
 

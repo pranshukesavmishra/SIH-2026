@@ -527,8 +527,14 @@ const buf = {
 };
 let filled = 0, head = 0, frameNo = 0;
 
-let video, work, workCtx, outCtx, probe, probeCtx, stream = null;
+let video, work, workCtx, outCtx, probe, probeCtx, trackCv, trackCtx, stream = null;
 const PROBE_SIZE = 24;
+// A webcam shows you the scene as the camera sees it, which reads as
+// backwards to anyone watching themselves -- move the beacon left, the dot on
+// screen goes right. Mirroring the DISPLAY only fixes that. Tracking, steering
+// and every servo command stay in true camera coordinates, so this changes
+// what the operator sees and nothing about where the laser goes.
+const MIRROR_VIEW = true;
 let state = 'SEARCHING', pos = null, vel = {x: 0, y: 0};
 let cand = null, confirm = 0;        // peak awaiting confirmation, and its hit count
 let exposurePinned = false;
@@ -590,6 +596,9 @@ async function start() {
   // check ever sees it.
   probe = document.createElement('canvas'); probe.width = probe.height = PROBE_SIZE;
   probeCtx = probe.getContext('2d', { willReadFrequently: true });
+  trackCv = document.createElement('canvas');
+  trackCv.width = trackCv.height = TRACK_ROI * 2 + 2;
+  trackCtx = trackCv.getContext('2d', { willReadFrequently: true });
 
   els.view.width = video.videoWidth || 640;
   els.view.height = video.videoHeight || 480;
@@ -928,7 +937,15 @@ function loop() {
 
   if (++frameNo % ANALYSE_EVERY === 0) analyse();
 
-  outCtx.drawImage(video, 0, 0, els.view.width, els.view.height);
+  if (MIRROR_VIEW) {
+    outCtx.save();
+    outCtx.translate(els.view.width, 0);
+    outCtx.scale(-1, 1);
+    outCtx.drawImage(video, 0, 0, els.view.width, els.view.height);
+    outCtx.restore();
+  } else {
+    outCtx.drawImage(video, 0, 0, els.view.width, els.view.height);
+  }
   // The modulation map says *which* light is the beacon, but only every few
   // frames and at a coarse resolution where one cell spans several display
   // pixels. Following the actual bright spot at full resolution every frame
@@ -959,7 +976,12 @@ function refine() {
   const y1 = Math.min(h, Math.round(pos.y) + TRACK_ROI);
   const rw = x1 - x0, rh = y1 - y0;
   if (rw < 4 || rh < 4) return;
-  const d = outCtx.getImageData(x0, y0, rw, rh).data;
+  // Sample the VIDEO, not the display canvas. The display is mirrored for the
+  // operator's benefit; tracking works in true camera coordinates. Reading
+  // the flipped canvas here would sample the mirror image of the ROI and walk
+  // the lock straight off the target.
+  trackCtx.drawImage(video, x0, y0, rw, rh, 0, 0, rw, rh);
+  const d = trackCtx.getImageData(0, 0, rw, rh).data;
 
   // Brightness-weighted centroid of the brightest region, not just the single
   // hottest pixel: a saturated LED is a blob of equal 255s, and picking any
@@ -1008,10 +1030,14 @@ function drawHud() {
   c.moveTo(w/2, h/2 - 13); c.lineTo(w/2, h/2 + 13); c.stroke();
 
   if (state === 'LOCKED' && pos) {
+    // pos is in true camera coordinates; the picture under it is mirrored, so
+    // the ring has to be mirrored too or it lands on the wrong side of the
+    // screen from the beacon the operator is looking at.
+    const mx = MIRROR_VIEW ? w - pos.x : pos.x;
     c.strokeStyle = '#3BD68C'; c.lineWidth = 2.5;
-    c.beginPath(); c.arc(pos.x, pos.y, 22, 0, 6.284); c.stroke();
+    c.beginPath(); c.arc(mx, pos.y, 22, 0, 6.284); c.stroke();
     c.lineWidth = 1; c.globalAlpha = .6;
-    c.beginPath(); c.arc(pos.x, pos.y, 33, 0, 6.284); c.stroke();
+    c.beginPath(); c.arc(mx, pos.y, 33, 0, 6.284); c.stroke();
   }
   c.restore();
 }

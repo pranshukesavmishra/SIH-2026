@@ -119,6 +119,7 @@ body {
   font-size: 14px;
   letter-spacing: 1px;
   color: #fff;
+  white-space: nowrap;
 }
 .brand-text b span { color: var(--cyan); }
 .brand-text small {
@@ -917,6 +918,11 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
   .mobile-bottom-nav { display: flex; }
   .wrap { padding-bottom: 80px; }
 }
+@media (max-width: 480px) {
+  .brand-text b { font-size: 12px; }
+  .brand-text .zd-id { display: none; }
+  .banner { font-size: 10px; line-height: 1.4; }
+}
 </style>
 </head>
 <body>
@@ -930,7 +936,7 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
   <a href="index.html" class="brand-group">
     <img src="media/logo_emblem.png" alt="ZeroDrift" class="brand-logo-img">
     <div class="brand-text">
-      <b>ZERO<span>DRIFT</span> · ZD-1</b>
+      <b>ZERO<span>DRIFT</span> <span class="zd-id">· ZD-1</span></b>
       <small>FSOC-PAT COARSE ALIGNMENT CONSOLE · ISRO SIH26169</small>
     </div>
   </a>
@@ -943,6 +949,10 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
     <a href="console.html" class="nav-link active">
       <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg>
       CONSOLE
+    </a>
+    <a href="live.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4zM9 3l-1.8 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 15a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/></svg>
+      LIVE DEMO
     </a>
     <a href="about.html" class="nav-link">
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
@@ -972,7 +982,7 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
 
 <div class="banner">
   <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-  RECORDED REPLAY — every value on this page is read frame-by-frame from a logged run of the real engine (same seed &amp; code as the desktop app); nothing is simulated in the browser. Live version: the desktop app — <a href="https://github.com/pranshukesavmishra/SIH-2026" target="_blank" rel="noopener">repository</a>.
+  RECORDED REPLAY of a real engine run — nothing simulated in the browser. <a href="https://github.com/pranshukesavmishra/SIH-2026" target="_blank" rel="noopener">Source →</a>
 </div>
 
 <div class="wrap">
@@ -1376,7 +1386,7 @@ function viewport(f,c0){
     const k=D._dIdx.find(x=>x>i);
     if(k!=null){nextDecoyIdx=k;
       c.fillStyle='rgba(255,85,85,0.85)';c.font='10px monospace';
-      c.fillText('◇ next decoy crossing at T+'+D.frames[k].t.toFixed(0)+'s — click viewport to jump',12,16)}}
+      c.fillText('◇ next decoy @ T+'+D.frames[k].t.toFixed(0)+'s',12,16)}}
   if(showHUD){
     c.font='10px monospace';
     c.fillStyle=SC[f.state];c.fillText('▮ '+f.state+'  T+'+f.t.toFixed(1)+'s',12,h-26);

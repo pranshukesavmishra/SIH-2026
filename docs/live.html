@@ -132,6 +132,19 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
 .beacon-overlay .exit { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%);
   padding: 11px 20px; border-radius: 9px; border: 1px solid #444; background: #111; color: #bbb;
   font-family: var(--font-mono); font-size: 12px; cursor: pointer; z-index: 2; }
+
+/* Fullscreen demo-video player. Same shape as the beacon overlay above: a
+   fixed black sheet over everything, so it still fills the screen on a
+   projector even if the browser refuses the real Fullscreen API. */
+.video-overlay { position: fixed; inset: 0; z-index: 10000; background: #000;
+  display: none; align-items: center; justify-content: center; }
+.video-overlay.on { display: flex; }
+.video-overlay video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+.video-overlay .exit { position: fixed; top: 18px; right: 20px;
+  padding: 9px 16px; border-radius: 9px; border: 1px solid #444; background: rgba(17,17,17,.85);
+  color: #ddd; font-family: var(--font-mono); font-size: 12px; cursor: pointer; z-index: 2; }
+.video-overlay .exit:hover { border-color: #888; color: #fff; }
+.btn-note { margin: 7px 2px 0; font-size: 11px; line-height: 1.5; color: var(--ink-muted); }
 </style>
 </head>
 <body>
@@ -182,6 +195,9 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
         <h3>CONTROL</h3>
         <button class="btn" id="startBtn">
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>START CAMERA</button>
+        <button class="btn ghost" id="demoVidBtn">
+          <svg viewBox="0 0 24 24"><path d="M18 4v1h-2V4a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v1H6V4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2v-1h2v1h8v-1h2v1a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM8 18H6v-2h2v2zm0-4H6v-2h2v2zm0-4H6V8h2v2zm7 3-5 3V10l5 3zm3 5h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V8h2v2z"/></svg>DEMO VIDEO</button>
+        <p class="btn-note">This is our demo video showing how it works. It plays full screen.</p>
         <button class="btn ghost" id="rigBtn" title="Chrome or Edge only">
           <svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v14l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>CONNECT RIG</button>
         <button class="btn ghost" id="testRigBtn" disabled>
@@ -309,6 +325,14 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
 
 <div class="beacon-overlay" id="beaconOverlay">
   <button class="exit" id="beaconExit">TAP TO STOP BEACON</button>
+</div>
+
+<div class="video-overlay" id="videoOverlay">
+  <!-- preload="none" so 20 MB is not pulled on every page load; it is only
+       fetched when someone actually presses the button. playsinline stops
+       iOS hijacking it into its own player, which would bypass our exit. -->
+  <video id="demoVideo" src="demo-video.mp4" controls playsinline preload="none"></video>
+  <button class="exit" id="videoExit">CLOSE &times;</button>
 </div>
 
 <script>
@@ -442,6 +466,10 @@ const els = {
   hz: document.getElementById('hzSel'),
   note: document.getElementById('noteSlot'),
   overlay: document.getElementById('beaconOverlay'),
+  demoVidBtn: document.getElementById('demoVidBtn'),
+  videoOverlay: document.getElementById('videoOverlay'),
+  demoVideo: document.getElementById('demoVideo'),
+  videoExit: document.getElementById('videoExit'),
   beaconExit: document.getElementById('beaconExit'),
   calCard: document.getElementById('calCard'),
   invPan: document.getElementById('invPan'),
@@ -519,6 +547,47 @@ els.fovVSlider.oninput = () => {
   localStorage.setItem('zd_fovV', cal.fovV);
 };
 els.centre.onclick = () => { pan = 90; tilt = 90; sendRig(90, 90, laserOn); };
+
+/* ---------------- demo video, played full screen ----------------
+   Two layers on purpose. The real Fullscreen API is what the judges should
+   see, but browsers refuse it in some contexts (an iframe without the right
+   permission, some managed-device policies) and the refusal is a silent
+   rejected promise. So the overlay itself is a full-viewport black sheet:
+   if the API is refused the video still fills the window, and the demo
+   carries on rather than appearing to do nothing. */
+function openDemoVideo() {
+  els.videoOverlay.classList.add('on');
+  // Without this the page scrollbar stays visible beside the black sheet
+  // whenever real fullscreen is refused, which looks like a half-open dialog.
+  document.body.style.overflow = 'hidden';
+  const fs = els.videoOverlay.requestFullscreen || els.videoOverlay.webkitRequestFullscreen;
+  if (fs) { const r = fs.call(els.videoOverlay); if (r && r.catch) r.catch(() => {}); }
+  els.demoVideo.currentTime = 0;
+  const p = els.demoVideo.play();
+  if (p && p.catch) p.catch(() => {});   // autoplay refusal: the controls still work
+}
+
+function closeDemoVideo() {
+  els.demoVideo.pause();
+  els.videoOverlay.classList.remove('on');
+  document.body.style.overflow = '';
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    const ex = document.exitFullscreen || document.webkitExitFullscreen;
+    if (ex) { const r = ex.call(document); if (r && r.catch) r.catch(() => {}); }
+  }
+}
+
+els.demoVidBtn.onclick = openDemoVideo;
+els.videoExit.onclick = closeDemoVideo;
+// Leaving fullscreen with Esc or the browser's own control should dismiss the
+// whole overlay too, otherwise the page is left with a black sheet over it and
+// no obvious way back -- an easy way to lose thirty seconds on stage.
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && els.videoOverlay.classList.contains('on')) closeDemoVideo();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && els.videoOverlay.classList.contains('on')) closeDemoVideo();
+});
 
 /* Same reasoning as the calibration block above: the right detection
    thresholds depend on the actual room, which can't be tested from outside

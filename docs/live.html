@@ -437,8 +437,18 @@ const REFINE_STEP = 22;              // px of motion in one frame that is still 
 const REFINE_SMOOTH = 0.4;           // fraction of the way to the new estimate per frame
 const OFF_PHASE_RATIO = 0.55;        // below this share of the beacon's own ON contrast = dark
 const MIN_CONTRAST = 10;             // luma above local background that counts as "lit at all"
-const LOCAL_R = 12;                  // px around the lock that counts as "the tracked light itself"
-const FOCUS_SIGMA = 8;               // px; how fast a neighbour's vote falls off with distance
+// These two are really ANGLES, written as pixel counts at a 640-wide frame.
+// A beacon subtends the same angle whatever the sensor resolution, so on a
+// 320-wide camera a fixed 12 px disc spans twice the angle and swallows lamps
+// it has no business including -- measured as a 3.3%-of-frame error at 320x240
+// against 0.07% at 640. Scaling by frame width keeps the behaviour identical
+// across cameras; the clamp stops an absurd resolution producing a useless
+// radius either way.
+const LOCAL_R_REF = 12;              // "px around the lock that is the tracked light itself", at 640 wide
+const FOCUS_SIGMA_REF = 8;           // "px over which a neighbour's vote falls off", at 640 wide
+function resScale() {
+  return Math.max(0.5, Math.min(3, (els.view.width || 640) / 640));
+}
 const MIN_WEIGHT = 6;                // too little evidence to move on -- hold instead
 const HOLD_MIN = 0.07;               // once locked, what it takes to stay locked
 const HOLD_CFAR = 2.2;
@@ -1124,6 +1134,8 @@ function refine() {
   // this function structurally a refiner: it can sharpen the map's answer, and
   // it cannot walk away from it.
   const cx = anchor ? anchor.x : pos.x, cy = anchor ? anchor.y : pos.y;
+  const rs = resScale();
+  const LOCAL_R = LOCAL_R_REF * rs, FOCUS_SIGMA = FOCUS_SIGMA_REF * rs;
   let localPeak = 0, nBg = 0;
   bgHist.fill(0);
   const lr2 = LOCAL_R * LOCAL_R;

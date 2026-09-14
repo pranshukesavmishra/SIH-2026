@@ -50,6 +50,38 @@ starting point — **written but not yet bench-tested; verify step/dir
 pin assignments and direction signs against your actual driver
 wiring before trusting it.**
 
+### Closed-loop upgrade — AS5600 magnetic encoders (do this if "accurate" needs to mean something)
+
+A stepper alone is still open-loop in the sense that matters: if it ever
+skips a step (stall, snag, power sag) it doesn't know it happened, and
+neither do you. An **AS5600 magnetic rotary encoder** (₹150–250 each,
+I2C, contactless, 12-bit → 0.088°/step resolution) on each motor shaft
+gives the firmware a real, measured angle to compare against the
+commanded one — this is the actual difference between "should be
+accurate" and "is accurate, and the firmware knows when it isn't."
+
+**One wrinkle**: every AS5600 shares the same fixed I2C address (0x36),
+so two of them can't sit on the same bus directly. Add a **TCA9548A I2C
+multiplexer breakout** (~₹100–150) — it puts each encoder on its own
+channel, selected in software before each read. This is a standard,
+well-documented fix, not a workaround.
+
+| # | Item | Qty | ~Price |
+|---|---|---|---|
+| 4a | AS5600 magnetic encoder breakout | 2 | ₹150–250 ea |
+| 4b | TCA9548A I2C multiplexer breakout | 1 | ₹100–150 |
+
+**Be honest about what this actually buys you**: low single-digit
+milliradians of *measured, repeatable* pointing with careful calibration
+— a real, defensible number. It does **not** get a hobby rig anywhere
+near the simulator's microradian-level figures — those are validated
+against a physics model and instrumentation no hackathon budget
+replicates, and the technical report already says so. The rig's job is
+to demonstrate the same closed-loop *principle* honestly, not to match
+the simulator digit-for-digit. Say this proactively if asked — it reads
+as rigor, not a weakness, and it's the same stance `docs/defence_brief.md`
+already takes on the simulator's own limitations.
+
 ## 2. Fine stage — the part that tells the real story
 
 A second, smaller gimbal sits on top of the coarse one, carrying only
@@ -126,19 +158,22 @@ for Mk2 than it did for Mk1.
 | Subsystem | Cost |
 |---|---|
 | Coarse stage (steppers, drivers, bracket, PSU) | ₹1,000–1,550 |
+| Closed-loop encoders (AS5600 ×2 + TCA9548A mux) | ₹400–650 |
 | Fine stage (servos, bracket) | ₹400–550 |
 | Camera (optional upgrade) | ₹0–900 |
 | Ground-truth target (printed, ~₹0) + logger (reuse a phone) | ₹0–100 |
 | Disturbance injector | ₹30–60 |
 | Rigid base | ₹150–300 |
-| **Total** | **≈ ₹1,580–3,460** |
+| **Total** | **≈ ₹1,980–4,110** |
 
 ## Phased build order (don't do it all at once)
 
 1. **Ground-truth target + logger first** (§4) — cheapest, and it lets you
    measure the *current* Mk1 rig's real accuracy before changing anything,
    giving you a before/after number worth putting in front of judges.
-2. **Coarse stepper swap** (§1) — the actual accuracy fix.
+2. **Coarse stepper swap + AS5600 encoders** (§1) — the actual accuracy
+   fix; do these together since the encoders are what let you confirm
+   the stepper swap actually worked.
 3. **Rigid base** (§6) — do this alongside §2, since a wobbly base
    undermines everything above it.
 4. **Fine stage** (§2) — once coarse is solid and measured.

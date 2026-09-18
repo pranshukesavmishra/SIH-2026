@@ -360,10 +360,20 @@ hundred milliamps; a NEMA17 wants an amp or more per phase.
 | D4 | A4988 #2 STEP | Tilt |
 | D5 | A4988 #2 DIR | |
 | D7 | Laser module TTL input | Modulated at 7 Hz in firmware |
-| D8 | Vibration injector, **through a 2N2222 + flyback diode** | Never straight off a pin |
+| D8 | Vibration injector base, **through a 1kΩ base resistor into a 2N2222** | Never straight off a pin |
 | A4 | TCA9548A SDA | |
 | A5 | TCA9548A SCL | |
 | 5 V | A4988 VDD (logic), TCA9548A VCC | Logic only, not motor power |
+
+**The vibration motor's own supply was left unstated here in an earlier
+revision** — worth calling out because the obvious wrong answer, wiring
+it to the 12 V rail sitting right there on the same board, overdrives a
+motor rated 3 V by more than 4×. Run its positive lead from the **Nano's
+own 5 V pin**, through a **27 Ω series resistor**, into the motor, with
+the 2N2222's collector on the motor's negative lead and its emitter to
+ground (flyback diode across the motor, cathode to the 5 V side). At
+27 Ω the motor sees close to its rated 3 V and draws roughly 75 mA —
+small enough that it doesn't compete with the Nano's own 500 mA USB budget alongside everything else on it. Both the base resistor and the 27 Ω motor resistor come out of the assortment kit already on the list (§2E) — it's a mixed-value pack, not a single part, so there's nothing new to buy.
 
 Both drivers' EN pins tie LOW (always enabled). Tie MS1/MS2/MS3 HIGH for
 1/16 microstepping — **check your board's silkscreen**, the truth table

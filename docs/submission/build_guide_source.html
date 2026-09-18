@@ -11,7 +11,7 @@
   }
   body{font-family:var(--sans);color:var(--ink);font-size:9.1pt;line-height:1.45;}
   .page{page-break-after:always;}
-  .page:last-child,.page.last{page-break-after:auto;}
+  .page:last-child{page-break-after:auto;}
   h1{font-size:27pt;line-height:1.04;letter-spacing:-.6pt;font-weight:700;}
   h2{font-size:13pt;font-weight:700;margin:0 0 3mm;letter-spacing:-.2pt;}
   h3{font-size:9.6pt;font-weight:700;margin:4mm 0 1.5mm;}
@@ -19,14 +19,13 @@
   .eyebrow{font-family:var(--mono);font-size:7pt;letter-spacing:2.1pt;
            text-transform:uppercase;color:var(--faint);margin-bottom:3mm;}
   .kicker{font-size:10.5pt;color:var(--mid);line-height:1.5;max-width:150mm;}
-  .rule{border:0;border-top:1.6pt solid var(--ink);margin:4mm 0 4.5mm;}
+  .rule{border:0;border-top:1.6pt solid var(--ink);margin:3.2mm 0 3.6mm;}
   .thin{border:0;border-top:.5pt solid var(--rule);margin:3.5mm 0;}
   
-
   table{width:100%;border-collapse:collapse;font-size:8.5pt;}
-  .bom{font-size:7.25pt;}
-  .bom td{padding:.62mm 2mm .62mm 0;}
-  .bom .sec td{padding:1.05mm 2mm;font-size:6.9pt;}
+  .bom{font-size:7.1pt;}
+  .bom td{padding:.5mm 2mm .5mm 0;}
+  .bom .sec td{padding:.9mm 2mm;font-size:6.7pt;}
   th{text-align:left;font-size:6.8pt;letter-spacing:1.1pt;text-transform:uppercase;
      color:var(--faint);font-weight:700;padding:0 2mm 1.3mm 0;
      border-bottom:.9pt solid var(--ink);}
@@ -77,7 +76,7 @@
   <hr class="rule">
   <p class="kicker">The camera rides on the gimbal, boresighted with the laser. The head
   scans, finds the beacon by its blink, and puts the laser on it — closing the loop on its
-  own dot. One unit, ₹6,331, every part checked.</p>
+  own dot. One unit, ₹6,345, every part checked.</p>
 
   <div class="box warn">
     <div class="boxlbl">Read before you leave for the shop</div>
@@ -125,17 +124,15 @@
     prices. If you already bought from the old list, <b>only the servos were wasted</b>
     (₹399), and everything else carries straight over.</p>
   </div>
-
-  
 </div>
 
 <!-- ============ PAGE 2 ============ -->
 <div class="page">
   <div class="eyebrow">Section 1 · the list</div>
   <h2>Master parts list</h2>
-  <p class="lead" style="margin-bottom:2.5mm"><span class="v">✓ verified</span> = checked against a live
-  Amazon.in listing · <span class="e">~ estimate</span> = market-range planning figure.
-  54% of this total is verified — say so plainly if a judge asks what the rig cost.</p>
+  <p class="lead"><span class="v">✓ verified</span> = checked against a live Amazon.in
+  listing. <span class="e">~ estimate</span> = market-range planning figure, not yet
+  confirmed. 54% of this total is verified; say so plainly if a judge asks what the rig cost.</p>
 
   <table class="bom">
     <tr><th>Item</th><th class="num">Qty</th><th class="num">Unit</th>
@@ -165,29 +162,23 @@
 <tr class="sec"><td colspan="5">F. Beacon — the target</td></tr>
 <tr><td>High-brightness RED LED, 10 mm, 650 nm</td><td class="num">1</td><td class="num">₹22</td><td class="num"><b>₹22</b></td><td><span class="tag e">~ estimate</span></td></tr>
 <tr><td>2N2222 transistor + 220 Ω + 1 kΩ</td><td class="num">1</td><td class="num">₹20</td><td class="num"><b>₹20</b></td><td><span class="tag e">~ estimate</span></td></tr>
-<tr><td>Ping-pong ball (diffuser)</td><td class="num">1</td><td class="num">₹30</td><td class="num"><b>₹30</b></td><td><span class="tag e">~ estimate</span></td></tr>
-<tr><td>9 V battery + clip</td><td class="num">1</td><td class="num">₹115</td><td class="num"><b>₹115</b></td><td><span class="tag e">~ estimate</span></td></tr>
+<tr><td>Ping-pong ball (diffuser)</td><td class="num">1</td><td class="num">₹129</td><td class="num"><b>₹129</b></td><td><span class="tag v">&#10003; verified</span></td></tr>
+<tr><td>USB power bank (any, 5V) — beacon supply</td><td class="num">—</td><td class="num">—</td><td class="num"><b>₹0</b></td><td><span class="tag r">reuse Mk1</span></td></tr>
 <tr><td>SPST toggle switch</td><td class="num">1</td><td class="num">₹25</td><td class="num"><b>₹25</b></td><td><span class="tag e">~ estimate</span></td></tr>
 <tr><td>ABS project box</td><td class="num">1</td><td class="num">₹115</td><td class="num"><b>₹115</b></td><td><span class="tag e">~ estimate</span></td></tr>
 <tr class="sec"><td colspan="5">G. Decoy — the control</td></tr>
 <tr><td>High-brightness WHITE LED (brighter than beacon)</td><td class="num">1</td><td class="num">₹22</td><td class="num"><b>₹22</b></td><td><span class="tag e">~ estimate</span></td></tr>
-<tr><td>150 Ω resistor</td><td class="num">1</td><td class="num">₹5</td><td class="num"><b>₹5</b></td><td><span class="tag e">~ estimate</span></td></tr>
-<tr><td>CR2032 coin cell + holder</td><td class="num">1</td><td class="num">₹60</td><td class="num"><b>₹60</b></td><td><span class="tag e">~ estimate</span></td></tr>
+<tr><td>68 Ω resistor</td><td class="num">1</td><td class="num">₹5</td><td class="num"><b>₹5</b></td><td><span class="tag e">~ estimate</span></td></tr>
+<tr><td>3×AA battery holder + 3 AA cells — decoy supply</td><td class="num">1</td><td class="num">₹90</td><td class="num"><b>₹90</b></td><td><span class="tag e">~ estimate</span></td></tr>
 <tr><td>Switch + scrap housing</td><td class="num">1</td><td class="num">₹35</td><td class="num"><b>₹35</b></td><td><span class="tag e">~ estimate</span></td></tr>
 <tr class="sec"><td colspan="5">H. Consumables</td></tr>
 <tr><td>Dupont jumper wires — M-M, M-F, F-F</td><td class="num">1</td><td class="num">₹150</td><td class="num"><b>₹150</b></td><td><span class="tag e">~ estimate</span></td></tr>
 <tr><td>M3 screws, nuts, standoffs assortment</td><td class="num">1</td><td class="num">₹150</td><td class="num"><b>₹150</b></td><td><span class="tag e">~ estimate</span></td></tr>
 <tr><td>Heat-shrink, solder, hot-glue sticks</td><td class="num">1</td><td class="num">₹150</td><td class="num"><b>₹150</b></td><td><span class="tag e">~ estimate</span></td></tr>
-<tr class="tot"><td>GRAND TOTAL — everything above</td><td class="num"></td><td class="num"></td><td class="num">₹6,331</td><td></td></tr>
+<tr class="tot"><td>GRAND TOTAL — everything above</td><td class="num"></td><td class="num"></td><td class="num">₹6,345</td><td></td></tr>
   </table>
 
-
-  
-</div>
-
-<!-- ============ PAGE 3 ============ -->
-<div class="page">
-  <div class="two" style="margin-top:4mm">
+  <div class="two" style="margin-top:2mm">
     <div class="box note">
       <div class="boxlbl">If the camera is not available today</div>
       <p>Buy everything else and come back for it. The camera is independent of the
@@ -201,38 +192,44 @@
       cannot do. Everything else is comfort.</p>
     </div>
   </div>
+</div>
 
-  <div class="eyebrow" style="margin-top:5mm">Section 2 · at the counter</div>
+<!-- ============ PAGE 3 ============ -->
+<div class="page">
+  <div class="eyebrow">Section 2 · at the counter</div>
   <h2>Five things to check before you pay</h2>
   <p class="lead">Each of these has stopped a build of exactly this kind. Check them in
   the shop, not at home.</p>
 
   <div class="box warn">
     <div class="boxlbl">Check 1 — the magnet must be DIAMETRIC</div>
-    <p>Ask for a <b>diametrically magnetised</b> magnet, 6 mm × 2.5 mm — poles across the
-    diameter, not through the thickness. An ordinary (axial) magnet looks identical and will
-    not work: the AS5600 returns a constant value and you spend a day blaming your code.
-    <b>Test it at the counter</b> with a second small magnet — a diametric one attracts on
-    its curved <i>side</i> edge, an axial one on its flat faces.</p>
+    <p>Ask for a <b>diametrically magnetised</b> magnet, 6 mm × 2.5 mm. Poles across the
+    diameter, not through the thickness. An ordinary (axial) magnet looks identical and
+    will not work — the AS5600 will return a constant value and you will spend a day
+    blaming your code.</p>
+    <p><b>Test it in the shop:</b> bring a second small magnet. A diametric magnet
+    attracts on its curved <i>side</i> edge; an axial one attracts on its flat faces.</p>
   </div>
 
   <div class="box warn">
     <div class="boxlbl">Check 2 — single-shaft or dual-shaft motor?</div>
-    <p>Look at the back of the NEMA17. A short shaft protruding from the rear means
+    <p>Look at the back of the NEMA17. If a short shaft protrudes from the rear, it is
     dual-shaft: glue the magnet to that rear shaft, sensor on a bracket behind. Clean.</p>
-    <p>If the back is flat (the ₹749 verified motor probably is), that is fine — mount the
-    magnet on top of the rotating platform, on the axis of rotation, with the AS5600 on a
-    short fixed arm overhanging it. <b>Keep that arm short and stiff</b>: flex in it reads
-    as pointing error that is not really there. Dual-shaft costs ~₹250 more per motor —
-    worth it if in stock, not worth hunting for.</p>
+    <p>If the back is flat (the ₹749 verified motor probably is), that is fine — mount
+    the magnet on top of the rotating platform, on the axis of rotation, with the AS5600
+    on a short fixed arm overhanging it. <b>Keep that arm short and stiff</b>: flex in it
+    reads as pointing error that is not really there.</p>
+    <p>Dual-shaft costs about ₹250 more per motor. Worth it if in stock, not worth
+    hunting for.</p>
   </div>
 
   <div class="box warn">
     <div class="boxlbl">Check 3 — the camera must allow MANUAL exposure</div>
-    <p>It must be UVC and let software pin exposure and gain. Auto-exposure hunts on every
-    beacon blink — the blink <i>is</i> the signal, and a camera chasing it destroys the thing
-    we detect. An M12 (S-mount) thread matters more than megapixels: it lets you change focal
-    length later. Ask for 12 mm; 8 mm is acceptable, 6 mm at a push.</p>
+    <p>It must be UVC and let software pin exposure and gain. Auto-exposure hunts on
+    every beacon blink — the blink <i>is</i> the signal, and a camera chasing it destroys
+    the thing we detect. An M12 (S-mount) lens thread matters more than megapixels: it
+    lets you change focal length later. Ask for 12 mm; 8 mm is an acceptable substitute,
+    6 mm at a push.</p>
   </div>
 
   <div class="two">
@@ -249,22 +246,19 @@
     </div>
   </div>
 
-  <div class="two" style="margin-top:2mm"><div>
-  <h3 style="color:var(--green)">Safe substitutions</h3>
-  <ul style="font-size:8.4pt">
-    <li><b>A4988 → DRV8825</b> — different microstep table; set <code>MICROSTEPS</code> to match.</li>
-    <li><b>12 V 2 A → 12 V 3 A</b> — more headroom.</li>
-    <li><b>Ping-pong ball → any translucent dome</b> — it is only a diffuser.</li>
-    <li><b>9 V battery → 4×AA holder</b> — lasts far longer.</li>
-  </ul></div><div>
-  <h3 style="color:var(--red)">Do not substitute</h3>
-  <ul style="font-size:8.4pt">
-    <li><b>AS5600 → pot / optical encoder</b> — contactless absolute position is the point.</li>
-    <li><b>Skipping the TCA9548A</b> — both AS5600s are fixed at address 0x36 and cannot share a bus.</li>
-    <li><b>NEMA17 → 28BYJ-48</b> — geared, high backlash, far too slow.</li>
-  </ul></div></div>
-
-  
+  <h3>Substitutions that are safe</h3>
+  <ul>
+    <li><b>A4988 → DRV8825</b> — fine, different microstep table; set <code>MICROSTEPS</code> to match.</li>
+    <li><b>12 V 2 A → 12 V 3 A</b> — fine, more headroom.</li>
+    <li><b>Ping-pong ball → any white translucent dome</b> — fine, it is just a diffuser.</li>
+    <li><b>2×AA → 4×AA holder</b> — fine, and it runs the beacon even longer.</li>
+  </ul>
+  <h3>Substitutions that are not</h3>
+  <ul>
+    <li><b>AS5600 → potentiometer or optical encoder</b> — no. Contactless absolute position is the point.</li>
+    <li><b>Skipping the TCA9548A</b> — no. Both AS5600s are hard-wired to address 0x36 and cannot share a bus.</li>
+    <li><b>NEMA17 → 28BYJ-48</b> — no. Geared, high backlash, far too slow.</li>
+  </ul>
 </div>
 
 <!-- ============ PAGE 4 ============ -->
@@ -304,7 +298,7 @@
         <tr><td class="tag">D4</td><td>A4988 #2 STEP — tilt</td></tr>
         <tr><td class="tag">D5</td><td>A4988 #2 DIR</td></tr>
         <tr><td class="tag">D7</td><td>Laser TTL input</td></tr>
-        <tr><td class="tag">D8</td><td>Vibration motor, <b>via 2N2222 + diode</b></td></tr>
+        <tr><td class="tag">D8</td><td>Vibration base, <b>1k&#937; into a 2N2222</b></td></tr>
         <tr><td class="tag">A4</td><td>TCA9548A SDA</td></tr>
         <tr><td class="tag">A5</td><td>TCA9548A SCL</td></tr>
         <tr><td class="tag">5V</td><td>Driver logic VDD, TCA9548A VCC</td></tr>
@@ -324,6 +318,12 @@
       <p>Tie MS1/MS2/MS3 <b>HIGH</b> for 1/16. Check your board’s silkscreen — the truth
       table differs between vendors, and getting it wrong scales every angle you command,
       silently, because the motor still turns.</p>
+      <p style="margin-top:2mm"><b>Vibration motor supply — easy to get wrong.</b>
+      It is rated 3 V and the 12 V rail sits right there on the same board. Run its
+      positive lead from the Nano&rsquo;s own <b>5 V pin, through a 27&#937; resistor</b>
+      (from the same assortment kit), into the motor; transistor collector on its
+      negative lead, emitter to ground, flyback diode across the motor. At 27&#937; it
+      sees close to its rated 3 V.</p>
     </div>
   </div>
 
@@ -335,8 +335,6 @@
     the end of travel will either pull the head off boresight or tear its connector —
     and both failures look exactly like a software bug.</p>
   </div>
-
-  
 </div>
 
 <!-- ============ PAGE 5 ============ -->
@@ -405,17 +403,16 @@
     repeatably. The decoy is never chased. <b>This is the demo</b> — not any single piece
     of it.</div>
   </div></div>
-
-  
 </div>
 
 <!-- ============ PAGE 6 ============ -->
-<div class="page last">
+<div class="page">
   <div class="eyebrow">Section 5 · why this design</div>
   <h2>The idea worth defending</h2>
 
-  <p>A camera and a laser cannot occupy the same point in space, so “beacon centred in the
-  image” is <i>not</i> “laser on the beacon”. That gap is parallax, and it scales with range:</p>
+  <p>A camera and a laser cannot occupy the same point in space. So “beacon centred in
+  the image” is <i>not</i> “laser on the beacon” — the gap between them is parallax, and
+  it depends on range:</p>
 
   <table style="margin:3mm 0">
     <tr><th>Separation</th><th class="num">0.6 m</th><th class="num">1 m</th>
@@ -427,10 +424,10 @@
   </table>
 
   <p>Against a ~1 mrad pointing budget, parallax is not a correction — at close range it
-  is the whole error budget several times over. Every approach that <i>models</i> it
-  loses: a fixed calibrated offset is wrong at every range but one, estimating the range
-  adds a range estimator to the error chain, and a measured baseline walks away from your
-  number as the mount flexes.</p>
+  is the whole error budget, several times over. Every approach that <i>models</i> it
+  loses: calibrate a fixed offset and it is wrong at every range but one; estimate the
+  range and you have added a range estimator to the error chain; measure the baseline and
+  mount flex walks away from your number over an afternoon.</p>
 
   <div class="box good">
     <div class="boxlbl">So we do not model it — we measure it</div>
@@ -444,26 +441,25 @@
     applied to ourselves: brightness is not identity, modulation is.</b></p>
   </div>
 
-  <div class="two"><div>
   <h3>What this maps onto in PS26169</h3>
-  <table style="font-size:8pt">
-    <tr><th>PS stage</th><th>Mk3</th></tr>
-    <tr><td>Coarse acquisition</td><td>Scan; find the 4 Hz beacon by modulation; slew to centre it</td></tr>
+  <table>
+    <tr><th style="width:52mm">Problem statement stage</th><th>Mk3</th></tr>
+    <tr><td>Coarse acquisition</td><td>Gimbal scans; finds the 4 Hz beacon by modulation; slews to centre it</td></tr>
     <tr><td>Handoff</td><td>Laser on; its dot enters the field of view</td></tr>
     <tr><td>Fine alignment</td><td>Closed loop on the dot-to-beacon pixel error</td></tr>
   </table>
-  </div><div>
+
   <h3>The accuracy you will actually get</h3>
-  <table style="font-size:8pt">
+  <table>
     <tr><th>Stage</th><th class="num">Value</th></tr>
     <tr><td>Step size — 1.8° ÷ 16 microsteps</td><td class="num">0.1125° = 1.96 mrad</td></tr>
     <tr><td>AS5600, 12-bit, measured position</td><td class="num">0.0879° = 1.53 mrad</td></tr>
     <tr><td>Camera, 12 mm lens, 1280 px across 22°</td><td class="num">0.30 mrad/px</td></tr>
     <tr><td>Centroid, ~1/5 px on a clean spot</td><td class="num">~0.06 mrad</td></tr>
   </table>
-  </div></div>
   <p style="margin-top:2mm"><b>The camera is never the limiting element — the mechanism
-  is.</b> At 0.30 mrad/px against a 1.5 mrad mechanism, a better sensor buys nothing.</p>
+  is.</b> Worth knowing before spending on optics: at 0.30 mrad/px against a 1.5 mrad
+  mechanism, a better sensor buys nothing.</p>
 
   <div class="box warn">
     <div class="boxlbl">Say this before a judge asks it</div>
@@ -474,22 +470,21 @@
     Volunteering that reads as rigour, not weakness.</p>
   </div>
 
-  <div class="box warn" style="margin-top:3mm">
-    <div class="boxlbl">Safety</div>
-    <p style="margin-bottom:0">5 mW, Class 3R, 650 nm — never at eyes or faces. The head
-    moves under software control, so keep the laser off (<code>L0</code>) during any scan
-    that sweeps across standing people, and enable it only once the head is settled on the
-    beacon board. Kill switch on the 12 V motor rail, reachable without leaning into the
-    gimbal’s travel. Steppers warm under stall — never leave the rig powered and jammed.</p>
-  </div>
+  <h3>Safety</h3>
+  <ul>
+    <li>5 mW, Class 3R, 650 nm. Never at eyes or faces.</li>
+    <li>The head moves under software control. Keep the laser off (<code>L0</code>)
+    during any scan whose sweep crosses standing people; enable it only once the head is
+    settled on the beacon board.</li>
+    <li>Kill switch on the 12 V motor rail, reachable without leaning into the gimbal’s travel.</li>
+    <li>Steppers warm up under stall. Never leave the rig powered and jammed.</li>
+  </ul>
 
-  <hr class="thin" style="margin:2.5mm 0">
-  <p style="font-size:7.2pt;color:var(--faint)">ZeroDrift · Team SIH26169 · ISRO ·
+  <hr class="thin">
+  <p style="font-size:7.6pt;color:var(--faint)">ZeroDrift · Team SIH26169 · ISRO ·
   github.com/pranshukesavmishra/SIH-2026 — <code>docs/TERMINAL_MK3.md</code> is the
   source of truth; this PDF is its summary. Protocol in
   <code>docs/HARDWARE_PROTOCOL.md</code>.</p>
-
-  
 </div>
 
 </body></html>

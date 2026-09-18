@@ -54,33 +54,40 @@ class SerialGimbal:
 
     def __init__(self, port: str, baud: int = 115200,
                  scale: Tuple[float, float] = (1.0, 1.0),
-                 offset_rad: Tuple[float, float] = (0.0, 0.0),
-                 status_timeout_s: float = 0.05):
+                 offset_rad: Tuple[float, float] = (0.0, 0.0)):
         import serial                                    # pyserial
         self.ser = serial.Serial(port, baud, timeout=0.05)
         time.sleep(2.5)                                  # Nano resets on open
-        self.scale = counts_per_rad                      # calibration output
+        self.scale = scale                               # calibration output
         self.offset = offset_rad
-        self.status_timeout_s = status_timeout_s
         self.az = 0.0
         self.el = 0.0
-        self.encoder_backed = False       # was the last reading measured?
-        self.moving = False
-        self.stale_reads = 0              # queries that got no answer
+        self.sent: List[str] = []                        # debug tail
 
     # -- outbound ---------------------------------------------------------
 
     def _send(self, line: str) -> None:
-        # Every command is newline-terminated. A missing newline leaves the
-        # firmware holding a partial line, which then eats the front of the
-        # next command -- silently dropping a pointing update.
+        """
+        The only place bytes reach the wire.
+
+        Every command is newline-terminated. A command without one leaves
+        the firmware holding a partial line in its buffer, which then
+        consumes the front of the next command -- so a laser toggle
+        silently swallows the pointing update that follows it. That was a
+        live bug here: `laser()` wrote b"L1" with no terminator while
+        every other method terminated correctly. Routing all four through
+        one method is what stops it recurring.
+        """
+        self.sent.append(line)
+        if len(self.sent) > 200:
+            del self.sent[:100]
         self.ser.write((line + "\n").encode())
 
     def raw_command(self, pan_deg: float, tilt_deg: float) -> None:
         """Send an absolute P/T command exactly as the firmware expects it."""
         pan = int(round(np.clip(pan_deg, *self.PAN_LIMITS)))
         tilt = int(round(np.clip(tilt_deg, *self.TILT_LIMITS)))
-        self.ser.write(f"P{pan} T{tilt}\n".encode())
+        self._send(f"P{pan} T{tilt}")
 
     def command(self, az: float, el: float) -> None:
         pan = np.degrees((az - self.offset[0]) * self.scale[0]) + 90.0
@@ -89,6 +96,14 @@ class SerialGimbal:
         self.az, self.el = az, el
 
     def reported_pointing(self) -> Tuple[float, float]:
+        """
+        Where the mount is, as far as we know.
+
+        The Mk1 firmware has no status query and the servos have no
+        feedback, so this is the last commanded position and nothing
+        more. Honest by construction -- there is no measurement here to
+        report, and pretending otherwise would be worse than the gap.
+        """
         return self.az, self.el
 
     def centre(self) -> None:
@@ -96,7 +111,7 @@ class SerialGimbal:
         self.az, self.el = 0.0, 0.0
 
     def laser(self, on: bool) -> None:
-        self.ser.write(b"L1" if on else b"L0")
+        self._send("L1" if on else "L0")
 
 
 class UsbCamera:

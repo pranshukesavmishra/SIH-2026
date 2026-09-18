@@ -204,10 +204,10 @@ def _tle(b: Beacon, t: float):
         b._walk_state = Satrec.twoline2rv(p["line1"], p["line2"])
     sat = b._walk_state
 
-    import datetime as _dt
-    epoch = _dt.datetime(2000, 1, 1) + _dt.timedelta(
-        days=sat.epochdays - 1.0) + _dt.timedelta(days=365.25 * (sat.epochyr - 2000) * 0)
-    # Days since epoch year start handled by sgp4 internally via jd fields:
+    # sgp4 carries the epoch in jdsatepoch/jdsatepochF, so there is nothing
+    # to reconstruct here. An earlier revision built a datetime from
+    # epochdays/epochyr and never used it -- its final term was multiplied
+    # by zero, which is the tell.
     jd = sat.jdsatepoch + sat.jdsatepochF + (p.get("epoch_offset_s", 0.0) + t) / 86400.0
     err, r_teme, _ = sat.sgp4(jd, 0.0)
     if err != 0:

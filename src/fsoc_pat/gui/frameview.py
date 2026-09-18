@@ -74,9 +74,12 @@ class FrameView(QWidget):
 
     def update_frame(self, frame, telemetry, tracker) -> None:
         img = frame.image
-        display = self._to_display(img)
-        h, w = display.shape
-        self._image = QImage(display.data, w, h, w, QImage.Format_Grayscale8).copy()
+        # Not named `display`: that is the module this file imports, and
+        # shadowing it here would make any later use of it in this method
+        # fail with an unhelpful AttributeError on a numpy array.
+        shown = self._to_display(img)
+        h, w = shown.shape
+        self._image = QImage(shown.data, w, h, w, QImage.Format_Grayscale8).copy()
         self._frame = frame
         self._telemetry = telemetry
         self._tracker = tracker
@@ -145,7 +148,7 @@ class FrameView(QWidget):
         painter.setRenderHint(QPainter.Antialiasing, True)
 
         self._draw_frame_furniture(painter, rect)
-        frame, tel = self._frame, self._telemetry
+        tel = self._telemetry
 
         if self.show_truth:
             self._draw_truth(painter, rect, iw, ih)

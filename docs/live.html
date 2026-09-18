@@ -1435,13 +1435,40 @@ function drawHud() {
     // screen from the beacon the operator is looking at.
     const mx = MIRROR_VIEW ? w - pos.x : pos.x;
     const coasting = ds === 'COASTING';
-    c.strokeStyle = coasting ? '#FFC24D' : '#3BD68C';
+    const col = coasting ? '#FFC24D' : '#3BD68C';
+    // Four-arc instrument reticle, identical in geometry to the Qt view
+    // (gui/frameview.py) and the exported video (video.py). Gaps sit on
+    // the diagonals and are bridged by ticks, so the break reads as
+    // design; the cardinals stay clear of the beacon itself. Previously
+    // two plain concentric circles here, which worked but did not match
+    // the other two renderers -- one instrument, three surfaces.
+    const R = 22, GAP = 13 * Math.PI / 180, Q = Math.PI / 2;
+    const arcs = [0, 1, 2, 3].map(i => (Math.PI / 4) + i * Q);
+
+    c.save();
     if (coasting) c.setLineDash([6, 5]);
-    c.lineWidth = 2.5;
-    c.beginPath(); c.arc(mx, pos.y, 22, 0, 6.284); c.stroke();
-    c.lineWidth = 1; c.globalAlpha = .6;
-    c.beginPath(); c.arc(mx, pos.y, 33, 0, 6.284); c.stroke();
-    c.setLineDash([]);
+
+    // Halo: holds an edge against both a dark room and a blown-out source.
+    c.strokeStyle = col; c.globalAlpha = .18; c.lineWidth = 6;
+    c.beginPath();
+    for (const a of arcs) c.arc(mx, pos.y, R, a + GAP, a + Q - GAP);
+    c.stroke();
+
+    c.globalAlpha = 1; c.lineWidth = 2.2;
+    for (const a of arcs) {
+      c.beginPath(); c.arc(mx, pos.y, R, a + GAP, a + Q - GAP); c.stroke();
+    }
+
+    c.setLineDash([]); c.lineWidth = 1.6;
+    for (const a of arcs) {
+      const ca = Math.cos(a), sa = Math.sin(a);
+      c.beginPath();
+      c.moveTo(mx + ca * (R + 3), pos.y + sa * (R + 3));
+      c.lineTo(mx + ca * (R + 9), pos.y + sa * (R + 9));
+      c.stroke();
+    }
+    c.restore();
+    c.strokeStyle = col;
     // Velocity vector: makes "the tracker knows where it is going" visible.
     const spd = Math.hypot(vel.x, vel.y);
     if (spd > 1.2) {

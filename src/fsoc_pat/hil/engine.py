@@ -178,8 +178,7 @@ class LiveEngine:
         self._last_reported = reported
         frame = LiveFrame(index=self.index, time_s=float(t), image=image,
                           pointing_true=reported, pointing_reported=reported)
-        started = time.perf_counter()
-        cmd = self.tracker.update(frame)
+        cmd = self.tracker.update(frame)   # times itself; see processing_ms
         self.last_command = (float(cmd[0]), float(cmd[1]))
 
         state = self.tracker.state

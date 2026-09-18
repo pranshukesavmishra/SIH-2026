@@ -1,86 +1,81 @@
-// ZeroDrift Beacon Unit firmware — DRAFT, not yet bench-tested.
-// Verify wiring and measured blink rate (phone slow-mo or a scope) before
-// calling the frequency "precise" in front of a judge.
+// ZeroDrift beacon unit — a frequency-precise blinking LED target.
 //
-// Companion to rig_firmware_v2.ino (the tracker) — this is the target it
-// tracks. Runs standalone on its own Nano, its own battery; no wired
-// connection to the tracker at demo time. Serial is for bench setup only.
+// Replaces "hold up a phone strobe app" with a signal whose frequency is
+// commanded, stable, and known — the ground truth the tracker's adaptive
+// blink-frequency estimator is validated against live: type F6.0 here,
+// watch the dashboard's "measured blink" follow to 6.0 Hz.
 //
-// Serial protocol @ 115200 baud, newline-terminated commands:
-//   F<float>   set blink frequency in Hz, e.g. F4.0 (boot default: 4.0)
-//   B<0-255>   set brightness (PWM duty cycle at the LED's ON phase)
-//   M0         steady-on (no blink) — for A/B comparison against the
-//              separate decoy unit
-//   M1         blinking mode (boot default)
+// Serial protocol @ 115200 baud, newline-terminated (matches the
+// cross-session briefing):
+//   F<float>   blink frequency in Hz (boot default 4.0; 0.5 .. 14.0)
+//   B<0-255>   brightness (PWM)
+//   M0 / M1    steady-on / blinking
 //
-// Timing note: the blink is referenced against micros(), not delay() or a
-// counted loop — delay()-based timing drifts under any interrupt load
-// (Serial RX included), and the entire point of building this instead of
-// using a phone app is that the frequency should actually be the number
-// printed on it.
+// Every accepted command is echoed back ("OK F6.00") so a laptop script
+// can log exactly what the beacon was doing at any moment. Runs from a
+// battery once flashed — the serial port is only needed to command it.
+//
+// Wiring: LED (+ series resistor, ~220R for a standard 5 mm high-bright
+// LED) on pin 9 (PWM). 50% duty cycle, millis()-based so drift stays far
+// below what a 30 fps camera can resolve.
 
-const int LED_PIN = 9;   // PWM-capable pin, drives the transistor base
+const int LED_PIN = 9;
 
-float blinkHz = 4.0;
-uint8_t brightness = 255;
-bool blinkMode = true;
+float blink_hz = 4.0;
+int brightness = 255;
+bool blinking = true;
 
-unsigned long halfPeriodUs = 125000;   // recomputed whenever blinkHz changes
-unsigned long lastToggleUs = 0;
-bool ledOn = false;
+unsigned long period_ms = 250;   // 1000 / 4.0
+char line[24];
+byte n = 0;
 
-void recomputePeriod() {
-  if (blinkHz <= 0.01) blinkHz = 0.01;   // guard against div-by-zero from bad input
-  halfPeriodUs = (unsigned long)(500000.0 / blinkHz);   // half of 1e6/Hz
+void apply() {
+  period_ms = (unsigned long)(1000.0 / blink_hz);
+  if (period_ms < 36) period_ms = 36;      // ~14 Hz cap: stay observable
 }
 
 void setup() {
-  Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
-  recomputePeriod();
-  lastToggleUs = micros();
+  Serial.begin(115200);
+  apply();
+  Serial.println("ZeroDrift beacon ready  F4.00 B255 M1");
+}
+
+void handle() {
+  line[n] = 0;
+  if (line[0] == 'F') {
+    float f = atof(line + 1);
+    if (f >= 0.5 && f <= 14.0) {
+      blink_hz = f;
+      apply();
+      Serial.print("OK F"); Serial.println(blink_hz);
+    } else {
+      Serial.println("ERR F range 0.5-14.0");
+    }
+  } else if (line[0] == 'B') {
+    int b = atoi(line + 1);
+    if (b >= 0 && b <= 255) {
+      brightness = b;
+      Serial.print("OK B"); Serial.println(brightness);
+    }
+  } else if (line[0] == 'M') {
+    blinking = (line[1] == '1');
+    Serial.print("OK M"); Serial.println(blinking ? 1 : 0);
+  }
+  n = 0;
 }
 
 void loop() {
-  static char buf[24];
-  static int n = 0;
-
   while (Serial.available()) {
     char c = Serial.read();
-    if (c == '\n' || n >= 23) {
-      buf[n] = 0;
-      n = 0;
-      handleLine(buf);
-    } else {
-      buf[n++] = c;
-    }
+    if (c == '\n' || c == '\r') { if (n) handle(); }
+    else if (n < sizeof(line) - 1) line[n++] = c;
   }
-
-  if (!blinkMode) {
-    analogWrite(LED_PIN, brightness);   // steady-on at the set brightness
-    return;
+  // 50% duty square wave, phase-continuous across frequency changes
+  bool on = true;
+  if (blinking) {
+    unsigned long ph = millis() % period_ms;
+    on = ph < period_ms / 2;
   }
-
-  unsigned long now = micros();
-  if (now - lastToggleUs >= halfPeriodUs) {
-    lastToggleUs = now;
-    ledOn = !ledOn;
-    analogWrite(LED_PIN, ledOn ? brightness : 0);
-  }
-}
-
-void handleLine(const char *line) {
-  if (line[0] == 'F') {
-    float hz = atof(line + 1);
-    if (hz > 0) {
-      blinkHz = hz;
-      recomputePeriod();
-    }
-  } else if (line[0] == 'B') {
-    int v = atoi(line + 1);
-    brightness = (uint8_t)constrain(v, 0, 255);
-  } else if (line[0] == 'M') {
-    blinkMode = (line[1] != '0');
-    if (!blinkMode) analogWrite(LED_PIN, brightness);
-  }
+  analogWrite(LED_PIN, on ? brightness : 0);
 }

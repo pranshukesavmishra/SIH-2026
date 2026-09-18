@@ -20,3 +20,9 @@ team_private/
 # Local deployment and temporary screenshot
 .netlify/
 image.png
+
+# rig runtime artefacts
+tools/rig/rig_debug.log
+tools/rig/rig_report.json
+tools/rig/dist/
+packaging/dist/

@@ -32,11 +32,18 @@ def _cut(image: np.ndarray, u: float, v: float, patch: int) -> np.ndarray:
 
 
 def harvest(n_runs: int = 24, frames: int = 8, patch: int = 11,
-            base_seed: int = 1000, verbose: bool = False
+            base_seed: int = 1000, verbose: bool = False,
+            blink_hz: float = 4.0,
+            amplitude_range: Tuple[float, float] = (1.5e6, 1.2e7)
             ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Returns (stacks, labels): label 1 = the true beacon, 0 = anything else
     (stars, clutter, decoys, empty sky).
+
+    ``blink_hz`` and ``amplitude_range`` parametrise the sweep axes the
+    identification benchmark (tools/benchmark_id.py) walks; the defaults are
+    exactly the values training always used, so existing callers are
+    unchanged.
     """
     stacks: List[np.ndarray] = []
     labels: List[int] = []
@@ -53,17 +60,20 @@ def harvest(n_runs: int = 24, frames: int = 8, patch: int = 11,
             az_deg=0.3, el_deg=20.2,
             az_rate_deg_s=float(rng.uniform(-0.4, 0.4)),
             el_rate_deg_s=float(rng.uniform(-0.2, 0.2)), range_km=800.0)
-        beacon.amplitude_e_s = float(rng.uniform(1.5e6, 1.2e7))
-        beacon.blink_hz = 4.0
+        beacon.amplitude_e_s = float(rng.uniform(*amplitude_range))
+        beacon.blink_hz = float(blink_hz)
         beacon.blink_duty = 0.5
         # A hard negative that moves AND blinks -- at the wrong frequency.
         # Without it the network could pass by learning "anything that pulses",
         # which is not identification, just novelty detection.
         from ..config import BeaconConfig, TrajectoryConfig
-        wrong_hz = float(rng.choice([1.5, 2.5, 6.5, 9.0]))
+        # Imposter frequency: anything plausibly beacon-like except the truth.
+        wrong_pool = [f for f in (1.5, 2.5, 6.5, 9.0, 11.0)
+                      if abs(f - blink_hz) > 0.9]
+        wrong_hz = float(rng.choice(wrong_pool))
         cfg.beacons.append(BeaconConfig(
             name="imposter", is_decoy=True,
-            amplitude_e_s=float(rng.uniform(1.5e6, 1.2e7)),
+            amplitude_e_s=float(rng.uniform(*amplitude_range)),
             blink_hz=wrong_hz, blink_duty=0.5,
             trajectory=TrajectoryConfig("linear", dict(
                 az_deg=0.3 + float(rng.uniform(-1.5, 1.5)),

@@ -36,32 +36,30 @@ class LiveFrame:
 
 class SerialGimbal:
     """
-    The pan-tilt stage, presenting the virtual Gimbal's command surface.
+    The Nano pan-tilt (rig_firmware.ino), presenting the virtual Gimbal's
+    command surface.
 
     Angles are radians at this interface, exactly as in the simulation;
-    degrees exist only on the wire. The firmware owns every mechanical
-    constant -- microstepping, belt ratio, steps per degree -- so nothing
-    here changes when the mechanics do.
-
-    Speaks PROTOCOL v3 (docs/HARDWARE_PROTOCOL.md). Earlier revisions of
-    this class sent degrees to a firmware that parsed motor steps, and
-    queried a status endpoint that did not exist. Both are fixed here,
-    and `check_protocol()` exists so that a mismatch is caught in one
-    line at startup instead of presenting as a tracker that mysteriously
-    never locks.
+    degrees exist only on the wire. The firmware's actual protocol is
+    strict about it: integer degrees, "P<pan> T<tilt>\\n" with no space
+    after P and no decimals (it parses with sscanf "%d"), no query
+    command, no centre command -- it only understands P/T and L0/L1.
+    There is no telemetry echo, so `reported_pointing` returns the last
+    commanded position rather than reading hardware state back; the real
+    world offers no ground truth here anyway (see LiveFrame.primary).
     """
 
-    #: Bump whenever the wire format changes incompatibly.
-    PROTOCOL = 3
+    PAN_LIMITS = (20, 160)     # matches the firmware's own constrain()
+    TILT_LIMITS = (40, 140)
 
     def __init__(self, port: str, baud: int = 115200,
                  scale: Tuple[float, float] = (1.0, 1.0),
                  offset_rad: Tuple[float, float] = (0.0, 0.0),
                  status_timeout_s: float = 0.05):
         import serial                                    # pyserial
-        self.ser = serial.Serial(port, baud, timeout=0.02)
-        time.sleep(2.0)                                  # board resets on open
-        self.scale = scale
+        self.ser = serial.Serial(port, baud, timeout=0.05)
+        time.sleep(2.5)                                  # Nano resets on open
+        self.scale = counts_per_rad                      # calibration output
         self.offset = offset_rad
         self.status_timeout_s = status_timeout_s
         self.az = 0.0
@@ -78,127 +76,27 @@ class SerialGimbal:
         # next command -- silently dropping a pointing update.
         self.ser.write((line + "\n").encode())
 
+    def raw_command(self, pan_deg: float, tilt_deg: float) -> None:
+        """Send an absolute P/T command exactly as the firmware expects it."""
+        pan = int(round(np.clip(pan_deg, *self.PAN_LIMITS)))
+        tilt = int(round(np.clip(tilt_deg, *self.TILT_LIMITS)))
+        self.ser.write(f"P{pan} T{tilt}\n".encode())
+
     def command(self, az: float, el: float) -> None:
-        pan = np.degrees((az - self.offset[0]) * self.scale[0])
-        tilt = np.degrees((el - self.offset[1]) * self.scale[1])
-        self._send(f"P {pan:.3f} {tilt:.3f}")
-
-    def laser(self, mode) -> None:
-        """
-        False/0 -> off, True -> steady on, a number -> modulate at that Hz.
-
-        Modulating matters: the camera identifies the laser's own dot by
-        its frequency, the same way it identifies the beacon. That is what
-        lets the fine loop close on the dot-to-beacon error and cancel
-        parallax instead of modelling it.
-        """
-        if mode is False or mode == 0:
-            self._send("L0")
-        elif mode is True:
-            self._send("L1")
-        else:
-            self._send(f"L{float(mode):.2f}")
-
-    def vibration(self, on: bool) -> None:
-        self._send("V1" if on else "V0")
-
-    def centre(self) -> None:
-        self._send("C")
-
-    def zero(self) -> None:
-        """Declare the current physical position to be (0, 0)."""
-        self._send("Z")
-
-    # -- inbound ----------------------------------------------------------
+        pan = np.degrees((az - self.offset[0]) * self.scale[0]) + 90.0
+        tilt = np.degrees((el - self.offset[1]) * self.scale[1]) + 90.0
+        self.raw_command(pan, tilt)
+        self.az, self.el = az, el
 
     def reported_pointing(self) -> Tuple[float, float]:
-        """
-        Where the stage actually is, in radians.
-
-        Encoder reading when the stage is at rest and the encoders
-        answered; commanded position otherwise. Which one you got is in
-        `encoder_backed`. On no reply the previous value is returned and
-        `stale_reads` increments -- a climbing `stale_reads` means the
-        firmware is not answering, not that the rig is holding still.
-        """
-        self._send("?")
-        deadline = time.time() + self.status_timeout_s
-        while time.time() < deadline:
-            raw = self.ser.readline().decode(errors="ignore").strip()
-            if not raw or raw.startswith("#"):
-                continue                                  # firmware log line
-            if not raw.startswith("S "):
-                continue
-            parts = raw.split()
-            if len(parts) < 3:
-                continue
-            try:
-                pan_deg, tilt_deg = float(parts[1]), float(parts[2])
-            except ValueError:
-                continue
-            self.encoder_backed = len(parts) > 3 and parts[3] == "E"
-            self.moving = len(parts) > 4 and parts[4] == "1"
-            self.az = np.radians(pan_deg) / self.scale[0] + self.offset[0]
-            self.el = np.radians(tilt_deg) / self.scale[1] + self.offset[1]
-            return self.az, self.el
-        self.stale_reads += 1
         return self.az, self.el
 
-    def check_protocol(self) -> bool:
-        """
-        Confirm the firmware answers a status query before the run starts.
+    def centre(self) -> None:
+        self.raw_command(90, 90)
+        self.az, self.el = 0.0, 0.0
 
-        Cheap, and it turns this rig's worst failure mode -- software and
-        firmware disagreeing about the wire format, which looks exactly
-        like "the tracker just never locks" -- into one line at startup.
-        """
-        before = self.stale_reads
-        self.reported_pointing()
-        return self.stale_reads == before
-
-
-class PiGlobalShutterCamera:
-    """
-    The Mk3 head camera: Raspberry Pi Global Shutter (IMX296), C-mount.
-
-    Global shutter is a nice-to-have here, not a requirement -- an earlier
-    revision of this docstring overstated it. A rolling shutter exposes
-    rows at different instants, but its readout is 10-30 ms against a
-    250 ms blink period, and the fine loop measures when the head is at
-    rest, so the smear is small. `UsbCamera` below is the Tier A path and
-    is fully adequate; this class exists for the Raspberry Pi build.
-
-    Exposure and gain are pinned manually for the same reason auto-exposure
-    is banned on the USB path: the loop hunts on every beacon blink.
-    """
-
-    def __init__(self, exposure_us: int = 4000, gain: float = 1.0,
-                 width: int = 1456, height: int = 1088):
-        from picamera2 import Picamera2                   # Pi only
-        self.cam = Picamera2()
-        cfg = self.cam.create_video_configuration(
-            main={"size": (width, height), "format": "RGB888"})
-        self.cam.configure(cfg)
-        self.cam.set_controls({
-            "AeEnable": False,
-            "AwbEnable": False,
-            "ExposureTime": int(exposure_us),
-            "AnalogueGain": float(gain),
-        })
-        self.cam.start()
-        time.sleep(0.5)                                   # let controls settle
-
-    def read(self) -> Optional[np.ndarray]:
-        frame = self.cam.capture_array()
-        if frame is None:
-            return None
-        # Luminance, then scale 8-bit up to the 12-bit range the pipeline
-        # was built against, so every threshold carries over unchanged.
-        gray = frame[..., :3].mean(axis=2)
-        return (gray.astype(np.uint16) << 4)
-
-    def release(self) -> None:
-        self.cam.stop()
+    def laser(self, on: bool) -> None:
+        self.ser.write(b"L1" if on else b"L0")
 
 
 class UsbCamera:
@@ -212,7 +110,13 @@ class UsbCamera:
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         if exposure is not None:
             # Auto-exposure hunts on every beacon blink; manual is mandatory.
+            # V4L2 (Linux) wants CAP_PROP_AUTO_EXPOSURE=0.25 for manual mode;
+            # AVFoundation (macOS) wants the flag at 0 instead and largely
+            # ignores CAP_PROP_EXPOSURE's absolute scale -- so try both and
+            # don't treat either failing as fatal, just best-effort locking.
             self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)   # V4L2: manual
+            self.cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
+            self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0)      # AVFoundation: manual
             self.cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
         if gain is not None:
             self.cap.set(cv2.CAP_PROP_GAIN, gain)
@@ -229,3 +133,64 @@ class UsbCamera:
 
     def release(self) -> None:
         self.cap.release()
+
+
+def find_serial_port() -> Optional[str]:
+    """
+    Best-effort auto-detect of the Arduino: scan the system's serial ports
+    for one that looks like a USB-serial adapter (CH340/CP210x/FTDI-style
+    names on macOS/Linux, or any COMx on Windows) rather than a Bluetooth
+    or virtual/debug port. Returns None if nothing plausible is found --
+    callers should fall back to asking the user.
+    """
+    from serial.tools import list_ports
+
+    candidates = list(list_ports.comports())
+    if not candidates:
+        return None
+
+    def score(p) -> int:
+        dev = (p.device or "").lower()
+        desc = (p.description or "").lower()
+        s = 0
+        if "usbserial" in dev or "wchusbserial" in dev or "usbmodem" in dev:
+            s += 10
+        if "ch340" in desc or "ch34" in desc:
+            s += 8
+        if "cp210" in desc:
+            s += 8
+        if "ftdi" in desc or "ft232" in desc:
+            s += 8
+        if "arduino" in desc:
+            s += 8
+        if dev.startswith("/dev/cu.") and "bluetooth" not in dev and "debug" not in dev:
+            s += 3
+        if dev.upper().startswith("COM"):
+            s += 3
+        if "bluetooth" in dev or "debug" in dev:
+            s -= 20
+        return s
+
+    best = max(candidates, key=score)
+    return best.device if score(best) > 0 else None
+
+
+def find_camera(max_index: int = 4) -> Optional[int]:
+    """
+    Best-effort auto-detect of a working camera: try indices in order and
+    return the first one that actually opens and yields a real frame.
+    Distinguishes "no camera" from "camera present but access denied" so
+    callers can tell the user which problem they actually have.
+    """
+    import cv2
+
+    for idx in range(max_index):
+        cap = cv2.VideoCapture(idx)
+        if not cap.isOpened():
+            cap.release()
+            continue
+        ok, frame = cap.read()
+        cap.release()
+        if ok and frame is not None:
+            return idx
+    return None

@@ -68,6 +68,8 @@ class TrackerTelemetry:
     on_decoy: bool = False
     modulation_score: float = 0.0
     ai_score: Optional[float] = None
+    est_blink_hz: Optional[float] = None   # measured from the flux, not assumed
+    est_blink_conf: float = 0.0
     mode_probabilities: Tuple[float, float] = (0.5, 0.5)
     command: Optional[Tuple[float, float]] = None
     detection_snr: Optional[float] = None
@@ -410,6 +412,8 @@ class CoarseAlignmentTracker:
             gimbal_rate_frac=rate_frac,
             modulation_score=primary.modulation_score if primary else 0.0,
             ai_score=primary.ai_score if primary else None,
+            est_blink_hz=primary.est_blink_hz if primary else None,
+            est_blink_conf=primary.est_blink_conf if primary else 0.0,
             mode_probabilities=tuple(primary.imm.mu) if primary else (0.5, 0.5),
             command=command,
             detection_snr=primary.last_detection.snr

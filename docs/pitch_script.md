@@ -79,7 +79,10 @@ earns.
 **"Why no hardware?"**
 The problem statement is Software category, and its stated purpose is developing
 these algorithms WITHOUT expensive optics. Our contribution is exactly that: the
-entire validation loop needs nothing but a laptop.
+entire validation loop needs nothing but a laptop. The pan-tilt rig on the table
+is a ₹700 side prop we built to visualise the identification principle physically
+— it is not part of our validation, which is 100% simulated, measured, and
+reproducible from one command.
 
 **"What's novel here?"**
 The identification gate. Everyone can detect bright dots; the hard part is never

@@ -9,7 +9,6 @@ pip install -e . pyinstaller PySide6 pyqtgraph || goto :error
 pyinstaller --noconfirm --clean packaging\fsoc-pat.spec || goto :error
 echo.
 echo Build complete: dist\fsoc-pat\fsoc-pat.exe
-echo Ship the whole dist\fsoc-pat folder (zip it for submission).
 goto :eof
 :error
 echo BUILD FAILED

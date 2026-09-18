@@ -20,6 +20,7 @@ from . import geometry as geo
 from .config import SimConfig
 from .pipeline import CoarseAlignmentTracker
 from .simulator import Simulator
+from . import display
 
 # The GUI's palette (gui/theme.py), as BGR for OpenCV, so exported frames and
 # the live console are visibly the same instrument.
@@ -38,7 +39,9 @@ PANEL_W = 360
 def render(frame, telemetry, tracker, error_trace) -> np.ndarray:
     img = frame.image
     h, w = img.shape
-    view = np.clip(img.astype(np.float32) / max(img.max(), 1) * 255, 0, 255).astype(np.uint8)
+    # Shared with the Qt view: see display.py for why max()-normalisation
+    # was wrong in both places.
+    view = display.to_display(img)
     view = cv2.cvtColor(view, cv2.COLOR_GRAY2BGR)
 
     colour = STATE_BGR.get(telemetry.state.value, (200, 200, 200))

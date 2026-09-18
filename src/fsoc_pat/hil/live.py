@@ -24,6 +24,12 @@ noise and put a fragile servo at risk. Nothing commands the hardware
 here until there is something real to point at.
 
 Keys:  q = quit   c = re-centre   l = laser toggle
+
+NOTE: this console uses the lightweight rig_detect stack, kept as the
+low-dependency fallback. The FULL engine on live frames -- CFAR, IMM,
+Smith predictor, AI verifier, adaptive blink estimation, browser
+dashboard -- is `python -m fsoc_pat.hil.serve` (hil/engine.py); prefer
+it whenever the laptop can spare the cycles.
 """
 from __future__ import annotations
 

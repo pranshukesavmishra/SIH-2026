@@ -116,6 +116,24 @@ assets: `docs/submission/deck_src/` — `python build_deck_v3.py` regenerates it
       confirmed**. Canonical decimals above refreshed from that rerun; the
       p50 1.27 s, max 4.0 s, min 91.6 % and 0/64 are unchanged.
 
+**Mk2 live software — DONE (18 Sept, `mk2-live-software` branch)**
+- [x] The REAL engine on real camera frames: `hil/engine.py` runs
+      `CoarseAlignmentTracker` (CFAR, blink gate + adaptive frequency, IMM,
+      Smith predictor, AI verifier) on live/video/array frames — the
+      "identical code drives real optics" claim is now true by construction.
+- [x] `hil/mk2.py`: v2-protocol driver (P/T steps, p/t servo degrees, L, V)
+      with software safety envelope + dry-run mode. `hil/serve.py`: one
+      process = engine + SSE telemetry + MJPEG + dashboard; `docs/rig.html`
+      is the live ZD-1 console (truth-referenced tiles deliberately absent —
+      no ground truth exists off-simulation). `tools/rig/beacon_firmware.ino`
+      implements the F/B/M beacon protocol. Run guide: `docs/rig_live.md`.
+- [x] Verified end-to-end with a synthetic beacon video: TRACK lock on the
+      blinking source (brighter steady lamp refused), measured blink 3.0 Hz,
+      8–10 ms/frame. 7 new tests; suite green.
+- [ ] On real hardware still to do: measure FOV + plate scale
+      (`hil.calibrate`), verify stepper direction signs, then
+      `python -m fsoc_pat.hil.serve --port-serial auto`.
+
 **Rig (no deadline — Grand Finale, Dec 2026 if selected)**
 - [ ] Mk1 tilt servo dead (stripped gears); replacement also not moving — free-spin test never reported back
 - [ ] Mk2: priced at ₹4,480–4,550; ABS enclosure size still unconfirmed

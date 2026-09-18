@@ -52,6 +52,28 @@ first principles. The network's honest contribution is identification speed.
 detecting "anything that pulses"; two train/serve skews we found and fixed
 are documented in the code.)*
 
+Since then we swept that comparison across window length × brightness ×
+frequency — 24 conditions, published in full in
+`docs/benchmark_identification.md`, including the 21 cells the classical
+method wins and the off-distribution frequencies where the network drops
+below chance. The network's vote is also **temperature-calibrated** with a
+validation-fitted abstain band (`models/calibration.json`,
+`fsoc_pat/ai/calibrate.py`): when its probability is marginal it casts *no
+vote* rather than a guess, and the classical evidence decides alone.
+
+## "What if the beacon's blink frequency isn't known in advance?"
+
+The tracker now *measures* it rather than assuming it: a Goertzel bank scans
+the whole observable band per candidate and reads the frequency to ±0.1 Hz
+(`estimate_blink_frequency`, tested 1–12 Hz with noise, dropouts and
+arbitrary phase). With an agreed frequency configured, that estimate is
+telemetry and a cross-check; with none configured, it becomes the
+discriminator — pulsed sources are separated from steady stars at whatever
+frequency they actually carry, and the measured value is reported to the
+operator. This pairs directly with the hardware beacon unit's `F<hz>`
+command: command the beacon to any frequency live, and the tracker's readout
+should follow it.
+
 ## "Your pointing error is hundreds of µrad. Isn't that bad?"
 
 That residual is the aliased turbulence — below our Nyquist limit nothing at

@@ -77,3 +77,47 @@ def test_normalise_is_brightness_invariant():
     a = normalise_stack(stack)
     b = normalise_stack(stack * 37.0 + 120.0)
     assert np.allclose(a, b, atol=1e-9)
+
+
+def test_verifier_loads_calibration_and_abstains(tmp_path):
+    """With calibration.json beside the weights, marginal scores become
+    abstentions (None) instead of guesses; confident scores still vote."""
+    import json
+    from fsoc_pat.ai.verifier import TrackVerifier
+
+    rng = np.random.default_rng(4)
+    net = TemporalPatchNet(frames=4, patch=9, seed=6)
+    net.save(str(tmp_path / "w.npz"))
+    (tmp_path / "calibration.json").write_text(json.dumps(
+        {"temperature": 2.0, "abstain_lo": 0.0, "abstain_hi": 1.0}))
+
+    v = TrackVerifier(str(tmp_path / "w.npz"))
+    assert v.temperature == 2.0
+    img = rng.normal(100, 5, (60, 80))
+    for _ in range(4):
+        v.observe(7, img, 40.0, 30.0)
+    # the all-inclusive abstain band above forces None whatever the logit
+    assert v.score(7) is None
+    # ...but the raw calibrated value was still recorded for telemetry
+    assert 0.0 <= v.scores[7] <= 1.0
+
+    # no sidecar -> legacy behaviour, a real number comes back
+    bare = tmp_path / "bare"
+    bare.mkdir()
+    net.save(str(bare / "w2.npz"))
+    v2 = TrackVerifier(str(bare / "w2.npz"))
+    for _ in range(4):
+        v2.observe(7, img, 40.0, 30.0)
+    assert isinstance(v2.score(7), float)
+
+
+def test_temperature_scaling_preserves_ranking():
+    from fsoc_pat.ai.calibrate import fit_temperature
+
+    rng = np.random.default_rng(9)
+    logits = rng.normal(0, 3, 400)
+    labels = (logits + rng.normal(0, 2, 400) > 0).astype(float)
+    T = fit_temperature(logits, labels)
+    assert 0.25 <= T <= 12.0
+    p = 1 / (1 + np.exp(-logits / T))
+    assert np.all(np.argsort(p) == np.argsort(logits))   # monotone

@@ -1,8 +1,12 @@
-# Host ↔ motion controller protocol — v3
+# Host ↔ motion controller protocol
 
-**One definition, two implementations.** `tools/rig/rig_firmware_v2.ino`
-and `src/fsoc_pat/hil/rig.py` must both match this file. If you change
-the wire format, change this file first and bump `PROTOCOL` in both.
+**One definition, three implementations**, and a test that holds them
+together: `tools/rig/rig_firmware_v2.ino` (the sketch),
+`src/fsoc_pat/hil/mk2.py` (the Mk2 driver) and `src/fsoc_pat/hil/rig.py`
+(the Mk1 servo path, which speaks its own older dialect and is documented
+at the bottom). `tests/test_protocol_contract.py` drives the real driver
+in dry-run mode and parses what it emits against the sketch's grammar —
+so if either side moves, CI says so instead of the rig doing it.
 
 ## Why this document exists
 
@@ -28,10 +32,17 @@ real hardware. That is the failure this file is here to prevent.
 
 ## Rules
 
-1. **The wire is degrees.** Always, both directions, floating point.
-2. **The firmware owns all mechanical constants** — microstepping, belt
-   ratio, steps per degree, soft limits. Change the mechanics, change the
-   firmware, reflash. The host is never recompiled and never told.
+1. **The wire is motor steps**, integer, for the coarse stage. Not
+   degrees. An earlier revision of this document specified degrees and
+   the sketch was rewritten to match it — which would have broken
+   `hil/mk2.py`, a tested driver with a safety envelope, in favour of an
+   untested sketch. The sketch was moved back. Between a tested host and
+   an untested sketch, the sketch moves.
+2. **The host owns the steps-per-radian scale**, in
+   `mk2.py: DEFAULT_STEPS_PER_RAD = 200 * 16 / 2π`. The firmware's
+   `MICROSTEPS` must agree with it; a test asserts that, because a
+   disagreement silently scales every angle and the rig points
+   consistently wrong with nothing in any log.
 3. **Every message ends with `\n`.** A command without one leaves the
    firmware holding a partial line, which then consumes the front of the
    next command and silently drops it.
@@ -43,8 +54,10 @@ real hardware. That is the failure this file is here to prevent.
 
 | Command | Meaning |
 |---|---|
-| `P <pan> <tilt>` | Coarse absolute target, degrees. Either field may be omitted. Clamped to soft limits. |
-| `p <pan> <tilt>` | Fine-stage offset, degrees. Accepted and ignored unless the firmware was built with `FINE_STAGE 1`. |
+| `P<int> T<int>` | Coarse absolute target, **motor steps** from centre. `T` may be omitted. Clamped to soft limits in the firmware as a backstop; `mk2.py` also clamps host-side. |
+| `T<int>` | Tilt alone |
+| `p<int> t<int>` | Fine-stage absolute angle, **servo degrees** (20–160 / 40–140). Accepted and ignored unless built with `FINE_STAGE 1`. |
+| `t<int>` | Fine tilt alone |
 | `L0` | Laser off |
 | `L1` | Laser on, steady |
 | `L<hz>` | Laser **modulated** at `<hz>`, e.g. `L7.0` |
@@ -70,12 +83,12 @@ of modelling them. See `docs/TERMINAL_MK3.md` §0 and
 ## Replies — controller to host
 
 ```
-S <pan> <tilt> <src> <moving>
+S <panSteps> <tiltSteps> <src> <moving>
 ```
 
 | Field | Meaning |
 |---|---|
-| `pan`, `tilt` | Degrees, 3 decimal places |
+| `panSteps`, `tiltSteps` | Motor steps — the same unit as the wire, so the host never holds two scales at once. The encoders measure degrees physically; the conversion happens in the firmware, where the mechanical constants already live. |
 | `src` | `E` = measured by the encoders. `C` = commanded position only. |
 | `moving` | `1` while either axis is still slewing, else `0` |
 
@@ -97,8 +110,22 @@ system's worst failure mode — a silent wire-format mismatch — into one
 line at startup.
 
 ```python
-gimbal = SerialGimbal(port)
-if not gimbal.check_protocol():
-    raise SystemExit("controller did not answer a status query: "
-                     "wrong firmware, wrong port, or wrong baud rate")
+gimbal = Mk2Gimbal(port)
+# ... and if the sketch is built with the encoder block, "?" answers.
 ```
+
+Note that `hil/mk2.py` does not yet issue `?`; its `reported_pointing()`
+returns the commanded position. The `?` reply is additive and exists for
+when the AS5600s are fitted — wiring it in is the obvious next step once
+the encoders are on real shafts.
+
+---
+## Appendix — the Mk1 dialect
+
+`src/fsoc_pat/hil/rig.py` drives the older servo rig
+(`tools/rig/rig_firmware.ino`) and speaks a different, simpler dialect:
+`P<deg> T<deg>` in **servo degrees centred on 90**, `L0`/`L1`, no status
+query at all (`reported_pointing()` returns the last commanded value,
+which is honest — servos have no feedback to report). It is not the same
+protocol and should not be made to look like one. It stays because it
+drives hardware that exists and works.

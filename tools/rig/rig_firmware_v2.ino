@@ -14,17 +14,20 @@
  * optional belt reduction, both of which have no gear teeth to shear.
  *
  * ---------------------------------------------------------------------
- * PROTOCOL v3 — see docs/HARDWARE_PROTOCOL.md. Read that before editing.
+ * PROTOCOL — see docs/HARDWARE_PROTOCOL.md. Read that before editing.
  *
- * THE WIRE IS DEGREES. Always. The host never sends motor steps, never
- * needs to know the microstepping setting, and never needs recompiling
- * when the mechanics change. This firmware owns every unit conversion.
- * Earlier drafts took steps on the wire while the host sent degrees,
- * which moved the rig by a silent factor of ~4.4 and is why this file
- * was rewritten.
+ * THE WIRE IS MOTOR STEPS, and the host owns the conversion. This is not
+ * the arrangement this file originally shipped with; it is the one
+ * src/fsoc_pat/hil/mk2.py already implements, with a safety envelope and
+ * a dry-run mode, and that driver is tested while this firmware is not.
+ * Between a tested host and an untested sketch, the sketch moves.
  *
- *   P <pan> <tilt>   coarse absolute target, degrees, float
- *   p <pan> <tilt>   fine-stage offset, degrees — only if FINE_STAGE=1
+ * Host-side scale lives in mk2.py as DEFAULT_STEPS_PER_RAD = 200*16/2pi.
+ * If you change MICROSTEPS below, change that constant to match, or every
+ * angle the host commands is silently scaled.
+ *
+ *   P<int> T<int>    coarse absolute target, in motor steps from centre
+ *   p<int> t<int>    fine-stage absolute angle, servo degrees (FINE_STAGE=1)
  *   L0               laser off
  *   L1               laser on, steady
  *   L<hz>            laser MODULATED at <hz>, e.g. L7.0
@@ -38,7 +41,7 @@
  *   V0 | V1          vibration injector off / on
  *   C                centre both stages and re-zero the encoder datum
  *   Z                zero: call the current position 0,0
- *   ?                status query -> "S <pan> <tilt> <src> <moving>"
+ *   ?                status query -> "S <panSteps> <tiltSteps> <src> <moving>"
  *   !                self-test (see selftest(), for bring-up)
  *
  * Every command is newline-terminated. Replies are newline-terminated.
@@ -90,9 +93,13 @@ const float STEPS_PER_DEG = (STEPS_PER_REV * MICROSTEPS) / 360.0;   // 8.889
 const float PAN_GEAR_RATIO  = 1.0;
 const float TILT_GEAR_RATIO = 1.0;
 
-// ---- Soft limits, degrees. These protect the wiring loom, not the motor. --
-const float PAN_MIN_DEG  = -90.0, PAN_MAX_DEG  =  90.0;
-const float TILT_MIN_DEG = -30.0, TILT_MAX_DEG =  45.0;
+// ---- Soft limits. These protect the wiring loom, not the motor. ---------
+// Expressed in steps because the wire is steps. mk2.py clamps to
+// coarse_limit_steps (1600, 1200) as well -- this is the backstop for when
+// something other than mk2.py is talking, which during bring-up is usually
+// a person in a serial terminal.
+const long PAN_MIN_STEPS  = -1600, PAN_MAX_STEPS  = 1600;   // +/- 90 deg @ 1/16
+const long TILT_MIN_STEPS = -1200, TILT_MAX_STEPS = 1200;
 #if FINE_STAGE
 const int   FINE_CENTRE_US = 90;           // servo degrees at mechanical centre
 const float FINE_RANGE_DEG = 30.0;         // +/- offset the fine stage may take
@@ -158,6 +165,11 @@ float readAngleDeg(uint8_t channel, int &lastRaw, long &turns) {
 float clampf(float v, float lo, float hi) {
   return v < lo ? lo : (v > hi ? hi : v);
 }
+
+long clampStepsPan(long v)  { return v < PAN_MIN_STEPS  ? PAN_MIN_STEPS
+                                  : (v > PAN_MAX_STEPS  ? PAN_MAX_STEPS  : v); }
+long clampStepsTilt(long v) { return v < TILT_MIN_STEPS ? TILT_MIN_STEPS
+                                  : (v > TILT_MAX_STEPS ? TILT_MAX_STEPS : v); }
 
 bool moving() {
   return panStepper.distanceToGo() != 0 || tiltStepper.distanceToGo() != 0;
@@ -233,32 +245,36 @@ void serviceLaser() {
 void handleLine(char *line) {
   switch (line[0]) {
 
-    case 'P': {                            // coarse absolute, degrees
-      float pan, tilt;
-      int got = sscanf(line + 1, "%f %f", &pan, &tilt);
-      if (got >= 1) {
-        pan = clampf(pan, PAN_MIN_DEG, PAN_MAX_DEG);
-        panStepper.moveTo((long)lround(pan * STEPS_PER_DEG * PAN_GEAR_RATIO));
-      }
-      if (got == 2) {
-        tilt = clampf(tilt, TILT_MIN_DEG, TILT_MAX_DEG);
-        tiltStepper.moveTo((long)lround(tilt * STEPS_PER_DEG * TILT_GEAR_RATIO));
-      }
+    case 'P': {                            // coarse absolute, MOTOR STEPS
+      long pan, tilt;
+      int got = sscanf(line, "P%ld T%ld", &pan, &tilt);
+      if (got >= 1) panStepper.moveTo(clampStepsPan(pan));
+      if (got == 2) tiltStepper.moveTo(clampStepsTilt(tilt));
       break;
     }
 
-    case 'p': {                            // fine offset, degrees
+    case 'T': {                            // tilt alone
+      long tilt;
+      if (sscanf(line, "T%ld", &tilt) == 1) tiltStepper.moveTo(clampStepsTilt(tilt));
+      break;
+    }
+
+    case 'p': {                            // fine absolute, servo degrees
 #if FINE_STAGE
-      float pan, tilt;
-      int got = sscanf(line + 1, "%f %f", &pan, &tilt);
-      if (got >= 1)
-        finePan.write(FINE_CENTRE_US + (int)lround(
-            clampf(pan, -FINE_RANGE_DEG, FINE_RANGE_DEG)));
-      if (got == 2)
-        fineTilt.write(FINE_CENTRE_US + (int)lround(
-            clampf(tilt, -FINE_RANGE_DEG, FINE_RANGE_DEG)));
+      int pan, tilt;
+      int got = sscanf(line, "p%d t%d", &pan, &tilt);
+      if (got >= 1) finePan.write(constrain(pan, 20, 160));
+      if (got == 2) fineTilt.write(constrain(tilt, 40, 140));
 #endif
       break;                               // no fine stage: accept and ignore
+    }
+
+    case 't': {                            // fine tilt alone
+#if FINE_STAGE
+      int tilt;
+      if (sscanf(line, "t%d", &tilt) == 1) fineTilt.write(constrain(tilt, 40, 140));
+#endif
+      break;
     }
 
     case 'L': {
@@ -329,9 +345,12 @@ void reportStatus() {
     tilt = commandedTilt();
   }
 
+  // Reported in STEPS, same unit as the wire, so the host never has to
+  // hold two scales in its head. The encoder measures degrees physically;
+  // converting here keeps that detail where the mechanical constants are.
   Serial.print(F("S "));
-  Serial.print(pan, 3);  Serial.print(' ');
-  Serial.print(tilt, 3); Serial.print(' ');
+  Serial.print((long)lround(pan  * STEPS_PER_DEG * PAN_GEAR_RATIO));  Serial.print(' ');
+  Serial.print((long)lround(tilt * STEPS_PER_DEG * TILT_GEAR_RATIO)); Serial.print(' ');
   Serial.print(src);     Serial.print(' ');
   Serial.println(moving() ? '1' : '0');
 }
@@ -363,7 +382,7 @@ void selftest() {
 
   Serial.println(F("# selftest: coarse pan +10 deg and back"));
   long before = panStepper.currentPosition();
-  panStepper.moveTo(before + lround(10.0 * STEPS_PER_DEG));
+  panStepper.moveTo(clampStepsPan(before + lround(10.0 * STEPS_PER_DEG)));
   while (panStepper.distanceToGo()) panStepper.run();
   delay(200);
   if (encodersPresent) {

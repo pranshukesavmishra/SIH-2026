@@ -159,7 +159,7 @@ Every idea that makes this project worth winning with costs nothing:
 What money buys is margin, not capability. Say exactly that if a judge
 asks why the rig is cheap.
 
-### Tier A — the build. ₹6,331.
+### Tier A — the build. ₹6,325.
 
 > **This table is generated from `docs/data/bom_tier_a.json`**, which is
 > also what `docs/submission/ZeroDrift_Mk3_Build_Guide.pdf` is built from,
@@ -200,26 +200,26 @@ ordering, and say which is which if a judge asks what the rig cost.
 | **F. Beacon — the target** | | | | |
 | High-brightness RED LED, 10 mm, 650 nm | 1 | ₹22 | **₹22** | ~ estimate |
 | 2N2222 transistor + 220 Ω + 1 kΩ | 1 | ₹20 | **₹20** | ~ estimate |
-| Ping-pong ball (diffuser) | 1 | ₹30 | **₹30** | ~ estimate |
-| 9 V battery + clip | 1 | ₹115 | **₹115** | ~ estimate |
+| Ping-pong ball (diffuser) | 1 | ₹129 | **₹129** | ✅ verified |
+| USB power bank (any, 5V) — beacon supply | — | — | **₹0** | reuse Mk1 |
 | SPST toggle switch | 1 | ₹25 | **₹25** | ~ estimate |
 | ABS project box | 1 | ₹115 | **₹115** | ~ estimate |
 | **G. Decoy — the control** | | | | |
 | High-brightness WHITE LED (brighter than beacon) | 1 | ₹22 | **₹22** | ~ estimate |
 | 150 Ω resistor | 1 | ₹5 | **₹5** | ~ estimate |
-| CR2032 coin cell + holder | 1 | ₹60 | **₹60** | ~ estimate |
+| 2×AA battery holder + 2 AA cells — decoy supply | 1 | ₹70 | **₹70** | ~ estimate |
 | Switch + scrap housing | 1 | ₹35 | **₹35** | ~ estimate |
 | **H. Consumables** | | | | |
 | Dupont jumper wires — M-M, M-F, F-F | 1 | ₹150 | **₹150** | ~ estimate |
 | M3 screws, nuts, standoffs assortment | 1 | ₹150 | **₹150** | ~ estimate |
 | Heat-shrink, solder, hot-glue sticks | 1 | ₹150 | **₹150** | ~ estimate |
-| **TOTAL** | | | **₹6,331** | |
+| **TOTAL** | | | **₹6,325** | |
 
 **Resolution you actually get:** 1.8° ÷ 16 microsteps = 0.1125°/step =
 **1.96 mrad**, with the AS5600 measuring true position to 0.088° = 1.53
 mrad. Roughly **1.5–2 mrad, encoder-verified.**
 
-Without the head (source the camera later): **₹4,716**.
+Without the head (source the camera later): **₹4,710**.
 
 ### The one thing to get right when ordering motors
 

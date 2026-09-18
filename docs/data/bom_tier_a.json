@@ -1,6 +1,6 @@
 {
   "name": "ZeroDrift Terminal Mk3 — Tier A",
-  "note": "Single source of truth for the build BOM. docs/TERMINAL_MK3.md section 2 and docs/submission/ZeroDrift_Mk3_Build_Guide.pdf are both generated from this; tests/test_bom_consistency.py enforces it.",
+  "note": "Single source of truth for the build BOM. docs/TERMINAL_MK3.md section 2 and docs/submission/ZeroDrift_Mk3_Build_Guide.pdf are both generated from this; tests/test_bom_consistency.py enforces it. Beacon runs from a USB power bank, not a 9V battery: the Nano's linear regulator wastes 9V->5V as heat and a 9V alkaline holds ~500mAh. Decoy runs from 2xAA, not a coin cell: a CR2032 is rated 0.2mA continuous and a high-brightness LED draws ~20mA, which is 100x over spec.",
   "sections": [
     {
       "title": "A. Motion — the gimbal",
@@ -147,14 +147,14 @@
         {
           "item": "Ping-pong ball (diffuser)",
           "qty": 1,
-          "unit_inr": 30,
-          "price_basis": "estimate"
+          "unit_inr": 129,
+          "price_basis": "verified"
         },
         {
-          "item": "9 V battery + clip",
-          "qty": 1,
-          "unit_inr": 115,
-          "price_basis": "estimate"
+          "item": "USB power bank (any, 5V) — beacon supply",
+          "qty": 0,
+          "unit_inr": 0,
+          "price_basis": "reuse Mk1"
         },
         {
           "item": "SPST toggle switch",
@@ -186,9 +186,9 @@
           "price_basis": "estimate"
         },
         {
-          "item": "CR2032 coin cell + holder",
+          "item": "2×AA battery holder + 2 AA cells — decoy supply",
           "qty": 1,
-          "unit_inr": 60,
+          "unit_inr": 70,
           "price_basis": "estimate"
         },
         {
@@ -223,5 +223,5 @@
       ]
     }
   ],
-  "total_inr": 6331
+  "total_inr": 6325
 }

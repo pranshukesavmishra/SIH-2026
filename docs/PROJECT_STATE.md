@@ -4,7 +4,7 @@
 clone this repo and read this file first. It is the authority on what is
 done, what is open, and which number is the real one.
 
-Last updated: 2026-09-18
+Last updated: 2026-09-18 (rev 2 — Tier 0.1 build fix + beacon/decoy units)
 
 ---
 ## 1. Identity
@@ -67,16 +67,24 @@ docs/
   defence_brief.md         deep Q&A prep for judges
   pitch_script.md          3-min pitch + role split
   PROJECT_STATE.md         ← you are here
+  WINNING_PLAN.md          full national-round strategy, tiered by effort/impact
+  FABLE5_BRIEFING.md       briefing for the parallel software session
   rig_build_guide.md       Mk1 physical rig (built, tilt servo dead)
-  rig_mk2_build_guide.md   Mk2 spec — steppers + encoders, ₹4.5k, not built
+  rig_mk2_build_guide.md   Mk2 tracker spec — steppers + encoders
+  beacon_build_guide.md    Beacon + decoy units — the target, not the tracker
+  PHYSICAL_BOM_MASTER.md   combined real-priced parts list, tracker+beacon+decoy
   zero_cost_demo.md        ₹0 webcam fallback demo
   user_manual.md           deliverable
   submission/              the deck PDF
   media/                   telemetry, panels, assets
 src/fsoc_pat/              the engine (detector, tracker, control, ai, gui)
-tools/rig/                 firmware + tracker + accuracy logger
-runs/mc-leo/summary.json   the 64-run campaign — source of most numbers
-packaging/                 build scripts (⚠ fsoc-pat.spec is MISSING)
+  resources.py             resolves shipped data; frozen-build-safe (see §4)
+tools/rig/
+  rig_firmware_v2.ino      tracker firmware — steppers, fine servos, laser
+  beacon_firmware.ino      beacon firmware — precise blink, serial-adjustable
+  accuracy_logger.py       ground-truth measurement
+runs/mc-leo/summary.json  the 64-run campaign — source of most numbers
+packaging/                 build scripts + fsoc-pat.spec (now tracked — see §4)
 ```
 
 ---
@@ -96,12 +104,14 @@ packaging/                 build scripts (⚠ fsoc-pat.spec is MISSING)
 - [ ] Slide 2: lead with the one-line problem, not the solution metaphor
 
 **Software**
-- [ ] `packaging/build.sh` references `packaging/fsoc-pat.spec` which **does not exist** — the "standalone executable" deliverable cannot currently be built
-- [ ] Accuracy improvement work (the reason for the parallel account)
+- [x] ~~`packaging/build.sh` references `packaging/fsoc-pat.spec` which does not exist~~ — **root cause found and fixed**: `.gitignore`'s stock `*.spec` rule was silently dropping the hand-maintained spec on every clone. Spec restored, tracked with an explicit `!` exception, and `src/fsoc_pat/resources.py` added so shipped data (AI weights, scenarios) resolves correctly inside a frozen bundle instead of via a `__file__.parents[2]` walk that escaped it. `tests/test_resources.py` passing (4/4).
+- [ ] **Still outstanding**: actually run `packaging/build.bat` / `build.sh` on real Windows/Linux machines and launch the binary — unverifiable from a source checkout, could not be done in this session (no PySide6/PyInstaller/OpenCV here)
+- [ ] Accuracy improvement work — now underway on the parallel Fable 5 account, see `docs/FABLE5_BRIEFING.md`
 
 **Rig (no deadline — Grand Finale, Dec 2026 if selected)**
 - [ ] Mk1 tilt servo dead (stripped gears); replacement also not moving — free-spin test never reported back
-- [ ] Mk2: priced at ₹4,480–4,550; ABS enclosure size still unconfirmed
+- [ ] Mk2 tracker: real-priced ₹4,190–4,410 (core) — see `docs/PHYSICAL_BOM_MASTER.md` for the verified breakdown, supersedes the older estimate in `rig_mk2_build_guide.md`'s own budget table
+- [ ] Beacon + decoy units specced (`docs/beacon_build_guide.md`) — not yet built, not yet priced live (estimates only)
 - [ ] Camera+laser combined head — diagram not yet drawn
 
 **Outreach**
@@ -113,9 +123,14 @@ packaging/                 build scripts (⚠ fsoc-pat.spec is MISSING)
 ```
 origin/main ──────●  (team's PowerPoint + site work)
                    \
-                    ●──●──●──●──●──●──●──●──●  claude/session-01f6…h9tr19
-                                             (9 commits: docs, deck rebuilds,
-                                              rig specs, economic feasibility)
+                    ●──●──●──●──●──●──●──●──●──●──●──●  claude/session-01f6…h9tr19
+                    |                        (docs, deck rebuilds, rig specs,
+                    |                         economic feasibility, build fix,
+                    |                         beacon/decoy units)
+                    \
+                     ●···  (Fable 5's branch, name unknown to this session —
+                            it should be something like accuracy-work,
+                            created fresh off main, per docs/FABLE5_BRIEFING.md)
 ```
 
 - The session branch **contains everything on main** — no divergence, a

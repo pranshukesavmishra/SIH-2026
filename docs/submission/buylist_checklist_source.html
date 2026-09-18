@@ -1,0 +1,94 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>ZeroDrift buy checklist</title>
+<style>
+@page{size:A4;margin:10mm 10mm 8mm;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DejaVu Sans',Arial,sans-serif;font-size:8.3pt;color:#11161f;line-height:1.28;}
+h1{font-size:16.5pt;letter-spacing:-.3pt;}
+.sub{color:#5a6678;font-size:8pt;margin:1.2mm 0 2.6mm;}
+.warn{border:1.1pt solid #b3261e;border-left:2.8pt solid #b3261e;background:#fdf5f4;
+ padding:2mm 2.6mm;margin-bottom:2.8mm;font-size:7.9pt;}
+.warn b{color:#b3261e;}
+table{width:100%;border-collapse:collapse;font-size:7.9pt;}
+thead th{font-size:6.9pt;letter-spacing:.5pt;text-transform:uppercase;color:#5a6678;
+ text-align:left;padding:1.3mm 1.6mm;border-bottom:1pt solid #11161f;}
+thead th.ck{text-align:center;}
+td{padding:1.05mm 1.6mm;border-bottom:.35pt solid #eceff4;vertical-align:middle;}
+.q{width:6mm;color:#8a94a6;font-family:'DejaVu Sans Mono',monospace;}
+.p{width:4mm;color:#1c7c54;text-align:center;font-size:6.6pt;}
+.v{width:14mm;text-align:right;font-family:'DejaVu Sans Mono',monospace;white-space:nowrap;}
+.ck{width:15mm;text-align:center;font-size:7.4pt;color:#5a6678;}
+.ck.yes{font-weight:700;font-size:9pt;}
+tbody tr:nth-child(odd){background:#fafbfc;}
+.sec{background:#eef1f6!important;}
+.sec td{font-weight:700;font-size:7.1pt;letter-spacing:.3pt;text-transform:uppercase;
+ padding:1.6mm 1.6mm;border-bottom:.6pt solid #d5dae3;}
+.totrow td{font-weight:700;border-top:1.2pt solid #11161f;border-bottom:none;padding-top:1.6mm;}
+.legend{display:flex;gap:5mm;margin-top:2.6mm;font-size:7.6pt;color:#5a6678;}
+.legend b{color:#11161f;}
+.foot{margin-top:2.6mm;font-size:6.9pt;color:#8a94a6;border-top:.4pt solid #d5dae3;padding-top:1.4mm;}
+.online-col{color:#b3261e;}
+</style></head><body>
+
+<h1>ZeroDrift Mk3 — buy checklist, one item per row</h1>
+<div class="sub">Total ₹6,345 · ✓ = price verified against a live listing, ~ = estimate ·
+generated from <b>docs/data/bom_tier_a.json</b></div>
+
+<div class="warn"><b>Tick the box for wherever you actually buy each item</b> — a filled box is
+my routing guess, an empty one means I'd default to Amar Robotics unless it's clearly a
+specialist part. I never saw Amar Robotics' actual stock (Instagram/IndiaMart are both blocked
+from where I work), so treat every box as a suggestion to confirm, not a fact. The five
+<span class="online-col"><b>online</b></span> items are the ones with real delivery lead time —
+order those first, tonight, regardless of what else is still open.</div>
+
+<table>
+<thead><tr><th class="q">Qty</th><th>Item</th><th class="p"></th><th class="v">₹</th>
+<th class="ck">Amar<br>Robotics</th><th class="ck">Blinkit</th>
+<th class="ck online-col">Online</th><th class="ck">Have</th></tr></thead>
+<tbody>
+<tr><td class="q">2</td><td>NEMA17 stepper motor, 1.8°/step, 4.2 kg-cm</td><td class="p">✓</td><td class="v">₹1,498</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">2</td><td>A4988 stepper driver module</td><td class="p">✓</td><td class="v">₹340</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">2</td><td>NEMA17 L-bracket (pan + tilt)</td><td class="p">✓</td><td class="v">₹254</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">2</td><td>100 µF 25 V electrolytic capacitor</td><td class="p">~</td><td class="v">₹20</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">2</td><td>AS5600 magnetic encoder module</td><td class="p">✓</td><td class="v">₹498</td><td class="ck"></td><td class="ck"></td><td class="ck yes">&#10003;</td><td class="ck"></td></tr>
+<tr><td class="q">2</td><td>Diametric magnet, 6 × 2.5 mm</td><td class="p">~</td><td class="v">₹180</td><td class="ck"></td><td class="ck"></td><td class="ck yes">&#10003;</td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>TCA9548A I²C multiplexer</td><td class="p">✓</td><td class="v">₹199</td><td class="ck"></td><td class="ck"></td><td class="ck yes">&#10003;</td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>USB camera module, M12 mount, 12 mm lens</td><td class="p">~</td><td class="v">₹1,400</td><td class="ck"></td><td class="ck"></td><td class="ck yes">&#10003;</td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>Red filter — gel sheet or red acrylic offcut</td><td class="p">~</td><td class="v">₹100</td><td class="ck"></td><td class="ck"></td><td class="ck yes">&#10003;</td><td class="ck"></td></tr>
+<tr><td class="q">—</td><td>KY-008 laser module</td><td class="p">—</td><td class="v">₹0</td><td class="ck"></td><td class="ck"></td><td class="ck"></td><td class="ck">own</td></tr>
+<tr><td class="q">1</td><td>ABS project box, head enclosure</td><td class="p">~</td><td class="v">₹115</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">—</td><td>Arduino Nano — tracker</td><td class="p">—</td><td class="v">₹0</td><td class="ck"></td><td class="ck"></td><td class="ck"></td><td class="ck">own</td></tr>
+<tr><td class="q">1</td><td>Arduino Nano — beacon</td><td class="p">~</td><td class="v">₹225</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>12 V 2 A DC power adapter</td><td class="p">✓</td><td class="v">₹279</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>Acrylic sheet 3 mm, 6″×6″ (pack of 2)</td><td class="p">✓</td><td class="v">₹199</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>Vibration motor, 3 V DC</td><td class="p">✓</td><td class="v">₹20</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>Transistor + diode + resistor combo kit</td><td class="p">✓</td><td class="v">₹105</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>High-brightness RED LED, 10 mm, 650 nm</td><td class="p">~</td><td class="v">₹22</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>2N2222 transistor + 220 Ω + 1 kΩ</td><td class="p">~</td><td class="v">₹20</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>Ping-pong ball (diffuser)</td><td class="p">✓</td><td class="v">₹129</td><td class="ck"></td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">—</td><td>USB power bank (any, 5V) — beacon supply</td><td class="p">—</td><td class="v">₹0</td><td class="ck"></td><td class="ck"></td><td class="ck"></td><td class="ck">own</td></tr>
+<tr><td class="q">1</td><td>SPST toggle switch</td><td class="p">~</td><td class="v">₹25</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>ABS project box</td><td class="p">~</td><td class="v">₹115</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>High-brightness WHITE LED (brighter than beacon)</td><td class="p">~</td><td class="v">₹22</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>68 Ω resistor</td><td class="p">~</td><td class="v">₹5</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>3×AA battery holder + 3 AA cells — decoy supply</td><td class="p">~</td><td class="v">₹90</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>Switch + scrap housing</td><td class="p">~</td><td class="v">₹35</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>Dupont jumper wires — M-M, M-F, F-F</td><td class="p">~</td><td class="v">₹150</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>M3 screws, nuts, standoffs assortment</td><td class="p">~</td><td class="v">₹150</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr><td class="q">1</td><td>Heat-shrink, solder, hot-glue sticks</td><td class="p">~</td><td class="v">₹150</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck"></td><td class="ck"></td></tr>
+<tr class="totrow"><td></td><td>GRAND TOTAL</td><td></td><td class="v">₹6,345</td>
+<td class="ck">₹3,839</td><td class="ck">₹129</td>
+<td class="ck online-col">₹2,377</td><td class="ck">₹0</td></tr>
+</tbody>
+</table>
+
+<div class="legend">
+<span><b>Amar Robotics</b> — local shop, phone ahead for the four motion parts</span>
+<span><b>Blinkit</b> — ping-pong ball only; a sports shop is ~4x cheaper if the 10 min don't matter</span>
+<span class="online-col"><b>Online</b> — Amazon/Robu/ThinkRobotics, order tonight</span>
+<span><b>Have</b> — already own it, nothing to buy</span>
+</div>
+
+<div class="foot">ZeroDrift · Team SIH26169 · ISRO · full guide in
+docs/submission/ZeroDrift_Mk3_Build_Guide.pdf · checklist generated from the same source file
+the guide uses, so the two cannot disagree</div>
+</body></html>

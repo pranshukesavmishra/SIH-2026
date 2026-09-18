@@ -151,6 +151,38 @@ assets: `docs/submission/deck_src/` — `python build_deck_v3.py` regenerates it
       worst case = temporary lag with honest COASTING and recovery; zero lock
       losses, zero decoy captures across all runs.
 
+**Live demo tracking rewrite — v3 (18 Sept, `live-tracker-v2`)**
+- [x] v2's velocity feed-forward was a runaway: it integrated velocity into
+      BOTH `pos` and `anchor` every frame, then re-projected the anchor by half
+      a window again in `analyse()`, under a cap proportional to the drift it
+      was meant to limit. Positive feedback — the ring flew off the beacon and
+      hovered over blank wall (brightness 10) still claiming a lock. Reported
+      from the field, reproduced, fixed at the design level.
+- [x] New rule: **prediction steers the search, measurement moves the ring.**
+      `pos` never advances without something the camera measured, except a
+      bounded coast through a known blink-off (stops at 6 frames, tether-
+      clamped, never written back to the anchor).
+- [x] Search sized to real positional uncertainty (speed x blind time); lead
+      capped in pixels so a decelerating hand can't fling it past a stopped
+      beacon; velocity survives the dark phase but is clamped and reversal-
+      adaptive; recapture picks the NEAREST lit thing, not the brightest
+      (a torch and a lamp both saturate — brightness is a coin flip the lamp
+      kept winning).
+- [x] Map-silence budget is now conditional on the silence being EXPLAINED by
+      recent motion (its window needs ~1.3 s of stillness to rebuild), with
+      absolute ceilings. `ZeroDriftDrop()` in the console reports why any lock
+      was abandoned.
+- [x] Readouts hold the last real measurement between confirmations instead of
+      flickering "blink 0.00" on a healthy lock.
+- [x] Verified: **10/10 headless runs pass** against a synthetic HANDHELD path
+      (6 fast flicks, reversals, stop-and-go, plus a steady decoy lamp).
+      Median ring-to-beacon error 3–6 px while lit; zero lock losses; **zero
+      decoy captures**. `tools/web/test_live_motion.mjs`.
+- Guard rails found the hard way, do not "optimise" away: the 70 px search
+  ceiling (90 px swallowed the lamp), the wide-search-must-not-be-anchored
+  finding (the anchor is what goes stale in motion), and the tight-primary-disc
+  experiment (starved the follower, 0/8).
+
 **Rig (no deadline — Grand Finale, Dec 2026 if selected)**
 - [ ] Mk1 tilt servo dead (stripped gears); replacement also not moving — free-spin test never reported back
 - [ ] Mk2: priced at ₹4,480–4,550; ABS enclosure size still unconfirmed

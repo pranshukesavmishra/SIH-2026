@@ -4,7 +4,7 @@
 clone this repo and read this file first. It is the authority on what is
 done, what is open, and which number is the real one.
 
-Last updated: 2026-09-18 (rev 2 — Tier 0.1 build fix + beacon/decoy units)
+Last updated: 2026-09-18 (rev 3 — Terminal Mk3: scanning head, dot-closed loop, protocol v3)
 
 ---
 ## 1. Identity
@@ -14,7 +14,16 @@ Last updated: 2026-09-18 (rev 2 — Tier 0.1 build fix + beacon/decoy units)
 | Team | **ZeroDrift** — Jabalpur Engineering College |
 | Problem Statement | **SIH26169**, set by **ISRO** (Dept. of Space) |
 | Title | AI-Based Virtual Camera Tracking System for Coarse Alignment of Mobile FSOC Terminals |
-| Theme / Category | Smart Automation / **Software** |
+| Theme / Category | Smart Automation / **Software**
+- [x] ~~`hil/` could not drive either firmware~~ — **found and fixed 18 Sept.**
+  Three layers written across three weeks each assumed a different wire
+  format: `hil/rig.py` sent degrees, the Mk2 firmware parsed motor steps
+  (a silent 4.4× error), the status query `?` did not exist so the host
+  spun its whole timeout and reported the gimbal had never moved, and
+  `rig_track.py` sent laser commands with no newline, which ate the next
+  pointing command. All fixed, one spec in `docs/HARDWARE_PROTOCOL.md`,
+  and `check_protocol()` now catches a mismatch at startup. This was our
+  own drift, not the parallel account's — those files predate it. |
 | Repo | `github.com/pranshukesavmishra/SIH-2026` |
 | Live replay console | `zerodrift-fsoc-pat.netlify.app` |
 | Status | 2nd Runner-Up, institute internal round (11 Sept 2026) |
@@ -69,18 +78,22 @@ docs/
   PROJECT_STATE.md         ← you are here
   WINNING_PLAN.md          full national-round strategy, tiered by effort/impact
   FABLE5_BRIEFING.md       briefing for the parallel software session
-  rig_build_guide.md       Mk1 physical rig (built, tilt servo dead)
-  rig_mk2_build_guide.md   Mk2 tracker spec — steppers + encoders
+  TERMINAL_MK3.md          ← THE physical build. Supersedes Mk1 and Mk2.
+  HARDWARE_PROTOCOL.md     wire format, v3 — firmware and host both obey it
+  rig_build_guide.md       Mk1 (built, both servos dead) — historical
+  rig_mk2_build_guide.md   Mk2 spec — superseded by Mk3, kept for the encoder notes
   beacon_build_guide.md    Beacon + decoy units — the target, not the tracker
-  PHYSICAL_BOM_MASTER.md   combined real-priced parts list, tracker+beacon+decoy
+  PHYSICAL_BOM_MASTER.md   Mk2-era parts list — superseded by TERMINAL_MK3.md §2
   zero_cost_demo.md        ₹0 webcam fallback demo
   user_manual.md           deliverable
   submission/              the deck PDF
   media/                   telemetry, panels, assets
 src/fsoc_pat/              the engine (detector, tracker, control, ai, gui)
   resources.py             resolves shipped data; frozen-build-safe (see §4)
+  hil/boresight.py         dot-vs-beacon dual-frequency loop — cancels parallax
+  hil/rig.py               gimbal + camera drivers, protocol v3
 tools/rig/
-  rig_firmware_v2.ino      tracker firmware — steppers, fine servos, laser
+  rig_firmware_v2.ino      tracker firmware — steppers, encoders, modulated laser
   beacon_firmware.ino      beacon firmware — precise blink, serial-adjustable
   accuracy_logger.py       ground-truth measurement
 runs/mc-leo/summary.json  the 64-run campaign — source of most numbers
@@ -104,15 +117,41 @@ packaging/                 build scripts + fsoc-pat.spec (now tracked — see §
 - [ ] Slide 2: lead with the one-line problem, not the solution metaphor
 
 **Software**
+- [x] ~~`hil/` could not drive either firmware~~ — **found and fixed 18 Sept.**
+  Three layers written across three weeks each assumed a different wire
+  format: `hil/rig.py` sent degrees, the Mk2 firmware parsed motor steps
+  (a silent 4.4× error), the status query `?` did not exist so the host
+  spun its whole timeout and reported the gimbal had never moved, and
+  `rig_track.py` sent laser commands with no newline, which ate the next
+  pointing command. All fixed, one spec in `docs/HARDWARE_PROTOCOL.md`,
+  and `check_protocol()` now catches a mismatch at startup. This was our
+  own drift, not the parallel account's — those files predate it.
 - [x] ~~`packaging/build.sh` references `packaging/fsoc-pat.spec` which does not exist~~ — **root cause found and fixed**: `.gitignore`'s stock `*.spec` rule was silently dropping the hand-maintained spec on every clone. Spec restored, tracked with an explicit `!` exception, and `src/fsoc_pat/resources.py` added so shipped data (AI weights, scenarios) resolves correctly inside a frozen bundle instead of via a `__file__.parents[2]` walk that escaped it. `tests/test_resources.py` passing (4/4).
 - [ ] **Still outstanding**: actually run `packaging/build.bat` / `build.sh` on real Windows/Linux machines and launch the binary — unverifiable from a source checkout, could not be done in this session (no PySide6/PyInstaller/OpenCV here)
 - [ ] Accuracy improvement work — now underway on the parallel Fable 5 account, see `docs/FABLE5_BRIEFING.md`
 
-**Rig (no deadline — Grand Finale, Dec 2026 if selected)**
-- [ ] Mk1 tilt servo dead (stripped gears); replacement also not moving — free-spin test never reported back
-- [ ] Mk2 tracker: real-priced ₹4,190–4,410 (core) — see `docs/PHYSICAL_BOM_MASTER.md` for the verified breakdown, supersedes the older estimate in `rig_mk2_build_guide.md`'s own budget table
-- [ ] Beacon + decoy units specced (`docs/beacon_build_guide.md`) — not yet built, not yet priced live (estimates only)
-- [ ] Camera+laser combined head — diagram not yet drawn
+**Physical terminal — Mk3 (`docs/TERMINAL_MK3.md` is the authority)**
+
+Architecture decided 18 Sept: a self-contained scanning terminal, not a
+table demo. Camera rides on the gimbal boresighted with the laser; the
+Pi runs the pipeline on-board; the Nano does motion only.
+
+- [x] ~~Servos~~ — **removed from the design entirely.** Mk1 stripped two.
+  A hobby servo's backlash (~17 mrad) exceeds the error this rig measures.
+  Resolution now comes from 1/32 microstepping + a 3:1 GT2 belt: 0.16
+  mrad/step, ~0.5 mrad encoder-verified, 8× better than Mk2 and nothing
+  to shear.
+- [x] Parallax problem solved without modelling it — beacon 4 Hz, laser
+  7 Hz, loop closes on the dot-to-beacon pixel error. `hil/boresight.py`,
+  14 tests passing.
+- [ ] Order parts — TERMINAL_MK3.md §2. **Three order-time traps:**
+  motors must be **dual-shaft** (encoder magnet mounts on the rear shaft),
+  magnets must be **diametric** not axial, and buy the 100 µF caps for
+  VMOT or the first power-up kills both drivers.
+- [ ] Prices in §2 are **estimates** except TMC2209/AS5600/TCA9548A —
+  price-check before ordering, and say which is which if a judge asks.
+- [ ] Build per §3, stage by stage. Do not pass a stage that fails its check.
+- [ ] Beacon needs rebuilding at 650 nm to match the camera's bandpass filter
 
 **Outreach**
 - [ ] DRDO chairman brief — message drafted, send status unknown

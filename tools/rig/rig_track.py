@@ -83,9 +83,9 @@ def main() -> int:
             tilt_deg = float(np.clip(tilt_deg + args.gain*ey, 40, 140))
             send()
             if not laser:
-                laser = True; ard.write(b"L1")
+                laser = True; ard.write(b"L1\n")
         elif laser:
-            laser = False; ard.write(b"L0")
+            laser = False; ard.write(b"L0\n")
 
         col = (80, 220, 120) if beacon else (60, 60, 230)
         cv2.circle(frame, pos, 18, col, 2)
@@ -101,13 +101,13 @@ def main() -> int:
         elif k == ord('c'):
             pan_deg = tilt_deg = 90.0; send()
         elif k == ord('l'):
-            laser = not laser; ard.write(b"L1" if laser else b"L0")
+            laser = not laser; ard.write(b"L1\n" if laser else b"L0\n")
         elif k == 81: pan_deg = max(20, pan_deg-2); send()    # left
         elif k == 83: pan_deg = min(160, pan_deg+2); send()   # right
         elif k == 82: tilt_deg = max(40, tilt_deg-2); send()  # up
         elif k == 84: tilt_deg = min(140, tilt_deg+2); send() # down
 
-    ard.write(b"L0"); cap.release(); cv2.destroyAllWindows()
+    ard.write(b"L0\n"); cap.release(); cv2.destroyAllWindows()
     return 0
 
 

@@ -66,12 +66,21 @@ class TrackVerifier:
             return None
         stack = normalise_stack(np.stack(buf))
         logit = float(self.net.forward(stack[None])[0])
-        value = float(1.0 / (1.0 + np.exp(-logit / self.temperature)))
-        self.scores[track_id] = value
-        if (self.abstain_lo is not None
-                and self.abstain_lo <= value <= self.abstain_hi):
-            return None
-        return value
+        raw = float(1.0 / (1.0 + np.exp(-logit)))
+        self.scores[track_id] = raw
+        if self.abstain_lo is not None:
+            # The abstain decision runs on the CALIBRATED probability -- that
+            # is what the validation set licensed. The vote that leaves this
+            # method stays on the raw scale: the tracker's evidence weights
+            # were tuned against it, and with T = 1.16 the two nearly
+            # coincide -- rescaling the vote buys no accuracy while
+            # perturbing a validated ensemble (measured: it moved the
+            # featured ISS run's acquisition from 1.27 s to 3.77 s through
+            # nothing but early track-election noise).
+            calibrated = float(1.0 / (1.0 + np.exp(-logit / self.temperature)))
+            if self.abstain_lo <= calibrated <= self.abstain_hi:
+                return None
+        return raw
 
     def forget(self, live_ids) -> None:
         for tid in list(self._patches):

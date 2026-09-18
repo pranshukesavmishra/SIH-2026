@@ -1024,6 +1024,7 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
       <div class="krow"><span>◈ detections / frame</span><b id="kD">—</b></div>
       <div class="krow"><span>∿ beacon SNR</span><b id="kSnr">—</b></div>
       <div class="krow"><span>⨳ blink modulation</span><b id="kMod">—</b></div>
+      <div class="krow"><span>≈ measured blink</span><b id="kEhz">—</b></div>
       <div class="krow"><span>⬡ AI verifier</span><b id="kAi">—</b></div>
       <div class="krow"><span>⚖ manoeuvre prob</span><b id="kMan">—</b></div>
       <div class="krow"><span>⛭ gimbal slew</span><b id="kSlew">—</b></div>
@@ -1415,6 +1416,7 @@ function draw(){
   $('kD').textContent=f.n_det;
   $('kSnr').textContent=f.snr_db==null?'—':f.snr_db.toFixed(1)+' dB';
   $('kMod').textContent=f.mod.toFixed(2)+(f.mod>0.3?' ✓':'');
+  $('kEhz').textContent=(f.ehz!=null&&f.ehzc>0.2)?f.ehz.toFixed(1)+' Hz':'—';
   $('kAi').textContent=f.ai==null?'—':f.ai.toFixed(2);
   $('kMan').textContent=(f.p_manoeuvre*100).toFixed(0)+' %';
   $('kSlew').textContent=(f.rate_frac*c0.gimbal_max_rate_deg_s).toFixed(2)+' °/s';

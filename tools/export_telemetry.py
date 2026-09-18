@@ -62,6 +62,8 @@ def export(scenario: str, out_path: str, duration: float | None = None) -> dict:
             "mod": round(float(t.modulation_score), 4),
             "ai": None if t.ai_score is None else round(float(t.ai_score), 4),
             "p_manoeuvre": round(float(t.mode_probabilities[1]), 4),
+            "ehz": None if t.est_blink_hz is None else round(float(t.est_blink_hz), 2),
+            "ehzc": round(float(t.est_blink_conf), 3),
             "snr_db": None if t.detection_snr is None
                       else round(float(t.detection_snr), 2),
             "proc_ms": round(float(t.processing_ms), 2),

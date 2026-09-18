@@ -109,6 +109,8 @@ h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.12; letter-spacing: -.02e
 .state-chip.locked { color: var(--green); border-color: rgba(59,214,140,.45); background: rgba(59,214,140,.12); }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .state-chip.locked .dot { animation: pulse 1.1s infinite; }
+.state-chip.coasting { color: var(--amber, #FFC24D); border-color: rgba(255,194,77,.45); background: rgba(255,194,77,.10); }
+.state-chip.coasting .dot { animation: pulse .6s infinite; }
 @keyframes pulse { 50% { opacity: .3; } }
 
 select, input[type=range] { width: 100%; }
@@ -202,6 +204,11 @@ select { background: var(--panel-solid); color: var(--ink-primary); border: 1px 
           <svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v14l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg>CONNECT RIG</button>
         <button class="btn ghost" id="testRigBtn" disabled>
           <svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>TEST RIG (no camera)</button>
+        <button class="btn ghost" id="engineBtn">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-6l1 2h2v2H7v-2h2l1-2H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1 2v8h14V7H5z"/></svg>RIG CAMERA VIEW</button>
+        <p class="btn-note" id="engineNote">What the physical rig's camera sees, tracked by the <b>full desktop
+        engine</b> (CFAR · IMM · adaptive blink). Start it on this machine with
+        <span style="font-family:var(--font-mono)">python -m fsoc_pat.hil.serve</span>, then this button opens it.</p>
         <button class="btn ghost" id="beaconBtn">
           <svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>USE AS BEACON</button>
       </div>
@@ -429,6 +436,7 @@ const MAX_OFF_RATIO = 0.75;
 const SELF_LASER_MATCH = 0.85;
 const ANALYSE_EVERY = 4;
 const TRACK_ROI = 46;                // px radius for the cheap per-frame follow
+const ROI_MAX = 96;                  // ceiling for the speed-grown follow radius
 // The per-frame follower is allowed to sharpen the position, never to decide
 // it. These three numbers are what keep it subordinate to the modulation map:
 const ANCHOR_MAX = 38;               // px it may sit from the last confirmed detection
@@ -498,6 +506,8 @@ const els = {
   brightVal: document.getElementById('brightVal'),
   depthSlider: document.getElementById('depthSlider'),
   depthVal: document.getElementById('depthVal'),
+  engineBtn: document.getElementById('engineBtn'),
+  engineNote: document.getElementById('engineNote'),
 };
 
 /* Calibration is a per-rig physical fact (how the camera happens to be
@@ -667,6 +677,23 @@ let onContrast = 0;
 const bgHist = new Uint16Array(256);
 let exposurePinned = false;
 let score = 0, margin = 0, detectedHz = 0, fps = 0, peakDepth = 0, peakBright = 0;
+// Frames since the refiner last actually SAW the tracked light. While the
+// beacon is dark (half of every blink cycle) this ticks up and resets; if it
+// stays up -- fast motion, occlusion -- the lock is being carried by
+// prediction alone, and saying green LOCKED with blink 0.00 would be a lie.
+let coastFrames = 0;
+// Last ACCEPTED centroid measurement and the frame it landed on: velocity is
+// learned from measured position deltas over elapsed frames -- the only
+// estimator that converges to the target's TRUE velocity. (Learning from the
+// post-smoothing residual, as first tried, converges to roughly half of it,
+// which reads as the ring forever lagging a moving beacon.)
+let lastMeas = null;
+let lastFrameT = 0;
+function displayState() {
+  if (state !== 'LOCKED') return state;
+  const mapStale = cand ? cand.misses > 0 : true;
+  return (coastFrames > 6 && mapStale) ? 'COASTING' : 'LOCKED';
+}
 let serialWriter = null, pan = 90, tilt = 90, laserOn = false;
 
 function note(msg, isErr) {
@@ -725,7 +752,7 @@ async function start() {
   probe = document.createElement('canvas'); probe.width = probe.height = PROBE_SIZE;
   probeCtx = probe.getContext('2d', { willReadFrequently: true });
   trackCv = document.createElement('canvas');
-  trackCv.width = trackCv.height = TRACK_ROI * 2 + 2;
+  trackCv.width = trackCv.height = ROI_MAX * 2 + 2;
   trackCtx = trackCv.getContext('2d', { willReadFrequently: true });
 
   els.view.width = video.videoWidth || 640;
@@ -863,7 +890,11 @@ function analyse() {
   let peak = 0, peakIdx = 0;
   for (let p = 0; p < P; p++) if (best[p] > peak) { peak = best[p]; peakIdx = p; }
   buf.sortBuf.set(best); const sorted = buf.sortBuf.sort();
-  const bg = sorted[Math.floor(P * 0.99)] + 1e-6;
+  // Floored: in a clean dark scene the 99th percentile tends to zero and the
+  // ratio explodes into six digits, which reads as a broken instrument. 0.02
+  // is the measured score floor of bare sensor noise; nothing meaningful is
+  // below it, so margins are honest AND finite (<= 50x).
+  const bg = Math.max(sorted[Math.floor(P * 0.99)], 0.02);
 
   bestFreq = peak > 0 ? buf.bestFreqAt[peakIdx] : target;
 
@@ -1007,15 +1038,39 @@ function analyse() {
   const px = (peakIdx % W) * (els.view.width / W);
   const py = Math.floor(peakIdx / W) * (els.view.height / H);
 
+  // A moving beacon shifts several tens of pixels between analyses, so the
+  // "same thing" radius must grow with the measured speed or motion reads as
+  // a brand-new candidate and resets the confirmation count mid-track.
+  const spd = Math.hypot(vel.x, vel.y);                    // px per frame
+  const CR = CONFIRM_RADIUS + spd * ANALYSE_EVERY * 3;
   if (strong) {
-    if (cand && Math.hypot(px - cand.x, py - cand.y) < CONFIRM_RADIUS) {
+    if (cand && Math.hypot(px - cand.x, py - cand.y) < CR) {
       cand.hits++; cand.misses = 0; cand.x = px; cand.y = py; cand.freq = bestFreq;
     } else {
       cand = { x: px, y: py, hits: 1, misses: 0, freq: bestFreq };
     }
   } else if (cand) {
     cand.misses++;
-    if (cand.misses > DROP_MISSES) cand = null;
+    // Fast motion smears the blink across map cells, so the map is EXPECTED
+    // to go quiet while the target moves -- the per-frame follower is still
+    // measuring the light every frame (contrast gate, coastFrames near 0)
+    // and carries the lock. While that is demonstrably true, map silence
+    // must not kill a lock the refiner is actively holding; the moment the
+    // refiner goes blind too (coastFrames grows), the normal drop applies.
+    // Bounded either way: no lock survives the map being silent for 3x the
+    // drop budget, so a beacon that truly vanished still drops even if a
+    // steady light sits inside the tether radius.
+    const dropLim = DROP_MISSES +
+      (state === 'LOCKED' ? Math.min(9, Math.round(3 * spd)) : 0);
+    const refinerAlive = state === 'LOCKED' && coastFrames < 10;
+    if (cand.misses > dropLim && (!refinerAlive || cand.misses > dropLim * 3)) {
+      cand = null;
+    } else if (refinerAlive && pos && cand.misses > 1) {
+      // Slide the stale candidate along with the carried lock, so the map's
+      // eventual strong return associates with the moving target instead of
+      // reading as a brand-new light 100 px away.
+      cand.x = pos.x; cand.y = pos.y;
+    }
   }
 
   confirm = cand ? cand.hits : 0;
@@ -1025,31 +1080,62 @@ function analyse() {
       pos = { x: cand.x, y: cand.y };
       anchor = { x: cand.x, y: cand.y };
       onContrast = 0;                 // relearned from the first lit frames
-      vel = { x: 0, y: 0 };
+      vel = { x: 0, y: 0 }; lastMeas = null;
       detectedHz = cand.freq;
       setState('LOCKED');
     } else {
       setState(cand ? 'CONFIRMING' : 'SEARCHING');
     }
   } else if (!cand) {
-    setState('SEARCHING'); pos = null; anchor = null; onContrast = 0; vel = { x: 0, y: 0 };
+    setState('SEARCHING'); pos = null; anchor = null; onContrast = 0;
+    vel = { x: 0, y: 0 }; lastMeas = null;
   } else {
     // Still locked: re-tether to where the modulation map says the beacon is
     // now. Without this the per-frame follower is the only thing moving `pos`
     // after acquisition, and nothing ever pulls a drifting lock back onto the
     // one light that is actually blinking at the target frequency.
-    anchor = { x: cand.x, y: cand.y };
+    //
+    // With one correction the original lacked: the map's position is the
+    // energy centroid of the whole N-frame window, i.e. where the beacon was
+    // ~N/2 frames AGO. Re-tethering a moving lock to that raw value yanks
+    // the anchor backwards along the motion path -- measured as the ring
+    // trailing a briskly moved phone and then sticking. Project the map's
+    // answer forward by the measured velocity over that known lag, and blend
+    // with the dead-reckoned anchor so a static beacon keeps the original
+    // behaviour exactly (vel ~ 0 makes both terms collapse to cand).
+    const lagF = N / 2;
+    // Cap the lag projection by how far the follower actually is from the
+    // map's answer: while moving they disagree by about one lag's worth and
+    // the projection passes untouched; at a STOP they agree, and an uncapped
+    // projection would fling the anchor past the stop point and leave the
+    // ring hovering beyond a beacon that is already stationary.
+    let projx = vel.x * lagF, projy = vel.y * lagF;
+    const cap = (pos ? Math.hypot(cand.x - pos.x, cand.y - pos.y) : 0) * 1.3 + 6;
+    const pl = Math.hypot(projx, projy);
+    if (pl > cap) { projx *= cap / pl; projy *= cap / pl; }
+    const mx = cand.x + projx, my = cand.y + projy;
+    anchor = anchor
+      ? { x: 0.5 * anchor.x + 0.5 * mx, y: 0.5 * anchor.y + 0.5 * my }
+      : { x: mx, y: my };
     detectedHz = cand.freq;
   }
 }
 
 function setState(s) {
   state = s === 'STANDBY' ? 'SEARCHING' : s;
-  // Showing the confirmation count makes it visible that a candidate is being
-  // checked rather than silently ignored -- and makes a near-miss diagnosable
-  // instead of looking like the tracker simply does nothing.
+  if (s !== 'LOCKED') coastFrames = 0;
+  paintState(s === 'STANDBY' ? 'STANDBY' : s);
+}
+
+// Showing the confirmation count makes it visible that a candidate is being
+// checked rather than silently ignored -- and makes a near-miss diagnosable
+// instead of looking like the tracker simply does nothing. COASTING is shown
+// amber: the lock is alive but currently carried by prediction, and the
+// operator deserves to know the difference.
+function paintState(s) {
   els.chipText.textContent = s === 'CONFIRMING' ? `CONFIRMING ${confirm}/${CONFIRM_HITS}` : s;
-  els.chip.className = 'state-chip ' + (s === 'LOCKED' ? 'locked' : 'searching');
+  els.chip.className = 'state-chip ' + (s === 'LOCKED' ? 'locked'
+                        : s === 'COASTING' ? 'coasting' : 'searching');
 }
 
 /* ---------------- main loop ---------------- */
@@ -1086,10 +1172,27 @@ function loop() {
   // pixels. Following the actual bright spot at full resolution every frame
   // is what makes the marker sit on the beacon instead of near it, and what
   // keeps the servos moving smoothly between analyses.
-  if (state === 'LOCKED' && pos) refine();
+  if (state === 'LOCKED' && pos) {
+    // Constant-velocity feed-forward BEFORE the measurement: the follower
+    // then only corrects the residual, which is what lets a fast-moving
+    // beacon stay inside the search disc instead of leaving it behind.
+    // (vel was previously computed and never used -- the entire reason a
+    // briskly moved phone walked out of the lock.)
+    // Scaled by the MEASURED frame gap: browsers and webcams both stall
+    // (auto-exposure, tab pressure), and a two-frame gap means the world
+    // moved two frames' worth while we saw nothing.
+    const nowT = stamps[(head + filled - 1 + N) % N];
+    const dtF = lastFrameT ? Math.min(4, Math.max(0.5, (nowT - lastFrameT) * 30)) : 1;
+    lastFrameT = nowT;
+    pos.x += vel.x * dtF; pos.y += vel.y * dtF;
+    if (anchor) { anchor.x += vel.x * dtF; anchor.y += vel.y * dtF; }
+    vel.x *= 0.99; vel.y *= 0.99;      // an unrefreshed prediction decays slowly
+    refine();
+  }
   drawHud();
   if (state === 'LOCKED' && pos && serialWriter) steer();
 
+  paintState(displayState());
   els.score.textContent = score.toFixed(2);
   els.score.className = score > LOCK_MIN ? 'good' : '';
   els.margin.textContent = margin.toFixed(1) + '×';
@@ -1106,10 +1209,14 @@ function loop() {
 function refine() {
   const w = els.view.width, h = els.view.height;
   const cx = anchor ? anchor.x : pos.x, cy = anchor ? anchor.y : pos.y;
-  const x0 = Math.max(0, Math.round(cx) - TRACK_ROI);
-  const y0 = Math.max(0, Math.round(cy) - TRACK_ROI);
-  const x1 = Math.min(w, Math.round(cx) + TRACK_ROI);
-  const y1 = Math.min(h, Math.round(cy) + TRACK_ROI);
+  // The box must out-run the worst plausible lag, or a fast target leaves it
+  // and the follower goes structurally blind until the map recovers it.
+  const roi = Math.min(ROI_MAX,
+    Math.round(TRACK_ROI + 6 * Math.hypot(vel.x, vel.y) + 2 * coastFrames));
+  const x0 = Math.max(0, Math.round(cx) - roi);
+  const y0 = Math.max(0, Math.round(cy) - roi);
+  const x1 = Math.min(w, Math.round(cx) + roi);
+  const y1 = Math.min(h, Math.round(cy) + roi);
   const rw = x1 - x0, rh = y1 - y0;
   if (rw < 4 || rh < 4) return;
   // Sample the VIDEO, not the display canvas. The display is mirrored for the
@@ -1134,8 +1241,19 @@ function refine() {
   // this function structurally a refiner: it can sharpen the map's answer, and
   // it cannot walk away from it.
   const rs = resScale();
-  const LOCAL_R = LOCAL_R_REF * rs, FOCUS_SIGMA = FOCUS_SIGMA_REF * rs;
+  const spdR = Math.hypot(vel.x, vel.y);
+  // The lit-detection disc grows with speed AND with how long the light has
+  // gone unseen. The second term is what survives a standstill-to-fast start:
+  // velocity is still zero then, the beacon leaves a fixed disc in two
+  // frames, and a disc that only stares at the old spot reads the receding
+  // beacon as "dark" forever. Looking progressively wider when blind is
+  // bounded (cap + tether + the map's 3x drop budget), so a truly vanished
+  // beacon still drops instead of latching whatever else is nearby.
+  const LOCAL_R = Math.min(60, LOCAL_R_REF * rs + 2.5 * spdR + 1.6 * coastFrames);
+  const FOCUS_SIGMA = FOCUS_SIGMA_REF * rs + spdR + 0.5 * coastFrames;
   let localPeak = 0, nBg = 0;
+  const recapture = coastFrames > 5;   // blind past any normal 4 Hz dark phase
+  let roiPeak = 0, rpx = cx, rpy = cy;
   bgHist.fill(0);
   const lr2 = LOCAL_R * LOCAL_R;
   for (let y = 0; y < rh; y++) {
@@ -1147,6 +1265,7 @@ function refine() {
       if (dx * dx + dy * dy <= lr2) { if (v > localPeak) localPeak = v; }
       // Every second pixel is plenty for a median and halves the cost.
       else if (((x ^ y) & 1) === 0) { bgHist[v | 0]++; nBg++; }
+      if (recapture && v > roiPeak) { roiPeak = v; rpx = gx; rpy = gy; }
     }
   }
   // Median of the surroundings via histogram -- no sort, no allocation. The
@@ -1162,7 +1281,19 @@ function refine() {
   let bg = 0, acc = 0;
   const halfBg = nBg >> 1;
   for (let i = 0; i < 256; i++) { acc += bgHist[i]; if (acc >= halfBg) { bg = i; break; } }
-  const contrast = localPeak - bg;
+  let contrast = localPeak - bg;
+  // Recapture: blind for longer than any dark phase lasts, yet something in
+  // the box clears the same learned lit-contrast bar the beacon set -- the
+  // light was not where we were staring. Re-centre attention on it. Bounded
+  // three ways: the box, the (blind-extended) tether, and the modulation
+  // map's 3x drop budget -- if this spot is not the beacon, the map never
+  // confirms it there and the lock dies on schedule.
+  let fcx = cx, fcy = cy;
+  const litBar = Math.max(MIN_CONTRAST, onContrast * OFF_PHASE_RATIO);
+  if (recapture && contrast < litBar && roiPeak - bg >= litBar) {
+    contrast = roiPeak - bg;
+    fcx = rpx; fcy = rpy;
+  }
 
   // THE defect this block exists to fix. A beacon blinking at 4 Hz is dark for
   // about half of every quarter-second -- four frames in a row at 30 fps.
@@ -1186,12 +1317,14 @@ function refine() {
   // the one thing that still knows where the beacon is -- the modulation map,
   // which is measuring the blink regardless of this frame.
   if (contrast < Math.max(MIN_CONTRAST, onContrast * OFF_PHASE_RATIO)) {
+    coastFrames++;
     if (anchor) {
       pos = { x: pos.x + (anchor.x - pos.x) * ANCHOR_PULL,
               y: pos.y + (anchor.y - pos.y) * ANCHOR_PULL };
     }
     return;
   }
+  coastFrames = 0;
   onContrast = Math.max(contrast, onContrast * 0.995);
 
   // Brightness-weighted centroid of the tracked blob, not just its hottest
@@ -1208,12 +1341,12 @@ function refine() {
   const cut = bg + Math.max(4, contrast * 0.5);
   let sx = 0, sy = 0, sw = 0;
   for (let y = 0; y < rh; y++) {
-    const gy = y0 + y, dy = gy - cy;
+    const gy = y0 + y, dy = gy - fcy;
     for (let x = 0; x < rw; x++) {
       const q = (y * rw + x) << 2;
       const v = d[q] * 0.299 + d[q+1] * 0.587 + d[q+2] * 0.114;
       if (v < cut) continue;
-      const gx = x0 + x, dx = gx - cx;
+      const gx = x0 + x, dx = gx - fcx;
       const wgt = (v - cut + 1) * Math.exp(-(dx * dx + dy * dy) / (2 * FOCUS_SIGMA * FOCUS_SIGMA));
       sx += gx * wgt; sy += gy * wgt; sw += wgt;
     }
@@ -1226,15 +1359,21 @@ function refine() {
   // object having entered the box. Step toward it rather than onto it, so a
   // genuine move still tracks within a few frames while a passing reflection
   // cannot capture the lock in one.
+  // Speed raises the believable per-frame step: prediction has already
+  // absorbed the expected motion, so this cap now guards against a DIFFERENT
+  // object, not against the beacon's own speed.
+  const stepLim = REFINE_STEP + 2.5 * Math.hypot(vel.x, vel.y)
+                + (coastFrames > 5 ? 3 * coastFrames : 0);
   const jump = Math.hypot(nx - pos.x, ny - pos.y);
-  if (jump > REFINE_STEP) {
-    const k = REFINE_STEP / jump;
+  if (jump > stepLim) {
+    const k = stepLim / jump;
     nx = pos.x + (nx - pos.x) * k;
     ny = pos.y + (ny - pos.y) * k;
   }
 
-  let px = pos.x + (nx - pos.x) * REFINE_SMOOTH;
-  let py = pos.y + (ny - pos.y) * REFINE_SMOOTH;
+  const smooth = Math.min(0.75, REFINE_SMOOTH + 0.06 * spdR);
+  let px = pos.x + (nx - pos.x) * smooth;
+  let py = pos.y + (ny - pos.y) * smooth;
 
   // The tether. The modulation map is the only thing in this program that
   // knows WHICH light is the beacon; brightness alone does not. So the
@@ -1243,14 +1382,27 @@ function refine() {
   if (anchor) {
     const dx = px - anchor.x, dy = py - anchor.y;
     const r = Math.hypot(dx, dy);
-    if (r > ANCHOR_MAX) {
-      px = anchor.x + dx * (ANCHOR_MAX / r);
-      py = anchor.y + dy * (ANCHOR_MAX / r);
+    const tether = ANCHOR_MAX + 3 * Math.hypot(vel.x, vel.y)
+                 + (coastFrames > 5 ? 3 * coastFrames : 0);
+    if (r > tether) {
+      px = anchor.x + dx * (tether / r);
+      py = anchor.y + dy * (tether / r);
     }
   }
 
-  vel.x = 0.6 * vel.x + 0.4 * (px - pos.x);
-  vel.y = 0.6 * vel.y + 0.4 * (py - pos.y);
+  if (lastMeas) {
+    const df = frameNo - lastMeas.f;
+    if (df >= 1 && df <= 12) {          // spans the blink's dark half too
+      const mvx = (nx - lastMeas.x) / df, mvy = (ny - lastMeas.y) / df;
+      // Adaptive gain: small disagreement = smoothing; large disagreement
+      // (a direction REVERSAL above all) = the old estimate is simply
+      // wrong, and clinging to it predicts the wrong way through the turn.
+      const wN = Math.min(0.85, 0.5 + 0.05 * Math.hypot(mvx - vel.x, mvy - vel.y));
+      vel.x += wN * (mvx - vel.x);
+      vel.y += wN * (mvy - vel.y);
+    }
+  }
+  lastMeas = { x: nx, y: ny, f: frameNo };
   pos = { x: px, y: py };
 }
 
@@ -1259,9 +1411,10 @@ function drawHud() {
   c.save();
   c.fillStyle = 'rgba(4,9,21,.72)';
   c.fillRect(0, 0, w, 64);
+  const ds = displayState();
   c.font = '600 15px ui-monospace, monospace';
-  c.fillStyle = state === 'LOCKED' ? '#3BD68C' : '#8EA4C4';
-  c.fillText(state === 'CONFIRMING' ? `CONFIRMING ${confirm}/${CONFIRM_HITS}` : state, 14, 29);
+  c.fillStyle = ds === 'LOCKED' ? '#3BD68C' : ds === 'COASTING' ? '#FFC24D' : '#8EA4C4';
+  c.fillText(ds === 'CONFIRMING' ? `CONFIRMING ${confirm}/${CONFIRM_HITS}` : ds, 14, 29);
   c.font = '12px ui-monospace, monospace';
   c.fillStyle = '#EAF4FD';
   c.fillText('blink ' + score.toFixed(2) + '   depth ' + peakDepth.toFixed(2)
@@ -1281,10 +1434,21 @@ function drawHud() {
     // the ring has to be mirrored too or it lands on the wrong side of the
     // screen from the beacon the operator is looking at.
     const mx = MIRROR_VIEW ? w - pos.x : pos.x;
-    c.strokeStyle = '#3BD68C'; c.lineWidth = 2.5;
+    const coasting = ds === 'COASTING';
+    c.strokeStyle = coasting ? '#FFC24D' : '#3BD68C';
+    if (coasting) c.setLineDash([6, 5]);
+    c.lineWidth = 2.5;
     c.beginPath(); c.arc(mx, pos.y, 22, 0, 6.284); c.stroke();
     c.lineWidth = 1; c.globalAlpha = .6;
     c.beginPath(); c.arc(mx, pos.y, 33, 0, 6.284); c.stroke();
+    c.setLineDash([]);
+    // Velocity vector: makes "the tracker knows where it is going" visible.
+    const spd = Math.hypot(vel.x, vel.y);
+    if (spd > 1.2) {
+      const k = 6, vx = (MIRROR_VIEW ? -vel.x : vel.x) * k, vy = vel.y * k;
+      c.globalAlpha = .85; c.lineWidth = 1.5;
+      c.beginPath(); c.moveTo(mx, pos.y); c.lineTo(mx + vx, pos.y + vy); c.stroke();
+    }
   }
   c.restore();
 }
@@ -1409,6 +1573,40 @@ function steer() {
 
 /* ---------------- beacon mode ---------------- */
 let beaconTimer = null;
+/* ---------------- the full-engine rig console ----------------
+   The in-page tracker above is the zero-install browser demo. The PHYSICAL
+   rig's camera runs through the real Python engine (hil/serve.py), which
+   serves its own live console on localhost. This button is the bridge:
+   probe for the engine, open its console when present, explain how to start
+   it when not. Chrome exempts http://localhost from mixed-content blocking,
+   so the probe works even from the https deployment. */
+const ENGINE_URL = 'http://localhost:8765';
+async function probeEngine(quiet) {
+  try {
+    const ctl = new AbortController();
+    const tm = setTimeout(() => ctl.abort(), 1500);
+    const r = await fetch(ENGINE_URL + '/live/meta', { signal: ctl.signal });
+    clearTimeout(tm);
+    if (r.ok) {
+      const m = await r.json();
+      els.engineBtn.classList.add('good');
+      els.engineNote.innerHTML = 'Engine detected: <b>' + (m.source || 'camera') +
+        '</b> · rig ' + (m.rig || '?') + '. Opens the live rig console.';
+      return true;
+    }
+  } catch (e) { /* not running -- the normal case */ }
+  if (!quiet) {
+    note('The desktop engine is not running on this machine. In the repo folder run ' +
+         '<b>pip install -e .</b> once, then <b>python -m fsoc_pat.hil.serve</b> ' +
+         '(add <b>--port-serial auto</b> when the Mk2 is plugged in) and press this again.', true);
+  }
+  return false;
+}
+els.engineBtn.onclick = async () => {
+  if (await probeEngine(false)) window.open(ENGINE_URL + '/rig.html', '_blank');
+};
+setTimeout(() => probeEngine(true), 1200);
+
 function beaconOn() {
   const hz = parseFloat(els.hz.value);
   els.overlay.classList.add('on');

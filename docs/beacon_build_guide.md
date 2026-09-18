@@ -107,8 +107,8 @@ demonstrable rather than asserted.
 | # | Item | Qty | ~Price | Notes |
 |---|---|---|---|---|
 | 1 | High-brightness LED — **brighter than the beacon's**, different color helpful for you to tell them apart (not for the camera, which only cares about modulation) | 1 | ₹15–30 | Deliberately outshine the beacon — that's the point being proven |
-| 2 | 150Ω resistor | 1 | ₹5 | Slightly lower value than the beacon's — drives more current, brighter |
-| 3 | CR2032 coin cell + holder, or 2×AA pack | 1 | ₹40–80 | |
+| 2 | 68Ω resistor | 1 | ₹5 | Sized for a white LED against 3×AA — see the note below, not a guess |
+| 3 | 3×AA battery holder + 3 AA cells | 1 | ₹90 | **Not a CR2032, not 2×AA** — a white LED's forward voltage (~3.1V) is at or above what either supplies, so the LED dims to nothing as the battery ages. 3×AA (4.5V nominal) keeps it lit across the pack's working life. |
 | 4 | SPST switch or slide switch | 1 | ₹20–30 | |
 | 5 | Small housing — reuse a spare project box, or even a bottle cap + tape for this one, it's genuinely just an LED | 1 | ₹0–40 | No enclosure precision needed — it never moves during a demo |
 
@@ -117,6 +117,16 @@ demonstrable rather than asserted.
 No microcontroller, no firmware — wire the LED, resistor, switch and
 battery in series. It is deliberately the simplest thing in the entire
 build, because its only job is to sit there, be bright, and not blink.
+
+**Worked, not assumed**: a white LED's forward voltage is close to a
+single coin cell's or two AA cells' terminal voltage, so a circuit sized
+against either one is marginal from the day it's built and goes dark
+within the battery's first hours as the voltage sags below the LED's
+threshold — silently, with no symptom except "the decoy stopped working,"
+which is exactly the kind of failure that's invisible until the demo.
+At 3×AA (4.5V nominal) and 68Ω, the LED draws roughly 16–25 mA across
+the pack's whole working life — genuinely bright throughout, not just
+on the first day.
 
 ---
 ## 3. Running the beacon + decoy demo

@@ -1,6 +1,6 @@
 {
   "name": "ZeroDrift Terminal Mk3 — Tier A",
-  "note": "Single source of truth for the build BOM. docs/TERMINAL_MK3.md section 2 and docs/submission/ZeroDrift_Mk3_Build_Guide.pdf are both generated from this; tests/test_bom_consistency.py enforces it. Beacon runs from a USB power bank, not a 9V battery: the Nano's linear regulator wastes 9V->5V as heat and a 9V alkaline holds ~500mAh. Decoy runs from 2xAA, not a coin cell: a CR2032 is rated 0.2mA continuous and a high-brightness LED draws ~20mA, which is 100x over spec.",
+  "note": "Single source of truth for the build BOM. docs/TERMINAL_MK3.md section 2 and docs/submission/ZeroDrift_Mk3_Build_Guide.pdf are both generated from this; tests/test_bom_consistency.py enforces it. Beacon runs from a USB power bank, not a 9V battery: the Nano's linear regulator wastes 9V->5V as heat and a 9V alkaline holds ~500mAh. Decoy runs from 2xAA, not a coin cell: a CR2032 is rated 0.2mA continuous and a high-brightness LED draws ~20mA, which is 100x over spec. Decoy resistor recomputed for a white LED (Vf ~3.1V): 150R against 2xAA's ~3V supply left under 1mA and went dark as the battery aged even slightly -- the opposite of 'brighter than the beacon'. 3xAA (4.5V nominal) + 68R gives 16-25mA across the pack's working life.",
   "sections": [
     {
       "title": "A. Motion — the gimbal",
@@ -180,15 +180,15 @@
           "price_basis": "estimate"
         },
         {
-          "item": "150 Ω resistor",
+          "item": "68 Ω resistor",
           "qty": 1,
           "unit_inr": 5,
           "price_basis": "estimate"
         },
         {
-          "item": "2×AA battery holder + 2 AA cells — decoy supply",
+          "item": "3×AA battery holder + 3 AA cells — decoy supply",
           "qty": 1,
-          "unit_inr": 70,
+          "unit_inr": 90,
           "price_basis": "estimate"
         },
         {
@@ -223,5 +223,5 @@
       ]
     }
   ],
-  "total_inr": 6325
+  "total_inr": 6345
 }

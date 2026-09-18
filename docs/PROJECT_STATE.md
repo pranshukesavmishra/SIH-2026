@@ -134,6 +134,23 @@ assets: `docs/submission/deck_src/` — `python build_deck_v3.py` regenerates it
       (`hil.calibrate`), verify stepper direction signs, then
       `python -m fsoc_pat.hil.serve --port-serial auto`.
 
+**Browser live demo (live.html) — motion-hardened (18 Sept, `live-tracker-v2`)**
+- [x] Fast-moving beacon stays locked: velocity learned from measured position
+      deltas (true target velocity, dark phases included), feed-forward
+      prediction scaled by the real inter-frame gap, speed/blind-time-grown
+      search disc + ROI + tether, ROI-wide recapture once blind past a normal
+      dark phase, lag-corrected + overshoot-capped map re-tether. All bounded
+      by the modulation map's 3x drop budget, so identity still rules.
+- [x] Honest COASTING state (amber, dashed ring) whenever the lock is carried
+      by prediction — no more green LOCKED with blink 0.00 on a stale ring.
+- [x] MARGIN vs NOISE floored (max ~50x; the six-digit readout is gone).
+- [x] RIG CAMERA VIEW button: probes localhost:8765, opens the full-engine
+      rig console (hil/serve.py) when running, explains how to start it when not.
+- [x] Verified end-to-end in headless Chromium with a synthetic camera
+      (`tools/web/test_live_motion.mjs` + `fake_cam.js`): 5/6 runs fully clean,
+      worst case = temporary lag with honest COASTING and recovery; zero lock
+      losses, zero decoy captures across all runs.
+
 **Rig (no deadline — Grand Finale, Dec 2026 if selected)**
 - [ ] Mk1 tilt servo dead (stripped gears); replacement also not moving — free-spin test never reported back
 - [ ] Mk2: priced at ₹4,480–4,550; ABS enclosure size still unconfirmed

@@ -80,22 +80,35 @@ only work from a source checkout:
 | `gui/app.py:30` | `DEFAULT_SCENARIO = "scenarios/leo_pass_nominal.yaml"` | Relative to the working directory — breaks whenever the exe is launched from anywhere else |
 | `server.py:26-27` | `Path(__file__).parent / "web"`, `parents[2] / "scenarios"` | Same bundle-escape problem |
 
+**Root cause of the missing file:** `.gitignore` carried the stock
+`*.spec` rule — intended for the specs PyInstaller auto-generates — which
+silently swallowed our hand-maintained `packaging/fsoc-pat.spec` on every
+clone. The build scripts have been calling a file git was throwing away.
+
 The work is therefore:
 
-1. Add a small `resources.py` that resolves paths through `sys._MEIPASS`
-   when `sys.frozen` is set, and falls back to the repo layout otherwise
-2. Route those three call sites through it
-3. Write `packaging/fsoc-pat.spec` bundling `models/` and `scenarios/`
-   as data, with `PySide6` / `pyqtgraph` / `cv2` collected
+1. ~~Add a `resources.py` that resolves paths through `sys._MEIPASS` when
+   frozen and falls back to the repo layout otherwise~~ ✅ **done**
+2. ~~Route those three call sites through it~~ ✅ **done**
+3. ~~Write `packaging/fsoc-pat.spec`, and un-ignore it in `.gitignore`~~ ✅ **done**
 4. **Build it once on Windows and once on Linux and actually launch the
-   binary** — including running a scenario headless *and* through the GUI
+   binary** — a scenario headless *and* through the GUI — ⬜ **outstanding**
 
 Step 4 is the one that matters. A spec that produces a binary which then
 cannot find its model is worse than no binary, because it looks done.
 
-> ⚠️ This environment has no PySide6, PyInstaller or OpenCV installed, so
-> none of this can be verified here. It must be done on a real dev
-> machine, and the binary must be launched, not just built.
+**Verified so far:** resource resolution across source-checkout, frozen
+(`sys._MEIPASS`), missing-file and writable cases, pinned by
+`tests/test_resources.py` (4 passing).
+
+> ⚠️ **Not verified: the build itself.** The environment this was written
+> in has no PySide6, PyInstaller or OpenCV. Someone must run
+> `packaging/build.bat` (Windows) and `packaging/build.sh` (Linux), then
+> **launch the binary both ways** and confirm the AI verifier loads —
+> that is the exact failure this fix targets, and it cannot be confirmed
+> from a source checkout.
+
+Remaining effort for 0.1: **~0.5 d**, all of it build verification.
 
 ---
 ## 3. TIER 1 — What actually wins the finale

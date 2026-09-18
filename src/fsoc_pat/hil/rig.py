@@ -161,11 +161,12 @@ class PiGlobalShutterCamera:
     """
     The Mk3 head camera: Raspberry Pi Global Shutter (IMX296), C-mount.
 
-    Global shutter is a requirement, not a preference. A rolling shutter
-    exposes rows at different instants, so a blinking source photographed
-    mid-slew smears across the frame and can alias against the blink rate
-    outright -- destroying the one signal this whole system identifies
-    targets by.
+    Global shutter is a nice-to-have here, not a requirement -- an earlier
+    revision of this docstring overstated it. A rolling shutter exposes
+    rows at different instants, but its readout is 10-30 ms against a
+    250 ms blink period, and the fine loop measures when the head is at
+    rest, so the smear is small. `UsbCamera` below is the Tier A path and
+    is fully adequate; this class exists for the Raspberry Pi build.
 
     Exposure and gain are pinned manually for the same reason auto-exposure
     is banned on the USB path: the loop hunts on every beacon blink.

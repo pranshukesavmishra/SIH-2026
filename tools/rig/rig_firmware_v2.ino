@@ -1,7 +1,9 @@
 /*
  * ZeroDrift Mini-Rig Mk2 — tracker firmware.
- * Arduino Nano/Uno + 2x TMC2209 + 2x NEMA17 (dual-shaft) + 2x AS5600
- *                   (via TCA9548A) + laser + vibration injector.
+ * Arduino Nano/Uno + 2x A4988 + 2x NEMA17 + 2x AS5600 (via TCA9548A)
+ *                   + laser + vibration injector.
+ * (Tier B swaps the A4988s for TMC2209s and adds a 3:1 belt: change
+ *  MICROSTEPS and *_GEAR_RATIO below, reflash, and nothing else moves.)
  *
  * Libraries (Arduino Library Manager): AccelStepper, Wire.
  * (Servo.h is only needed if you set FINE_STAGE to 1 — see below.)
@@ -70,14 +72,14 @@ const int VIBRATION_PIN = 8;
 #define FINE_STAGE 0
 
 // ---- Mechanics ----------------------------------------------------------
-// 200 full steps/rev (1.8 deg/step) x 32 microsteps = 6400 steps/rev.
-// On a TMC2209 in standalone (non-UART) mode, 1/32 is MS1=LOW, MS2=LOW...
-// CHECK YOUR BOARD'S SILKSCREEN: the MS1/MS2 truth table differs between
-// vendors and getting it wrong scales every angle you command.
+// 200 full steps/rev (1.8 deg/step) x 16 microsteps = 3200 steps/rev.
+// On an A4988, 1/16 is MS1=MS2=MS3=HIGH. CHECK YOUR BOARD'S SILKSCREEN:
+// the truth table differs between vendors, and getting it wrong scales
+// every angle you command -- silently, because the motor still turns.
 // Whatever you set the jumpers to, set MICROSTEPS to match and reflash.
 const float STEPS_PER_REV = 200.0;
-const float MICROSTEPS    = 32.0;
-const float STEPS_PER_DEG = (STEPS_PER_REV * MICROSTEPS) / 360.0;   // 17.778
+const float MICROSTEPS    = 16.0;                 // TMC2209 at 1/32 -> 32.0
+const float STEPS_PER_DEG = (STEPS_PER_REV * MICROSTEPS) / 360.0;   // 8.889
 
 // Belt reduction, motor turns per output turn. 1.0 = direct drive.
 // With a GT2 20T pulley on the motor and 60T on the output stage, set 3.0:
@@ -170,15 +172,14 @@ void setup() {
   // Conservative speeds. A NEMA17 on an A4988 at 12V will happily be
   // commanded faster than it can actually accelerate a loaded gimbal, and
   // a skipped step is worse than a slow slew.
-  // At 1/32 microstepping a degree costs 17.8 steps, so the step RATE has
-  // to rise to keep the same slew speed in degrees. 2400 steps/s = 135 deg/s
-  // direct-drive, which is brisk but well inside what a NEMA17 will hold.
-  // An Arduino Nano tops out around 4000 steps/s across both axes; if you
-  // add the belt reduction, raise these or accept a 3x slower slew.
-  panStepper.setMaxSpeed(2400);
-  panStepper.setAcceleration(1200);
-  tiltStepper.setMaxSpeed(2400);
-  tiltStepper.setAcceleration(1200);
+  // At 1/16 a degree costs 8.9 steps, so 1200 steps/s = 135 deg/s. An
+  // Arduino Nano tops out near 4000 steps/s across both axes; if you move
+  // to 1/32 or add the 3:1 belt, raise these proportionally or accept a
+  // correspondingly slower slew.
+  panStepper.setMaxSpeed(1200);
+  panStepper.setAcceleration(600);
+  tiltStepper.setMaxSpeed(1200);
+  tiltStepper.setAcceleration(600);
 
 #if FINE_STAGE
   finePan.attach(FINE_PAN_PIN);

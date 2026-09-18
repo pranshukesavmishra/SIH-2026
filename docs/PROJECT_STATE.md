@@ -4,7 +4,7 @@
 clone this repo and read this file first. It is the authority on what is
 done, what is open, and which number is the real one.
 
-Last updated: 2026-09-18 (rev 3 — Terminal Mk3: scanning head, dot-closed loop, protocol v3)
+Last updated: 2026-09-18 (rev 4 — Mk3 re-budgeted to ₹6,124; Tier A is the build)
 
 ---
 ## 1. Identity
@@ -138,18 +138,27 @@ Pi runs the pipeline on-board; the Nano does motion only.
 
 - [x] ~~Servos~~ — **removed from the design entirely.** Mk1 stripped two.
   A hobby servo's backlash (~17 mrad) exceeds the error this rig measures.
-  Resolution now comes from 1/32 microstepping + a 3:1 GT2 belt: 0.16
-  mrad/step, ~0.5 mrad encoder-verified, 8× better than Mk2 and nothing
-  to shear.
+  Resolution comes from microstepping instead: Tier A is 1.96 mrad/step
+  with the AS5600 measuring to 1.53 mrad, and nothing to shear.
 - [x] Parallax problem solved without modelling it — beacon 4 Hz, laser
   7 Hz, loop closes on the dot-to-beacon pixel error. `hil/boresight.py`,
   14 tests passing.
-- [ ] Order parts — TERMINAL_MK3.md §2. **Three order-time traps:**
-  motors must be **dual-shaft** (encoder magnet mounts on the rear shaft),
+- [x] Re-budgeted to a student build: **Tier A, ₹6,124**, in
+  TERMINAL_MK3.md §2. Nothing load-bearing was cut — the dot-closed loop
+  and modulation-identity are software and cost ₹0; the encoders are
+  ₹697 and stay. What was cut is margin: Pi 5, global shutter, TMC2209,
+  0.9° motors, belt reduction, true bandpass filter. Laptop runs the
+  pipeline; the camera still rides on the gimbal.
+- [ ] Order parts — TERMINAL_MK3.md §2 Tier A. **Two order-time traps:**
   magnets must be **diametric** not axial, and buy the 100 µF caps for
-  VMOT or the first power-up kills both drivers.
-- [ ] Prices in §2 are **estimates** except TMC2209/AS5600/TCA9548A —
-  price-check before ordering, and say which is which if a judge asks.
+  VMOT or the first power-up kills both drivers. Also set the A4988 Vref
+  before attaching a motor.
+- [ ] Prices: ✅ verified are NEMA17 ₹749, A4988 ₹170, AS5600 ₹249,
+  TCA9548A ₹199, PSU ₹279, acrylic+brackets ₹450. The rest are estimates
+  — price-check before ordering, and say which is which if a judge asks.
+- [ ] **If budget ever allows one upgrade, buy the GT2 3:1 belt (+₹1,740).**
+  1.96 → 0.65 mrad/step, and it divides the motor's own error by three,
+  which microstepping cannot do. Everything else in Tier B is comfort.
 - [ ] Build per §3, stage by stage. Do not pass a stage that fails its check.
 - [ ] Beacon needs rebuilding at 650 nm to match the camera's bandpass filter
 

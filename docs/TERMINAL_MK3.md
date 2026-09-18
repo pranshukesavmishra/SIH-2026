@@ -59,35 +59,44 @@ This maps cleanly onto the problem statement's architecture:
 ```
             ┌─────────────────────────────────────────┐
             │  HEAD  — rides on the gimbal            │
-            │    Global-shutter camera + 12 mm lens   │
-            │    650 nm bandpass filter               │
+            │    USB camera, M12 mount, 12 mm lens    │
+            │    red filter over the lens             │
             │    650 nm laser, modulated at 7 Hz      │
             │    ~20 mm between optical axes          │
             └───────────────────┬─────────────────────┘
-                     CSI ribbon │ + laser wire, service loop
+                     USB + laser │ wire, service loop at each axis
             ┌───────────────────┴─────────────────────┐
             │  GIMBAL                                 │
-            │    TILT: NEMA17 0.9° + GT2 3:1 + AS5600 │
-            │    PAN : NEMA17 0.9° + GT2 3:1 + AS5600 │
+            │    TILT: NEMA17 1.8° + AS5600           │
+            │    PAN : NEMA17 1.8° + AS5600           │
             └───────────────────┬─────────────────────┘
                                 │
             ┌───────────────────┴─────────────────────┐
             │  BASE                                   │
-            │    Raspberry Pi 5    — vision, pipeline │
             │    Arduino Nano      — motion, real-time│
-            │    2× TMC2209        — 1/32 microstep   │
+            │    2× A4988          — 1/16 microstep   │
             │    TCA9548A          — encoder mux      │
-            │    12 V 5 A PSU + 5 V buck              │
+            │    12 V 2 A PSU                         │
+            └───────────────────┬─────────────────────┘
+                     USB ×2     │
+            ┌───────────────────┴─────────────────────┐
+            │  LAPTOP — vision + the ZeroDrift pipeline│
             └─────────────────────────────────────────┘
 ```
 
-**Why two processors.** Linux is not a real-time OS. A Pi cannot emit
-step pulses with reliable microsecond timing — jitter there *is* a
-skipped step, which is exactly the failure the encoders exist to catch.
-So the Nano does motion and nothing else, the Pi does vision and the
-pipeline, and they speak over USB serial. This is how real pointing
-systems are built, and it is a good answer when a judge asks why the
-architecture is split.
+Tier B moves the pipeline onto a Raspberry Pi in the base and makes the
+whole thing self-contained. The architecture does not change; only where
+the vision runs.
+
+**Why a separate motion controller.** Neither Linux nor Windows is a
+real-time OS. Neither can emit step pulses with reliable microsecond
+timing, and jitter there *is* a skipped step — exactly the failure the
+encoders exist to catch. So the Nano does motion and nothing else, the
+host does vision and the pipeline, and they speak over USB serial. This
+is how real pointing systems are built, and it is a good answer when a
+judge asks why the architecture is split. It is also why moving the
+pipeline to a Pi later changes nothing: the Nano is on the other side of
+that boundary either way.
 
 **Why no servos, anywhere.** Mk1 stripped two. A hobby servo holds
 position by fighting its own gear train, so the tilt axis is loaded even
@@ -106,100 +115,116 @@ it. The belt is the only item in this build that attacks that directly.
 
 ### Resolution budget
 
-| Stage | Value |
-|---|---|
-| NEMA17 0.9°/step, TMC2209 @ 1/32 | 0.0281°/step |
-| ÷ GT2 3:1 belt | **0.0094°/step = 0.16 mrad** |
-| AS5600 12-bit on motor shaft, ÷3 | 0.0293° → **0.51 mrad** measured |
-| Camera, 12 mm lens, 1456 px across 22° | 0.0151°/px = **0.26 mrad/px** |
-| Centroid, ~1/5 px on a clean spot | **~0.05 mrad** |
+| Stage | Tier A (built) | Tier B (+belt) |
+|---|---|---|
+| Step size | 1.8° ÷ 16 = 0.1125° = **1.96 mrad** | 0.0375° = **0.65 mrad** |
+| AS5600, 12-bit | 0.0879° = **1.53 mrad** | 0.0293° = **0.51 mrad** |
+| Camera, 12 mm lens, 1280 px across 22° | 0.0172°/px = 0.30 mrad/px | same |
+| Centroid, ~1/5 px on a clean spot | ~0.06 mrad | same |
 
-The mechanism is the limit at roughly **0.5 mrad**, encoder-verified.
-That is an honest, defensible number for a hackathon build — and it is
-8× better than the Mk2 design it replaces. It is *not* the simulator's
-microradian figure, and `docs/defence_brief.md` already takes the
-position that saying so plainly reads as rigour.
+**The camera is never the limit — the mechanism is.** That is worth
+knowing before spending on optics: at 0.30 mrad/px against a 1.5 mrad
+mechanism, a better sensor buys nothing. Money goes into the belt, or
+nowhere.
+
+Tier A lands at roughly **1.5–2 mrad, encoder-verified**. That is a real
+measured number, twice as good as the Mk2 design it replaces, and honest.
+It is *not* the simulator's microradian figure, and `docs/defence_brief.md`
+already takes the position that saying so plainly reads as rigour rather
+than weakness.
 
 ---
 ## 2. Bill of materials
 
-Prices marked ✅ were verified against live Amazon.in listings in the
-September pricing pass. Everything else is an estimate from component-class
-market ranges and **must be checked before ordering** — say which is which
-if a judge asks what the rig cost.
+**Two tiers. Build Tier A.** It is the student build, ~₹6,100, and it
+gives up nothing that this design's argument rests on. Tier B is what
+you would add if money appeared; it is listed so you know exactly what
+you are trading, and so nobody can claim you did not consider it.
 
-### 2.1 Head — optics
+### What the budget does NOT touch
 
-| Item | Qty | Est. unit | Notes |
-|---|---|---|---|
-| Raspberry Pi Global Shutter Camera (IMX296, C/CS mount) | 1 | ₹5,500–7,000 | **Global shutter is not optional.** A rolling shutter smears a blinking source while the head is slewing, and can alias against the 4 Hz blink outright. |
-| C-mount 12 mm lens, 1/2.9″ or larger | 1 | ₹1,200–2,500 | ~22° horizontal FOV. Manual iris and focus — lock both once set. |
-| 650 nm bandpass filter, 25 mm, ~±20 nm | 1 | ₹1,500–3,000 | Threads or tapes in front of the lens. Rejects room lighting. The single biggest detection-reliability win in the build. |
-| 650 nm laser diode module, 5 mW, focusable, TTL input | 1 | ₹250–600 | 5 mW = Class 3R. Do not exceed it. TTL input so the Nano can modulate it at 7 Hz. |
-| Head bracket, laser-cut aluminium or 3D printed | 1 | ₹300–800 | Holds camera and laser rigidly, optical axes ~20 mm apart, parallel. |
+Every idea that makes this project worth winning with costs nothing:
 
-### 2.2 Gimbal — motion
+- **The dot-closed loop.** Beacon 4 Hz, laser 7 Hz, error measured
+  between them. That is software, and it is the whole intellectual
+  contribution of the physical build. Free.
+- **Modulation as identity.** Beacon vs decoy vs our own dot, separated
+  by frequency, not brightness. Free.
+- **Closed-loop position feedback.** Two AS5600s and a multiplexer:
+  ₹697 total. This is what makes "accurate" a measurement instead of an
+  adjective. Never cut it.
+- **The camera riding on the gimbal.** An architectural choice, not a
+  price point.
 
-| Item | Qty | Est. unit | Notes |
-|---|---|---|---|
-| NEMA17 stepper, **0.9°/step**, **dual shaft** | 2 | ₹1,100–1,600 | **Both properties are mandatory.** Dual shaft: the encoder magnet glues to the rear shaft. 0.9°: halves the error of a standard 1.8° motor. |
-| TMC2209 stepper driver | 2 | ₹450–1,100 ✅ | 1/32 microstepping, quiet, and StallGuard gives a second, independent stall signal alongside the encoders. |
-| AS5600 magnetic encoder breakout | 2 | ₹249 ✅ | |
-| **Diametrically magnetised** magnet, 6×2.5 mm | 2 | ₹80–150 | **Read this twice.** An axially magnetised magnet will not work and is what usually ships in cheap kits. |
-| TCA9548A I²C multiplexer | 1 | ₹199 ✅ | Both AS5600s are fixed at address 0x36 and cannot share a bus. |
-| GT2 pulley 20 T, 5 mm bore | 2 | ₹120–200 | Motor side. |
-| GT2 pulley 60 T, 8 mm bore | 2 | ₹250–450 | Output side. 3:1. |
-| GT2 closed belt, 6 mm wide, ~200–300 mm | 2 | ₹150–250 | Measure your centre distance before ordering the length. |
-| 608ZZ bearing | 4 | ₹40–80 | Two per output shaft. |
-| 8 mm steel shaft, 100 mm | 2 | ₹100–200 | Output shafts. |
-| Aluminium or acrylic structure, 5 mm | 1 set | ₹800–1,500 | Base plate, pan platform, tilt yoke. Laser-cut from the drawings you make; do not improvise this in wood. |
+What money buys is margin, not capability. Say exactly that if a judge
+asks why the rig is cheap.
 
-### 2.3 Base — compute and power
+### Tier A — the build. ₹6,124.
 
-| Item | Qty | Est. unit | Notes |
-|---|---|---|---|
-| Raspberry Pi 5, 8 GB | 1 | ₹7,500–9,000 | Runs the actual ZeroDrift pipeline. Proving the software runs on embedded hardware is a real pitch asset. |
-| Pi 5 active cooler | 1 | ₹600–900 | It throttles without one under sustained vision load. |
-| microSD 64 GB A2, or NVMe + HAT | 1 | ₹800–3,500 | |
-| Pi Camera FPC cable for Pi 5, 300–500 mm | 1 | ₹250–500 | Pi 5 uses the narrow 22-pin connector — the Pi 4 cable does not fit. |
-| Arduino Nano | 1 | ₹250–400 | Motion controller. Separate from the beacon's. |
-| 12 V 5 A DC PSU | 1 | ₹450–700 | Motor supply. |
-| 5 V 5 A buck converter | 1 | ₹200–400 | Pi supply, from the 12 V rail. |
-| 100 µF 25 V electrolytic capacitor | 2 | ₹10 | **Across VMOT on each driver. The datasheet requires it. Omitting it destroys drivers on power-up.** |
-| Dupont wires, screw terminals, heat-shrink, JST | 1 set | ₹400–700 | |
-| M3 screw/nut/standoff assortment | 1 set | ₹300–500 | |
-| Emergency cutoff switch, 12 V rated | 1 | ₹100–200 | Kills motor power without killing the Pi. |
+✅ = verified against a live Amazon.in listing in the September pricing
+pass. Everything else is an estimate and must be checked before ordering.
 
-### 2.4 Beacon and decoy
+| Item | Qty | Unit | Total | Notes |
+|---|---|---|---|---|
+| USB camera module, M12 mount, with 12 mm lens | 1 | ₹1,400 | ₹1,400 | UVC, **manual exposure required**. An M12 mount matters more than the sensor: it lets you swap focal length later. |
+| Red filter — gel sheet or red acrylic offcut | 1 | ₹100 | ₹100 | Tapes over the lens. Rejects most ambient. Best value-per-rupee in the list. |
+| 650 nm laser module, 5 mW | 1 | ₹0 | ₹0 | **Reuse the KY-008 from Mk1.** |
+| NEMA17 stepper, 1.8°/step | 2 | ₹749 ✅ | ₹1,498 | See the encoder-mounting note below before ordering. |
+| A4988 stepper driver | 2 | ₹170 ✅ | ₹340 | 1/16 microstepping. |
+| AS5600 magnetic encoder | 2 | ₹249 ✅ | ₹498 | |
+| **Diametric** magnet, 6×2.5 mm | 2 | ₹90 | ₹180 | **Diametric, not axial.** Axial is what ships in cheap kits and does not work. |
+| TCA9548A I²C multiplexer | 1 | ₹199 ✅ | ₹199 | Both AS5600s are fixed at 0x36 and cannot share a bus. |
+| Arduino Nano | 1 | ₹280 | ₹280 | For the beacon. **The tracker reuses Mk1's Nano.** |
+| 12 V 2 A DC PSU | 1 | ₹279 ✅ | ₹279 | Motor supply. Never from the Nano's 5 V. |
+| 100 µF 25 V electrolytic | 2 | ₹10 | ₹20 | **Across VMOT on each driver.** Skipping these destroys both drivers on first power-up. |
+| Acrylic 3 mm sheet + NEMA17 L-brackets | 1 set | ₹450 ✅ | ₹450 | ₹199 acrylic + ₹254 brackets, both verified. |
+| Beacon: 650 nm LED, MOSFET, resistors, diffuser | 1 set | ₹220 | ₹220 | Red, to match the filter. |
+| Beacon: battery, switch, enclosure | 1 set | ₹250 | ₹250 | |
+| Decoy: bright white LED, resistor, cell, switch | 1 set | ₹110 | ₹110 | Steady, no chip, deliberately brighter than the beacon. |
+| Dupont wires, M3 screws, standoffs, heat-shrink | 1 set | ₹300 | ₹300 | |
+| | | | **₹6,124** | |
 
-| Item | Qty | Est. unit | Notes |
-|---|---|---|---|
-| Arduino Nano | 1 | ₹250–400 | Beacon's own. |
-| 650 nm LED, 3 W, with heatsink/star | 1 | ₹150–300 | Must match the camera's bandpass filter. |
-| Constant-current LED driver or power MOSFET + resistor | 1 | ₹80–200 | A 3 W LED will not run from a digital pin. |
-| Diffuser (ping-pong ball or opal acrylic) | 1 | ₹40 | Makes it a point source from any angle. |
-| Li-ion pack or 9 V + regulator | 1 | ₹300–600 | |
-| Enclosure, switch, tripod thread | 1 | ₹200–400 | |
-| **Decoy**: bright white LED, resistor, cell, switch | 1 | ₹100–200 | Steady, no chip, deliberately *brighter* than the beacon. Exists so the rejection claim is demonstrable, not asserted. |
+**Resolution you actually get:** 1.8° ÷ 16 microsteps = 0.1125°/step =
+**1.96 mrad**, with the AS5600 measuring true position to 0.088° = 1.53
+mrad. Roughly **1.5–2 mrad, encoder-verified.** Half the Tier B figure,
+still a real measured number, and still twice as good as the Mk2 design
+it replaces.
 
-### 2.5 Totals
+### The one thing to get right when ordering motors
 
-| Subsystem | Range |
-|---|---|
-| Head (optics) | ₹8,750–13,900 |
-| Gimbal (motion + structure) | ₹5,400–8,900 |
-| Base (compute + power) | ₹11,300–17,200 |
-| Beacon + decoy | ₹1,120–2,140 |
-| **Total** | **₹26,600–42,100** |
+The AS5600 needs a magnet rotating coaxially in front of it. Two ways:
 
-Two honest notes. The camera and the Pi are over half of it — if that
-is too much, the fallback is a UVC camera module with an M12 12 mm lens
-(₹2,500–4,500) driven from the laptop, which costs roughly ₹20,000 less
-and loses the global shutter and the self-contained story, but keeps
-every other property including the dot-tracking loop. And the filter is
-the highest value-per-rupee item in the entire list; do not cut it.
+- **Dual-shaft NEMA17** (~₹850–1,200 each if you can find one): magnet
+  glues to the rear shaft, sensor on a bracket behind the motor. Clean,
+  compact, no flex path. Costs about ₹250 more per motor.
+- **Single-shaft** (the ₹749 verified ones): magnet goes on top of the
+  rotating platform, on the axis of rotation, with the AS5600 on a small
+  fixed arm overhanging it. Works, reads the output directly, and costs
+  nothing extra — but keep that arm short and stiff, because any flex in
+  it reads as pointing error that is not really there.
 
----
+Either is fine. Decide by what is actually in stock at a sane price, not
+by the datasheet.
+
+### Tier B — what money would buy, and what it is worth
+
+| Upgrade | Cost | What it actually buys |
+|---|---|---|
+| GT2 3:1 belt reduction (pulleys, belt, 608ZZ bearings, 8 mm shaft) | +₹1,740 | **The best rupee-for-accuracy item that exists here.** 1.96 → 0.65 mrad/step, and it divides the motor's *own* ±5%-of-a-full-step error by three, which microstepping cannot do. If you can raise the budget by one item, raise it by this one. |
+| TMC2209 instead of A4988 | +₹560–1,860 | 1/32 microstepping, quiet, and StallGuard as a second stall signal. You already have encoders, so this is comfort, not capability. |
+| 0.9°/step motors | +₹700–1,000 | Halves step size again. Only worth it after the belt. |
+| Raspberry Pi 5 + camera + on-board pipeline | +₹18,000 | Makes it self-contained rather than USB-tethered to a laptop. A presentation asset, not a performance one. |
+| True 650 nm bandpass filter | +₹1,400–2,900 | Better ambient rejection than a gel. Marginal once the modulation gate is doing its job. |
+| Global-shutter camera | +₹4,000–5,500 | **Less than I first claimed.** Rolling-shutter readout is 10–30 ms against a 250 ms blink period, and the fine loop measures at rest, so the smear I warned about is small. Nice to have; not load-bearing. |
+
+### On the laptop
+
+Tier A runs the pipeline on your laptop, with one USB cable to the
+camera and one to the Nano. The camera still rides on the gimbal — that
+was your requirement and it is met. What you give up is only the
+*self-contained* story, and PS26169 is a Software-category problem, so
+the software running on a laptop is the deliverable, not an apology.
+
 ## 3. Build order
 
 Each stage ends in something testable. Do not proceed past a stage that
@@ -218,7 +243,7 @@ ruin detection. *Check: the pipeline scores the beacon's 4 Hz blink and
 rejects the decoy, at your intended demo range, under your demo
 lighting.*
 
-**Stage 3 — One axis, open loop.** Pan motor, TMC2209, belt, Nano.
+**Stage 3 — One axis, open loop.** Pan motor, A4988, Nano.
 Command ±45° and confirm it goes there and comes back. *Check: `!`
 self-test completes; commanded degrees match a protractor.*
 
@@ -263,6 +288,10 @@ with ephemeris.
   any scan that sweeps toward standing people.
 - Kill switch on the 12 V motor rail, reachable without leaning into the
   gimbal's travel.
+- The laser rides on a head that moves under software control. Keep it
+  off (`L0`) during any scan whose sweep crosses standing people, and
+  only enable it once the head is settled and pointing at the beacon
+  board.
 - Steppers warm up under stall. Do not leave the rig powered and jammed.
 
 ---
@@ -272,14 +301,14 @@ Three power domains, one ground. Getting this wrong is the most
 expensive mistake available in this build.
 
 ```
-  12 V 5 A PSU ──┬── kill switch ──┬── TMC2209 #1 VMOT ──┬─ 100 µF ─┐
-                 │                 │                      │          │
-                 │                 └── TMC2209 #2 VMOT ──┬┴─ 100 µF ─┤
-                 │                                        │          │
-                 └── 5 V buck ── Raspberry Pi 5           │          │
-                                                          │          │
-   ALL GROUNDS TIE TOGETHER AT ONE POINT ─────────────────┴──────────┘
-        Pi GND · Nano GND · both driver GNDs · PSU GND
+  12 V 2 A PSU ──┬── kill switch ──┬── A4988 #1 VMOT ──┬─ 100 µF ─┐
+                 │                  │                    │          │
+                 │                  └── A4988 #2 VMOT ──┬┴─ 100 µF ─┤
+                 │                                       │          │
+   ALL GROUNDS TIE TOGETHER AT ONE POINT ────────────────┴──────────┘
+        Nano GND · both driver GNDs · PSU GND
+        (the laptop's ground arrives through the Nano's USB — do not
+         also bond it to the motor supply, or you build a ground loop)
 ```
 
 **The 100 µF capacitors are not optional.** Both the A4988 and TMC2209
@@ -295,20 +324,25 @@ hundred milliamps; a NEMA17 wants an amp or more per phase.
 
 | Nano pin | To | Note |
 |---|---|---|
-| D2 | TMC2209 #1 STEP | Pan |
-| D3 | TMC2209 #1 DIR | |
-| D4 | TMC2209 #2 STEP | Tilt |
-| D5 | TMC2209 #2 DIR | |
+| D2 | A4988 #1 STEP | Pan |
+| D3 | A4988 #1 DIR | |
+| D4 | A4988 #2 STEP | Tilt |
+| D5 | A4988 #2 DIR | |
 | D7 | Laser module TTL input | Modulated at 7 Hz in firmware |
 | D8 | Vibration injector, **through a 2N2222 + flyback diode** | Never straight off a pin |
 | A4 | TCA9548A SDA | |
 | A5 | TCA9548A SCL | |
-| 5 V | TMC2209 VDD (logic), TCA9548A VCC | Logic only, not motor power |
+| 5 V | A4988 VDD (logic), TCA9548A VCC | Logic only, not motor power |
 
-Both drivers' EN pins tie LOW (always enabled). Set MS1/MS2 for 1/32
-microstepping — **check your board's silkscreen**, the truth table
+Both drivers' EN pins tie LOW (always enabled). Tie MS1/MS2/MS3 HIGH for
+1/16 microstepping — **check your board's silkscreen**, the truth table
 differs between vendors, and getting it wrong scales every angle you
-command.
+command. Set `MICROSTEPS` in the firmware to match.
+
+Set each A4988's current limit with its trimpot before attaching any
+motor: Vref ≈ I × 8 × Rsense. Running a NEMA17 at full chip current with
+no heatsink is how these boards die second-most often, after the missing
+VMOT capacitor.
 
 ### Encoders
 
@@ -325,20 +359,19 @@ you order single-shaft motors.
 
 ### Head
 
-The camera's CSI ribbon and the laser's two wires run from the head,
+The camera's USB cable and the laser's two wires run from the head,
 through the tilt axis, through the pan axis, to the base. Leave a
 **service loop** at each axis — enough slack for full travel with the
 cable never in tension — and secure it so it cannot foul the belts.
-A ribbon that tugs at the end of travel will either pull the head off
+A cable that tugs at the end of travel will either pull the head off
 boresight or tear its connector, and both failures look like a software
-problem.
+problem. USB cable is stiffer than a ribbon — give it more slack than
+feels necessary.
 
-### Pi ↔ Nano
+### Host ↔ Nano
 
-One USB cable. The Pi runs the vision pipeline and sends `P <pan>
-<tilt>` in degrees; the Nano does motion and nothing else. The split
-exists because Linux cannot emit step pulses with reliable microsecond
-timing — jitter there *is* a skipped step.
+One USB cable. The host runs the vision pipeline and sends
+`P <pan> <tilt>` in degrees; the Nano does motion and nothing else.
 
 ---
 ## 7. Calibration, in order

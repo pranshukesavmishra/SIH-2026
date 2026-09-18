@@ -34,14 +34,14 @@ of a judge.
 | Value | What it actually means | Source of truth |
 |---|---|---|
 | **1.27 s** | Median acquisition time | `runs/mc-leo/summary.json` → `acquisition_time_s.p50` |
-| **2.66 s** | p95 acquisition | same → `.p95` |
+| **2.77 s** | p95 acquisition | same → `.p95` |
 | **4.0 s** | Worst-case acquisition | same → `.max` |
 | **100%** | Acquisition probability, all runs | same → `acquisition_probability` |
-| **97.6%** | Lock retention, **campaign median** | same → `lock_retention_pct.p50` |
-| **94.6%** | Lock retention p5 | same → `.p5` |
+| **97.5%** | Lock retention, **campaign median** | same → `lock_retention_pct.p50` |
+| **94.5%** | Lock retention p5 | same → `.p5` |
 | **91.6%** | Lock retention, **campaign worst** | same → `.min` |
 | **98.3%** | Lock retention, **featured demo run only** | `docs/media/telemetry_run.json` |
-| **762 µrad** | Median of p95 pointing error | same → `pointing_error_p95_urad.p50` |
+| **768 µrad** | Median of p95 pointing error | same → `pointing_error_p95_urad.p50` |
 | **198 µrad** | Median pointing error, demo run | replay console / demo run |
 | **0 / 64** | Runs with any decoy lock | same → `runs_with_any_decoy_lock` |
 | **99.3%** | Link closure **with modelled fine stage** | `docs/technical_report.md` L281–283 |
@@ -104,7 +104,17 @@ assets: `docs/submission/deck_src/` — `python build_deck_v3.py` regenerates it
       `scenarios/` + `models/`, strips cv2's bundled Qt (which otherwise shadows
       PySide6's platform plugins and kills the GUI on launch). Verified on Linux:
       headless report runs, GUI event loop starts offscreen.
-- [ ] Accuracy improvement work (the reason for the parallel account)
+- [x] Accuracy work landed on branch `accuracy-work` (PR #3, 18 Sept): adaptive
+      blink-frequency estimation (measured ±0.1 Hz, blind mode when no frequency
+      is agreed, pairs with the beacon unit's `F<hz>` command), "measured blink"
+      row in the ZD-1 console, temperature-calibrated verifier with a
+      validation-derived abstain band (vote stays raw-scale — see the commit
+      for the measured regression that forced that), and a 24-condition
+      classical-vs-NN benchmark in `docs/benchmark_identification.md`
+      including the 21 cells the classical method wins. 102/102 tests; the
+      64-run campaign guard re-ran on the final code: **0/64 decoy locks
+      confirmed**. Canonical decimals above refreshed from that rerun; the
+      p50 1.27 s, max 4.0 s, min 91.6 % and 0/64 are unchanged.
 
 **Rig (no deadline — Grand Finale, Dec 2026 if selected)**
 - [ ] Mk1 tilt servo dead (stripped gears); replacement also not moving — free-spin test never reported back

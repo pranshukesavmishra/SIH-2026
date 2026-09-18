@@ -159,36 +159,67 @@ Every idea that makes this project worth winning with costs nothing:
 What money buys is margin, not capability. Say exactly that if a judge
 asks why the rig is cheap.
 
-### Tier A — the build. ₹6,124.
+### Tier A — the build. ₹6,331.
+
+> **This table is generated from `docs/data/bom_tier_a.json`**, which is
+> also what `docs/submission/ZeroDrift_Mk3_Build_Guide.pdf` is built from,
+> and `tests/test_bom_consistency.py` fails if they drift apart. It is
+> written this way because they *did* drift: a hand-maintained version of
+> this table summed to ₹5,944 while claiming ₹6,124, and the row it was
+> missing was the diametric magnets — the one part whose absence stops the
+> build dead. Do not hand-edit the table below; edit the JSON.
 
 ✅ = verified against a live Amazon.in listing in the September pricing
-pass. Everything else is an estimate and must be checked before ordering.
+pass. `~` = market-range planning figure, not yet confirmed — check before
+ordering, and say which is which if a judge asks what the rig cost.
 
-| Item | Qty | Unit | Total | Notes |
+| Item | Qty | Unit | Total | Price basis |
 |---|---|---|---|---|
-| USB camera module, M12 mount, with 12 mm lens | 1 | ₹1,400 | ₹1,400 | UVC, **manual exposure required**. An M12 mount matters more than the sensor: it lets you swap focal length later. |
-| Red filter — gel sheet or red acrylic offcut | 1 | ₹100 | ₹100 | Tapes over the lens. Rejects most ambient. Best value-per-rupee in the list. |
-| 650 nm laser module, 5 mW | 1 | ₹0 | ₹0 | **Reuse the KY-008 from Mk1.** |
-| NEMA17 stepper, 1.8°/step | 2 | ₹749 ✅ | ₹1,498 | See the encoder-mounting note below before ordering. |
-| A4988 stepper driver | 2 | ₹170 ✅ | ₹340 | 1/16 microstepping. |
-| AS5600 magnetic encoder | 2 | ₹249 ✅ | ₹498 | |
-| **Diametric** magnet, 6×2.5 mm | 2 | ₹90 | ₹180 | **Diametric, not axial.** Axial is what ships in cheap kits and does not work. |
-| TCA9548A I²C multiplexer | 1 | ₹199 ✅ | ₹199 | Both AS5600s are fixed at 0x36 and cannot share a bus. |
-| Arduino Nano | 1 | ₹280 | ₹280 | For the beacon. **The tracker reuses Mk1's Nano.** |
-| 12 V 2 A DC PSU | 1 | ₹279 ✅ | ₹279 | Motor supply. Never from the Nano's 5 V. |
-| 100 µF 25 V electrolytic | 2 | ₹10 | ₹20 | **Across VMOT on each driver.** Skipping these destroys both drivers on first power-up. |
-| Acrylic 3 mm sheet + NEMA17 L-brackets | 1 set | ₹450 ✅ | ₹450 | ₹199 acrylic + ₹254 brackets, both verified. |
-| Beacon: 650 nm LED, MOSFET, resistors, diffuser | 1 set | ₹220 | ₹220 | Red, to match the filter. |
-| Beacon: battery, switch, enclosure | 1 set | ₹250 | ₹250 | |
-| Decoy: bright white LED, resistor, cell, switch | 1 set | ₹110 | ₹110 | Steady, no chip, deliberately brighter than the beacon. |
-| Dupont wires, M3 screws, standoffs, heat-shrink | 1 set | ₹300 | ₹300 | |
-| | | | **₹6,124** | |
+| **A. Motion — the gimbal** | | | | |
+| NEMA17 stepper motor, 1.8°/step, 4.2 kg-cm | 2 | ₹749 | **₹1,498** | ✅ verified |
+| A4988 stepper driver module | 2 | ₹170 | **₹340** | ✅ verified |
+| NEMA17 L-bracket (pan + tilt) | 2 | ₹127 | **₹254** | ✅ verified |
+| 100 µF 25 V electrolytic capacitor | 2 | ₹10 | **₹20** | ~ estimate |
+| **B. Feedback — what makes “accurate” a measurement** | | | | |
+| AS5600 magnetic encoder module | 2 | ₹249 | **₹498** | ✅ verified |
+| Diametric magnet, 6 × 2.5 mm | 2 | ₹90 | **₹180** | ~ estimate |
+| TCA9548A I²C multiplexer | 1 | ₹199 | **₹199** | ✅ verified |
+| **C. Head — camera and laser, one enclosure** | | | | |
+| USB camera module, M12 mount, 12 mm lens | 1 | ₹1,400 | **₹1,400** | ~ estimate |
+| Red filter — gel sheet or red acrylic offcut | 1 | ₹100 | **₹100** | ~ estimate |
+| KY-008 laser module | — | — | **₹0** | reuse Mk1 |
+| ABS project box, head enclosure | 1 | ₹115 | **₹115** | ~ estimate |
+| **D. Control and power** | | | | |
+| Arduino Nano — tracker | — | — | **₹0** | reuse Mk1 |
+| Arduino Nano — beacon | 1 | ₹225 | **₹225** | ~ estimate |
+| 12 V 2 A DC power adapter | 1 | ₹279 | **₹279** | ✅ verified |
+| Acrylic sheet 3 mm, 6″×6″ (pack of 2) | 1 | ₹199 | **₹199** | ✅ verified |
+| **E. Disturbance injector — robustness shown, not claimed** | | | | |
+| Vibration motor, 3 V DC | 1 | ₹20 | **₹20** | ✅ verified |
+| Transistor + diode + resistor combo kit | 1 | ₹105 | **₹105** | ✅ verified |
+| **F. Beacon — the target** | | | | |
+| High-brightness RED LED, 10 mm, 650 nm | 1 | ₹22 | **₹22** | ~ estimate |
+| 2N2222 transistor + 220 Ω + 1 kΩ | 1 | ₹20 | **₹20** | ~ estimate |
+| Ping-pong ball (diffuser) | 1 | ₹30 | **₹30** | ~ estimate |
+| 9 V battery + clip | 1 | ₹115 | **₹115** | ~ estimate |
+| SPST toggle switch | 1 | ₹25 | **₹25** | ~ estimate |
+| ABS project box | 1 | ₹115 | **₹115** | ~ estimate |
+| **G. Decoy — the control** | | | | |
+| High-brightness WHITE LED (brighter than beacon) | 1 | ₹22 | **₹22** | ~ estimate |
+| 150 Ω resistor | 1 | ₹5 | **₹5** | ~ estimate |
+| CR2032 coin cell + holder | 1 | ₹60 | **₹60** | ~ estimate |
+| Switch + scrap housing | 1 | ₹35 | **₹35** | ~ estimate |
+| **H. Consumables** | | | | |
+| Dupont jumper wires — M-M, M-F, F-F | 1 | ₹150 | **₹150** | ~ estimate |
+| M3 screws, nuts, standoffs assortment | 1 | ₹150 | **₹150** | ~ estimate |
+| Heat-shrink, solder, hot-glue sticks | 1 | ₹150 | **₹150** | ~ estimate |
+| **TOTAL** | | | **₹6,331** | |
 
 **Resolution you actually get:** 1.8° ÷ 16 microsteps = 0.1125°/step =
 **1.96 mrad**, with the AS5600 measuring true position to 0.088° = 1.53
-mrad. Roughly **1.5–2 mrad, encoder-verified.** Half the Tier B figure,
-still a real measured number, and still twice as good as the Mk2 design
-it replaces.
+mrad. Roughly **1.5–2 mrad, encoder-verified.**
+
+Without the head (source the camera later): **₹4,716**.
 
 ### The one thing to get right when ordering motors
 

@@ -1,5 +1,16 @@
 # ZeroDrift Physical System — Master Bill of Materials
 
+> ## ⚠️ SUPERSEDED — DO NOT BUY FROM THIS FILE
+>
+> This is the Mk2 parts list. It contains **MG90S servos, which must not be
+> bought** (the fine-servo stage is deleted — Mk1 stripped two), and it
+> **omits the diametric magnets and the VMOT capacitors**, without which
+> the build cannot be finished.
+>
+> The current list is **`docs/TERMINAL_MK3.md` §2**, generated from
+> `docs/data/bom_tier_a.json`. Kept only as a record of the September
+> pricing pass.
+
 *The single combined parts list across every physical subsystem: the
 Mk2 tracker (camera + laser + pan-tilt) and the new Beacon + Decoy
 units. Tracker prices are real, screenshot-verified Amazon.in prices

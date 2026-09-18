@@ -58,7 +58,7 @@ of a judge.
 | **14.7%** | Link closure, **coarse stage alone** | `docs/technical_report.md` L281 |
 | **3.1 dB** | Mean link margin | `docs/technical_report.md` L283 |
 | **AUC 0.957 vs 0.900** | NN verifier vs classical, short window | `docs/defence_brief.md` |
-| **83 / 83** | Automated tests passing | CI |
+| **132 / 132** | Automated tests passing (+1 skipped) | CI, verified 18 Sept post-merge |
 | **8–21 ms** | Tracker time per 33 ms frame, 2 cores | engine benchmark |
 | **₹0.22** | Electricity, full 64-run campaign | `docs/economic_feasibility.md` |
 | **207×** | Throughput vs hardware bench | `docs/economic_feasibility.md` |
@@ -214,6 +214,45 @@ Pi runs the pipeline on-board; the Nano does motion only.
 
 **Outreach**
 - [ ] DRDO chairman brief — message drafted, send status unknown
+
+**Verification pass — 18 Sept, post-merge**
+
+Everything below was checked against its source, not restated:
+
+- [x] All 9 campaign numbers re-derived from `runs/mc-leo/summary.json`; all
+      match the table above to the stated precision. 7 doc-sourced claims
+      (99.3 / 14.7 / 3.1 dB / AUC 0.957 vs 0.900 / ₹0.22 / 207×) confirmed
+      present at their cited files.
+- [x] Every remote branch is contained in this one; nothing unmerged, nothing
+      unpushed. Fable 5's work is fully present via PRs #2–#5.
+- [x] Every file path referenced in `docs/*.md` exists.
+- [x] **Fixed: the parts list disagreed with itself.** `TERMINAL_MK3.md` §2
+      summed to ₹5,944 while claiming ₹6,124, and the printed guide said
+      ₹6,331. The missing row was the diametric magnets — the one part whose
+      absence stops the build. There is now a single source
+      (`docs/data/bom_tier_a.json`), the markdown table is generated from it,
+      and `tests/test_bom_consistency.py` fails if the JSON, the markdown and
+      the PDF disagree, if a build-stopping part is dropped, or if the deleted
+      servos reappear. Verified by mutation.
+- [x] **Fixed: `83 / 83` tests was stale** — 132 passing.
+- [x] **Fixed: four superseded docs carried no warning.** `PHYSICAL_BOM_MASTER.md`
+      in particular still listed the MG90S servos and omitted the magnets and
+      capacitors; anyone buying from it would repeat the exact mistake. All four
+      now carry a header.
+
+**Known gaps — open, not fixed**
+
+- [ ] **`docs/technical_report.md` is ~2,491 words ≈ 5 pages. PS26169 requires
+      10–15.** This is a submission deliverable and the largest outstanding
+      risk on the list.
+- [ ] `docs/user_manual.md` is ~957 words ≈ 2 pages; thin for a deliverable.
+- [ ] `src/fsoc_pat/hil/boresight.py` is tested (14 tests) but **wired to
+      nothing** — it targets Mk3 hardware that does not exist yet. Legitimate,
+      but it is not currently proving anything at runtime, and `main`'s
+      self-laser rejection in `docs/live.html` is the better mechanism to fold
+      into it (a matched filter against the recorded laser command history,
+      rather than assuming a fixed 7 Hz).
+- [ ] The frozen build still has not been run and launched on real Windows.
 
 ---
 ## 5. Git topology — how not to clobber anything

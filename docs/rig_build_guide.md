@@ -1,5 +1,11 @@
 # ZeroDrift Mini-Rig — Build Guide (under ₹700)
 
+> ## ⚠️ HISTORICAL — Mk1, both servos failed
+>
+> Kept as the record of what was actually built and what broke. The current
+> design is `docs/TERMINAL_MK3.md`. `src/fsoc_pat/hil/rig.py` still drives
+> this rig and still works.
+
 > **NOT in the pitch deck, on purpose.** The problem statement asks for
 > validation *without* optical hardware, and our pitch is software-only.
 > This rig is an optional table-side principle demo: a webcam finds a

@@ -1,0 +1,227 @@
+{
+  "name": "ZeroDrift Terminal Mk3 — Tier A",
+  "note": "Single source of truth for the build BOM. docs/TERMINAL_MK3.md section 2 and docs/submission/ZeroDrift_Mk3_Build_Guide.pdf are both generated from this; tests/test_bom_consistency.py enforces it.",
+  "sections": [
+    {
+      "title": "A. Motion — the gimbal",
+      "items": [
+        {
+          "item": "NEMA17 stepper motor, 1.8°/step, 4.2 kg-cm",
+          "qty": 2,
+          "unit_inr": 749,
+          "price_basis": "verified"
+        },
+        {
+          "item": "A4988 stepper driver module",
+          "qty": 2,
+          "unit_inr": 170,
+          "price_basis": "verified"
+        },
+        {
+          "item": "NEMA17 L-bracket (pan + tilt)",
+          "qty": 2,
+          "unit_inr": 127,
+          "price_basis": "verified"
+        },
+        {
+          "item": "100 µF 25 V electrolytic capacitor",
+          "qty": 2,
+          "unit_inr": 10,
+          "price_basis": "estimate"
+        }
+      ]
+    },
+    {
+      "title": "B. Feedback — what makes “accurate” a measurement",
+      "items": [
+        {
+          "item": "AS5600 magnetic encoder module",
+          "qty": 2,
+          "unit_inr": 249,
+          "price_basis": "verified"
+        },
+        {
+          "item": "Diametric magnet, 6 × 2.5 mm",
+          "qty": 2,
+          "unit_inr": 90,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "TCA9548A I²C multiplexer",
+          "qty": 1,
+          "unit_inr": 199,
+          "price_basis": "verified"
+        }
+      ]
+    },
+    {
+      "title": "C. Head — camera and laser, one enclosure",
+      "items": [
+        {
+          "item": "USB camera module, M12 mount, 12 mm lens",
+          "qty": 1,
+          "unit_inr": 1400,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "Red filter — gel sheet or red acrylic offcut",
+          "qty": 1,
+          "unit_inr": 100,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "KY-008 laser module",
+          "qty": 0,
+          "unit_inr": 0,
+          "price_basis": "reuse Mk1"
+        },
+        {
+          "item": "ABS project box, head enclosure",
+          "qty": 1,
+          "unit_inr": 115,
+          "price_basis": "estimate"
+        }
+      ]
+    },
+    {
+      "title": "D. Control and power",
+      "items": [
+        {
+          "item": "Arduino Nano — tracker",
+          "qty": 0,
+          "unit_inr": 0,
+          "price_basis": "reuse Mk1"
+        },
+        {
+          "item": "Arduino Nano — beacon",
+          "qty": 1,
+          "unit_inr": 225,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "12 V 2 A DC power adapter",
+          "qty": 1,
+          "unit_inr": 279,
+          "price_basis": "verified"
+        },
+        {
+          "item": "Acrylic sheet 3 mm, 6″×6″ (pack of 2)",
+          "qty": 1,
+          "unit_inr": 199,
+          "price_basis": "verified"
+        }
+      ]
+    },
+    {
+      "title": "E. Disturbance injector — robustness shown, not claimed",
+      "items": [
+        {
+          "item": "Vibration motor, 3 V DC",
+          "qty": 1,
+          "unit_inr": 20,
+          "price_basis": "verified"
+        },
+        {
+          "item": "Transistor + diode + resistor combo kit",
+          "qty": 1,
+          "unit_inr": 105,
+          "price_basis": "verified"
+        }
+      ]
+    },
+    {
+      "title": "F. Beacon — the target",
+      "items": [
+        {
+          "item": "High-brightness RED LED, 10 mm, 650 nm",
+          "qty": 1,
+          "unit_inr": 22,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "2N2222 transistor + 220 Ω + 1 kΩ",
+          "qty": 1,
+          "unit_inr": 20,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "Ping-pong ball (diffuser)",
+          "qty": 1,
+          "unit_inr": 30,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "9 V battery + clip",
+          "qty": 1,
+          "unit_inr": 115,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "SPST toggle switch",
+          "qty": 1,
+          "unit_inr": 25,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "ABS project box",
+          "qty": 1,
+          "unit_inr": 115,
+          "price_basis": "estimate"
+        }
+      ]
+    },
+    {
+      "title": "G. Decoy — the control",
+      "items": [
+        {
+          "item": "High-brightness WHITE LED (brighter than beacon)",
+          "qty": 1,
+          "unit_inr": 22,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "150 Ω resistor",
+          "qty": 1,
+          "unit_inr": 5,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "CR2032 coin cell + holder",
+          "qty": 1,
+          "unit_inr": 60,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "Switch + scrap housing",
+          "qty": 1,
+          "unit_inr": 35,
+          "price_basis": "estimate"
+        }
+      ]
+    },
+    {
+      "title": "H. Consumables",
+      "items": [
+        {
+          "item": "Dupont jumper wires — M-M, M-F, F-F",
+          "qty": 1,
+          "unit_inr": 150,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "M3 screws, nuts, standoffs assortment",
+          "qty": 1,
+          "unit_inr": 150,
+          "price_basis": "estimate"
+        },
+        {
+          "item": "Heat-shrink, solder, hot-glue sticks",
+          "qty": 1,
+          "unit_inr": 150,
+          "price_basis": "estimate"
+        }
+      ]
+    }
+  ],
+  "total_inr": 6331
+}

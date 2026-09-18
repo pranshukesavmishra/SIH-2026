@@ -1,5 +1,13 @@
 # Briefing for the parallel software session (Fable 5)
 
+> ## ✅ COMPLETE — this briefing has been carried out
+>
+> The parallel account it addressed is no longer accessible, but its work
+> was committed and merged: PRs #2–#5 on `main` (adaptive blink-frequency
+> estimation, the temperature-calibrated verifier, the 24-condition
+> benchmark, the live engine and the ZD-1 dashboard). Nothing was lost.
+> Kept for the reasoning it records, not as an open instruction.
+
 *Paste this as your first message in that session. It is also committed
 here so it survives even if the paste is lost.*
 

@@ -71,6 +71,59 @@ def goertzel_power(samples: Sequence[float], normalised_frequency: float) -> flo
     return float(np.clip(power / max(total * n / 2.0, 1e-12), 0.0, 1.0))
 
 
+def estimate_blink_frequency(samples: Sequence[float], frame_rate_hz: float,
+                             f_min_hz: float = 0.5, n_bins: int = 64
+                             ) -> Tuple[Optional[float], float]:
+    """
+    Measure a track's modulation frequency instead of assuming one.
+
+    Scans the whole observable band (f_min to just under Nyquist) with a bank
+    of Goertzel bins -- one matrix product, no FFT padding games -- and picks
+    the peak, refined by parabolic interpolation between neighbouring bins.
+
+    Returns ``(frequency_hz, confidence)``. Confidence combines how much of
+    the signal's variance sits in the peak bin (a clean square wave
+    concentrates there; noise spreads flat) with how far the peak stands
+    above the band's median -- so a star scores near zero even when one bin
+    happens to fluctuate. ``(None, 0.0)`` until there is enough history.
+
+    This is what lets the terminal work when the beacon's frequency is *not*
+    agreed in advance -- and, when it is, lets the operator read the measured
+    frequency against the commanded one (the hardware beacon unit's F<hz>
+    serial command is the intended live counterpart).
+    """
+    n = len(samples)
+    if n < 24:
+        return None, 0.0
+    x = np.asarray(samples, dtype=np.float64)
+    x = x - x.mean()
+    total = float(np.dot(x, x))
+    if total <= 0.0:
+        return None, 0.0
+    lo = max(f_min_hz / frame_rate_hz, 0.02)
+    hi = 0.48
+    if lo >= hi:
+        return None, 0.0
+    freqs = np.linspace(lo, hi, n_bins)
+    phases = np.exp(-2j * np.pi * np.outer(freqs, np.arange(n)))
+    power = np.abs(phases @ x) ** 2 / (total * n / 2.0)
+    k = int(np.argmax(power))
+    # Parabolic peak interpolation: three points around the maximum give the
+    # true peak to a fraction of a bin, which matters because the bin spacing
+    # (~0.2 Hz here) is coarser than the estimate needs to be.
+    f_peak = freqs[k]
+    if 0 < k < n_bins - 1:
+        y0, y1, y2 = power[k - 1], power[k], power[k + 1]
+        denom = y0 - 2.0 * y1 + y2
+        if abs(denom) > 1e-12:
+            shift = float(np.clip(0.5 * (y0 - y2) / denom, -0.5, 0.5))
+            f_peak = freqs[k] + shift * (freqs[1] - freqs[0])
+    peak = float(np.clip(power[k], 0.0, 1.0))
+    floor = float(np.median(power))
+    prominence = float(np.clip(1.0 - floor / max(power[k], 1e-12), 0.0, 1.0))
+    return float(f_peak * frame_rate_hz), peak * prominence
+
+
 @dataclass
 class Track:
     """One hypothesis about a persistent source in the sky."""
@@ -85,6 +138,8 @@ class Track:
     innovation_history: deque = field(default_factory=lambda: deque(maxlen=30))
     modulation_score: float = 0.0
     prior_score: float = 0.0
+    est_blink_hz: Optional[float] = None      # measured, not assumed
+    est_blink_conf: float = 0.0
     ai_score: Optional[float] = None    # learned verifier, when a model is loaded
 
     @property
@@ -145,7 +200,8 @@ class MultiTargetTracker:
                  max_misses: int = 12, max_tracks: int = 24,
                  pointing_jitter_urad: float = 0.0,
                  initial_rate_sigma_deg_s: float = 3.0,
-                 modulation_threshold: float = 0.22):
+                 modulation_threshold: float = 0.22,
+                 adaptive_blink: bool = True):
         self.focal_px = float(focal_px)
         self.width, self.height = int(width), int(height)
         self.frame_rate = float(frame_rate_hz)
@@ -173,6 +229,15 @@ class MultiTargetTracker:
         # be specified to modulate below this limit for exactly this reason.
         self.modulation_observable = 0.01 < (self.beacon_blink_hz / self.frame_rate) < 0.49
         self.modulation_aliased = self.beacon_blink_hz > 0.0 and not self.modulation_observable
+
+        # Adaptive mode: measure each candidate's modulation frequency from
+        # its own flux history. With an agreed frequency configured this is
+        # telemetry and a cross-check; with none configured (blink_hz = 0,
+        # "the beacon exists but its frequency was never agreed") it becomes
+        # the discriminator itself: pulsed sources are separated from steady
+        # ones at whatever frequency they actually carry.
+        self.adaptive_blink = bool(adaptive_blink)
+        self._blind_modulation_active = False
 
         self.tracks: List[Track] = []
         self._next_id = 1
@@ -280,7 +345,39 @@ class MultiTargetTracker:
         self._score_prior()
 
     def _score_modulation(self) -> None:
+        if self.adaptive_blink:
+            # Measure every mature track's actual frequency. Cheap: one
+            # (64 x n) product per track, and only tracks with two dozen flux
+            # samples qualify.
+            for track in self.tracks:
+                if len(track.flux_history) >= 24:
+                    hz, conf = estimate_blink_frequency(
+                        list(track.flux_history), self.frame_rate)
+                    track.est_blink_hz, track.est_blink_conf = hz, conf
+                else:
+                    track.est_blink_hz, track.est_blink_conf = None, 0.0
+
         if self.beacon_blink_hz <= 0.0:
+            # No agreed frequency. In adaptive mode each track is scored at
+            # the frequency it *itself* exhibits: a genuinely pulsed source
+            # scores high wherever its peak is, a star scores near zero
+            # everywhere. This cannot tell two differently-pulsed sources
+            # apart -- that still takes an agreed signature -- but it
+            # recovers the pulsed-vs-steady discrimination that a fixed
+            # 4 Hz assumption loses the moment the assumption is wrong.
+            self._blind_modulation_active = False
+            if not self.adaptive_blink:
+                return
+            for track in self.tracks:
+                if track.est_blink_hz is not None and track.est_blink_conf >= 0.35:
+                    track.modulation_score = goertzel_power(
+                        list(track.flux_history),
+                        track.est_blink_hz / self.frame_rate)
+                else:
+                    track.modulation_score = 0.0
+            self._blind_modulation_active = any(
+                t.confirmed and t.modulation_score >= self.modulation_threshold
+                for t in self.tracks)
             return
         normalised = self.beacon_blink_hz / self.frame_rate
         if not (0.01 < normalised < 0.49):
@@ -312,7 +409,7 @@ class MultiTargetTracker:
         confirmed = [t for t in self.tracks if t.confirmed]
         if not confirmed:
             return None
-        require = self.modulation_observable
+        require = self.modulation_observable or self._blind_modulation_active
         if require:
             modulating = [t for t in confirmed if t.modulation_score >= self.modulation_threshold]
             if modulating:

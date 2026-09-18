@@ -57,7 +57,7 @@ our effort should go into *depth*, not catching up.
 
 | # | Task | Effort | Why it is Tier 0 |
 |---|---|---|---|
-| 0.1 | Write `packaging/fsoc-pat.spec`, verify `build.sh` and `build.bat` both produce a running binary on Windows **and** Linux | 0.5 d | A **mandatory deliverable** is currently unbuildable |
+| 0.1 | Fix the frozen build — see the breakdown below | **1.5 d** | A **mandatory deliverable** is currently unbuildable |
 | 0.2 | Technical report → 12–14 pages: add architecture diagrams, test methodology, per-module description, failure analysis, future work | 2 d | PS states 10–15 pages. Under-length invites a compliance mark-down |
 | 0.3 | User manual → cover installation (all OS), first run, **every** config parameter, full GUI walkthrough, troubleshooting | 1.5 d | PS enumerates four sections; we thinly cover two |
 | 0.4 | **Compliance matrix** — one row per sentence of the PS, mapped to the artefact and line that satisfies it | 0.5 d | Turns "we think we comply" into a document a judge can audit |
@@ -67,6 +67,35 @@ our effort should go into *depth*, not catching up.
 > **0.6 is the single highest-risk item in this document.** It is not
 > engineering work and it is not in our control once the counter fills.
 > Do it the day the SPOC finishes nomination.
+
+### 0.1 in detail — it is not just a missing file
+
+A code audit shows the frozen build would still be broken even once the
+spec exists, because three modules locate their resources in ways that
+only work from a source checkout:
+
+| Location | Current code | Why it breaks when frozen |
+|---|---|---|
+| `pipeline.py:142` | `Path(__file__).resolve().parents[2] / "models" / "track_verifier.npz"` | Under PyInstaller `__file__` sits inside the bundle; `parents[2]` escapes it. **The AI verifier fails to load.** |
+| `gui/app.py:30` | `DEFAULT_SCENARIO = "scenarios/leo_pass_nominal.yaml"` | Relative to the working directory — breaks whenever the exe is launched from anywhere else |
+| `server.py:26-27` | `Path(__file__).parent / "web"`, `parents[2] / "scenarios"` | Same bundle-escape problem |
+
+The work is therefore:
+
+1. Add a small `resources.py` that resolves paths through `sys._MEIPASS`
+   when `sys.frozen` is set, and falls back to the repo layout otherwise
+2. Route those three call sites through it
+3. Write `packaging/fsoc-pat.spec` bundling `models/` and `scenarios/`
+   as data, with `PySide6` / `pyqtgraph` / `cv2` collected
+4. **Build it once on Windows and once on Linux and actually launch the
+   binary** — including running a scenario headless *and* through the GUI
+
+Step 4 is the one that matters. A spec that produces a binary which then
+cannot find its model is worse than no binary, because it looks done.
+
+> ⚠️ This environment has no PySide6, PyInstaller or OpenCV installed, so
+> none of this can be verified here. It must be done on a real dev
+> machine, and the binary must be launched, not just built.
 
 ---
 ## 3. TIER 1 — What actually wins the finale

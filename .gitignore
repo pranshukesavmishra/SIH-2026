@@ -5,6 +5,7 @@ __pycache__/
 build/
 dist/
 *.spec
+!packaging/fsoc-pat.spec
 runs/
 dist/
 .venv-build/

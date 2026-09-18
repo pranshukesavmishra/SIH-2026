@@ -5,7 +5,6 @@ set -euo pipefail
 python3 -m venv .venv-build 2>/dev/null || true
 source .venv-build/bin/activate
 pip install -q -e . pyinstaller PySide6 pyqtgraph
-pyinstaller --noconfirm --clean --onefile --noconsole --name fsoc-pat \
-    --distpath dist --workpath build packaging/entry_gui.py
+pyinstaller --noconfirm --clean packaging/fsoc-pat.spec
 echo
 echo "Build complete: dist/fsoc-pat/fsoc-pat"

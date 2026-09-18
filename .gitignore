@@ -5,6 +5,10 @@ __pycache__/
 build/
 dist/
 *.spec
+# ...but our PyInstaller spec is hand-maintained source that build.sh and
+# build.bat depend on. Without this exception it is silently dropped on every
+# clone, which is how the standalone-executable deliverable came to be broken.
+!packaging/fsoc-pat.spec
 runs/
 dist/
 .venv-build/

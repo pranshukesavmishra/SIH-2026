@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (QApplication, QFileDialog, QHBoxLayout, QLabel,
                                QMainWindow, QMessageBox, QSplitter, QStatusBar,
                                QWidget)
 
+from .. import resources
 from ..config import SimConfig
 from ..metrics import PerformanceReport
 from . import theme
@@ -27,6 +28,7 @@ from .frameview import FrameView
 from .plots import PlotStrip
 from .worker import start_worker
 
+# Kept for callers that import it; main() resolves the real path at run time.
 DEFAULT_SCENARIO = "scenarios/leo_pass_nominal.yaml"
 
 
@@ -199,7 +201,9 @@ class MainWindow(QMainWindow):
 
 def main(argv=None) -> int:
     argv = argv if argv is not None else sys.argv[1:]
-    scenario = argv[0] if argv else DEFAULT_SCENARIO
+    # Resolved through resources so the packaged app finds its scenario no
+    # matter which directory the executable was launched from.
+    scenario = argv[0] if argv else str(resources.default_scenario())
     app = QApplication.instance() or QApplication(sys.argv)
     app.setStyleSheet(theme.stylesheet())
     window = MainWindow(scenario)

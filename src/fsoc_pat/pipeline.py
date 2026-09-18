@@ -138,8 +138,8 @@ class CoarseAlignmentTracker:
         # source checkout without trained models still works everywhere.
         self.verifier = None
         if ai_weights == "auto":
-            import pathlib
-            default = pathlib.Path(__file__).resolve().parents[2] / "models" / "track_verifier.npz"
+            from . import resources
+            default = resources.model()
             ai_weights = str(default) if default.exists() else None
         if ai_weights:
             from .ai.verifier import TrackVerifier

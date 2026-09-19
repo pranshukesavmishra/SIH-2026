@@ -481,13 +481,26 @@ fails silently — the chip answers, the answer is meaningless.**
 Check both with the exploded view (`docs/cad/renders/04_exploded_labelled.png`),
 which now draws the arm at its real length and the chip on the axis.
 
-**Pan travel is mechanically limited to ±120°** by that fixed arm: the
-post stands at 38 mm radius, and past the limit the tilt bracket
-swings into it. Soft-limit pan in firmware. This costs nothing for
-PS26169 — the benchmark's widest pattern asks for ±35°. The limit is
-measured, not estimated; `tools/cad/check_clearance.sh` sweeps the two
-kinematic groups of the model against each other and prints the first
-angle at which anything touches.
+**Travel is mechanically limited. Soft-limit all three bounds in
+firmware before the first powered move.**
+
+| Axis | Soft limit | First contact | Against |
+|---|---|---|---|
+| Pan | ±120° | −150° | the tilt bracket vs the fixed encoder post at 38 mm radius |
+| Tilt, down | +20° | +21° | the pan platform |
+| Tilt, up | −40° | clear past −45° | — |
+
+Downward tilt is the tight one, and not for the reason you would
+guess: the head meets the **pan platform** at +21°, nine degrees
+before it would reach the base plate. Enlarging that platform to
+60 mm — so the tilt bracket had something to bolt to — is what created
+the limit.
+
+None of this costs us anything for PS26169: the benchmark's widest
+pattern asks for ±35° of pan and a few degrees of elevation. Every
+number above is measured, not estimated. `tools/cad/check_clearance.sh`
+intersects the model's three kinematic groups pair by pair across the
+travel and prints the first pose at which anything touches.
 
 An earlier revision of this section said the motors "must be
 dual-shaft," which was wrong and contradicted §2's own BOM. Tier A's

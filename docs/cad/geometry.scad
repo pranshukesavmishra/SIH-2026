@@ -50,10 +50,26 @@ TILT_ARM_X   = -20;        // tilt encoder arm frame origin
 // inside rotate([0,90,0]) at TILT_ARM_X, world x = local z + TILT_ARM_X
 TILT_SENS_L  = (TILT_MAG_FACE + AIRGAP - TILT_ARM_X) + CHIP_H;   // 11.5
 
-// Pan travel is bounded by the fixed encoder post: past this the tilt
-// bracket swings into it. Measured by tools/cad/check_clearance.sh,
-// then rounded inward. PS26169's widest pattern asks for +-35.
+// Travel limits. Both measured by tools/cad/check_clearance.sh and
+// then rounded inward, never estimated.
+//
+// Pan is bounded by the fixed encoder post: past the limit the tilt
+// bracket swings into it. First contact at -150 deg; 120 is the
+// largest angle actually swept clear.
 PAN_LIMIT   = 120;
+
+// Tilt is ASYMMETRIC, and the reason is worth knowing before anyone
+// "fixes" it. Tilting toward the plate, the head reaches the PAN
+// PLATFORM at +21 deg -- not the base plate, which it only reaches at
+// +30. Enlarging the platform to 60 mm (so the tilt bracket had
+// something to bolt to) is what created that limit. Tilting away, the
+// head is clear past -45.
+//
+// Positive tilt = head swinging down toward the plate.
+TILT_MAX    =  20;
+TILT_MIN    = -40;
+
+assert(TILT_MAX < 21, "tilt travel reaches the pan platform at +21 deg");
 
 assert(AIRGAP >= 0.5 && AIRGAP <= 3.0,
        "AS5600 air gap is outside the 0.5-3 mm the part needs");

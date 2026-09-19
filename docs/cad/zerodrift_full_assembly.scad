@@ -62,6 +62,16 @@ module rig_fixed() {
 // Firmware soft-limits pan to +-PAN_LIMIT; the benchmark never asks
 // for more than +-35.
 module rig_rotating(pan = PAN_DEG, tilt = TILT_DEG) {
+    rig_pan_deck(pan);
+    rig_tilt_group(pan, tilt);
+}
+
+// Split again, one level down, because the first split was not enough:
+// the head and the pan platform are both carried by the pan shaft, so
+// a fixed-vs-rotating test cannot see them collide -- and they do, at
+// +21 deg of tilt. Three groups move relative to each other, so all
+// three pairs have to be tested.
+module rig_pan_deck(pan = PAN_DEG) {
     rotate([0,0,pan]) {
         // platform + DIAMETRIC magnet, magnet centred on the axis
         translate([0,0,PLATFORM_Z]) {
@@ -96,20 +106,24 @@ module rig_rotating(pan = PAN_DEG, tilt = TILT_DEG) {
                 translate([0, 0, TILT_SENS_L]) rotate([180,0,0]) as5600();
             }
 
-            rotate([tilt, 0, 0]) {
-                // magnet on the shaft end, centred on the tilt axis
-                translate([TILT_DISC_X, 0, 0]) rotate([0,90,0]) {
-                    color("#5b6b7c") cylinder(d = 34, h = TILT_DISC_T);
-                    translate([0,0,TILT_DISC_T]) diametric_magnet();
-                }
-                // brass standoff (never printed -- 53 Hz in PLA, on the
-                // 47 Hz platform mode; see README) then the head
-                color(C_BRASS) rotate([90,0,0]) cylinder(d = 6, h = 42, $fn = 6);
-                translate([0, -65, 0]) head();
-            }
         }
         // vibration injector, bolted to the moving structure on purpose
         translate([14,-14,PLATFORM_Z + PLATFORM_T]) vibration_motor();
+    }
+}
+
+// Everything that turns with the TILT shaft.
+module rig_tilt_group(pan = PAN_DEG, tilt = TILT_DEG) {
+    rotate([0,0,pan]) translate([0, 6, TILT_Z]) rotate([tilt, 0, 0]) {
+        // magnet on the shaft end, centred on the tilt axis
+        translate([TILT_DISC_X, 0, 0]) rotate([0,90,0]) {
+            color("#5b6b7c") cylinder(d = 34, h = TILT_DISC_T);
+            translate([0,0,TILT_DISC_T]) diametric_magnet();
+        }
+        // brass standoff (never printed -- 53 Hz in PLA, on the
+        // 47 Hz platform mode; see README) then the head
+        color(C_BRASS) rotate([90,0,0]) cylinder(d = 6, h = 42, $fn = 6);
+        translate([0, -65, 0]) head();
     }
 }
 

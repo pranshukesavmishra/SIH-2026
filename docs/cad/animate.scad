@@ -31,6 +31,8 @@ PHASE  = clamp01(($t - 0.55) / 0.45);
 PAN    = (($t < 0.55) ? 0 : 55 * sin(PHASE * 360));
 assert(abs(PAN) <= PAN_LIMIT, "animation pans past the mechanical limit");
 TILT   = (($t < 0.55) ? 0 : 18 * sin(PHASE * 360 + 90) - 4);
+assert(TILT <= TILT_MAX && TILT >= TILT_MIN,
+       "animation tilts past the mechanical limit");
 
 // ---- the assembly, with each part flown in --------------------------
 module rig_animated() {

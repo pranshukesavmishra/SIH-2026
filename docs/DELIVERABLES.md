@@ -50,9 +50,18 @@ assortment. **Total stays ₹6,709.**
 | `cad/renders/01_full_scene.png` | Rig + bench electronics + beacon + decoy |
 | `cad/*.scad`, `cad/*.stl` | Editable source and meshes |
 
-**Pan travel is limited to ±120°** by the fixed encoder arm — soft-limit
-it in firmware. The benchmark's widest pattern asks for ±35°, so it
-costs nothing, but it is a real limit of this layout.
+**Travel is mechanically limited — soft-limit it in firmware.**
+
+| Axis | Limit | Stopped by |
+|---|---|---|
+| Pan | ±120° | tilt bracket vs the fixed encoder post |
+| Tilt, down | +20° | **the pan platform** (the base plate is 9° further) |
+| Tilt, up | −40° | nothing in range |
+
+The benchmark's widest pattern asks for ±35° of pan and a few degrees
+of elevation, so none of this costs us anything — but they are real
+limits of the layout, measured by `tools/cad/check_clearance.sh`, not
+estimated.
 
 **Do not print the head standoff.** Use an M3 brass standoff from the
 assortment. In PLA it droops 28.5 px and resonates at 53 Hz — sitting on

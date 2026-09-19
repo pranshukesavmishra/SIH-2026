@@ -29,18 +29,41 @@ xvfb-run -a openscad -D 'view="head"'    $S -o renders/03_head_detail.png       
 xvfb-run -a openscad -D 'view="explode"' $S -o renders/04_exploded_labelled.png --imgsize=1700,2000 zerodrift_full_assembly.scad
 ```
 
+## Regenerating the animation
+
+```sh
+for i in $(seq -w 0 179); do
+  t=$(python3 -c "print($((10#$i))/180)")
+  xvfb-run -a openscad -D "\$t=$t" -D 'LOWPOLY=true' --colorscheme=Tomorrow \
+    --camera=0,-20,50,66,0,25,660 --imgsize=1120,840 \
+    -o frames/f$i.png animate.scad
+done
+ffmpeg -framerate 30 -i frames/f%03d.png -c:v libx264 -pix_fmt yuv420p \
+  renders/zerodrift_assembly.mp4
+```
+
+`LOWPOLY=true` is what makes this practical: it swaps the hulled
+rounded boxes in `parts_lib.scad` for plain cubes, taking a frame from
+111 s to about 0.9 s. The camera distance is set by the widest moment
+of the fly-in, not by the assembled rig.
+
 ## Checking it
 
 ```sh
 tools/cad/check_clearance.sh            # sweeps pan -180..180, tilt -25..25
 ```
 
-It intersects the rig's two kinematic groups — `rig_fixed()` and
-`rig_rotating()` — at each pose and measures the **volume** of the
-overlap. Volume, not emptiness: a shaft tip meeting the platform it
-drives is a mounting interface, and it appears in the intersection as
-a coplanar sheet of zero thickness. Anything with real volume is two
-parts trying to occupy the same space.
+It intersects the rig's three kinematic groups — `rig_fixed()`,
+`rig_pan_deck()` and `rig_tilt_group()` — pair by pair at each pose,
+and measures the **volume** of the overlap.
+
+Volume, and compared against a baseline, because two kinds of honest
+overlap exist. A shaft tip meeting the platform it drives appears as a
+coplanar sheet of zero thickness. A shaft seated *inside* its hub — the
+tilt magnet disc on the tilt motor shaft — is a real solid, a constant
+~136 mm³ at every pose. Both are mounting interfaces. A mounting
+interface is pose-independent; a clash shows up as **growth** above the
+neutral-pose baseline, which is what the script flags.
 
 The test drives the *shipped* modules rather than a simplified copy,
 so it cannot drift away from the model it guards. That is also why
@@ -84,8 +107,8 @@ that reading the BOM did not:
 
 ## What the clearance sweep caught
 
-Renders did not show any of these. Intersecting the two kinematic
-groups showed all of them at once:
+Renders did not show any of these. Intersecting the kinematic groups
+showed them:
 
 5. **Both AS5600s were 12 mm off the axis they were measuring.** The
    arms reached part-way in and the chips were placed at the arms'
@@ -112,8 +135,13 @@ groups showed all of them at once:
     a clash with one part. A plain L-bracket puts the tilt axis
     48 mm up; a **14 mm standoff riser** under the bracket lifts it to
     62 mm, which buys the full ±25° — and, as a side effect, lifts the
-    whole tilt stage clear of the pan encoder post, so pan is no
-    longer limited either.
+    whole tilt stage clear of the pan encoder post.
+11. **The head clipped the pan platform at +21° of tilt** — and the
+    first version of this test could not see it. It compared the frame
+    against everything that moves, but the head and the platform are
+    *both* carried by the pan shaft, so that pair was never compared.
+    The rig is now split into three groups (frame, pan deck, tilt
+    group) and all three pairs are tested.
 
 ### Travel
 
@@ -122,15 +150,21 @@ widest pattern asks for ±35° of pan and a few degrees of elevation, so
 neither costs us anything — but they are real limits of the layout and
 belong in the firmware as soft stops.
 
-| Axis | Soft-limit to | Measured | Set by |
+| Axis | Soft-limit to | First contact | Against |
 |---|---|---|---|
-| Pan | ±120° | clear at −120°; first contact at −150° | the tilt stage reaching the fixed encoder post |
-| Tilt | ±25° | clear at ±25° | the head swinging toward the base plate |
+| Pan | ±120° | −150° | the tilt bracket reaching the fixed encoder post |
+| Tilt, toward the plate | +20° | +21° | **the pan platform** — the base plate is not reached until +30° |
+| Tilt, away | −40° | clear past −45° | nothing within the swept range |
 
-±120° is the conservative figure: it is the largest angle the sweep has
-actually shown clear, not an interpolation toward the −150° contact.
-Re-run `tools/cad/check_clearance.sh 10` if you want the boundary
-resolved more finely than the 30° grid.
+Tilt is asymmetric and the reason is worth knowing before anyone
+"corrects" it: enlarging the platform to 60 mm, so the tilt bracket had
+something to bolt to, is what put a ceiling on downward tilt. The head
+meets the platform 9° before it would meet the base plate.
+
+Each soft limit is the largest angle actually swept clear, not an
+interpolation toward the contact. Re-run
+`tools/cad/check_clearance.sh 10` to resolve the boundaries more finely
+than the 30° grid.
 
 Before the 14 mm riser, pan was bounded at +30° and tilt at +17°, which
 is what made the riser worth four M3 standoffs from the assortment.

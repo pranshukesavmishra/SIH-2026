@@ -16,8 +16,14 @@ C_HEATSNK = "#8d9298";  C_ABS    = "#d9822b";  C_BATT    = "#7d5fb2";
 C_BRASS   = "#b08d57";  C_BLACK  = "#23262a";  C_WIRE    = "#2f3336";
 C_LED_R   = "#e03131";  C_LED_W  = "#f1f3f5";  C_FILTER  = "#cc2936";
 
-module rbox(sz, r = 1.2) {          // rounded box, for parts that have one
-    hull() for (x = [r, sz[0]-r], y = [r, sz[1]-r], z = [r, sz[2]-r])
+// Rounded box. The hull() of eight spheres is what a real corner looks
+// like and what makes CGAL crawl -- ~110 s per animation frame. Set
+// LOWPOLY=true (animation does) to fall back to a plain cube, which is
+// visually identical at video scale and ~40x faster.
+LOWPOLY = false;
+module rbox(sz, r = 1.2) {
+    if (LOWPOLY) cube(sz);
+    else hull() for (x = [r, sz[0]-r], y = [r, sz[1]-r], z = [r, sz[2]-r])
         translate([x,y,z]) sphere(r = r);
 }
 

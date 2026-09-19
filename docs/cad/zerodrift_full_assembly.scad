@@ -19,13 +19,9 @@
 use <parts_lib.scad>
 $fn = 72;
 
-PLATE = 152.4;      // 6 inch acrylic, as bought
-PLATE_T = 3;
 TILT_DEG = 12;
 PAN_DEG  = 20;
 
-C_ACRYLIC = "#cfe3ee"; C_WIRE = "#2f3336"; C_DESK = "#e9e6e0";
-C_BRASS = "#b08d57";
 
 module base_plate() {
     color(C_ACRYLIC, 0.45) difference() {
@@ -36,49 +32,93 @@ module base_plate() {
     }
 }
 
+include <geometry.scad>
+
 // ---- the rig ------------------------------------------------------
-module rig() {
+// Split strictly into what is BOLTED TO THE FRAME and what RIDES THE
+// PAN SHAFT. An earlier revision had the pan motor body and the
+// encoder post inside the pan rotation, which means the post turned
+// with the magnet it was supposed to measure -- an encoder that reads
+// a constant. The split below is the mechanism, not a drawing choice.
+module rig(pan = PAN_DEG, tilt = TILT_DEG) {
+    rig_fixed();
+    rig_rotating(pan, tilt);
+}
+
+// Everything bolted to the frame. The stator is the whole visible
+// motor; only the 5 mm shaft turns.
+module rig_fixed() {
     base_plate();
+    translate([0,0,-PLATE_T]) nema17(shaft_len = 26);
+    pan_encoder_arm();
+}
 
-    rotate([0,0,PAN_DEG]) {
-        // pan motor hangs below, face bolted to the plate underside,
-        // shaft up through the clearance hole
-        translate([0,0,-PLATE_T]) nema17(shaft_len = 26);
-
-        // pan encoder: magnet on the rotating platform, AS5600 on a
-        // FIXED arm (single-shaft mounting -- these motors have no
-        // rear shaft; see TERMINAL_MK3.md section 6)
-        translate([0,0,23]) {
-            color("#5b6b7c") cylinder(d = 34, h = 3);
-            translate([0,0,3]) diametric_magnet();
+// Everything that rides the pan shaft.
+//
+// PAN TRAVEL IS LIMITED by the fixed encoder arm: past the limit the
+// tilt bracket drives into the encoder post. The limit is measured,
+// not guessed -- tools/cad/check_clearance.sh sweeps this module
+// against rig_fixed() and prints the first angle that touches.
+// Firmware soft-limits pan to +-PAN_LIMIT; the benchmark never asks
+// for more than +-35.
+module rig_rotating(pan = PAN_DEG, tilt = TILT_DEG) {
+    rotate([0,0,pan]) {
+        // platform + DIAMETRIC magnet, magnet centred on the axis
+        translate([0,0,PLATFORM_Z]) {
+            color("#5b6b7c") cylinder(d = PLATFORM_D, h = PLATFORM_T);
+            translate([0,0,PLATFORM_T]) diametric_magnet();
         }
-        color(C_BRASS) translate([26,0,0]) cylinder(d = 5, h = 30);   // fixed post
-        color("#5b6b7c") translate([26,0,29]) rotate([0,0,180])
-            translate([0,-3,0]) cube([18,6,3]);
-        translate([12,0,30.5]) rotate([180,0,0]) as5600();
 
-        // tilt stage on the pan platform
-        translate([-21, 8, 26]) {
-            l_bracket(leg = 34, th = 3);
-            translate([21, 34, 17]) rotate([-90,0,0]) {
-                nema17(shaft_len = 22);
-                translate([0,0,22]) { color("#5b6b7c") cylinder(d = 34, h = 3);
-                                      translate([0,0,3]) diametric_magnet(); }
-                color(C_BRASS) translate([26,0,0]) cylinder(d = 5, h = 26);
-                translate([12,0,27]) rotate([180,0,0]) as5600();
+        // tilt stage, sitting ON the platform (underside at its top face)
+        //
+        // Axis convention, checked numerically rather than by eye after
+        // an earlier nesting put the tilt axis along world -Z and the
+        // camera looking at the ceiling:
+        //   tilt axis = world X,  look = world -Y,  shaft = world X.
+        translate([0, 6, TILT_Z]) {
+            // riser: four M3 standoffs lifting the bracket off the
+            // platform, so the head clears the plate at full tilt
+            for (dx = [-42, -20]) for (dy = [-14, 6])
+                color(C_BRASS) translate([dx, dy, PLATFORM_Z + PLATFORM_T - TILT_Z])
+                    cylinder(d = 5, h = RISER_H, $fn = 6);
+            translate([-46, -20, PLATFORM_Z + PLATFORM_T + RISER_H - TILT_Z])
+                l_bracket(leg = 30, th = 3, w = 30);
+            translate([-40, 0, 0]) rotate([0, 90, 0]) nema17(shaft_len = 22);
 
-                // METAL standoff to the head -- never printed, see the
-                // resonance table in TERMINAL_MK3.md section 6 (a PLA
-                // one lands at 53 Hz, on the 47 Hz platform mode)
-                translate([0,0,25]) rotate([0,TILT_DEG,0]) {
-                    color(C_BRASS) cylinder(d = 6, h = 42, $fn = 6);
-                    translate([0,0,42]) head();
+            // Tilt encoder. Fixed to the motor side of the joint, so it
+            // is outside the rotating group below. The arm reaches UP
+            // and back over the shaft: reaching DOWN, as it first did,
+            // put the post straight through the pan platform.
+            translate([-20, 0, 0]) rotate([0, 90, 0]) {
+                color(C_BRASS) translate([-26,0,-4]) cylinder(d = 5, h = 22);
+                color("#5b6b7c") translate([-28,-4,TILT_SENS_L]) cube([30, 8, 3]);
+                // chip ON the tilt axis (local x = y = 0), AIRGAP away
+                translate([0, 0, TILT_SENS_L]) rotate([180,0,0]) as5600();
+            }
+
+            rotate([tilt, 0, 0]) {
+                // magnet on the shaft end, centred on the tilt axis
+                translate([TILT_DISC_X, 0, 0]) rotate([0,90,0]) {
+                    color("#5b6b7c") cylinder(d = 34, h = TILT_DISC_T);
+                    translate([0,0,TILT_DISC_T]) diametric_magnet();
                 }
+                // brass standoff (never printed -- 53 Hz in PLA, on the
+                // 47 Hz platform mode; see README) then the head
+                color(C_BRASS) rotate([90,0,0]) cylinder(d = 6, h = 42, $fn = 6);
+                translate([0, -65, 0]) head();
             }
         }
         // vibration injector, bolted to the moving structure on purpose
-        translate([14,-14,26.5]) vibration_motor();
+        translate([14,-14,PLATFORM_Z + PLATFORM_T]) vibration_motor();
     }
+}
+
+// Fixed pan encoder: short stiff post on the frame, plate reaching in
+// over the axis, chip looking DOWN at the magnet from AIRGAP away.
+module pan_encoder_arm() {
+    color(C_BRASS) translate([PAN_POST_R,0,0]) cylinder(d = 5, h = PAN_SENS_Z + 3);
+    color("#5b6b7c") translate([-6,-5,PAN_SENS_Z]) cube([PAN_POST_R + 12, 10, 3]);
+    translate([0,0,PAN_SENS_Z]) rotate([180,0,0]) as5600();
 }
 
 // ---- the head: webcam board + laser + filter in the ABS box -------
@@ -114,8 +154,12 @@ module head(walls = true) {
     // laser barrel is 18 mm, so its face sits at y = -5 to finish flush
     translate([20, -5, -2]) rotate([90,0,0]) ky008_laser();
 
-    // service loop: slack enough for full travel, never in tension
-    wire_run([[-30,12,-10],[-46,20,-22],[-50,6,-40],[-34,-8,-52]], 3.0);
+    // Service loop: slack enough for full travel, never in tension, and
+    // it has to STAY ABOVE THE BASE PLATE. The first routing dropped to
+    // z = -4 in world coordinates -- i.e. the camera's own cable ran
+    // through the 3 mm acrylic it is bolted to. Invisible in every
+    // render; the clearance sweep found it at the neutral pose.
+    wire_run([[-30,12,-10],[-46,20,-22],[-48,6,-30],[-38,-6,-36]], 3.0);
 }
 
 // ---- the bench: electronics that do NOT ride the plate -------------
@@ -192,25 +236,39 @@ module view_explode() {
 
     // 3 - platform + diametric magnet on the rotation axis
     translate([0,0,62]) {
-        color("#5b6b7c") cylinder(d = 34, h = 3);
-        translate([0,0,3]) diametric_magnet();
+        color("#5b6b7c") cylinder(d = PLATFORM_D, h = PLATFORM_T);
+        translate([0,0,PLATFORM_T]) diametric_magnet();
         translate([70,0,0]) label("3  platform + DIAMETRIC magnet");
     }
-    // 4 - AS5600 on its fixed arm, 0.5-3 mm above the magnet
-    translate([62,0,86]) { rotate([180,0,0]) as5600(); translate([28,0,0]) label("4  AS5600 (fixed arm)"); }
+    // 4 - AS5600 on its fixed arm: chip CONCENTRIC with the axis, and
+    //     AIRGAP (1.5 mm) above the magnet face. Off-axis it reads noise.
+    translate([0,0,92]) {
+        color(C_BRASS) translate([PAN_POST_R,0,-30]) cylinder(d = 5, h = 30);
+        color("#5b6b7c") translate([-6,-5,0]) cube([PAN_POST_R + 12, 10, 3]);
+        rotate([180,0,0]) as5600();
+        translate([PAN_POST_R + 26,0,0]) label("4  AS5600 on the axis, 1.5 mm gap");
+    }
+
+    // 4b - the 14 mm standoff riser. Not decoration: without it the
+    //      head reaches the base plate at +17 deg of tilt.
+    translate([0,0,126]) {
+        for (dx = [-11, 11]) for (dy = [-10, 10])
+            color(C_BRASS) translate([dx, dy, 0]) cylinder(d = 5, h = RISER_H, $fn = 6);
+        translate([70,0,0]) label("5  14 mm riser — buys full tilt travel");
+    }
 
     // 5 - L-bracket carrying the tilt stage
-    translate([-54,-17,118]) { l_bracket(); translate([-96,0,10]) label("5  L-bracket"); }
+    translate([-54,-17,158]) { l_bracket(); translate([-96,0,10]) label("6  L-bracket"); }
 
-    // 6 - tilt motor, shaft horizontal
-    translate([0,0,165]) { rotate([-90,0,0]) nema17(); translate([78,0,0]) label("6  NEMA17 tilt"); }
+    // 7 - tilt motor, shaft horizontal
+    translate([0,0,202]) { rotate([-90,0,0]) nema17(); translate([78,0,0]) label("7  NEMA17 tilt"); }
 
-    // 7 - metal standoff (never printed -- 53 Hz resonance in PLA)
-    translate([0,0,228]) { color("#b08d57") cylinder(d = 6, h = 42, $fn = 6);
-                           translate([56,0,20]) label("7  M3 BRASS standoff"); }
+    // 8 - metal standoff (never printed -- 53 Hz resonance in PLA)
+    translate([0,0,252]) { color(C_BRASS) cylinder(d = 6, h = 42, $fn = 6);
+                           translate([56,0,20]) label("8  M3 BRASS standoff"); }
 
-    // 8 - head: webcam + red filter + laser
-    translate([0,0,300]) { head(); translate([78,0,0]) label("8  head: webcam + filter + laser"); }
+    // 9 - head: webcam + red filter + laser
+    translate([0,0,324]) { head(); translate([78,0,0]) label("9  head: webcam + filter + laser"); }
 }
 
 view = "all";

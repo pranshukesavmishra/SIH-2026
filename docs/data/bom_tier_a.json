@@ -1,414 +1,461 @@
 {
-  "name": "ZeroDrift Terminal Mk3 — Tier A",
-  "note": "Single source of truth for the build BOM. docs/TERMINAL_MK3.md section 2 and docs/submission/ZeroDrift_Mk3_Build_Guide.pdf are both generated from this; tests/test_bom_consistency.py enforces it. Beacon runs from a USB power bank, not a 9V battery: the Nano's linear regulator wastes 9V->5V as heat and a 9V alkaline holds ~500mAh. Decoy runs from 2xAA, not a coin cell: a CR2032 is rated 0.2mA continuous and a high-brightness LED draws ~20mA, which is 100x over spec. Decoy resistor recomputed for a white LED (Vf ~3.1V): 150R against 2xAA's ~3V supply left under 1mA and went dark as the battery aged even slightly -- the opposite of 'brighter than the beacon'. 3xAA (4.5V nominal) + 68R gives 16-25mA across the pack's working life. Stage power: the demo runs from a laptop with no wall socket. The laptop's USB powers both Nanos, the camera, the laser, the encoders and the vibration motor. The only thing it cannot power is the pair of NEMA17 steppers -- the A4988 needs 8-35 V on VMOT and USB delivers 5 V. A 12 V Li-ion pack with a DC barrel output supplies that rail. A USB-PD trigger module was considered and rejected: it depends on the user's own power bank supporting PD, and 12 V is not even a guaranteed PD voltage (the standard's fixed steps are 5/9/15/20 V), so it makes the demo depend on hardware nobody has verified. The battery pack carries the same barrel connector the mains adapter used, so no other wiring changes. At ~1 A draw a 3000 mAh pack runs about three hours. Cable note: newer Arduino Nano boards (and many clones) now ship with USB-C instead of the classic mini-USB -- confirmed in this session that at least one of the two Nanos in this build is USB-C. Look at each board's port before buying cables rather than assuming mini-USB; a mismatched cable simply will not plug in. Camera correction: the M12 'board camera' line originally here (Rs 1,400) was the wrong product category. Priced live, M12 machine-vision boards run Rs 2,000-5,000 (an Arducam quoted Rs 4,437, more than half this build's budget) because they are an industrial category, not a hobby one. An ordinary UVC webcam at Rs 700-900 is the same thing for our purposes -- the pipeline opens it identically through cv2.VideoCapture -- and its housing comes off before mounting, because a webcam's swivel clip is exactly the flex joint section 0 exists to eliminate. Charger correction: the battery line used to read 'pack + charger' as one item. A pack assembled from loose 18650 cells does not come with one, and 3 cells in series must not be charged from a single-cell charger. The charger is now its own line so it cannot be assumed away.",
-  "sections": [
+ "name": "ZeroDrift Terminal Mk3 — Tier A",
+ "note": "Single source of truth for the build BOM. docs/TERMINAL_MK3.md section 2 and docs/submission/ZeroDrift_Mk3_Build_Guide.pdf are both generated from this; tests/test_bom_consistency.py enforces it. Beacon runs from a USB power bank, not a 9V battery: the Nano's linear regulator wastes 9V->5V as heat and a 9V alkaline holds ~500mAh. Decoy runs from 2xAA, not a coin cell: a CR2032 is rated 0.2mA continuous and a high-brightness LED draws ~20mA, which is 100x over spec. Decoy resistor recomputed for a white LED (Vf ~3.1V): 150R against 2xAA's ~3V supply left under 1mA and went dark as the battery aged even slightly -- the opposite of 'brighter than the beacon'. 3xAA (4.5V nominal) + 68R gives 16-25mA across the pack's working life. Stage power: the demo runs from a laptop with no wall socket. The laptop's USB powers both Nanos, the camera, the laser, the encoders and the vibration motor. The only thing it cannot power is the pair of NEMA17 steppers -- the A4988 needs 8-35 V on VMOT and USB delivers 5 V. A 12 V Li-ion pack with a DC barrel output supplies that rail. A USB-PD trigger module was considered and rejected: it depends on the user's own power bank supporting PD, and 12 V is not even a guaranteed PD voltage (the standard's fixed steps are 5/9/15/20 V), so it makes the demo depend on hardware nobody has verified. The battery pack carries the same barrel connector the mains adapter used, so no other wiring changes. At ~1 A draw a 3000 mAh pack runs about three hours. Cable note: newer Arduino Nano boards (and many clones) now ship with USB-C instead of the classic mini-USB -- confirmed in this session that at least one of the two Nanos in this build is USB-C. Look at each board's port before buying cables rather than assuming mini-USB; a mismatched cable simply will not plug in. Camera correction: the M12 'board camera' line originally here (Rs 1,400) was the wrong product category. Priced live, M12 machine-vision boards run Rs 2,000-5,000 (an Arducam quoted Rs 4,437, more than half this build's budget) because they are an industrial category, not a hobby one. An ordinary UVC webcam at Rs 700-900 is the same thing for our purposes -- the pipeline opens it identically through cv2.VideoCapture -- and its housing comes off before mounting, because a webcam's swivel clip is exactly the flex joint section 0 exists to eliminate. Charger correction: the battery line used to read 'pack + charger' as one item. A pack assembled from loose 18650 cells does not come with one, and 3 cells in series must not be charged from a single-cell charger. The charger is now its own line so it cannot be assumed away.",
+ "sections": [
+  {
+   "title": "A. Motion — the gimbal",
+   "items": [
     {
-      "title": "A. Motion — the gimbal",
-      "items": [
-        {
-          "item": "NEMA17 stepper motor, 1.8°/step, 4.2 kg-cm",
-          "qty": 2,
-          "unit_inr": 749,
-          "price_basis": "verified",
-          "source": "amar",
-          "icon": "p-nema"
-        },
-        {
-          "item": "A4988 stepper driver module",
-          "qty": 2,
-          "unit_inr": 170,
-          "price_basis": "verified",
-          "source": "amar",
-          "icon": "p-a4988"
-        },
-        {
-          "item": "NEMA17 L-bracket (pan + tilt)",
-          "qty": 2,
-          "unit_inr": 127,
-          "price_basis": "verified",
-          "source": "amar",
-          "icon": "p-bracket"
-        },
-        {
-          "item": "100 µF 25 V electrolytic capacitor",
-          "qty": 2,
-          "unit_inr": 10,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-cap"
-        }
-      ]
+     "item": "NEMA17 stepper motor, 1.8°/step, 4.2 kg-cm",
+     "qty": 2,
+     "unit_inr": 749,
+     "price_basis": "verified",
+     "source": "amar",
+     "icon": "p-nema",
+     "status": "have"
     },
     {
-      "title": "B. Feedback — what makes “accurate” a measurement",
-      "items": [
-        {
-          "item": "AS5600 magnetic encoder module",
-          "qty": 2,
-          "unit_inr": 249,
-          "price_basis": "verified",
-          "source": "online",
-          "icon": "p-as5600"
-        },
-        {
-          "item": "Diametric magnet, 6 × 2.5 mm",
-          "qty": 2,
-          "unit_inr": 90,
-          "price_basis": "estimate",
-          "source": "online",
-          "icon": "p-magnet"
-        },
-        {
-          "item": "TCA9548A I²C multiplexer",
-          "qty": 1,
-          "unit_inr": 199,
-          "price_basis": "verified",
-          "source": "online",
-          "icon": "p-mux"
-        }
-      ]
+     "item": "A4988 stepper driver module",
+     "qty": 2,
+     "unit_inr": 170,
+     "price_basis": "verified",
+     "source": "amar",
+     "icon": "p-a4988",
+     "status": "have"
     },
     {
-      "title": "C. Head — camera and laser, one enclosure",
-      "items": [
-        {
-          "item": "USB webcam, UVC, 640x480+ — housing removed before mounting",
-          "qty": 1,
-          "unit_inr": 800,
-          "price_basis": "verified",
-          "source": "online",
-          "icon": "p-camera"
-        },
-        {
-          "item": "Red filter — gel sheet or red acrylic offcut",
-          "qty": 1,
-          "unit_inr": 100,
-          "price_basis": "estimate",
-          "source": "online",
-          "icon": "p-filter"
-        },
-        {
-          "item": "KY-008 laser module",
-          "qty": 0,
-          "unit_inr": 0,
-          "price_basis": "reuse Mk1",
-          "source": "amar",
-          "icon": "p-laser"
-        },
-        {
-          "item": "ABS project box, head enclosure",
-          "qty": 1,
-          "unit_inr": 115,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-box"
-        }
-      ]
+     "item": "NEMA17 L-bracket (pan + tilt)",
+     "qty": 2,
+     "unit_inr": 127,
+     "price_basis": "verified",
+     "source": "amar",
+     "icon": "p-bracket",
+     "status": "have"
     },
     {
-      "title": "D. Control and power",
-      "items": [
-        {
-          "item": "Arduino Nano — tracker",
-          "qty": 0,
-          "unit_inr": 0,
-          "price_basis": "reuse Mk1",
-          "source": "amar",
-          "icon": "p-nano"
-        },
-        {
-          "item": "Arduino Nano — beacon",
-          "qty": 1,
-          "unit_inr": 225,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-nano"
-        },
-        {
-          "item": "12 V Li-ion pack, 3S (or 3x18650 + holder)",
-          "qty": 1,
-          "unit_inr": 650,
-          "price_basis": "estimate",
-          "source": "online",
-          "icon": "p-battery"
-        },
-        {
-          "item": "3S 12.6 V balance charger — NOT a single-cell charger",
-          "qty": 1,
-          "unit_inr": 250,
-          "price_basis": "estimate",
-          "source": "online",
-          "icon": "p-battery"
-        },
-        {
-          "item": "DC barrel jack to screw-terminal adapter",
-          "qty": 1,
-          "unit_inr": 30,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-barrel"
-        },
-        {
-          "item": "SPST toggle switch — motor rail kill switch",
-          "qty": 1,
-          "unit_inr": 25,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-switch"
-        },
-        {
-          "item": "Breadboard, 830 point (drivers + Nano + mux)",
-          "qty": 1,
-          "unit_inr": 90,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-breadboard"
-        },
-        {
-          "item": "USB cables for the two Nanos — check each port before buying",
-          "qty": 2,
-          "unit_inr": 99,
-          "price_basis": "estimate",
-          "source": "blinkit",
-          "icon": "p-usb"
-        },
-        {
-          "item": "Acrylic sheet 3 mm, 6″×6″ (pack of 2)",
-          "qty": 1,
-          "unit_inr": 199,
-          "price_basis": "verified",
-          "source": "amar",
-          "icon": "p-acrylic"
-        }
-      ]
-    },
-    {
-      "title": "E. Disturbance injector — robustness shown, not claimed",
-      "items": [
-        {
-          "item": "Vibration motor, 3 V DC",
-          "qty": 1,
-          "unit_inr": 20,
-          "price_basis": "verified",
-          "source": "amar",
-          "icon": "p-vibe"
-        },
-        {
-          "item": "Transistor + diode + resistor combo kit",
-          "qty": 1,
-          "unit_inr": 105,
-          "price_basis": "verified",
-          "source": "amar",
-          "icon": "p-resistor"
-        }
-      ]
-    },
-    {
-      "title": "F. Beacon — the target",
-      "items": [
-        {
-          "item": "High-brightness RED LED, 10 mm, 650 nm",
-          "qty": 1,
-          "unit_inr": 22,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-led"
-        },
-        {
-          "item": "2N2222 transistor + 220 Ω + 1 kΩ",
-          "qty": 1,
-          "unit_inr": 20,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-resistor"
-        },
-        {
-          "item": "Ping-pong ball (diffuser)",
-          "qty": 1,
-          "unit_inr": 129,
-          "price_basis": "verified",
-          "source": "blinkit",
-          "icon": "p-ball"
-        },
-        {
-          "item": "USB power bank (any, 5V) — beacon supply",
-          "qty": 0,
-          "unit_inr": 0,
-          "price_basis": "reuse Mk1",
-          "source": "amar",
-          "icon": "p-powerbank"
-        },
-        {
-          "item": "SPST toggle switch",
-          "qty": 1,
-          "unit_inr": 25,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-switch"
-        },
-        {
-          "item": "ABS project box",
-          "qty": 1,
-          "unit_inr": 115,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-box"
-        }
-      ]
-    },
-    {
-      "title": "G. Decoy — the control",
-      "items": [
-        {
-          "item": "High-brightness WHITE LED (brighter than beacon)",
-          "qty": 1,
-          "unit_inr": 22,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-led"
-        },
-        {
-          "item": "68 Ω resistor",
-          "qty": 1,
-          "unit_inr": 5,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-resistor"
-        },
-        {
-          "item": "3×AA battery holder + 3 AA cells — decoy supply",
-          "qty": 1,
-          "unit_inr": 90,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-aa"
-        },
-        {
-          "item": "Switch + scrap housing",
-          "qty": 1,
-          "unit_inr": 35,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-switch"
-        }
-      ]
-    },
-    {
-      "title": "H. Consumables",
-      "items": [
-        {
-          "item": "Dupont jumper wires — M-M, M-F, F-F",
-          "qty": 1,
-          "unit_inr": 150,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-wires"
-        },
-        {
-          "item": "M3 screws, nuts, standoffs assortment",
-          "qty": 1,
-          "unit_inr": 150,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-screws"
-        },
-        {
-          "item": "Heat-shrink, solder, hot-glue sticks",
-          "qty": 1,
-          "unit_inr": 150,
-          "price_basis": "estimate",
-          "source": "amar",
-          "icon": "p-misc"
-        }
-      ]
+     "item": "100 µF 25 V electrolytic capacitor",
+     "qty": 2,
+     "unit_inr": 10,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-cap",
+     "status": "have"
     }
-  ],
-  "total_inr": 6709,
-  "tools": {
-    "note": "Not part of the build and not in the total. These are what you need in your hand to assemble it. Tick 'have' for anything the team or the college lab already owns -- most teams own most of this. The multimeter is the one that is genuinely not optional.",
-    "items": [
-      {
-        "item": "Multimeter",
-        "why": "Setting the A4988 Vref is a voltage measurement on the driver's trim pot. Without it you are guessing the motor current: too low and the gimbal skips steps, too high and the motor cooks. There is no way to do this by eye.",
-        "unit_inr": 500,
-        "source": "have"
-      },
-      {
-        "item": "Small flat screwdriver, 2 mm",
-        "why": "The A4988 trim pot is tiny and a normal screwdriver slips off it onto the board.",
-        "unit_inr": 150,
-        "source": "amar"
-      },
-      {
-        "item": "Wire stripper / side cutter",
-        "why": "Thirty-odd connections.",
-        "unit_inr": 150,
-        "source": "amar"
-      },
-      {
-        "item": "Soldering iron, 25-40 W",
-        "why": "The beacon and decoy are soldered; solder itself is already in consumables.",
-        "unit_inr": 350,
-        "source": "have"
-      },
-      {
-        "item": "Hot glue gun",
-        "why": "Strain relief on every connector that leaves a moving axis. Glue sticks are already in consumables.",
-        "unit_inr": 250,
-        "source": "have"
-      },
-      {
-        "item": "Allen key set (M3)",
-        "why": "NEMA17 brackets use M3 socket screws.",
-        "unit_inr": 120,
-        "source": "have"
-      },
-      {
-        "item": "Zip ties + double-sided tape",
-        "why": "Cable management on a gimbal is not cosmetic: a cable that snags is a lost step and a lost lock.",
-        "unit_inr": 80,
-        "source": "blinkit"
-      },
-      {
-        "item": "USB extension cable, 1.5 m",
-        "why": "The camera rides on the gimbal; its cable has to reach the laptop with slack for the full pan range.",
-        "unit_inr": 150,
-        "source": "blinkit"
-      }
-    ]
+   ]
   },
-  "scan": [
+  {
+   "title": "B. Feedback — what makes “accurate” a measurement",
+   "items": [
     {
-      "label": "USB camera module (UVC)",
-      "url": "https://www.google.com/search?udm=2&q=USB+camera+module+UVC+M12+lens+640x480+webcam+board"
+     "item": "AS5600 magnetic encoder module",
+     "qty": 2,
+     "unit_inr": 249,
+     "price_basis": "verified",
+     "source": "online",
+     "icon": "p-as5600",
+     "why": "Closed-loop position feedback. Without these the rig is open-loop and 'accurate' stops being a measurement.",
+     "trap": "Buy TWO. Both are hard-wired to I²C address 0x36, which is why the multiplexer below is not optional.",
+     "check": "Small board about 11 × 11 mm with a 4-pin header (VCC, GND, SDA, SCL) and 'AS5600' on the chip.",
+     "status": "buy"
     },
     {
-      "label": "Diametric magnet 6x2.5",
-      "url": "https://www.google.com/search?udm=2&q=diametric+magnet+6x2.5mm+AS5600+encoder"
+     "item": "Diametric magnet, 6 × 2.5 mm",
+     "qty": 2,
+     "unit_inr": 90,
+     "price_basis": "estimate",
+     "source": "online",
+     "icon": "p-magnet",
+     "status": "have"
     },
     {
-      "label": "AS5600 encoder board",
-      "url": "https://www.google.com/search?udm=2&q=AS5600+magnetic+encoder+module"
-    },
-    {
-      "label": "A4988 driver",
-      "url": "https://www.google.com/search?udm=2&q=A4988+stepper+motor+driver+module"
-    },
-    {
-      "label": "TCA9548A I2C mux",
-      "url": "https://www.google.com/search?udm=2&q=TCA9548A+I2C+multiplexer+module"
-    },
-    {
-      "label": "NEMA17 + L-bracket",
-      "url": "https://www.google.com/search?udm=2&q=NEMA17+stepper+motor+17HS4401+L+bracket"
-    },
-    {
-      "label": "12V Li-ion pack",
-      "url": "https://www.google.com/search?udm=2&q=12V+3000mAh+rechargeable+lithium+battery+pack+DC+barrel+charger"
-    },
-    {
-      "label": "Barrel to screw term.",
-      "url": "https://www.google.com/search?udm=2&q=DC+barrel+jack+to+screw+terminal+adapter+5.5x2.1"
+     "item": "TCA9548A I²C multiplexer",
+     "qty": 1,
+     "unit_inr": 199,
+     "price_basis": "verified",
+     "source": "online",
+     "icon": "p-mux",
+     "why": "Both AS5600s answer to 0x36 and cannot share a bus. This gives each one its own channel.",
+     "trap": "PCA9548A is the same part for our purposes — either is fine.",
+     "check": "8-channel board, roughly 20 × 15 mm, marked TCA9548A or PCA9548A.",
+     "status": "buy"
     }
+   ]
+  },
+  {
+   "title": "C. Head — camera and laser, one enclosure",
+   "items": [
+    {
+     "item": "USB webcam, UVC, 640x480+ — housing removed before mounting",
+     "qty": 1,
+     "unit_inr": 800,
+     "price_basis": "verified",
+     "source": "online",
+     "icon": "p-camera",
+     "why": "The camera has to ride the gimbal, so a laptop or clip-on webcam that cannot be bolted down is no use. Buy an ordinary UVC webcam and take the housing off.",
+     "trap": "Do NOT buy an M12 'board camera' or a CCTV module. Those are an industrial category at ₹2,000–5,000 and many are not UVC, so they will not open as a webcam at all. OV7670 and OV2640 modules are parallel DVP — they have no USB and cannot plug into a laptop.",
+     "check": "The listing must say UVC or 'driver-free / plug and play', and 640×480 or better.",
+     "status": "buy"
+    },
+    {
+     "item": "Red filter — gel sheet or red acrylic offcut",
+     "qty": 1,
+     "unit_inr": 100,
+     "price_basis": "estimate",
+     "source": "online",
+     "icon": "p-filter",
+     "status": "have"
+    },
+    {
+     "item": "KY-008 laser module",
+     "qty": 0,
+     "unit_inr": 0,
+     "price_basis": "reuse Mk1",
+     "source": "amar",
+     "icon": "p-laser",
+     "status": "have"
+    },
+    {
+     "item": "ABS project box, head enclosure",
+     "qty": 1,
+     "unit_inr": 115,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-box",
+     "status": "have"
+    }
+   ]
+  },
+  {
+   "title": "D. Control and power",
+   "items": [
+    {
+     "item": "Arduino Nano — tracker",
+     "qty": 0,
+     "unit_inr": 0,
+     "price_basis": "reuse Mk1",
+     "source": "amar",
+     "icon": "p-nano",
+     "status": "have"
+    },
+    {
+     "item": "Arduino Nano — beacon",
+     "qty": 1,
+     "unit_inr": 225,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-nano",
+     "status": "have"
+    },
+    {
+     "item": "12 V Li-ion pack, 3S (or 3x18650 + holder)",
+     "qty": 1,
+     "unit_inr": 650,
+     "price_basis": "estimate",
+     "source": "online",
+     "icon": "p-battery",
+     "status": "have"
+    },
+    {
+     "item": "3S 12.6 V balance charger — NOT a single-cell charger",
+     "qty": 1,
+     "unit_inr": 250,
+     "price_basis": "estimate",
+     "source": "online",
+     "icon": "p-battery",
+     "status": "buy",
+     "why": "The 18650 pack is three cells in series and there is no mains adapter in this build — the pack is the only motor supply, so it has to be chargeable between runs.",
+     "trap": "A single-cell 18650 charger cannot charge a 3S pack. Forcing one is a fire risk, not just a slow charge.",
+     "check": "Listing says 3S and 12.6 V. You plug into the small white JST balance lead, not the main power leads."
+    },
+    {
+     "item": "DC barrel jack to screw-terminal adapter",
+     "qty": 1,
+     "unit_inr": 30,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-barrel",
+     "status": "have"
+    },
+    {
+     "item": "SPST toggle switch — motor rail kill switch",
+     "qty": 1,
+     "unit_inr": 25,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-switch",
+     "status": "have"
+    },
+    {
+     "item": "Breadboard, 830 point (drivers + Nano + mux)",
+     "qty": 1,
+     "unit_inr": 90,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-breadboard",
+     "status": "have"
+    },
+    {
+     "item": "USB cables for the two Nanos — check each port before buying",
+     "qty": 2,
+     "unit_inr": 99,
+     "price_basis": "estimate",
+     "source": "blinkit",
+     "icon": "p-usb",
+     "status": "have"
+    },
+    {
+     "item": "Acrylic sheet 3 mm, 6″×6″ (pack of 2)",
+     "qty": 1,
+     "unit_inr": 199,
+     "price_basis": "verified",
+     "source": "amar",
+     "icon": "p-acrylic",
+     "status": "have"
+    }
+   ]
+  },
+  {
+   "title": "E. Disturbance injector — robustness shown, not claimed",
+   "items": [
+    {
+     "item": "Vibration motor, 3 V DC",
+     "qty": 1,
+     "unit_inr": 20,
+     "price_basis": "verified",
+     "source": "amar",
+     "icon": "p-vibe",
+     "status": "have"
+    },
+    {
+     "item": "Transistor + diode + resistor combo kit",
+     "qty": 1,
+     "unit_inr": 105,
+     "price_basis": "verified",
+     "source": "amar",
+     "icon": "p-resistor",
+     "status": "have"
+    }
+   ]
+  },
+  {
+   "title": "F. Beacon — the target",
+   "items": [
+    {
+     "item": "High-brightness RED LED, 10 mm, 650 nm",
+     "qty": 1,
+     "unit_inr": 22,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-led",
+     "status": "have"
+    },
+    {
+     "item": "2N2222 transistor + 220 Ω + 1 kΩ",
+     "qty": 1,
+     "unit_inr": 20,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-resistor",
+     "status": "have"
+    },
+    {
+     "item": "Ping-pong ball (diffuser)",
+     "qty": 1,
+     "unit_inr": 129,
+     "price_basis": "verified",
+     "source": "blinkit",
+     "icon": "p-ball",
+     "status": "have"
+    },
+    {
+     "item": "USB power bank (any, 5V) — beacon supply",
+     "qty": 0,
+     "unit_inr": 0,
+     "price_basis": "reuse Mk1",
+     "source": "amar",
+     "icon": "p-powerbank",
+     "status": "have"
+    },
+    {
+     "item": "SPST toggle switch",
+     "qty": 1,
+     "unit_inr": 25,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-switch",
+     "status": "have"
+    },
+    {
+     "item": "ABS project box",
+     "qty": 1,
+     "unit_inr": 115,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-box",
+     "status": "have"
+    }
+   ]
+  },
+  {
+   "title": "G. Decoy — the control",
+   "items": [
+    {
+     "item": "High-brightness WHITE LED (brighter than beacon)",
+     "qty": 1,
+     "unit_inr": 22,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-led",
+     "status": "have"
+    },
+    {
+     "item": "68 Ω resistor",
+     "qty": 1,
+     "unit_inr": 5,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-resistor",
+     "status": "have"
+    },
+    {
+     "item": "3×AA battery holder + 3 AA cells — decoy supply",
+     "qty": 1,
+     "unit_inr": 90,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-aa",
+     "status": "have"
+    },
+    {
+     "item": "Switch + scrap housing",
+     "qty": 1,
+     "unit_inr": 35,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-switch",
+     "status": "have"
+    }
+   ]
+  },
+  {
+   "title": "H. Consumables",
+   "items": [
+    {
+     "item": "Dupont jumper wires — M-M, M-F, F-F",
+     "qty": 1,
+     "unit_inr": 150,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-wires",
+     "status": "have"
+    },
+    {
+     "item": "M3 screws, nuts, standoffs assortment",
+     "qty": 1,
+     "unit_inr": 150,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-screws",
+     "status": "have"
+    },
+    {
+     "item": "Heat-shrink, solder, hot-glue sticks",
+     "qty": 1,
+     "unit_inr": 150,
+     "price_basis": "estimate",
+     "source": "amar",
+     "icon": "p-misc",
+     "status": "have"
+    }
+   ]
+  }
+ ],
+ "total_inr": 6709,
+ "tools": {
+  "note": "Not part of the build and not in the total. These are what you need in your hand to assemble it. Tick 'have' for anything the team or the college lab already owns -- most teams own most of this. The multimeter is the one that is genuinely not optional.",
+  "items": [
+   {
+    "item": "Multimeter",
+    "why": "Setting the A4988 Vref is a voltage measurement on the driver's trim pot. Without it you are guessing the motor current: too low and the gimbal skips steps, too high and the motor cooks. There is no way to do this by eye.",
+    "unit_inr": 500,
+    "source": "have"
+   },
+   {
+    "item": "Small flat screwdriver, 2 mm",
+    "why": "The A4988 trim pot is tiny and a normal screwdriver slips off it onto the board.",
+    "unit_inr": 150,
+    "source": "amar"
+   },
+   {
+    "item": "Wire stripper / side cutter",
+    "why": "Thirty-odd connections.",
+    "unit_inr": 150,
+    "source": "amar"
+   },
+   {
+    "item": "Soldering iron, 25-40 W",
+    "why": "The beacon and decoy are soldered; solder itself is already in consumables.",
+    "unit_inr": 350,
+    "source": "have"
+   },
+   {
+    "item": "Hot glue gun",
+    "why": "Strain relief on every connector that leaves a moving axis. Glue sticks are already in consumables.",
+    "unit_inr": 250,
+    "source": "have"
+   },
+   {
+    "item": "Allen key set (M3)",
+    "why": "NEMA17 brackets use M3 socket screws.",
+    "unit_inr": 120,
+    "source": "have"
+   },
+   {
+    "item": "Zip ties + double-sided tape",
+    "why": "Cable management on a gimbal is not cosmetic: a cable that snags is a lost step and a lost lock.",
+    "unit_inr": 80,
+    "source": "blinkit"
+   },
+   {
+    "item": "USB extension cable, 1.5 m",
+    "why": "The camera rides on the gimbal; its cable has to reach the laptop with slack for the full pan range.",
+    "unit_inr": 150,
+    "source": "blinkit"
+   }
   ]
+ },
+ "scan": [
+  {
+   "label": "USB camera module (UVC)",
+   "url": "https://www.google.com/search?udm=2&q=USB+camera+module+UVC+M12+lens+640x480+webcam+board"
+  },
+  {
+   "label": "Diametric magnet 6x2.5",
+   "url": "https://www.google.com/search?udm=2&q=diametric+magnet+6x2.5mm+AS5600+encoder"
+  },
+  {
+   "label": "AS5600 encoder board",
+   "url": "https://www.google.com/search?udm=2&q=AS5600+magnetic+encoder+module"
+  },
+  {
+   "label": "A4988 driver",
+   "url": "https://www.google.com/search?udm=2&q=A4988+stepper+motor+driver+module"
+  },
+  {
+   "label": "TCA9548A I2C mux",
+   "url": "https://www.google.com/search?udm=2&q=TCA9548A+I2C+multiplexer+module"
+  },
+  {
+   "label": "NEMA17 + L-bracket",
+   "url": "https://www.google.com/search?udm=2&q=NEMA17+stepper+motor+17HS4401+L+bracket"
+  },
+  {
+   "label": "12V Li-ion pack",
+   "url": "https://www.google.com/search?udm=2&q=12V+3000mAh+rechargeable+lithium+battery+pack+DC+barrel+charger"
+  },
+  {
+   "label": "Barrel to screw term.",
+   "url": "https://www.google.com/search?udm=2&q=DC+barrel+jack+to+screw+terminal+adapter+5.5x2.1"
+  }
+ ]
 }

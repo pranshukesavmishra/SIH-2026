@@ -442,8 +442,8 @@ VMOT capacitor.
 
 | TCA9548A channel | Device |
 |---|---|
-| SD0 / SC0 | AS5600, pan, on the motor's rear shaft |
-| SD1 / SC1 | AS5600, tilt, on the motor's rear shaft |
+| SD0 / SC0 | AS5600, pan — magnet on the platform, sensor on the fixed arm |
+| SD1 / SC1 | AS5600, tilt — magnet on the shaft end, sensor on the motor arm |
 
 The multiplexer exists because both AS5600s are hard-wired to I²C
 address 0x36 and cannot share a bus.
@@ -461,6 +461,33 @@ Magnet mounting depends on which motor you bought (§2 covers both):
   load-bearing advice, not a preference: any flex in that arm reads
   back as pointing error that is not really there, which is exactly
   the class of error this whole design exists to eliminate (§0).
+
+**Two numbers on that arm are not adjustable, and getting either wrong
+fails silently — the chip answers, the answer is meaningless.**
+
+1. **The chip must be concentric with the axis**, within about half a
+   millimetre. Not "near it", not "over the platform" — over the
+   *centre*. The AS5600 measures the direction of the field vector
+   passing through the die. On the axis that vector sweeps a clean
+   360° per revolution. Twelve millimetres off it, the field is
+   dominated by the magnet's fringing and the reading is a distorted,
+   non-monotonic function of angle that looks plausible on a bench
+   test over a few degrees and falls apart in a full sweep.
+2. **The gap from chip face to magnet face is 0.5–3 mm**, and the CAD
+   builds both encoders at **1.5 mm**, the middle of the band. Too
+   close and the die saturates; too far and the field drops below what
+   the AGC can lift.
+
+Check both with the exploded view (`docs/cad/renders/04_exploded_labelled.png`),
+which now draws the arm at its real length and the chip on the axis.
+
+**Pan travel is mechanically limited to ±120°** by that fixed arm: the
+post stands at 38 mm radius, and past the limit the tilt bracket
+swings into it. Soft-limit pan in firmware. This costs nothing for
+PS26169 — the benchmark's widest pattern asks for ±35°. The limit is
+measured, not estimated; `tools/cad/check_clearance.sh` sweeps the two
+kinematic groups of the model against each other and prints the first
+angle at which anything touches.
 
 An earlier revision of this section said the motors "must be
 dual-shaft," which was wrong and contradicted §2's own BOM. Tier A's

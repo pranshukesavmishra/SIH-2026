@@ -111,10 +111,43 @@ def rewrite_buylist(bom) -> bool:
     new_html = html[:start] + body + html[end:]
     # The headline total appears once more, in the subtitle.
     new_html = re.sub(r"Total ₹[\d,]*\d", f"Total ₹{bom['total_inr']:,}", new_html)
+    new_html = _tools_block(bom, new_html)
     if new_html == html:
         return False
     BUYLIST.write_text(new_html, encoding="utf-8")
     return True
+
+
+def _tools_block(bom, html: str) -> str:
+    """
+    Append (or refresh) the tools table below the parts table.
+
+    Tools are kept out of ``total_inr`` on purpose. They are not the
+    build, they are what you need in your hand to do the build, and a
+    parts budget that quietly includes a soldering iron stops being a
+    parts budget.
+    """
+    tools = bom.get("tools")
+    if not tools:
+        return html
+    rows = ["<h2>Tools — not part of the ₹%s, not the build</h2>" % f"{bom['total_inr']:,}",
+            f'<div class="warn">{tools["note"]}</div>',
+            '<table><thead><tr><th>Tool</th><th>Why you need it</th>'
+            '<th class="v">₹ if buying</th><th class="ck">Have</th>'
+            '<th class="ck">Buy</th></tr></thead><tbody>']
+    for t in tools["items"]:
+        rows.append(f'<tr><td>{t["item"]}</td><td class="why">{t["why"]}</td>'
+                    f'<td class="v">₹{t["unit_inr"]:,}</td>'
+                    '<td class="ck"></td><td class="ck"></td></tr>')
+    rows.append(f'<tr class="totrow"><td>IF YOU OWN NONE OF IT</td><td></td>'
+                f'<td class="v">₹{sum(t["unit_inr"] for t in tools["items"]):,}</td>'
+                '<td class="ck"></td><td class="ck"></td></tr>')
+    rows.append("</tbody></table>")
+    block = "<!--TOOLS:START-->\n" + "\n".join(rows) + "\n<!--TOOLS:END-->"
+    if "<!--TOOLS:START-->" in html:
+        return re.sub(r"<!--TOOLS:START-->.*?<!--TOOLS:END-->", lambda _: block,
+                      html, flags=re.S)
+    return html.replace("</body>", block + "\n</body>", 1)
 
 
 def rewrite_guide(bom) -> bool:

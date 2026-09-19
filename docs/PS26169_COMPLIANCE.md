@@ -48,19 +48,54 @@ spec parameter applied at once:
 Acquisition time         not achieved
 Lock retention           65.8 %
 Beacon inside FOV         3.3 %
+Mean detections/frame    23.7
 Processing throughput    14.8 fps  (BELOW the 20 FPS floor)
 ```
 
-This is a failure, not a near miss, and it is the honest starting point.
-The ablation that follows identifies which parameter is responsible;
-fixing it is tracked in `docs/PROJECT_STATE.md`.
+A six-way ablation — removing one spec parameter at a time — named
+salt-and-pepper noise as the sole cause. Field of view, slew rate,
+target size and jitter each changed the result by nothing measurable;
+without impulse noise, detections fell from 23.7 per frame to 4.7 and
+acquisition completed in 3.0 s.
 
-## Open items
+The detector had no impulse rejection. It now does (`PointDetector.
+reject_impulse_noise`), and in the loop it works exactly as designed:
 
-- [ ] Processing throughput 14.8 fps against a ≥20 FPS floor.
-- [ ] Acquisition under spec conditions.
-- [ ] Re-run the Monte Carlo campaign on the benchmark scenario and
-      republish every number that currently comes from our own scenarios.
+```
+Mean detections/frame     4.7   (was 23.7; matches the clean-frame figure)
+Acquisition time         4.33 s (was: never achieved)
+```
+
+**That is progress, not compliance.** A second and independent failure
+remains, and it is not caused by the impulse noise — it was visible in
+the `no_saltpepper` ablation too:
+
+```
+Acquisition time         4.33 s   vs   <= 2 s required
+Beacon inside FOV         8.3 %
+Pointing error, mean    368 mrad  = 21 degrees
+State occupancy         COAST 68.9%   TRACK 0.1%
+Reacquisitions           454 in 120 s
+Processing throughput   14.4 fps  vs   >= 20 FPS required
+```
+
+The mount runs 21 degrees away from a target whose whole path spans
+1.4 degrees. The shape of it is legible in the state occupancy: the
+beacon blinks at 4 Hz with a 50% duty cycle against a 30 fps camera, so
+it is genuinely dark in most frames, the tracker spends 69% of its time
+in COAST, and with jitter eighteen times larger than anything it was
+tuned against, coasting accumulates error faster than the next detection
+can correct it.
+
+This is the same failure mode the live demo hit and was rewritten to
+fix, and the rule that fixed it there applies here: **prediction steers
+the search, measurement moves the boresight.** A coast must be bounded
+and must never be written back as truth. That fix is the next piece of
+work and it is not a tuning exercise.
+
+Throughput is a second, separate problem: 14.4 fps against a 20 FPS
+floor. Impulse rejection costs two median passes and two morphological
+passes per frame, which is part of it.
 
 ## What this changes about the hardware build
 

@@ -260,5 +260,58 @@
       ]
     }
   ],
-  "total_inr": 6463
+  "total_inr": 6463,
+  "tools": {
+    "note": "Not part of the build and not in the total. These are what you need in your hand to assemble it. Tick 'have' for anything the team or the college lab already owns -- most teams own most of this. The multimeter is the one that is genuinely not optional.",
+    "items": [
+      {
+        "item": "Multimeter",
+        "why": "Setting the A4988 Vref is a voltage measurement on the driver's trim pot. Without it you are guessing the motor current: too low and the gimbal skips steps, too high and the motor cooks. There is no way to do this by eye.",
+        "unit_inr": 500,
+        "source": "have"
+      },
+      {
+        "item": "Small flat screwdriver, 2 mm",
+        "why": "The A4988 trim pot is tiny and a normal screwdriver slips off it onto the board.",
+        "unit_inr": 150,
+        "source": "amar"
+      },
+      {
+        "item": "Wire stripper / side cutter",
+        "why": "Thirty-odd connections.",
+        "unit_inr": 150,
+        "source": "amar"
+      },
+      {
+        "item": "Soldering iron, 25-40 W",
+        "why": "The beacon and decoy are soldered; solder itself is already in consumables.",
+        "unit_inr": 350,
+        "source": "have"
+      },
+      {
+        "item": "Hot glue gun",
+        "why": "Strain relief on every connector that leaves a moving axis. Glue sticks are already in consumables.",
+        "unit_inr": 250,
+        "source": "have"
+      },
+      {
+        "item": "Allen key set (M3)",
+        "why": "NEMA17 brackets use M3 socket screws.",
+        "unit_inr": 120,
+        "source": "have"
+      },
+      {
+        "item": "Zip ties + double-sided tape",
+        "why": "Cable management on a gimbal is not cosmetic: a cable that snags is a lost step and a lost lock.",
+        "unit_inr": 80,
+        "source": "blinkit"
+      },
+      {
+        "item": "USB extension cable, 1.5 m",
+        "why": "The camera rides on the gimbal; its cable has to reach the laptop with slack for the full pan range.",
+        "unit_inr": 150,
+        "source": "blinkit"
+      }
+    ]
+  }
 }

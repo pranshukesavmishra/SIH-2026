@@ -368,5 +368,39 @@
         "source": "blinkit"
       }
     ]
-  }
+  },
+  "scan": [
+    {
+      "label": "USB camera module (UVC)",
+      "url": "https://www.google.com/search?udm=2&q=USB+camera+module+UVC+M12+lens+640x480+webcam+board"
+    },
+    {
+      "label": "Diametric magnet 6x2.5",
+      "url": "https://www.google.com/search?udm=2&q=diametric+magnet+6x2.5mm+AS5600+encoder"
+    },
+    {
+      "label": "AS5600 encoder board",
+      "url": "https://www.google.com/search?udm=2&q=AS5600+magnetic+encoder+module"
+    },
+    {
+      "label": "A4988 driver",
+      "url": "https://www.google.com/search?udm=2&q=A4988+stepper+motor+driver+module"
+    },
+    {
+      "label": "TCA9548A I2C mux",
+      "url": "https://www.google.com/search?udm=2&q=TCA9548A+I2C+multiplexer+module"
+    },
+    {
+      "label": "NEMA17 + L-bracket",
+      "url": "https://www.google.com/search?udm=2&q=NEMA17+stepper+motor+17HS4401+L+bracket"
+    },
+    {
+      "label": "12V Li-ion pack",
+      "url": "https://www.google.com/search?udm=2&q=12V+3000mAh+rechargeable+lithium+battery+pack+DC+barrel+charger"
+    },
+    {
+      "label": "Barrel to screw term.",
+      "url": "https://www.google.com/search?udm=2&q=DC+barrel+jack+to+screw+terminal+adapter+5.5x2.1"
+    }
+  ]
 }

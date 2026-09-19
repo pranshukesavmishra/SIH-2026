@@ -1,5 +1,15 @@
-# Auto-publish the showcase site: every push to main redeploys docs/ to
-# GitHub Pages, so the team's link always shows the latest build.
+# Publish the showcase site: uploads docs/ to GitHub Pages.
+#
+# MANUAL ONLY -- run it from the Actions tab ("Run workflow"). The
+# comment here used to say "every push to main redeploys", which was
+# never true: the only trigger is workflow_dispatch. Anyone reading the
+# comment would have assumed their merged work was live when it was not.
+#
+# Deliberately left manual rather than fixed to match the comment,
+# because turning it on publishes the site on every push and that is
+# the team's call, not a tidy-up. To make it automatic, add:
+#   push:
+#     branches: [main]
 name: deploy-site
 on:
   workflow_dispatch:

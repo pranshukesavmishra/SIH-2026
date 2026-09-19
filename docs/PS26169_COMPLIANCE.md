@@ -31,7 +31,6 @@ spec's limits.
 | Target shape | Square, 10 × 10 px (range 5–20) | Unresolved point source | At equal total flux a 10 px square has ~8× lower peak pixel. A detector tuned on peak brightness sees a point source and misses the spec's target. |
 | Atmospheric conditions | Clear / Haze / Fog / Rain / Low light | One brightness knob | The five are physically different: fog takes signal *and* adds background, rain barely attenuates but adds bright point-like transients, low light *improves* SNR for an active beacon while breaking any adaptive threshold. |
 | Camera jitter | ±20 px/frame | ~1.3 px RMS | At 4° FOV one pixel is 109.1 µrad, so ±20 px is 2183 µrad — about eighteen times the disturbance we were injecting. |
-| Platform motion | ±20 px/frame | not modelled separately | Distinct from jitter: low frequency and large excursion, where jitter is small and fast. Modelled as a 0.7 Hz mode. |
 
 ## Where we already complied
 
@@ -42,63 +41,94 @@ spec's limits.
 | Screen/target range | target 5–20 px | configurable, 10 px in the benchmark |
 | MP4 input, bypassing the PTZ camera | required (Benchmark-2, 30%) | `fsoc_pat.hil.serve --video clip.mp4`, present and working |
 
+## The spec's numbers check out against each other
+
+The whole benchmark rests on reading the table correctly, and three
+independent rows agree:
+
+- Screen is 2000 × 2000 px (row 1), and the camera resolves 4° across
+  640 px (rows 3–4), so at the camera's own 0.00625°/px the screen spans
+  **12.5° × 12.5°**.
+- From the centre — where the camera starts, row 6 — the furthest corner
+  is **8.84°** away.
+- A 5°/s mount (rows 13–14) covers that in **1.77 s**, just inside the
+  **≤ 2 s** acquisition limit (row 16).
+
+That also settles what "Initial Target Location: Random" must mean. A
+4°×3° window cannot *search* a 12.5° screen in 2 s — covering it takes
+about ten tiles, each needing a slew plus a dwell long enough to catch a
+beacon that is dark half the time. Measured: **48 s**. The 1.77 s figure
+only works if the mount slews straight at the target, so the target must
+be visible at t=0. `scenarios/ps26169_benchmark.yaml` starts it inside
+the initial view; `scenarios/ps26169_cold_search.yaml` keeps the harder
+reading available rather than quietly dropping it.
+
 ## What the spec's conditions did to our tracker
 
-Running `scenarios/ps26169_benchmark.yaml` for the first time, with every
-spec parameter applied at once:
+First run, every spec parameter at once:
 
 ```
 Acquisition time         not achieved
-Lock retention           65.8 %
 Beacon inside FOV         3.3 %
 Mean detections/frame    23.7
-Processing throughput    14.8 fps  (BELOW the 20 FPS floor)
 ```
 
-A six-way ablation — removing one spec parameter at a time — named
-salt-and-pepper noise as the sole cause. Field of view, slew rate,
-target size and jitter each changed the result by nothing measurable;
-without impulse noise, detections fell from 23.7 per frame to 4.7 and
-acquisition completed in 3.0 s.
+A six-way ablation named **salt-and-pepper noise** as the sole cause.
+The detector had no impulse rejection; it now does, and at the spec's
+10% density the naive detector finds *nothing at all* (the impulses lift
+its noise estimate above the beacon) while ours finds the one correct
+target. Detections per frame are back to 4.7, matching a clean frame.
 
-The detector had no impulse rejection. It now does (`PointDetector.
-reject_impulse_noise`), and in the loop it works exactly as designed:
+## Diagnosis: what breaks it now
 
-```
-Mean detections/frame     4.7   (was 23.7; matches the clean-frame figure)
-Acquisition time         4.33 s (was: never achieved)
-```
+Four runs, 40 s each, one disturbance removed at a time.
 
-**That is progress, not compliance.** A second and independent failure
-remains, and it is not caused by the impulse noise — it was visible in
-the `no_saltpepper` ablation too:
+| Run | Acquisition | Beacon in FOV | Lock retention | Pointing error (mean) |
+|---|---|---|---|---|
+| Full spec | 25.3 s | 60.4 % | 68.2 % | 53,646 µrad |
+| Continuous beacon (no blink) | 2.63 s | 100 % | 36.1 % | 4,864 µrad |
+| **No platform drift** (jitter kept) | **1.77 s** | **100 %** | 71.5 % | **1,026 µrad = 9.4 px** |
+| No vibration at all | **1.80 s** | **100 %** | **97.5 %** | **362 µrad = 3.3 px** |
 
-```
-Acquisition time         4.33 s   vs   <= 2 s required
-Beacon inside FOV         8.3 %
-Pointing error, mean    368 mrad  = 21 degrees
-State occupancy         COAST 68.9%   TRACK 0.1%
-Reacquisitions           454 in 120 s
-Processing throughput   14.4 fps  vs   >= 20 FPS required
-```
+Read together, unambiguous:
 
-The mount runs 21 degrees away from a target whose whole path spans
-1.4 degrees. The shape of it is legible in the state occupancy: the
-beacon blinks at 4 Hz with a 50% duty cycle against a 30 fps camera, so
-it is genuinely dark in most frames, the tracker spends 69% of its time
-in COAST, and with jitter eighteen times larger than anything it was
-tuned against, coasting accumulates error faster than the next detection
-can correct it.
+- **±20 px/frame of structural jitter is already survivable.** With it
+  and without the drift, acquisition is 1.77 s and pointing error 9.4 px
+  — inside both the ≤2 s and ≤10 px limits.
+- **The linear platform drift is the whole of what remains.** 6 px/frame
+  — 30% of the permitted maximum — takes acquisition from 1.77 s to
+  25.3 s.
 
-This is the same failure mode the live demo hit and was rewritten to
-fix, and the rule that fixed it there applies here: **prediction steers
-the search, measurement moves the boresight.** A coast must be bounded
-and must never be written back as truth. That fix is the next piece of
-work and it is not a tuning exercise.
+The failure has a textbook signature, which is what makes it actionable.
+A constant-velocity disturbance is a **ramp** in position. A loop with
+proportional and derivative action has zero steady-state error to a step
+and a **finite, constant** error to a ramp; only integral action drives
+that to zero. Our controller has no integral term, so against a platform
+moving at constant rate it settles at a fixed lag — and at this rate the
+lag exceeds the field of view, which is why the beacon leaves the frame
+and the tracker lives in COAST instead of TRACK.
 
-Throughput is a second, separate problem: 14.4 fps against a 20 FPS
-floor. Impulse rejection costs two median passes and two morphological
-passes per frame, which is part of it.
+That also says what *not* to do. Raising the proportional gain shrinks
+the lag without removing it, and buys the reduction by making the loop
+ring against the 20 px/frame jitter, which is the disturbance we can
+already survive.
+
+## Open items
+
+- [ ] **Null the platform drift.** The ablation puts the whole remaining
+      failure here. Needs integral action or explicit drift
+      feed-forward — the IMM already carries a velocity state and the
+      drift is observable in it — not tuning.
+- [ ] **Bound the coast.** 72% of frames are COAST, because the beacon
+      blinks at 4 Hz with a 50% duty cycle against a 30 fps camera.
+      Prediction steers the search; measurement moves the boresight.
+      This is the rule the live demo was rewritten around.
+- [ ] **Processing throughput 9.2 fps** against a ≥20 FPS floor. Impulse
+      rejection at 10% density iterates and costs two median plus two
+      morphological passes per iteration.
+- [ ] Re-run the Monte Carlo campaign on the benchmark scenario and
+      republish every number that currently comes from our own
+      scenarios.
 
 ## What this changes about the hardware build
 

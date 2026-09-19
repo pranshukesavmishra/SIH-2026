@@ -298,6 +298,15 @@ module view_explode() {
 module view_part(which) {
     if (which == "pan_motor")   translate([0,0,-PLATE_T]) nema17(shaft_len = 26);
     else if (which == "base")   base_plate();
+    // the two target units, for the beacon/decoy tab of assembly.html
+    else if (which == "beacon_case")   abs_box(90, 60, 40);
+    else if (which == "beacon_led")    translate([45, 30, 40]) { led_10mm("#e03131"); translate([0,0,14]) pingpong_ball(); }
+    else if (which == "beacon_nano")   translate([16, 12, 40]) arduino_nano_usbc();
+    else if (which == "beacon_switch") translate([74, 14, 40]) toggle_switch();
+    else if (which == "decoy_case")    abs_box(70, 55, 26);
+    else if (which == "decoy_led")     translate([35, 27, 26]) led_10mm("#f1f3f5");
+    else if (which == "decoy_cells")   translate([6, 4, -16]) aa_holder_3();
+    else if (which == "decoy_switch")  translate([58, 12, 26]) toggle_switch();
     else if (which == "pan_encoder") pan_encoder_arm();
     else rotate([0,0,PAN_DEG]) {
         if (which == "platform")

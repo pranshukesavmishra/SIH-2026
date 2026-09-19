@@ -92,9 +92,10 @@
      "source": "online",
      "icon": "p-camera",
      "why": "The camera has to ride the gimbal, so a laptop or clip-on webcam that cannot be bolted down is no use. Buy an ordinary UVC webcam and take the housing off.",
-     "trap": "Do NOT buy an M12 'board camera' or a CCTV module. Those are an industrial category at ₹2,000–5,000 and many are not UVC, so they will not open as a webcam at all. OV7670 and OV2640 modules are parallel DVP — they have no USB and cannot plug into a laptop.",
+     "trap": "Do NOT buy an M12 'board camera' or a CCTV module. Those are an industrial category at ₹2,000–5,000 and many are not UVC, so they will not open as a webcam at all. OV7670 and OV2640 modules are parallel DVP — they have no USB and cannot plug into a laptop. The JEC lab has one, but this build needs the HOUSING REMOVED so the bare PCB bolts rigidly inside the head; you likely cannot dismantle issued lab property. Ask first. If the answer is no, buy your own — a camera that is not rigid on the moving head breaks the architecture.",
      "check": "The listing must say UVC or 'driver-free / plug and play', and 640×480 or better.",
-     "status": "buy"
+     "status": "buy",
+     "source_note": "JEC IoT & Robotics Lab lists an 'HD USB WebCam' — issue it IF the lab permits removing the housing."
     },
     {
      "item": "Red filter — gel sheet or red acrylic offcut",

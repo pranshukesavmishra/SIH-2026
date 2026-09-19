@@ -420,10 +420,26 @@ VMOT capacitor.
 | SD1 / SC1 | AS5600, tilt, on the motor's rear shaft |
 
 The multiplexer exists because both AS5600s are hard-wired to I²C
-address 0x36 and cannot share a bus. The diametric magnet glues to the
-**rear** shaft end, centred, 0.5–3 mm from the chip face. This is the
-reason the motors must be dual-shaft — there is no way to retrofit it if
-you order single-shaft motors.
+address 0x36 and cannot share a bus.
+
+Magnet mounting depends on which motor you bought (§2 covers both):
+
+- **Dual-shaft NEMA17**: magnet glues to the **rear** shaft end,
+  centred, 0.5–3 mm from the chip face. Sensor sits on a bracket
+  directly behind the motor.
+- **Single-shaft NEMA17 — the ₹749 verified item, and what Tier A
+  actually specifies**: there is no rear shaft to use. The magnet
+  glues instead to the **top face of the rotating platform**, on the
+  axis of rotation, and the AS5600 sits on a short, stiff arm
+  overhanging it from a fixed point on the frame. "Short and stiff" is
+  load-bearing advice, not a preference: any flex in that arm reads
+  back as pointing error that is not really there, which is exactly
+  the class of error this whole design exists to eliminate (§0).
+
+An earlier revision of this section said the motors "must be
+dual-shaft," which was wrong and contradicted §2's own BOM. Tier A's
+verified line is single-shaft; that is the motor most builders will
+actually have.
 
 ### Head
 

@@ -50,7 +50,7 @@ assortment. **Total stays ₹6,709.**
 | `../tools/cad/check_clearance.sh` | Re-runs the interference sweep against the shipped model |
 | `cad/renders/01_full_scene.png` | Rig + bench electronics + beacon + decoy |
 | `cad/*.scad` | Editable source — `geometry.scad` holds the numbers the mechanism imposes |
-| `cad/*.stl`, `cad/*.3mf` | Meshes for viewing or import. Regenerate after any source change: the ones committed before the clearance audit had both encoders off-axis |
+| `cad/*.stl` | Meshes for viewing or import. Regenerate after any source change: the ones committed before the clearance audit had both encoders off-axis |
 
 **Travel is mechanically limited — soft-limit it in firmware.**
 

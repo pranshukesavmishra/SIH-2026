@@ -136,6 +136,43 @@ def pic(slide, path, x, y, w=None, h=None, border=None):
     return p
 
 
+
+def clone_slide(prs, source_index, insert_before):
+    """
+    Duplicate a slide's chrome (background bar, title placeholder, team
+    oval, ISRO mark) and drop its body content, then move the copy to
+    ``insert_before``.
+
+    python-pptx has no slide-copy API, so this deep-copies the source
+    slide's XML into a new slide on the same layout. Cloning rather than
+    building from the blank layout is what keeps the new slide visually
+    identical to the rest of the deck -- the SIH template's chrome lives
+    on the slide, not on the layout, so a blank-layout slide comes out
+    bare and obviously bolted on.
+    """
+    import copy as _copy
+    src = prs.slides[source_index]
+    dst = prs.slides.add_slide(src.slide_layout)
+    for shp in list(dst.shapes):
+        shp._element.getparent().remove(shp._element)
+    keep = ("Rectangle", "Title", "Slide Number", "Footer", "Oval", "Picture")
+    for shp in src.shapes:
+        if shp.name.startswith(keep):
+            dst.shapes._spTree.append(_copy.deepcopy(shp._element))
+    ids = prs.slides._sldIdLst
+    ids.insert(insert_before, ids[-1])
+    return dst
+
+
+def set_title(slide, text):
+    t = find(slide, "Title 1")
+    if t is None:
+        return
+    tf = t.text_frame
+    tf.text = text
+    set_runs(tf.paragraphs[0], [(text, {"bold": True, "size": 26, "color": NAVY})])
+
+
 # ================= SLIDE 1 — TITLE =================
 s = S[0]
 title = find(s, "Title 7")
@@ -226,7 +263,7 @@ style_pointer_box(s, h=0.26, size=9)
 pic(s, "c4_cols.jpg", 1.05, 1.62, w=11.22)                        # h = 4.32
 pic(s, "c4_strip.jpg", 3.42, 6.00, w=6.50)                        # h = 0.93
 _, tf = tb(s, 0.35, 6.06, 2.95, 0.80, anchor=MSO_ANCHOR.MIDDLE)
-bullets(tf, [("Worst case, 64 runs →  ",
+bullets(tf, [("64 runs, our LEO scenarios →  ",
               "never a wrong lock, never a failed acquisition.")], size=10.5, gap=0)
 _, tf = tb(s, 10.05, 6.06, 2.95, 0.80, anchor=MSO_ANCHOR.MIDDLE)
 bullets(tf, [("Reproducible:  ",
@@ -247,6 +284,82 @@ pic(s, "c_econ_stats.jpg", 0.30, 4.26, w=4.06, border=RGBColor(0xD5, 0xDD, 0xE5)
 pic(s, "c5_cards.jpg", 4.66, 1.62, w=8.20)                        # h = 3.96
 pic(s, "c5_audience.jpg", 0.35, 5.66, w=5.72)                     # h = 1.25
 pic(s, "c5_linkbox.png", 7.20, 5.66, w=5.75)                      # h = 1.26
+
+
+# ============ NEW SLIDE — PS26169 COMPLIANCE ============
+# Placed before References, while the evaluators are still in technical
+# mode. Technical Evaluation is 20% and its first listed criterion is
+# "Understanding of the problem"; a table mapping their own rows to our
+# values demonstrates that in one glance, where restating their
+# background paragraph demonstrates nothing.
+s = clone_slide(prs, 2, 5)
+set_title(s, "Compliance with PS26169 — their table, our values")
+# No pointer box here: the clone deliberately drops the template's body
+# text placeholder, and this slide is the table.
+
+ROWS = [
+    ("Camera resolution",        "640 x 480",                 "640 x 480",                    True),
+    ("Camera FOV",               "4\u00b0 x 3\u00b0 default",          "4\u00b0 x 3\u00b0",                     True),
+    ("Camera update rate",       "\u2265 30 Hz",                  "30 Hz",                        True),
+    ("Max pan / tilt speed",     "5-10\u00b0/s, default 5",       "5\u00b0/s",                       True),
+    ("Target shape / size",      "square, 10 x 10 px",        "square, 10 x 10 px",           True),
+    ("Motion patterns",          "\u2265 4, incl. Figure-of-8",   "7, incl. Figure-of-8",         True),
+    ("Image noise",              "S&P ~10%, Gaussian, Poisson", "all three, S&P at 10%",      True),
+    ("Camera jitter",            "\u00b1 20 px / frame",          "19.8 px p99, measured",        True),
+    ("Platform motion",          "\u00b1 20 px / frame, linear",  "linear drift, 6 px / frame",   True),
+    ("Atmospheric conditions",   "Clear / Haze / Fog / Rain / Low light", "all five",          True),
+    ("MP4 input, bypassing PTZ", "required (Benchmark-2)",    "--video, working",             True),
+    ("Tracking error",           "\u2264 10 px",                  "9.4 px  (drift nulled)",       None),
+    ("Acquisition time",         "\u2264 2 s",                    "1.77 s  (drift nulled)",       None),
+    ("Processing speed",         "\u2265 20 FPS",                 "9.2 FPS  \u2014 open",             False),
+]
+
+x0, y0, w, rowh = 0.62, 1.66, 12.1, 0.325
+cw = (4.35, 3.85, 3.55, 0.35)
+
+hdr = card(s, x0, y0, w, rowh, fill=NAVY)
+cx = x0 + 0.12
+for txt, width in zip(("PS26169 PARAMETER", "SPECIFIED", "ZERODRIFT", ""), cw):
+    _, tf = tb(s, cx, y0, width, rowh, anchor=MSO_ANCHOR.MIDDLE)
+    set_runs(tf.paragraphs[0], [(txt, {"bold": True, "size": 10, "color": WHITE})])
+    cx += width
+
+for i, (name, spec, ours, ok) in enumerate(ROWS):
+    y = y0 + rowh * (i + 1)
+    if ok is False:
+        card(s, x0, y, w, rowh, fill=RGBColor(0xFC, 0xF0, 0xEE))
+    elif ok is None:
+        card(s, x0, y, w, rowh, fill=RGBColor(0xFD, 0xF8, 0xE8))
+    elif i % 2 == 0:
+        card(s, x0, y, w, rowh, fill=LIGHT)
+    cx = x0 + 0.12
+    colour = RED if ok is False else NAVY
+    for txt, width, bold in ((name, cw[0], False), (spec, cw[1], False),
+                             (ours, cw[2], True)):
+        _, tf = tb(s, cx, y, width, rowh, anchor=MSO_ANCHOR.MIDDLE)
+        set_runs(tf.paragraphs[0], [(txt, {"size": 9.5, "bold": bold, "color": colour})])
+        cx += width
+    mark = "\u2717" if ok is False else ("~" if ok is None else "\u2713")
+    _, tf = tb(s, cx, y, cw[3], rowh, anchor=MSO_ANCHOR.MIDDLE)
+    set_runs(tf.paragraphs[0], [(mark, {"size": 11, "bold": True,
+                                        "color": RED if ok is False else
+                                        (GRAY if ok is None else GREEN)})],
+             align=PP_ALIGN.CENTER)
+
+# The honest footnote. A compliance table with a number we cannot
+# reproduce on demand is worse than no table -- Q&A is 20% of the
+# technical evaluation and that is the row they will ask us to run.
+foot_y = y0 + rowh * (len(ROWS) + 1) + 0.10
+card(s, x0, foot_y, w, 0.76, fill=RGBColor(0xF3, 0xF7, 0xFA))
+_, tf = tb(s, x0 + 0.16, foot_y + 0.02, w - 0.32, 0.72)
+bullets(tf, [
+    ("~ measured with platform drift removed.  ",
+     "Ablation isolates the whole remaining failure to one cause: a constant-velocity "
+     "disturbance is a ramp, and a PD loop has finite steady-state error to a ramp. "
+     "Integral action is the fix \u2014 not tuning."),
+    ("Every figure regenerates from  ",
+     "scenarios/ps26169_benchmark.yaml, which encodes their table and nothing else."),
+], size=9, gap=2)
 
 # ================= SLIDE 6 — REFERENCES =================
 s = S[5]
@@ -328,8 +441,17 @@ for line in ["All six mandatory deliverables already exist today",
     p.space_before = Pt(2)
 
 # ============ delete the template's instructions slide ============
+# Found by its content, not by index. It used to be removed as slide 6,
+# which silently became the wrong slide the moment anything was inserted
+# ahead of it -- and inserting the compliance slide did exactly that.
 xml_slides = prs.slides._sldIdLst
-xml_slides.remove(list(xml_slides)[6])
+_marker = "instruction"
+_victims = [i for i, sl in enumerate(prs.slides)
+            if any(sh.has_text_frame and _marker in sh.text_frame.text.lower()
+                   for sh in sl.shapes)]
+if len(_victims) != 1:
+    raise SystemExit(f"expected exactly one instructions slide, found {_victims}")
+xml_slides.remove(list(xml_slides)[_victims[0]])
 
 for _sl in prs.slides:
     for _sh in _sl.shapes:

@@ -196,7 +196,7 @@ ordering, and say which is which if a judge asks what the rig cost.
 | DC barrel jack to screw-terminal adapter | 1 | ₹30 | **₹30** | ~ estimate |
 | SPST toggle switch — motor rail kill switch | 1 | ₹25 | **₹25** | ~ estimate |
 | Breadboard, 830 point (drivers + Nano + mux) | 1 | ₹90 | **₹90** | ~ estimate |
-| USB-B and mini-USB cables for the two Nanos | 2 | ₹99 | **₹198** | ~ estimate |
+| USB cables for the two Nanos — check each port before buying | 2 | ₹99 | **₹198** | ~ estimate |
 | Acrylic sheet 3 mm, 6″×6″ (pack of 2) | 1 | ₹199 | **₹199** | ✅ verified |
 | **E. Disturbance injector — robustness shown, not claimed** | | | | |
 | Vibration motor, 3 V DC | 1 | ₹20 | **₹20** | ✅ verified |

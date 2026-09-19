@@ -145,7 +145,7 @@ def test_both_nanos_have_a_usb_cable(bom):
     """
     for s in bom["sections"]:
         for i in s["items"]:
-            if "usb-b" in i["item"].lower() or "mini-usb" in i["item"].lower():
+            if "cables for the two nanos" in i["item"].lower():
                 assert i["qty"] >= 2, "one cable, two Nanos"
                 return
     raise AssertionError("no USB cable for the Nanos is on the list")

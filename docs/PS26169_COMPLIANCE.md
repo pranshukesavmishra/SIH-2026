@@ -100,18 +100,75 @@ Read together, unambiguous:
   25.3 s.
 
 The failure has a textbook signature, which is what makes it actionable.
-A constant-velocity disturbance is a **ramp** in position. A loop with
-proportional and derivative action has zero steady-state error to a step
-and a **finite, constant** error to a ramp; only integral action drives
-that to zero. Our controller has no integral term, so against a platform
-moving at constant rate it settles at a fixed lag — and at this rate the
-lag exceeds the field of view, which is why the beacon leaves the frame
-and the tracker lives in COAST instead of TRACK.
+A constant-velocity disturbance is a **ramp** in position, and loop
+*order* decides whether a ramp can be tracked at all.
 
-That also says what *not* to do. Raising the proportional gain shrinks
-the lag without removing it, and buys the reduction by making the loop
-ring against the 20 px/frame jitter, which is the disturbance we can
-already survive.
+**Correction.** An earlier version of this note said the controller had
+no integral term. That was wrong — it is a PI controller with rate
+feed-forward and a Smith predictor, and `ki` has always been 0.35. The
+diagnosis was right about the ramp and wrong about the cause, which
+matters because it pointed at the wrong fix.
+
+A single integrator gives zero steady-state error to a **step** and a
+finite, constant error to a **ramp**. Tracking a ramp with zero error
+needs a **type-2** loop — two integrators. At `ki = 0.35` the single
+integrator has to accumulate 77,000 µrad·seconds of error to produce the
+27,000 µrad the benchmark's drift demands, and at realistic error
+magnitudes that takes about 26 seconds. Acquisition measured 26.07 s.
+The loop was not mistuned; it was the wrong order.
+
+## The fix, and what each part of it bought
+
+Three changes, each measured separately over 30 s at full spec.
+
+| Change | Acquisition | In FOV | Pointing error |
+|---|---|---|---|
+| Baseline | 25.3 s | 47.2 % | 642 px |
+| Integral clamp 12,000 → 40,000 µrad | 26.1 s | 98.8 % | 72 px |
+| + integrate only on optical or confirmed coast | 2.60 s | 16.2 % | 2,181 px |
+| + second integrator, `kii = 0.30` | **3.07 s** | **100.0 %** | **59 px** |
+
+Over the full 120 s run, with a leak added to the second integrator
+(without which the existing step-settling test fails and long runs are
+worse than short ones):
+
+| | Acquisition | In FOV | Error p50 | Error mean |
+|---|---|---|---|---|
+| Before | 25.3 s | 47.2 % | 2,367 px | 2,373 px |
+| After | **3.53 s** | **59.4 %** | **170 px** | 2,064 px |
+
+**This is a large improvement and not yet compliance.** Acquisition is
+inside the ≤2 s limit only on the shorter run; the median error is down
+14× but the mean is still dragged by a long tail (p95 9,099 px). The
+tail is the drift *reversals*: the benchmark bounds the drift at 250 px,
+so it turns roughly every 1.4 s, and each turn costs the loop the time
+to unwind. Whether that bound is the right model of "linear platform
+motion" is itself worth revisiting — at 250 px this is closer to a
+0.36 Hz triangle wave than to a drift.
+
+1. **The clamp was sized for the wrong disturbance.** It allowed 12,000
+   µrad, chosen for the mount's own follower lag (~1,300 µrad). The
+   platform drift the spec demands reaches 27,283 µrad, so the
+   integrator saturated at 44 % of what it needed and the beacon spent
+   half the run outside the frame.
+2. **The integrator wound on the wrong signal.** The code's own comment
+   says the integral path acts on the *measured optical error*; the code
+   integrated whatever it was handed, including the filter's
+   encoder-frame fallback — which is blind to exactly the disturbance
+   the integrator exists to cancel, and during acquisition is computed
+   from a track that may not be the beacon. Restricting it required one
+   further distinction: `COAST` is entered whenever a track has misses,
+   *including before any lock exists*, so the gate is a confirmed lock,
+   not the state name.
+3. **A second integrator** makes the loop type 2. `kii` is small and
+   separately clamped; the sweep is sharply non-monotonic (0.8 is
+   unstable, 2.0 and 5.0 partially recover), which is the ringing
+   signature of an over-gained double integrator and the reason the gain
+   is not simply raised further.
+
+What *not* to do, still: raising the proportional gain shrinks the lag
+without removing it, and buys the reduction by making the loop ring
+against the 20 px/frame jitter we already survive.
 
 ## Open items
 

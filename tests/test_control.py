@@ -84,3 +84,86 @@ def test_coasting_returns_last_command_without_input():
     tel = ctl.update(reported=(0.1, 0.2), dt=1 / 30.0)
     assert tel.command_az == pytest.approx(0.1)
     assert tel.command_el == pytest.approx(0.2)
+
+
+# --- type-2 action against a ramp disturbance --------------------------
+
+def test_the_loop_carries_a_second_integrator():
+    """
+    PS26169 specifies platform motion as an unmeasured constant-velocity
+    disturbance, which is a ramp in position. A single integrator has
+    zero steady-state error to a step and a finite, constant error to a
+    ramp -- so one integrator is the wrong loop *order* for this input,
+    not merely a mistuned one.
+    """
+    from fsoc_pat.config import GimbalConfig
+    c = PointingController(GimbalConfig(), 30.0)
+    assert c.kii > 0.0
+    assert hasattr(c, "_integral2")
+
+
+def test_the_second_integrator_leaks():
+    """
+    A pure double integrator holds its state forever, which is wrong
+    twice over here: it overshoots a step (the step-settling test above
+    failed the moment this term was added without a leak), and the
+    benchmark's drift is bounded so it reverses, after which a wound-up
+    term drives the mount the wrong way until it unwinds.
+    """
+    from fsoc_pat.config import GimbalConfig
+    import numpy as np
+    c = PointingController(GimbalConfig(), 30.0)
+    c._integral2 = np.array([1000.0, 1000.0])
+    c._integral = np.zeros(2)
+    before = c._integral2.copy()
+    for _ in range(60):                       # two seconds of no error
+        c.update(reported=(0.0, 0.0), dt=1 / 30.0, optical_error=(0.0, 0.0))
+    assert np.all(np.abs(c._integral2) < np.abs(before) * 0.5)
+
+
+def test_the_integral_clamp_can_hold_the_specified_platform_drift():
+    """
+    The clamp has to leave room for every *unmeasured* bias the loop
+    must hold off, and platform motion is the largest of them. At the
+    spec's field of view the benchmark's bounded drift reaches 27,283
+    µrad; the clamp was 12,000, sized for the mount's own follower lag
+    alone, so the integrator saturated at 44% of what it needed.
+    """
+    from fsoc_pat.config import GimbalConfig
+    c = PointingController(GimbalConfig(), 30.0)
+    assert c.integral_limit >= 27283e-6
+
+
+def test_the_integrator_does_not_wind_during_acquisition():
+    """
+    The integral path acts on the measured optical error -- the code's
+    own comment always said so, and the code did not do it. It wound on
+    the filter's encoder-frame fallback too, which is blind to the
+    disturbance the integrator exists to cancel and, before a lock
+    exists, is computed from a track that may not be the beacon.
+    """
+    from fsoc_pat.config import GimbalConfig
+    import numpy as np
+    c = PointingController(GimbalConfig(), 30.0)
+    for _ in range(30):
+        c.update(reported=(0.0, 0.0), dt=1 / 30.0,
+                 optical_error=None, absolute_target=(0.05, 0.05),
+                 coasting=False)
+    assert np.allclose(c._integral, 0.0)
+
+
+def test_the_integrator_keeps_working_through_a_confirmed_coast():
+    """
+    The other half of the same decision. The beacon blinks at 4 Hz with
+    a 50% duty cycle against a 30 fps camera, so it is dark in most
+    frames by construction; refusing to integrate through the dark phase
+    quarters the effective gain and beacon-in-FOV falls from 99% to 65%.
+    """
+    from fsoc_pat.config import GimbalConfig
+    import numpy as np
+    c = PointingController(GimbalConfig(), 30.0)
+    for _ in range(30):
+        c.update(reported=(0.0, 0.0), dt=1 / 30.0,
+                 optical_error=None, absolute_target=(0.05, 0.05),
+                 coasting=True)
+    assert np.any(np.abs(c._integral) > 0.0)

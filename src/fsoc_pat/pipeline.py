@@ -305,7 +305,14 @@ class CoarseAlignmentTracker:
             reported=(cam_az, cam_el), dt=self.dt,
             optical_error=optical,
             absolute_target=primary.angles if optical is None else None,
-            target_rates=rates_eff)
+            target_rates=rates_eff,
+            # COAST alone is not enough: the state machine enters it
+            # whenever a track has misses, including before a lock has
+            # ever been established. The integral path may only keep
+            # working through a dropout under a *confirmed* lock, so
+            # require one.
+            coasting=(self.state is LockState.COAST
+                      and self._locked_id is not None))
         return telemetry.command_az, telemetry.command_el
 
     def _search_or_lose(self) -> Tuple[float, float]:

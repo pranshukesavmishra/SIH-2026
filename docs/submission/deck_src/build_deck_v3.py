@@ -356,7 +356,7 @@ bullets(tf, [
     ("~ measured with platform drift removed.  ",
      "Ablation isolates the whole remaining failure to one cause: a constant-velocity "
      "disturbance is a ramp, and a PD loop has finite steady-state error to a ramp. "
-     "Integral action is the fix \u2014 not tuning."),
+     "A second integrator \u2014 type 2 \u2014 is the fix, not tuning."),
     ("Every figure regenerates from  ",
      "scenarios/ps26169_benchmark.yaml, which encodes their table and nothing else."),
 ], size=9, gap=2)

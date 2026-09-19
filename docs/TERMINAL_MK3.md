@@ -273,6 +273,19 @@ was your requirement and it is met. What you give up is only the
 *self-contained* story, and PS26169 is a Software-category problem, so
 the software running on a laptop is the deliverable, not an apology.
 
+## 2.5 The model
+
+`docs/cad/` holds a parametric model of this build — every BOM item at
+its real size, placed. `renders/04_exploded_labelled.png` is the
+assembly in the same order as §3's stages, numbered and labelled.
+
+Drawing it caught things the parts list alone did not: the 830-point
+breadboard is 165 mm and the 6″ acrylic plate is 152.4 mm, so the
+breadboard **does not fit on the base plate** and belongs on the bench
+beside the rig (better practice regardless — §2E vibrates that plate on
+purpose). A 32 mm webcam PCB also does not fit a 30 mm box, so the head
+is 72 × 46 × 42.
+
 ## 3. Build order
 
 Each stage ends in something testable. Do not proceed past a stage that

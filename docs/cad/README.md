@@ -184,3 +184,41 @@ than the 30° grid.
 
 Before the 14 mm riser, pan was bounded at +30° and tilt at +17°, which
 is what made the riser worth four M3 standoffs from the assortment.
+
+## The interactive page
+
+`docs/assembly.html` is the model as a build guide you can scrub: twelve
+parts fly into place in build order, each with the reason it goes there
+and the mistake that part invites, then the mechanism runs and you can
+orbit it freely.
+
+It loads `docs/cad/web/*.stl` — one binary mesh per part, exported by
+the `part=` mode in `zerodrift_full_assembly.scad`. Per part, because a
+single fused mesh cannot be taken apart again, and **at zero pan and
+zero tilt**, so the page articulates the two axes itself rather than
+showing a frozen pose.
+
+```sh
+for p in base pan_motor platform pan_encoder riser bracket \
+         tilt_motor tilt_encoder tilt_magnet standoff head vibration; do
+  xvfb-run -a openscad -D "part=\"$p\"" -D 'LOWPOLY=true' \
+      -D 'PAN_DEG=0' -D 'TILT_DEG=0' -o /tmp/$p.stl zerodrift_full_assembly.scad
+  python3 ../../tools/cad/stl_to_binary.py /tmp/$p.stl web/$p.stl
+done
+```
+
+Two decisions worth keeping:
+
+- **Each part is exported in its final assembled position.** The page
+  only animates an offset that decays to zero, so no transform chain is
+  re-derived in JavaScript. Re-deriving one in a second language is
+  exactly what put the camera on the ceiling the first time this model
+  was built.
+- **three.js is vendored under `docs/vendor/three`, not loaded from a
+  CDN.** This page is meant to run at the demo table, and a demo that
+  needs the internet is a demo that can fail on stage. It also pins the
+  version instead of trusting whatever the CDN serves.
+
+`stl_to_binary.py` exists because OpenSCAD only writes ASCII STL, which
+is about five times the size. That is irrelevant for a file you open in
+a viewer and very relevant for twelve of them over a network.

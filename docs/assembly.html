@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZeroDrift Mk3 — Assembly</title>
+<style>
+:root{
+  --bg:#060b14; --panel:#0a1220; --panel-2:#0d1624; --edge:#16233a;
+  --ink:#c9d6e6; --ink-dim:#5f7288; --ink-bright:#EAF4FD;
+  --cyan:#4FC7EA; --green:#3BD68C; --amber:#FFC24D; --red:#FF5555;
+  --mono:"SF Mono","Cascadia Code",Consolas,"DejaVu Sans Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:13px/1.5 var(--mono);overflow:hidden}
+a{color:var(--cyan);text-decoration:none}
+
+header{display:flex;align-items:center;gap:14px;padding:9px 16px;
+  border-bottom:1px solid var(--edge);flex-shrink:0}
+header .wm{font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--ink-bright)}
+header .wm b{color:var(--cyan)}
+header .sub{font-size:10px;color:var(--ink-dim)}
+header nav{margin-left:auto;font-size:11px}
+header nav a{margin-left:14px;color:var(--ink-dim)}
+header nav a:hover{color:var(--cyan)}
+
+.wrap{display:grid;grid-template-columns:1fr 330px;height:calc(100% - 41px)}
+.stage{position:relative;min-width:0}
+canvas{display:block;width:100%;height:100%}
+
+#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:10px;background:var(--bg);z-index:5;font-size:11px;color:var(--ink-dim)}
+#loading .bar{width:180px;height:2px;background:var(--edge);overflow:hidden}
+#loading .bar i{display:block;height:100%;width:0;background:var(--cyan);transition:width .2s}
+
+.hud{position:absolute;top:12px;left:14px;pointer-events:none;font-size:10px;
+  color:var(--ink-dim);letter-spacing:.6px}
+.hud .now{font-size:15px;color:var(--cyan);letter-spacing:0;margin-bottom:2px;font-weight:700}
+.hud .why{color:var(--ink);max-width:380px;letter-spacing:0;font-size:11px;line-height:1.5;
+  margin-top:5px;white-space:pre-line}
+.warnflag{display:inline-block;margin-top:6px;padding:2px 7px;border:1px solid var(--amber);
+  color:var(--amber);font-size:10px;letter-spacing:.4px;max-width:380px;white-space:pre-line;
+  line-height:1.45;text-align:left;pointer-events:none}
+.warnflag.hard{border-color:var(--red);color:var(--red)}
+
+.legend{position:absolute;right:14px;top:12px;font-size:10px;color:var(--ink-dim);
+  text-align:right;pointer-events:none;letter-spacing:.4px}
+.legend b{color:var(--ink);font-weight:400}
+
+/* ---- transport ---- */
+.transport{position:absolute;left:0;right:0;bottom:0;padding:10px 14px 12px;
+  background:linear-gradient(to top,rgba(6,11,20,.97) 60%,rgba(6,11,20,0));}
+.tl{position:relative;height:26px;margin-bottom:6px}
+.tl .track{position:absolute;top:11px;left:0;right:0;height:3px;background:var(--edge);border-radius:2px}
+.tl .fill{position:absolute;top:11px;left:0;height:3px;background:var(--cyan);border-radius:2px}
+.tl .mk{position:absolute;top:5px;width:2px;height:15px;background:var(--ink-dim);cursor:pointer}
+.tl .mk.on{background:var(--cyan)}
+.tl .mk.run{background:var(--green)}
+.tl input{position:absolute;top:0;left:-2px;right:-2px;width:calc(100% + 4px);height:26px;
+  opacity:0;cursor:pointer;margin:0}
+.ctrls{display:flex;align-items:center;gap:8px;font-size:11px}
+button{font:inherit;font-size:11px;background:var(--panel-2);color:var(--ink);
+  border:1px solid var(--edge);border-radius:4px;padding:5px 11px;cursor:pointer}
+button:hover{border-color:var(--cyan);color:var(--cyan)}
+button.on{border-color:var(--cyan);color:var(--cyan)}
+button:disabled{opacity:.35;cursor:default}
+.ctrls .t{margin-left:auto;color:var(--ink-dim);font-size:10px;letter-spacing:.5px}
+.speed{display:flex;gap:0}
+.speed button{border-radius:0;border-left-width:0;padding:5px 8px}
+.speed button:first-child{border-radius:4px 0 0 4px;border-left-width:1px}
+.speed button:last-child{border-radius:0 4px 4px 0}
+
+/* ---- side ---- */
+.side{border-left:1px solid var(--edge);background:var(--panel);
+  display:flex;flex-direction:column;min-height:0}
+.side h3{font-size:10px;color:var(--ink-dim);letter-spacing:1.4px;text-transform:uppercase;
+  padding:11px 14px 8px;border-bottom:1px solid var(--edge);flex-shrink:0}
+.steps{overflow-y:auto;flex:1;min-height:0}
+.step{padding:9px 14px;border-bottom:1px solid #0e1828;cursor:pointer;display:flex;gap:9px}
+.step:hover{background:var(--panel-2)}
+.step.on{background:#0f1c30;border-left:2px solid var(--cyan);padding-left:12px}
+.step.done .n{background:var(--green);color:#04121c;border-color:var(--green)}
+.step.on .n{background:var(--cyan);color:#04121c;border-color:var(--cyan)}
+.step .n{flex-shrink:0;width:19px;height:19px;border:1px solid var(--edge);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:10px;
+  color:var(--ink-dim);margin-top:1px}
+.step .t{font-size:12px;color:var(--ink-bright);line-height:1.35}
+.step .d{font-size:10.5px;color:var(--ink-dim);line-height:1.45;margin-top:3px}
+.step.on .d{color:var(--ink)}
+.step .warn{color:var(--amber);font-size:10.5px;margin-top:4px;line-height:1.45}
+.step .warn.hard{color:var(--red)}
+
+.foot{border-top:1px solid var(--edge);padding:10px 14px;font-size:10px;
+  color:var(--ink-dim);line-height:1.6;flex-shrink:0}
+.foot b{color:var(--ink)}
+.foot .row{display:flex;justify-content:space-between;gap:8px}
+
+@media(max-width:900px){
+  body{overflow:auto}
+  .wrap{grid-template-columns:1fr;height:auto}
+  .stage{height:62vh}
+  .side{border-left:0;border-top:1px solid var(--edge);max-height:none}
+  .steps{overflow:visible}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="wm">Zero<b>Drift</b> Mk3 — assembly</div>
+    <div class="sub">Team ZeroDrift · Jabalpur Engineering College · SIH 2026 · PS26169 (ISRO)</div>
+  </div>
+  <nav>
+    <a href="index.html">overview</a>
+    <a href="cad/renders/04_exploded_labelled.png">exploded</a>
+    <a href="submission/ZeroDrift_Mk3_Build_Guide.pdf">build PDF</a>
+    <a href="submission/ZeroDrift_StillToBuy.pdf">still to buy</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div class="stage">
+    <div id="loading"><div>loading geometry…</div><div class="bar"><i id="lbar"></i></div></div>
+    <canvas id="c"></canvas>
+
+    <div class="hud">
+      <div class="now" id="hudTitle">—</div>
+      <div id="hudSub">stage 0 / 9</div>
+      <div class="why" id="hudWhy"></div>
+      <div id="hudWarn"></div>
+    </div>
+
+    <div class="legend">
+      <b>drag</b> orbit &nbsp;·&nbsp; <b>scroll</b> zoom &nbsp;·&nbsp; <b>right-drag</b> pan<br>
+      <span id="poseRead">pan 0.0° · tilt 0.0°</span>
+    </div>
+
+    <div class="transport">
+      <div class="tl">
+        <div class="track"></div>
+        <div class="fill" id="fill"></div>
+        <div id="marks"></div>
+        <input type="range" id="scrub" min="0" max="1000" value="0" step="1">
+      </div>
+      <div class="ctrls">
+        <button id="play">▶ play</button>
+        <button id="prev">‹ step</button>
+        <button id="next">step ›</button>
+        <button id="explode">explode</button>
+        <button id="run">run the mechanism</button>
+        <div class="speed">
+          <button data-s="0.5">.5×</button>
+          <button data-s="1" class="on">1×</button>
+          <button data-s="2">2×</button>
+        </div>
+        <div class="t" id="clock">0.0 s / 34.0 s</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="side">
+    <h3>Build order — click any stage</h3>
+    <div class="steps" id="steps"></div>
+    <div class="foot">
+      <div class="row"><span>bill of materials</span><b>₹6,709</b></div>
+      <div class="row"><span>still to buy</span><b>₹1,747 · 4 lines</b></div>
+      <div class="row"><span>pan travel</span><b>±120°</b></div>
+      <div class="row"><span>tilt travel</span><b>+20° / −40°</b></div>
+      <div style="margin-top:7px;color:var(--ink-dim)">
+        Geometry is generated from <b>zerodrift_full_assembly.scad</b>, the same
+        source the build PDF and the interference sweep use. Travel limits are
+        measured by <b>tools/cad/check_clearance.sh</b>, not estimated.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- three.js is vendored under docs/vendor/three rather than pulled from a
+     CDN. This page is meant to run at the demo table, and a demo that
+     needs the internet is a demo that can fail on stage. It also makes
+     the version reproducible instead of whatever the CDN serves. -->
+<script type="importmap">
+{"imports":{
+  "three":"./vendor/three/three.module.js",
+  "three/addons/controls/OrbitControls.js":"./vendor/three/OrbitControls.js",
+  "three/addons/loaders/STLLoader.js":"./vendor/three/STLLoader.js"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {STLLoader} from 'three/addons/loaders/STLLoader.js';
+
+// ---------------------------------------------------------------- data
+// Staging offsets are kept inside the camera's frame on purpose: the
+// point of the ghosted kit is that you can see every part at once
+// before the build starts, and a part parked off-screen is just a part
+// that pops into existence.
+//
+// Each part is exported by OpenSCAD in its FINAL assembled position at
+// zero pan and zero tilt, so nothing here re-derives a transform chain.
+// The only thing this file computes is the fly-in offset, which decays
+// to zero. Re-deriving transforms in a second language is what put the
+// camera on the ceiling the first time this model was built.
+const TILT_PIVOT = new THREE.Vector3(0, 6, 62);   // geometry.scad: TILT_Z
+
+const STEPS = [
+  { id:'base', t:'Base plate', file:'base',
+    d:'3 mm acrylic, 6 inch square. Shaft clearance hole in the middle, 31 mm bolt circle around it.',
+    from:[0,0,-70], group:'fixed' },
+
+  { id:'pan_motor', t:'Pan motor', file:'pan_motor',
+    d:'NEMA17 bolts to the UNDERSIDE and hangs below. A face-mounted stepper’s shaft leaves through the same face that bolts down, so it cannot sit on top of a solid plate.',
+    from:[0,0,-105], group:'fixed' },
+
+  { id:'platform', t:'Platform + diametric magnet', file:'platform',
+    d:'60 mm disc on the pan shaft, cut from the second sheet in the acrylic pack. The magnet glues to its centre, on the axis.',
+    warn:'The magnet must say DIAMETRIC. An axial magnet looks identical and makes the encoder read a constant — both feedback axes dead, with no error message.',
+    hard:true, from:[0,0,75], group:'pan' },
+
+  { id:'pan_encoder', t:'Pan encoder arm', file:'pan_encoder',
+    d:'Post on the frame at 38 mm radius, arm reaching in over the axis. It does NOT turn with the platform — a post that rotates with the magnet it measures reads a constant.',
+    warn:'The AS5600 chip sits ON the centreline, 1.5 mm above the magnet face. Not near the axis — on it. Off-axis it still answers on I²C and still returns numbers; they are simply not angles.',
+    hard:true, from:[95,10,25], group:'fixed' },
+
+  { id:'riser', t:'14 mm standoff riser', file:'riser',
+    d:'Four M3 standoffs from the assortment. Without them the head reaches the platform at only 17° of downward tilt.',
+    from:[0,0,62], group:'pan' },
+
+  { id:'bracket', t:'L-bracket', file:'bracket',
+    d:'Carries the tilt motor. Sits on the riser, not directly on the platform.',
+    from:[-60,25,48], group:'pan' },
+
+  { id:'tilt_motor', t:'Tilt motor', file:'tilt_motor',
+    d:'Shaft horizontal, along world X. Tilt axis across the look direction, so the head nods rather than panning twice.',
+    from:[-95,0,38], group:'pan' },
+
+  { id:'tilt_encoder', t:'Tilt encoder arm', file:'tilt_encoder',
+    d:'Fixed to the motor side of the joint, reaching UP over the shaft. Reaching down drove the post straight through the pan platform.',
+    from:[-18,0,86], group:'pan' },
+
+  { id:'tilt_magnet', t:'Tilt magnet on the shaft end', file:'tilt_magnet',
+    d:'Disc on the tilt shaft, magnet centred on the tilt axis, 1.5 mm from its chip.',
+    from:[-70,0,48], group:'tilt' },
+
+  { id:'standoff', t:'M3 BRASS standoff', file:'standoff',
+    d:'42 mm, carrying about 80 g of head.',
+    warn:'Never print this part. In PLA it droops 28.5 px and resonates at 53 Hz — sitting on the 47 Hz platform mode the benchmark injects. Brass: 1.4 px, 237 Hz.',
+    from:[0,-30,42], group:'tilt' },
+
+  { id:'head', t:'Head — webcam, red filter, laser', file:'head',
+    d:'Camera and laser boresighted in one enclosure, so the loop closes on its own dot. Cable gets a service loop with slack for full travel — and it stays above the base plate.',
+    from:[15,-38,62], group:'tilt' },
+
+  { id:'vibration', t:'Vibration injector', file:'vibration',
+    d:'Bolted to the moving structure on purpose. Robustness shown, not claimed.',
+    from:[70,25,45], group:'pan' },
+];
+
+const GHOST = 0.17;           // opacity of a part not yet fitted
+const ASSEMBLE_PER = 2.0;     // seconds per part
+const SETTLE       = 1.5;
+const RUN          = 8.5;
+const T_ASSEMBLE   = STEPS.length * ASSEMBLE_PER;
+const T_TOTAL      = T_ASSEMBLE + SETTLE + RUN;
+
+// ---------------------------------------------------------------- scene
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x060b14);
+scene.fog = new THREE.Fog(0x060b14, 380, 900);
+
+const camera = new THREE.PerspectiveCamera(36, 1, 1, 2000);
+// Framed on the whole rig plus the head's reach, not on the rig alone:
+// the head sits 88 mm out on -Y and is the first thing to leave frame.
+camera.position.set(275, -350, 230);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.target.set(0, -30, 44);
+controls.maxDistance = 900;
+controls.minDistance = 60;
+
+// Z is up: OpenSCAD's convention, kept rather than rotating the world,
+// so every coordinate in this file matches the .scad it came from.
+camera.up.set(0, 0, 1);
+controls.object.up.set(0, 0, 1);
+
+scene.add(new THREE.HemisphereLight(0x8fb4d6, 0x0a1020, 1.15));
+const key = new THREE.DirectionalLight(0xffffff, 1.5);
+key.position.set(160, -190, 260);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, {left:-220, right:220, top:220, bottom:-220, near:1, far:900});
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x4FC7EA, 0.5);
+rim.position.set(-180, 140, 90);
+scene.add(rim);
+
+// ground + grid, purely for depth cues
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(1400, 1400),
+  new THREE.ShadowMaterial({opacity:0.34}));
+ground.position.z = -3.01;
+ground.receiveShadow = true;
+scene.add(ground);
+const grid = new THREE.GridHelper(600, 30, 0x16233a, 0x0e1828);
+grid.rotation.x = Math.PI / 2;
+grid.position.z = -3.02;
+scene.add(grid);
+
+// kinematic groups — the same three the clearance sweep tests
+const gFixed = new THREE.Group();
+const gPan   = new THREE.Group();
+const gTilt  = new THREE.Group();
+gTilt.position.copy(TILT_PIVOT);
+gPan.add(gTilt);
+scene.add(gFixed, gPan);
+const GROUPS = {fixed:gFixed, pan:gPan, tilt:gTilt};
+
+const MAT = {
+  base:        {c:0xa8d8ef, metal:0.0, rough:0.15, opacity:0.5},
+  pan_motor:   {c:0x2b2f36, metal:0.85, rough:0.42},
+  platform:    {c:0x6b7f94, metal:0.7,  rough:0.4},
+  pan_encoder: {c:0xc9a227, metal:0.85, rough:0.3},
+  riser:       {c:0xc9a227, metal:0.9,  rough:0.25},
+  bracket:     {c:0x5b7f9c, metal:0.8,  rough:0.35},
+  tilt_motor:  {c:0x2b2f36, metal:0.85, rough:0.42},
+  tilt_encoder:{c:0xc9a227, metal:0.85, rough:0.3},
+  tilt_magnet: {c:0x6b7f94, metal:0.7,  rough:0.4},
+  standoff:    {c:0xd4a94a, metal:0.95, rough:0.2},
+  head:        {c:0xe8dcc8, metal:0.1,  rough:0.6},
+  vibration:   {c:0x8a6a3a, metal:0.6,  rough:0.45},
+};
+
+const parts = {};   // id -> {mesh, mat, step}
+let loaded = 0;
+
+const loader = new STLLoader();
+STEPS.forEach((s, i) => {
+  loader.load(`cad/web/${s.file}.stl`, geo => {
+    geo.computeVertexNormals();
+    // A tilt-group part is exported in world coordinates, so shift its
+    // geometry back to the tilt pivot; the group then carries it.
+    if (s.group === 'tilt') geo.translate(-TILT_PIVOT.x, -TILT_PIVOT.y, -TILT_PIVOT.z);
+
+    const spec = MAT[s.id];
+    const mat = new THREE.MeshStandardMaterial({
+      color:spec.c, metalness:spec.metal, roughness:spec.rough,
+      transparent:true, opacity:spec.opacity ?? 1,
+      emissive:0x000000,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    GROUPS[s.group].add(mesh);
+    parts[s.id] = {mesh, mat, step:i, base:spec.opacity ?? 1};
+
+    loaded++;
+    document.getElementById('lbar').style.width = (loaded / STEPS.length * 100) + '%';
+    if (loaded === STEPS.length) {
+      document.getElementById('loading').style.display = 'none';
+      // ?t=<seconds> deep-links a moment, which is how this page gets
+      // checked in a headless browser and how a slide can point at one
+      // stage rather than "press play and wait".
+      const q = new URLSearchParams(location.search);
+      seek(parseFloat(q.get('t')) || 0);
+      if (q.get('play') === '1') setPlaying(true);
+    }
+  });
+});
+
+// laser beam, drawn in the tilt group so it follows the boresight
+const beamGeo = new THREE.CylinderGeometry(0.9, 5.5, 300, 12, 1, true);
+beamGeo.translate(0, -150, 0);           // extend along -Y, the look axis
+const beam = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({
+  color:0xff3b3b, transparent:true, opacity:0, depthWrite:false,
+  side:THREE.DoubleSide, blending:THREE.AdditiveBlending}));
+// The barrel's FRONT FACE, not the laser's origin: head() puts the
+// KY-008 at y = -5 inside a head centred at y = -65, and the barrel is
+// 18 mm long, so the beam leaves at y = -88. Starting it at the laser's
+// origin draws 18 mm of beam inside the enclosure.
+beam.position.set(20, -88, -2);
+gTilt.add(beam);
+
+// ---------------------------------------------------------------- ui
+const stepsEl = document.getElementById('steps');
+STEPS.forEach((s, i) => {
+  const el = document.createElement('div');
+  el.className = 'step'; el.dataset.i = i;
+  el.innerHTML = `<div class="n">${i + 1}</div><div>
+      <div class="t">${s.t}</div><div class="d">${s.d}</div>
+      ${s.warn ? `<div class="warn${s.hard ? ' hard' : ''}">${s.warn}</div>` : ''}
+    </div>`;
+  el.onclick = () => { setPlaying(false); seek((i + 1) * ASSEMBLE_PER - 0.01); };
+  stepsEl.appendChild(el);
+});
+
+const marksEl = document.getElementById('marks');
+STEPS.forEach((s, i) => {
+  const m = document.createElement('div');
+  m.className = 'mk';
+  m.style.left = ((i + 1) * ASSEMBLE_PER / T_TOTAL * 100) + '%';
+  m.title = s.t;
+  m.onclick = () => { setPlaying(false); seek((i + 1) * ASSEMBLE_PER - 0.01); };
+  marksEl.appendChild(m);
+});
+const runMark = document.createElement('div');
+runMark.className = 'mk run';
+runMark.style.left = ((T_ASSEMBLE + SETTLE) / T_TOTAL * 100) + '%';
+runMark.title = 'mechanism runs';
+marksEl.appendChild(runMark);
+
+const $ = id => document.getElementById(id);
+let t = 0, playing = false, speed = 1, exploded = false;
+
+function setPlaying(p) {
+  playing = p;
+  $('play').textContent = p ? '❚❚ pause' : '▶ play';
+  $('play').classList.toggle('on', p);
+}
+$('play').onclick = () => { if (t >= T_TOTAL - 0.01) t = 0; setPlaying(!playing); };
+$('next').onclick = () => { setPlaying(false); seek(Math.min(T_TOTAL, (Math.floor(t / ASSEMBLE_PER) + 1) * ASSEMBLE_PER - 0.01)); };
+$('prev').onclick = () => { setPlaying(false); seek(Math.max(0, (Math.ceil(t / ASSEMBLE_PER) - 1) * ASSEMBLE_PER - 0.01)); };
+$('run').onclick  = () => { seek(T_ASSEMBLE + SETTLE + 0.01); setPlaying(true); };
+$('explode').onclick = e => { exploded = !exploded; e.target.classList.toggle('on', exploded); };
+document.querySelectorAll('.speed button').forEach(b => {
+  b.onclick = () => {
+    speed = parseFloat(b.dataset.s);
+    document.querySelectorAll('.speed button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+  };
+});
+$('scrub').oninput = e => { setPlaying(false); seek(e.target.value / 1000 * T_TOTAL); };
+
+addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); $('play').click(); }
+  if (e.code === 'ArrowRight') $('next').click();
+  if (e.code === 'ArrowLeft')  $('prev').click();
+});
+
+function seek(v) { t = Math.max(0, Math.min(T_TOTAL, v)); apply(); }
+
+// ---------------------------------------------------------------- anim
+const ease = x => x * x * (3 - 2 * x);
+const clamp01 = x => Math.max(0, Math.min(1, x));
+let pan = 0, tilt = 0;
+
+function apply() {
+  // --- parts: each flies in over its own window ---
+  STEPS.forEach((s, i) => {
+    const p = parts[s.id];
+    if (!p) return;
+    const a = clamp01((t - i * ASSEMBLE_PER) / ASSEMBLE_PER);
+    const k = ease(a);
+    const ex = exploded ? 1 : 0;
+    // Offset decays to zero as the part lands; "explode" re-opens it.
+    const f = Math.max(1 - k, ex * 0.55);
+    p.mesh.position.set(s.from[0] * f, s.from[1] * f, s.from[2] * f);
+    // Parts that have not been fitted yet are shown GHOSTED at their
+    // staging positions rather than hidden. An empty stage at t = 0
+    // reads as a page that failed to load; the whole kit floating in
+    // place reads as "here is everything, now watch it go together",
+    // which is the job this page has.
+    p.mesh.visible = true;
+    p.mat.opacity = p.base * (a > 0 ? Math.max(GHOST, k) : GHOST);
+  });
+
+  // --- mechanism: only once everything is bolted together ---
+  const rp = clamp01((t - T_ASSEMBLE - SETTLE) / RUN);
+  if (rp > 0) {
+    const ph = rp * Math.PI * 2;
+    pan  = 55 * Math.sin(ph);          // inside the +-120 soft limit
+    tilt = 14 * Math.sin(ph + Math.PI / 2) - 4;   // inside +20 / -40
+    beam.material.opacity = 0.3 * clamp01(rp * 6);
+  } else {
+    pan = 0; tilt = 0;
+    beam.material.opacity = 0;
+  }
+  gPan.rotation.z  = THREE.MathUtils.degToRad(pan);
+  gTilt.rotation.x = THREE.MathUtils.degToRad(tilt);
+
+  // --- readouts ---
+  const idx = Math.min(STEPS.length - 1, Math.floor(t / ASSEMBLE_PER));
+  const running = rp > 0;
+  const s = STEPS[idx];
+  $('hudTitle').textContent = running ? 'Mechanism running' : s.t;
+  $('hudSub').textContent = running
+    ? 'assembled · pan and tilt inside their soft limits'
+    : `stage ${idx + 1} / ${STEPS.length}`;
+  $('hudWhy').textContent = running
+    ? 'The camera rides the gimbal, boresighted with the laser, so the loop closes on its own dot.'
+    : s.d;
+  const w = $('hudWarn');
+  w.innerHTML = (!running && s.warn)
+    ? `<div class="warnflag${s.hard ? ' hard' : ''}">${s.warn}</div>` : '';
+
+  $('poseRead').textContent = `pan ${pan.toFixed(1)}° · tilt ${tilt.toFixed(1)}°`;
+  $('clock').textContent = `${t.toFixed(1)} s / ${T_TOTAL.toFixed(1)} s`;
+  $('fill').style.width = (t / T_TOTAL * 100) + '%';
+  $('scrub').value = Math.round(t / T_TOTAL * 1000);
+
+  document.querySelectorAll('.step').forEach((el, i) => {
+    const done = t >= (i + 1) * ASSEMBLE_PER;
+    el.classList.toggle('done', done);
+    el.classList.toggle('on', !running && i === idx);
+  });
+  document.querySelectorAll('.tl .mk:not(.run)').forEach((m, i) => {
+    m.classList.toggle('on', t >= (i + 1) * ASSEMBLE_PER);
+  });
+  runMark.classList.toggle('on', running);
+}
+
+function resize() {
+  const r = canvas.parentElement.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect = r.width / r.height;
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+resize();
+
+let last = performance.now();
+renderer.setAnimationLoop(now => {
+  const dt = Math.min(0.05, (now - last) / 1000);
+  last = now;
+  if (playing) {
+    t += dt * speed;
+    if (t >= T_TOTAL) { t = T_TOTAL; setPlaying(false); }
+    apply();
+  } else if (exploded) {
+    apply();
+  }
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

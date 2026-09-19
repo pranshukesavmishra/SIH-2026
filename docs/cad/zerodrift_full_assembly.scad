@@ -285,8 +285,63 @@ module view_explode() {
     translate([0,0,324]) { head(); translate([78,0,0]) label("9  head: webcam + filter + laser"); }
 }
 
+
+// ---- per-part export, for the interactive assembly page -------------
+// docs/assembly.html animates the build one component at a time, which
+// a single fused mesh cannot do. Each part is emitted HERE, in its
+// FINAL assembled position, so the web page only has to animate an
+// offset back to zero -- no transform chain is re-derived in
+// JavaScript, which is exactly where the tilt-axis bug came from the
+// first time.
+//
+//   xvfb-run -a openscad -D 'part="head"' -D 'LOWPOLY=true' -o head.stl zerodrift_full_assembly.scad
+module view_part(which) {
+    if (which == "pan_motor")   translate([0,0,-PLATE_T]) nema17(shaft_len = 26);
+    else if (which == "base")   base_plate();
+    else if (which == "pan_encoder") pan_encoder_arm();
+    else rotate([0,0,PAN_DEG]) {
+        if (which == "platform")
+            translate([0,0,PLATFORM_Z]) {
+                color("#5b6b7c") cylinder(d = PLATFORM_D, h = PLATFORM_T);
+                translate([0,0,PLATFORM_T]) diametric_magnet();
+            }
+        else if (which == "vibration")
+            translate([14,-14,PLATFORM_Z + PLATFORM_T]) vibration_motor();
+        else translate([0, 6, TILT_Z]) {
+            if (which == "riser")
+                for (dx = [-42, -20]) for (dy = [-14, 6])
+                    color(C_BRASS) translate([dx, dy, PLATFORM_Z + PLATFORM_T - TILT_Z])
+                        cylinder(d = 5, h = RISER_H, $fn = 6);
+            else if (which == "bracket")
+                translate([-46, -20, PLATFORM_Z + PLATFORM_T + RISER_H - TILT_Z])
+                    l_bracket(leg = 30, th = 3, w = 30);
+            else if (which == "tilt_motor")
+                translate([-40, 0, 0]) rotate([0, 90, 0]) nema17(shaft_len = 22);
+            else if (which == "tilt_encoder")
+                translate([TILT_ARM_X, 0, 0]) rotate([0, 90, 0]) {
+                    color(C_BRASS) translate([-26,0,-4]) cylinder(d = 5, h = 22);
+                    color("#5b6b7c") translate([-28,-4,TILT_SENS_L]) cube([30, 8, 3]);
+                    translate([0, 0, TILT_SENS_L]) rotate([180,0,0]) as5600();
+                }
+            else rotate([TILT_DEG, 0, 0]) {
+                if (which == "tilt_magnet")
+                    translate([TILT_DISC_X, 0, 0]) rotate([0,90,0]) {
+                        color("#5b6b7c") cylinder(d = 34, h = TILT_DISC_T);
+                        translate([0,0,TILT_DISC_T]) diametric_magnet();
+                    }
+                else if (which == "standoff")
+                    color(C_BRASS) rotate([90,0,0]) cylinder(d = 6, h = 42, $fn = 6);
+                else if (which == "head")
+                    translate([0, -65, 0]) head();
+            }
+        }
+    }
+}
+
 view = "all";
-if      (view == "all")     view_all();
+part = "";
+if      (part != "")        view_part(part);
+else if (view == "all")     view_all();
 else if (view == "rig")     view_rig();
 else if (view == "head")    view_head();
 else if (view == "explode") view_explode();

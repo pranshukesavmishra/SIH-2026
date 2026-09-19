@@ -1,6 +1,6 @@
 {
   "name": "ZeroDrift Terminal Mk3 — Tier A",
-  "note": "Single source of truth for the build BOM. docs/TERMINAL_MK3.md section 2 and docs/submission/ZeroDrift_Mk3_Build_Guide.pdf are both generated from this; tests/test_bom_consistency.py enforces it. Beacon runs from a USB power bank, not a 9V battery: the Nano's linear regulator wastes 9V->5V as heat and a 9V alkaline holds ~500mAh. Decoy runs from 2xAA, not a coin cell: a CR2032 is rated 0.2mA continuous and a high-brightness LED draws ~20mA, which is 100x over spec. Decoy resistor recomputed for a white LED (Vf ~3.1V): 150R against 2xAA's ~3V supply left under 1mA and went dark as the battery aged even slightly -- the opposite of 'brighter than the beacon'. 3xAA (4.5V nominal) + 68R gives 16-25mA across the pack's working life.",
+  "note": "Single source of truth for the build BOM. docs/TERMINAL_MK3.md section 2 and docs/submission/ZeroDrift_Mk3_Build_Guide.pdf are both generated from this; tests/test_bom_consistency.py enforces it. Beacon runs from a USB power bank, not a 9V battery: the Nano's linear regulator wastes 9V->5V as heat and a 9V alkaline holds ~500mAh. Decoy runs from 2xAA, not a coin cell: a CR2032 is rated 0.2mA continuous and a high-brightness LED draws ~20mA, which is 100x over spec. Decoy resistor recomputed for a white LED (Vf ~3.1V): 150R against 2xAA's ~3V supply left under 1mA and went dark as the battery aged even slightly -- the opposite of 'brighter than the beacon'. 3xAA (4.5V nominal) + 68R gives 16-25mA across the pack's working life. Stage power: the demo runs from a laptop, so there is no wall adapter. The laptop's USB powers both Nanos, the camera, the laser, the encoders and the vibration motor. The only thing it cannot power is the pair of NEMA17 steppers -- the A4988 needs 8-35 V on VMOT and USB delivers 5 V -- so a PD/QC trigger module takes a power bank to 9 V or 12 V instead. CHECK BEFORE BUYING that your power bank actually does PD or QC; a plain 5 V bank cannot be triggered and the gimbal will not move. At 9 V with the A4988 Vref set for 0.6 A/phase the pair draws under 1 A, which any 18 W PD bank supplies. If your bank turns out not to support it, a 12 V 2 A adapter is Rs 279 and any hall socket runs it.",
   "sections": [
     {
       "title": "A. Motion — the gimbal",
@@ -9,25 +9,29 @@
           "item": "NEMA17 stepper motor, 1.8°/step, 4.2 kg-cm",
           "qty": 2,
           "unit_inr": 749,
-          "price_basis": "verified"
+          "price_basis": "verified",
+          "source": "amar"
         },
         {
           "item": "A4988 stepper driver module",
           "qty": 2,
           "unit_inr": 170,
-          "price_basis": "verified"
+          "price_basis": "verified",
+          "source": "amar"
         },
         {
           "item": "NEMA17 L-bracket (pan + tilt)",
           "qty": 2,
           "unit_inr": 127,
-          "price_basis": "verified"
+          "price_basis": "verified",
+          "source": "amar"
         },
         {
           "item": "100 µF 25 V electrolytic capacitor",
           "qty": 2,
           "unit_inr": 10,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         }
       ]
     },
@@ -38,19 +42,22 @@
           "item": "AS5600 magnetic encoder module",
           "qty": 2,
           "unit_inr": 249,
-          "price_basis": "verified"
+          "price_basis": "verified",
+          "source": "online"
         },
         {
           "item": "Diametric magnet, 6 × 2.5 mm",
           "qty": 2,
           "unit_inr": 90,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "online"
         },
         {
           "item": "TCA9548A I²C multiplexer",
           "qty": 1,
           "unit_inr": 199,
-          "price_basis": "verified"
+          "price_basis": "verified",
+          "source": "online"
         }
       ]
     },
@@ -61,25 +68,29 @@
           "item": "USB camera module, M12 mount, 12 mm lens",
           "qty": 1,
           "unit_inr": 1400,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "online"
         },
         {
           "item": "Red filter — gel sheet or red acrylic offcut",
           "qty": 1,
           "unit_inr": 100,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "online"
         },
         {
           "item": "KY-008 laser module",
           "qty": 0,
           "unit_inr": 0,
-          "price_basis": "reuse Mk1"
+          "price_basis": "reuse Mk1",
+          "source": "amar"
         },
         {
           "item": "ABS project box, head enclosure",
           "qty": 1,
           "unit_inr": 115,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         }
       ]
     },
@@ -90,25 +101,36 @@
           "item": "Arduino Nano — tracker",
           "qty": 0,
           "unit_inr": 0,
-          "price_basis": "reuse Mk1"
+          "price_basis": "reuse Mk1",
+          "source": "amar"
         },
         {
           "item": "Arduino Nano — beacon",
           "qty": 1,
           "unit_inr": 225,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         },
         {
-          "item": "12 V 2 A DC power adapter",
+          "item": "USB-C PD / QC trigger module, 9 V or 12 V selectable",
           "qty": 1,
-          "unit_inr": 279,
-          "price_basis": "verified"
+          "unit_inr": 199,
+          "price_basis": "estimate",
+          "source": "online"
+        },
+        {
+          "item": "USB-B and mini-USB cables for the two Nanos",
+          "qty": 2,
+          "unit_inr": 99,
+          "price_basis": "estimate",
+          "source": "blinkit"
         },
         {
           "item": "Acrylic sheet 3 mm, 6″×6″ (pack of 2)",
           "qty": 1,
           "unit_inr": 199,
-          "price_basis": "verified"
+          "price_basis": "verified",
+          "source": "amar"
         }
       ]
     },
@@ -119,13 +141,15 @@
           "item": "Vibration motor, 3 V DC",
           "qty": 1,
           "unit_inr": 20,
-          "price_basis": "verified"
+          "price_basis": "verified",
+          "source": "amar"
         },
         {
           "item": "Transistor + diode + resistor combo kit",
           "qty": 1,
           "unit_inr": 105,
-          "price_basis": "verified"
+          "price_basis": "verified",
+          "source": "amar"
         }
       ]
     },
@@ -136,37 +160,43 @@
           "item": "High-brightness RED LED, 10 mm, 650 nm",
           "qty": 1,
           "unit_inr": 22,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         },
         {
           "item": "2N2222 transistor + 220 Ω + 1 kΩ",
           "qty": 1,
           "unit_inr": 20,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         },
         {
           "item": "Ping-pong ball (diffuser)",
           "qty": 1,
           "unit_inr": 129,
-          "price_basis": "verified"
+          "price_basis": "verified",
+          "source": "blinkit"
         },
         {
           "item": "USB power bank (any, 5V) — beacon supply",
           "qty": 0,
           "unit_inr": 0,
-          "price_basis": "reuse Mk1"
+          "price_basis": "reuse Mk1",
+          "source": "amar"
         },
         {
           "item": "SPST toggle switch",
           "qty": 1,
           "unit_inr": 25,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         },
         {
           "item": "ABS project box",
           "qty": 1,
           "unit_inr": 115,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         }
       ]
     },
@@ -177,25 +207,29 @@
           "item": "High-brightness WHITE LED (brighter than beacon)",
           "qty": 1,
           "unit_inr": 22,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         },
         {
           "item": "68 Ω resistor",
           "qty": 1,
           "unit_inr": 5,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         },
         {
           "item": "3×AA battery holder + 3 AA cells — decoy supply",
           "qty": 1,
           "unit_inr": 90,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         },
         {
           "item": "Switch + scrap housing",
           "qty": 1,
           "unit_inr": 35,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         }
       ]
     },
@@ -206,22 +240,25 @@
           "item": "Dupont jumper wires — M-M, M-F, F-F",
           "qty": 1,
           "unit_inr": 150,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         },
         {
           "item": "M3 screws, nuts, standoffs assortment",
           "qty": 1,
           "unit_inr": 150,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         },
         {
           "item": "Heat-shrink, solder, hot-glue sticks",
           "qty": 1,
           "unit_inr": 150,
-          "price_basis": "estimate"
+          "price_basis": "estimate",
+          "source": "amar"
         }
       ]
     }
   ],
-  "total_inr": 6345
+  "total_inr": 6463
 }

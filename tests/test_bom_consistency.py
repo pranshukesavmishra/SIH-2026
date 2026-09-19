@@ -110,3 +110,69 @@ def test_printed_guide_states_the_same_total(bom):
         f"the printed guide does not state Rs {bom['total_inr']:,}; it is the "
         "document someone actually carries to the shop, so it is the one that "
         "must not be stale")
+
+
+# -- the stage demo runs from a laptop, with no wall socket -------------
+
+def test_no_mains_adapter_is_on_the_list(bom):
+    """
+    The demo is given on a stage from a laptop, so the build must not
+    depend on a wall socket being available and working. A mains adapter
+    reappearing here means someone reverted the power design without
+    reading why it changed.
+    """
+    names = " ".join(i["item"] for s in bom["sections"] for i in s["items"]).lower()
+    assert "dc power adapter" not in names and "psu" not in names
+
+
+def test_the_motor_rail_has_a_supply_that_is_not_the_laptop(bom):
+    """
+    USB gives 5 V and the A4988 needs 8-35 V on VMOT, so the steppers
+    cannot run off the laptop however the rest is wired. Something has to
+    lift a portable supply to at least 8 V, or the gimbal does not move
+    and the entire demo is a still photograph.
+    """
+    names = [i["item"].lower() for s in bom["sections"] for i in s["items"]]
+    assert any("trigger" in n for n in names), (
+        "nothing on the list can supply the A4988's VMOT from a power bank")
+
+
+def test_both_nanos_have_a_usb_cable(bom):
+    """
+    Clone Nanos ship without one often enough that this is a real
+    build-stopper, and it is the kind of omission nobody notices until
+    the shops are shut.
+    """
+    for s in bom["sections"]:
+        for i in s["items"]:
+            if "usb-b" in i["item"].lower() or "mini-usb" in i["item"].lower():
+                assert i["qty"] >= 2, "one cable, two Nanos"
+                return
+    raise AssertionError("no USB cable for the Nanos is on the list")
+
+
+def test_every_item_says_where_to_buy_it(bom):
+    """
+    Routing used to live only in the rendered HTML, so adding an item
+    meant hand-editing a row and hand-adjusting three column subtotals.
+    It belongs with the price.
+    """
+    allowed = {"amar", "blinkit", "online", "have"}
+    for s in bom["sections"]:
+        for i in s["items"]:
+            assert i.get("source") in allowed, (
+                f"{i['item']!r} does not say where to buy it")
+
+
+def test_the_buy_list_column_subtotals_add_up_to_the_grand_total(bom):
+    """
+    Three source columns and a grand total is four numbers that can
+    disagree. They are generated together now; this checks they still do.
+    """
+    import re
+    html = (DOC.parent / "submission" / "buylist_checklist_source.html").read_text()
+    row = re.search(r'<tr class="totrow">(.*?)</tr>', html, re.S).group(1)
+    figures = [int(x.replace(",", "")) for x in re.findall(r"₹([\d,]+)", row)]
+    grand, columns = figures[0], figures[1:]
+    assert grand == bom["total_inr"]
+    assert sum(columns) == grand, f"columns sum to {sum(columns):,}, total says {grand:,}"

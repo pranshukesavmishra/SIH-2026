@@ -76,7 +76,7 @@ This maps cleanly onto the problem statement's architecture:
             │    Arduino Nano      — motion, real-time│
             │    2× A4988          — 1/16 microstep   │
             │    TCA9548A          — encoder mux      │
-            │    12 V 2 A PSU                         │
+            │  power bank + PD trigger (9 V, motors)  │
             └───────────────────┬─────────────────────┘
                      USB ×2     │
             ┌───────────────────┴─────────────────────┐
@@ -192,7 +192,8 @@ ordering, and say which is which if a judge asks what the rig cost.
 | **D. Control and power** | | | | |
 | Arduino Nano — tracker | — | — | **₹0** | reuse Mk1 |
 | Arduino Nano — beacon | 1 | ₹225 | **₹225** | ~ estimate |
-| 12 V 2 A DC power adapter | 1 | ₹279 | **₹279** | ✅ verified |
+| USB-C PD / QC trigger module, 9 V or 12 V selectable | 1 | ₹199 | **₹199** | ~ estimate |
+| USB-B and mini-USB cables for the two Nanos | 2 | ₹99 | **₹198** | ~ estimate |
 | Acrylic sheet 3 mm, 6″×6″ (pack of 2) | 1 | ₹199 | **₹199** | ✅ verified |
 | **E. Disturbance injector — robustness shown, not claimed** | | | | |
 | Vibration motor, 3 V DC | 1 | ₹20 | **₹20** | ✅ verified |
@@ -213,7 +214,7 @@ ordering, and say which is which if a judge asks what the rig cost.
 | Dupont jumper wires — M-M, M-F, F-F | 1 | ₹150 | **₹150** | ~ estimate |
 | M3 screws, nuts, standoffs assortment | 1 | ₹150 | **₹150** | ~ estimate |
 | Heat-shrink, solder, hot-glue sticks | 1 | ₹150 | **₹150** | ~ estimate |
-| **TOTAL** | | | **₹6,345** | |
+| **TOTAL** | | | **₹6,463** | |
 
 **Resolution you actually get:** 1.8° ÷ 16 microsteps = 0.1125°/step =
 **1.96 mrad**, with the AS5600 measuring true position to 0.088° = 1.53
@@ -317,7 +318,7 @@ with ephemeris.
 - 5 mW, Class 3R, 650 nm. Never at eyes or faces. The head moves on its
   own, so soft-limit both axes in firmware and keep the laser off during
   any scan that sweeps toward standing people.
-- Kill switch on the 12 V motor rail, reachable without leaning into the
+- Kill switch on the motor rail, reachable without leaning into the
   gimbal's travel.
 - The laser rides on a head that moves under software control. Keep it
   off (`L0`) during any scan whose sweep crosses standing people, and
@@ -331,13 +332,34 @@ with ephemeris.
 Three power domains, one ground. Getting this wrong is the most
 expensive mistake available in this build.
 
+**The terminal runs from the laptop, with no wall socket.** That is a
+stage requirement, not a preference, and it constrains exactly one
+thing. The laptop's USB runs both Nanos, the camera, the laser, the two
+encoders and the vibration motor without complaint — all of that is
+logic-level and draws well under an amp in total. The steppers are the
+exception: the A4988 needs 8–35 V on VMOT and USB delivers 5 V, so no
+amount of wiring makes a stepper run off the laptop. A PD/QC trigger
+module takes a power bank up to 9 V or 12 V for the motor rail alone.
+
+Two things to check before you rely on it:
+
+- **Your power bank must actually support PD or Quick Charge.** A plain
+  5 V bank cannot be triggered and the gimbal will not move at all.
+  Confirm this at the counter, not on stage. Note that 12 V is not a
+  guaranteed PD voltage — the PD standard's fixed steps are 5/9/15/20 V
+  — but the A4988 accepts anything from 8 V, so **9 V is fine**, and at
+  5°/s the gimbal needs almost no torque.
+- **Set the A4988 Vref low**, around 0.5–0.6 V for ~0.6 A/phase. At 9 V
+  the pair then draws under 1 A, inside any 18 W bank, and runs cooler.
+
 ```
-  12 V 2 A PSU ──┬── kill switch ──┬── A4988 #1 VMOT ──┬─ 100 µF ─┐
-                 │                  │                    │          │
-                 │                  └── A4988 #2 VMOT ──┬┴─ 100 µF ─┤
-                 │                                       │          │
-   ALL GROUNDS TIE TOGETHER AT ONE POINT ────────────────┴──────────┘
-        Nano GND · both driver GNDs · PSU GND
+  POWER BANK ══ PD/QC trigger (9 V) ══┬── kill switch ──┬── A4988 #1 VMOT ──┬─ 100 µF ─┐
+   (motor rail only)                   │                 │                    │          │
+                                       │                 └── A4988 #2 VMOT ──┬┴─ 100 µF ─┤
+  LAPTOP USB ══ Nano ══ 5 V logic ═════╪═══ camera · laser · AS5600 ×2 ·      │          │
+                                       │    TCA9548A · vibration motor        │          │
+   ALL GROUNDS TIE TOGETHER AT ONE POINT ─────────────────────────────────────┴──────────┘
+        Nano GND · both driver GNDs · trigger module GND
         (the laptop's ground arrives through the Nano's USB — do not
          also bond it to the motor supply, or you build a ground loop)
 ```
@@ -367,7 +389,7 @@ hundred milliamps; a NEMA17 wants an amp or more per phase.
 
 **The vibration motor's own supply was left unstated here in an earlier
 revision** — worth calling out because the obvious wrong answer, wiring
-it to the 12 V rail sitting right there on the same board, overdrives a
+it to the motor rail sitting right there on the same board, overdrives a
 motor rated 3 V by more than 4×. Run its positive lead from the **Nano's
 own 5 V pin**, through a **27 Ω series resistor**, into the motor, with
 the 2N2222's collector on the motor's negative lead and its emitter to

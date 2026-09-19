@@ -133,8 +133,8 @@ def test_the_motor_rail_has_a_supply_that_is_not_the_laptop(bom):
     and the entire demo is a still photograph.
     """
     names = [i["item"].lower() for s in bom["sections"] for i in s["items"]]
-    assert any("trigger" in n for n in names), (
-        "nothing on the list can supply the A4988's VMOT from a power bank")
+    assert any("battery pack" in n or "trigger" in n for n in names), (
+        "nothing on the list can supply the A4988's VMOT away from mains")
 
 
 def test_both_nanos_have_a_usb_cable(bom):

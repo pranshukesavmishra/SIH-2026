@@ -1,6 +1,6 @@
 {
   "name": "ZeroDrift Terminal Mk3 — Tier A",
-  "note": "Single source of truth for the build BOM. docs/TERMINAL_MK3.md section 2 and docs/submission/ZeroDrift_Mk3_Build_Guide.pdf are both generated from this; tests/test_bom_consistency.py enforces it. Beacon runs from a USB power bank, not a 9V battery: the Nano's linear regulator wastes 9V->5V as heat and a 9V alkaline holds ~500mAh. Decoy runs from 2xAA, not a coin cell: a CR2032 is rated 0.2mA continuous and a high-brightness LED draws ~20mA, which is 100x over spec. Decoy resistor recomputed for a white LED (Vf ~3.1V): 150R against 2xAA's ~3V supply left under 1mA and went dark as the battery aged even slightly -- the opposite of 'brighter than the beacon'. 3xAA (4.5V nominal) + 68R gives 16-25mA across the pack's working life. Stage power: the demo runs from a laptop, so there is no wall adapter. The laptop's USB powers both Nanos, the camera, the laser, the encoders and the vibration motor. The only thing it cannot power is the pair of NEMA17 steppers -- the A4988 needs 8-35 V on VMOT and USB delivers 5 V -- so a PD/QC trigger module takes a power bank to 9 V or 12 V instead. CHECK BEFORE BUYING that your power bank actually does PD or QC; a plain 5 V bank cannot be triggered and the gimbal will not move. At 9 V with the A4988 Vref set for 0.6 A/phase the pair draws under 1 A, which any 18 W PD bank supplies. If your bank turns out not to support it, a 12 V 2 A adapter is Rs 279 and any hall socket runs it.",
+  "note": "Single source of truth for the build BOM. docs/TERMINAL_MK3.md section 2 and docs/submission/ZeroDrift_Mk3_Build_Guide.pdf are both generated from this; tests/test_bom_consistency.py enforces it. Beacon runs from a USB power bank, not a 9V battery: the Nano's linear regulator wastes 9V->5V as heat and a 9V alkaline holds ~500mAh. Decoy runs from 2xAA, not a coin cell: a CR2032 is rated 0.2mA continuous and a high-brightness LED draws ~20mA, which is 100x over spec. Decoy resistor recomputed for a white LED (Vf ~3.1V): 150R against 2xAA's ~3V supply left under 1mA and went dark as the battery aged even slightly -- the opposite of 'brighter than the beacon'. 3xAA (4.5V nominal) + 68R gives 16-25mA across the pack's working life. Stage power: the demo runs from a laptop with no wall socket. The laptop's USB powers both Nanos, the camera, the laser, the encoders and the vibration motor. The only thing it cannot power is the pair of NEMA17 steppers -- the A4988 needs 8-35 V on VMOT and USB delivers 5 V. A 12 V Li-ion pack with a DC barrel output supplies that rail. A USB-PD trigger module was considered and rejected: it depends on the user's own power bank supporting PD, and 12 V is not even a guaranteed PD voltage (the standard's fixed steps are 5/9/15/20 V), so it makes the demo depend on hardware nobody has verified. The battery pack carries the same barrel connector the mains adapter used, so no other wiring changes. At ~1 A draw a 3000 mAh pack runs about three hours.",
   "sections": [
     {
       "title": "A. Motion — the gimbal",
@@ -112,11 +112,32 @@
           "source": "amar"
         },
         {
-          "item": "USB-C PD / QC trigger module, 9 V or 12 V selectable",
+          "item": "12 V 3000 mAh Li-ion battery pack + charger, DC barrel out",
           "qty": 1,
-          "unit_inr": 199,
+          "unit_inr": 650,
           "price_basis": "estimate",
           "source": "online"
+        },
+        {
+          "item": "DC barrel jack to screw-terminal adapter",
+          "qty": 1,
+          "unit_inr": 30,
+          "price_basis": "estimate",
+          "source": "amar"
+        },
+        {
+          "item": "SPST toggle switch — motor rail kill switch",
+          "qty": 1,
+          "unit_inr": 25,
+          "price_basis": "estimate",
+          "source": "amar"
+        },
+        {
+          "item": "Breadboard, 830 point (drivers + Nano + mux)",
+          "qty": 1,
+          "unit_inr": 90,
+          "price_basis": "estimate",
+          "source": "amar"
         },
         {
           "item": "USB-B and mini-USB cables for the two Nanos",
@@ -260,7 +281,7 @@
       ]
     }
   ],
-  "total_inr": 6463,
+  "total_inr": 7059,
   "tools": {
     "note": "Not part of the build and not in the total. These are what you need in your hand to assemble it. Tick 'have' for anything the team or the college lab already owns -- most teams own most of this. The multimeter is the one that is genuinely not optional.",
     "items": [

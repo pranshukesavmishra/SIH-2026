@@ -320,3 +320,121 @@ def test_an_unknown_condition_is_refused_by_name(cfg):
 def test_condition_names_are_accepted_in_the_spellings_a_user_types(cfg):
     for spelling in ("Low Light", "low-light", "LOW_LIGHT", " fog "):
         atmosphere.apply(cfg, spelling)
+
+
+# --- rows read properly the second time --------------------------------
+
+def test_salt_and_pepper_is_the_specified_ten_percent(cfg):
+    """
+    The spec says "around 10% of image". This file first carried 0.001 --
+    a hundred times too little -- because the figure was taken from a
+    summary rather than the table. At 0.001 the rejection worked in one
+    pass; at 0.1 it needed to iterate, and the single-pass version left
+    1,689 pepper pixels and made the detector worse than useless.
+    """
+    assert cfg.camera.salt_pepper_fraction == pytest.approx(0.10)
+
+
+def test_camera_starts_at_the_centre_of_the_screen(cfg):
+    """
+    Spec row 6. The target's start is offset from it, so acquisition is a
+    real search rather than a target already in frame.
+    """
+    assert tuple(cfg.initial_pointing_deg) == (0.0, 20.0)
+    params = cfg.beacons[0].trajectory.params
+    assert (params["center_az_deg"], params["center_el_deg"]) != (0.0, 20.0)
+
+
+def test_the_search_covers_the_whole_screen(cfg):
+    """
+    2000 px of screen at the camera's own 0.00625 deg/px is 12.5 deg, so
+    the half-diagonal is 8.84 deg and the field of uncertainty has to be
+    at least the half-width. A smaller one would quietly assume the
+    target starts near the middle.
+    """
+    assert cfg.acquisition_fou_deg >= 6.25
+
+
+def test_the_specs_own_numbers_are_self_consistent():
+    """
+    Not a test of our code -- a test of our reading of the spec, which is
+    worth pinning because it is what the whole benchmark rests on. If
+    2000 px of screen spans 12.5 deg at the camera's resolution, then a
+    5 deg/s mount crosses the half-diagonal in under the 2 s acquisition
+    limit. Three independent rows of the table agreeing is how we know
+    the interpretation is right.
+    """
+    deg_per_px = 4.0 / 640.0
+    screen_deg = 2000 * deg_per_px
+    assert screen_deg == pytest.approx(12.5)
+    half_diagonal = math.hypot(screen_deg / 2, screen_deg / 2)
+    assert half_diagonal / 5.0 < 2.0
+
+
+def test_platform_motion_is_linear_and_mandatory(cfg):
+    """
+    Spec: platform motion, "Default/Mandatory: Linear". An earlier
+    version modelled it as a 0.7 Hz oscillation, which is not linear and
+    is a different control problem -- an oscillation averages to zero
+    over its period and a drift never does, so one can be filtered and
+    the other has to be nulled.
+    """
+    assert cfg.vibration.platform_drift_urad_s > 0.0
+
+
+def test_platform_drift_stays_inside_the_specified_20_px_per_frame(cfg):
+    """20 px/frame is the ceiling, and it is a severe one."""
+    focal = 320.0 / math.tan(math.radians(cfg.camera.fov_deg / 2))
+    px_per_frame = (cfg.vibration.platform_drift_urad_s * 1e-6
+                    * focal / cfg.camera.frame_rate_hz)
+    assert 0.0 < px_per_frame <= 20.0
+
+
+def test_platform_drift_is_bounded_so_a_long_run_stays_on_screen(cfg):
+    assert cfg.vibration.platform_drift_limit_urad > 0.0
+
+
+def test_all_four_mandatory_motion_patterns_exist():
+    """Spec: "at least four: Straight Line, Circular, Figure of 8, Random"."""
+    for kind in ("linear", "circular", "figure_eight", "random_walk"):
+        assert kind in _GENERATORS, f"{kind} is one of the four the spec names"
+
+
+def test_the_report_states_tracking_error_in_pixels_too():
+    """
+    The spec's tracking limit is 10 pixels and both benchmark stages are
+    scored on centroiding error, a pixel quantity. A report in
+    microradians alone leaves the evaluator converting our numbers
+    against a threshold written in the other unit.
+    """
+    from fsoc_pat.metrics import PerformanceReport
+    r = PerformanceReport(scenario_name="x")
+    assert hasattr(r, "tracking_error_px") and hasattr(r, "pointing_error_px")
+
+
+def test_pixel_error_is_the_focal_length_times_the_angle():
+    from fsoc_pat.metrics import build_report
+    from fsoc_pat.pipeline import LockState
+
+    class T:
+        def __init__(self):
+            self.time_s = 0.0
+            self.processing_ms = 1.0
+            self.locked = True
+            self.detected = True
+            self.beacon_in_fov = True
+            self.n_detections = 1
+            self.state = LockState.TRACK
+            self.on_decoy = False
+            self.truth_error_rad = 109.13e-6      # exactly one pixel at 4 deg
+            self.pointing_error_rad = 109.13e-6
+
+    focal = 320.0 / math.tan(math.radians(2.0))
+    r = build_report([T()], "x", 30.0, focal_px=focal)
+    assert r.tracking_error_px["mean"] == pytest.approx(1.0, abs=0.01)
+
+
+def test_pixel_error_is_left_empty_when_the_optics_are_unknown():
+    """A conversion without a focal length would be a guess."""
+    from fsoc_pat.metrics import PerformanceReport
+    assert PerformanceReport(scenario_name="x").tracking_error_px == {}

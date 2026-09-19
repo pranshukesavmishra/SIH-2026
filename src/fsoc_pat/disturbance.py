@@ -83,6 +83,13 @@ class Vibration:
         self._x = np.zeros((len(modes), 2))
         self._v = np.zeros((len(modes), 2))
         self._offset = np.zeros(2)
+        # Linear platform drift travels along a fixed heading, so the
+        # disturbance is a straight line in the image rather than two
+        # independent axes wandering -- "Linear" in the spec's sense.
+        heading = np.radians(getattr(cfg, "platform_drift_heading_deg", 30.0))
+        self._drift_dir = np.array([np.cos(heading), np.sin(heading)])
+        self._drift = 0.0
+        self._drift_sign = 1.0
 
     def step(self, dt: float) -> None:
         if not self.cfg.enabled:
@@ -106,6 +113,20 @@ class Vibration:
             self._offset = np.zeros(2)
         if self.cfg.broadband_rms_urad > 0.0:
             self._offset = self._offset + self.cfg.broadband_rms_urad * 1e-6 * self.rng.normal(size=2)
+
+        rate = getattr(self.cfg, "platform_drift_urad_s", 0.0)
+        if rate > 0.0:
+            limit = getattr(self.cfg, "platform_drift_limit_urad", 0.0)
+            self._drift += self._drift_sign * rate * dt
+            # Reverse at the limit rather than wrapping: a wrap is a
+            # discontinuity the tracker would see as an impossible jump,
+            # and would be measuring the model's seam rather than the
+            # platform. A reversal is what a carrier on a bounded path
+            # actually does.
+            if limit > 0.0 and abs(self._drift) >= limit:
+                self._drift = np.sign(self._drift) * limit
+                self._drift_sign = -self._drift_sign
+            self._offset = self._offset + self._drift * 1e-6 * self._drift_dir
 
     @property
     def offset(self) -> np.ndarray:

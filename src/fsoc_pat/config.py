@@ -113,6 +113,17 @@ class VibrationConfig:
         default_factory=lambda: [[18.0, 90.0, 0.06], [47.0, 40.0, 0.08], [120.0, 15.0, 0.1]]
     )
     broadband_rms_urad: float = 20.0
+    # Platform motion, which PS26169 lists separately from camera jitter
+    # and whose default it makes *mandatory and linear*. The modes above
+    # are structural vibration -- small, fast, zero-mean. This is the
+    # carrier moving: a slow constant-velocity drift of the whole mount,
+    # which does not average out and which the controller has to null
+    # rather than filter. Rate is microradians per second; the drift
+    # reverses at +/-``platform_drift_limit_urad`` so a long run stays
+    # bounded instead of walking out of the world.
+    platform_drift_urad_s: float = 0.0
+    platform_drift_limit_urad: float = 0.0
+    platform_drift_heading_deg: float = 30.0
 
 
 @dataclass

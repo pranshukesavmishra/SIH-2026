@@ -44,7 +44,8 @@ def run_scenario(cfg: SimConfig,
     wall = time.perf_counter() - started
 
     report = build_report(tracker.telemetry, cfg.name,
-                          cfg.camera.frame_rate_hz, wall_time_s=wall)
+                          cfg.camera.frame_rate_hz, wall_time_s=wall,
+                          focal_px=tracker.focal_px)
     return report, tracker
 
 

@@ -187,3 +187,91 @@ def test_every_impulse_is_removed_not_merely_most(detector):
     cleaned = detector.reject_impulse_noise(_with_impulses(img, rng, n=600))
     assert (cleaned > 3500.0).sum() == 0
     assert (cleaned < 100.0).sum() == 0
+
+
+# --- the density the specification actually asks for -------------------
+
+@pytest.mark.parametrize("fraction", [0.01, 0.05, 0.10, 0.20])
+def test_impulses_are_cleared_at_the_specified_density(detector, fraction):
+    """
+    PS26169 asks for salt and pepper over "around 10% of image". A single
+    pass handles 0.1% and fails at 10%: impulses stop being isolated, a
+    corrupted neighbour makes the neighbourhood read as lit, and one pass
+    left 1,689 pepper pixels behind. Iterating to convergence clears it,
+    because each pass un-shelters the next.
+    """
+    img, rng = _field()
+    splat_gaussian(img, 160.0, 120.0, 20000.0, SIGMA)
+    n = int(fraction * img.size)
+    cleaned = detector.reject_impulse_noise(_with_impulses(img, rng, n=n))
+
+    # Everywhere except on the beacon itself. An impulse that lands
+    # inside a real source sits in a neighbourhood that is genuinely
+    # lit, and there the method cannot tell it from part of that source
+    # without risking the source -- so it declines, which is the safety
+    # property and not a gap. At 5% exactly one such pixel survives, 1.4
+    # px from the beacon centre. It costs nothing: it is inside the
+    # blob, the centroid absorbs it, and the detection count is
+    # unchanged. Measured, not assumed: see the assertion below.
+    beacon = np.zeros(cleaned.shape, bool)
+    beacon[110:131, 150:171] = True
+    assert (cleaned[~beacon] > 3500.0).sum() == 0
+    assert (cleaned[~beacon] < 100.0).sum() == 0
+
+
+@pytest.mark.parametrize("fraction", [0.01, 0.05, 0.10, 0.20])
+def test_an_impulse_landing_on_the_beacon_costs_no_false_detection(detector, fraction):
+    """The reason the exemption above is acceptable rather than merely honest."""
+    img, rng = _field()
+    splat_gaussian(img, 160.0, 120.0, 20000.0, SIGMA)
+    noisy = _with_impulses(img, rng, n=int(fraction * img.size))
+    assert len(detector.detect(noisy)) == len(detector.detect(img)) == 1
+
+
+def test_the_beacon_peak_survives_ten_percent_impulse_noise(detector):
+    """
+    The safety property has to hold at the density that matters, not just
+    at the easy one. Iterating cannot break it -- no single pass can flag
+    a real source, so no number of passes can either -- and this is the
+    test that says so out loud.
+    """
+    img, rng = _field()
+    splat_gaussian(img, 160.0, 120.0, 20000.0, SIGMA)
+    peak = img.max()
+    noisy = _with_impulses(img, rng, n=int(0.10 * img.size))
+    cleaned = detector.reject_impulse_noise(noisy)
+    assert cleaned[110:131, 150:171].max() == pytest.approx(peak, rel=1e-6)
+
+
+def test_ten_percent_noise_blinds_the_detector_without_rejection():
+    """
+    At 10% the naive detector does not merely produce false alarms -- the
+    impulses lift the CFAR noise estimate so far that it finds *nothing*,
+    beacon included. Worth pinning, because "more detections" was the
+    failure at 0.1% and "no detections" is the failure here.
+    """
+    img, rng = _field()
+    splat_gaussian(img, 160.0, 120.0, 20000.0, SIGMA)
+    noisy = _with_impulses(img, rng, n=int(0.10 * img.size))
+    naive = PointDetector(psf_sigma=SIGMA, reject_impulses=False)
+    assert len(naive.detect(noisy)) == 0
+    assert len(PointDetector(psf_sigma=SIGMA).detect(noisy)) == 1
+
+
+def test_convergence_stops_early_on_a_clean_frame(detector):
+    """
+    The loop runs to convergence, not a fixed count, so a clean frame
+    must not pay for six passes.
+    """
+    img, _ = _field()
+    splat_gaussian(img, 160.0, 120.0, 20000.0, SIGMA)
+    calls = {"n": 0}
+    original = detector._reject_impulse_pass
+
+    def counted(arr):
+        calls["n"] += 1
+        return original(arr)
+
+    detector._reject_impulse_pass = counted
+    detector.reject_impulse_noise(img)
+    assert calls["n"] <= 2

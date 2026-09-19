@@ -172,7 +172,22 @@ module full_assembly(tilt_deg = 15, pan_deg = 25) {
         translate([platform_d/2 - nema_face/2 - 6, 6, pan_top])
             l_bracket();
 
-        head_standoff = 42;   // clears the tilt encoder's platform + arm
+        // Clears the tilt encoder's platform + arm. MUST BE METAL -- use
+        // an M3 brass standoff from the assortment already on the BOM,
+        // never a printed part, and never print this model's standoff
+        // as a structural piece.
+        //
+        // Run the numbers: 6mm rod, 42mm long, ~80g head.
+        //   aluminium  158 urad droop (1.4 px)   f_n 237 Hz
+        //   steel       54 urad droop (0.5 px)   f_n 404 Hz
+        //   PLA print 3109 urad droop (28.5 px)  f_n  53 Hz   <-- NO
+        // Printed, its natural frequency lands on the 47 Hz platform
+        // mode in scenarios/ps26169_benchmark.yaml. That is a resonator
+        // tuned to our own disturbance spectrum, and it manufactures
+        // exactly the flex-as-false-pointing-error that section 0 of
+        // TERMINAL_MK3.md exists to eliminate. In metal the same part is
+        // a non-issue.
+        head_standoff = 42;
         translate([platform_d/2 - nema_face/2 - 6, 6, pan_top])
         on_bracket_face() {
             nema17();

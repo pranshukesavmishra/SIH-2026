@@ -59,7 +59,7 @@ This maps cleanly onto the problem statement's architecture:
 ```
             ┌─────────────────────────────────────────┐
             │  HEAD  — rides on the gimbal            │
-            │    USB camera, M12 mount, 12 mm lens    │
+            │    USB webcam, UVC, housing removed     │
             │    red filter over the lens             │
             │    650 nm laser, modulated at 7 Hz      │
             │    ~20 mm between optical axes          │
@@ -119,11 +119,23 @@ it. The belt is the only item in this build that attacks that directly.
 |---|---|---|
 | Step size | 1.8° ÷ 16 = 0.1125° = **1.96 mrad** | 0.0375° = **0.65 mrad** |
 | AS5600, 12-bit | 0.0879° = **1.53 mrad** | 0.0293° = **0.51 mrad** |
-| Camera, 12 mm lens, 1280 px across 22° | 0.0172°/px = 0.30 mrad/px | same |
+| Camera — UVC webcam, 640 px across ~48° | ~0.075°/px = **~1.3 mrad/px** | same |
+| *(if an M12 12 mm board camera is used instead)* | *0.0172°/px = 0.30 mrad/px* | *same* |
 | Centroid, ~1/5 px on a clean spot | ~0.06 mrad | same |
 
-**The camera is never the limit — the mechanism is.** That is worth
-knowing before spending on optics: at 0.30 mrad/px against a 1.5 mrad
+**The camera is still not the limit — but with a webcam it is closer
+than it looks.** Raw pixel pitch on a consumer webcam (~1.3 mrad/px) is
+the same order as the encoder's 1.53 mrad, so the "camera is free"
+argument does *not* survive on raw pixels alone. It survives on
+centroiding: at ~1/5 px the camera contributes ~0.26 mrad, back below
+the mechanism. That is a real dependency on the sub-pixel estimator
+rather than on optics, and it is worth saying out loud instead of
+quoting a lens number we no longer buy.
+
+Both rows above are nominal. **The number that matters is measured, not
+derived** — §7.3 obtains plate scale from a commanded move, never from
+a lens's stated focal length, precisely because cheap webcams do not
+publish honest FOV figures. That is worth
 mechanism, a better sensor buys nothing. Money goes into the belt, or
 nowhere.
 
@@ -185,14 +197,15 @@ ordering, and say which is which if a judge asks what the rig cost.
 | Diametric magnet, 6 × 2.5 mm | 2 | ₹90 | **₹180** | ~ estimate |
 | TCA9548A I²C multiplexer | 1 | ₹199 | **₹199** | ✅ verified |
 | **C. Head — camera and laser, one enclosure** | | | | |
-| USB camera module, M12 mount, 12 mm lens | 1 | ₹1,400 | **₹1,400** | ~ estimate |
+| USB webcam, UVC, 640x480+ — housing removed before mounting | 1 | ₹800 | **₹800** | ✅ verified |
 | Red filter — gel sheet or red acrylic offcut | 1 | ₹100 | **₹100** | ~ estimate |
 | KY-008 laser module | — | — | **₹0** | reuse Mk1 |
 | ABS project box, head enclosure | 1 | ₹115 | **₹115** | ~ estimate |
 | **D. Control and power** | | | | |
 | Arduino Nano — tracker | — | — | **₹0** | reuse Mk1 |
 | Arduino Nano — beacon | 1 | ₹225 | **₹225** | ~ estimate |
-| 12 V 3000 mAh Li-ion battery pack + charger, DC barrel out | 1 | ₹650 | **₹650** | ~ estimate |
+| 12 V Li-ion pack, 3S (or 3x18650 + holder) | 1 | ₹650 | **₹650** | ~ estimate |
+| 3S 12.6 V balance charger — NOT a single-cell charger | 1 | ₹250 | **₹250** | ~ estimate |
 | DC barrel jack to screw-terminal adapter | 1 | ₹30 | **₹30** | ~ estimate |
 | SPST toggle switch — motor rail kill switch | 1 | ₹25 | **₹25** | ~ estimate |
 | Breadboard, 830 point (drivers + Nano + mux) | 1 | ₹90 | **₹90** | ~ estimate |
@@ -217,7 +230,7 @@ ordering, and say which is which if a judge asks what the rig cost.
 | Dupont jumper wires — M-M, M-F, F-F | 1 | ₹150 | **₹150** | ~ estimate |
 | M3 screws, nuts, standoffs assortment | 1 | ₹150 | **₹150** | ~ estimate |
 | Heat-shrink, solder, hot-glue sticks | 1 | ₹150 | **₹150** | ~ estimate |
-| **TOTAL** | | | **₹7,059** | |
+| **TOTAL** | | | **₹6,709** | |
 
 **Resolution you actually get:** 1.8° ÷ 16 microsteps = 0.1125°/step =
 **1.96 mrad**, with the AS5600 measuring true position to 0.088° = 1.53
@@ -302,7 +315,7 @@ with the decoy lit throughout and never chased.*
 ---
 ## 4. Search: the cost of a narrow lens
 
-A 12 mm lens sees 22°×16°. Covering a 90°×40° volume takes 24 tiles at
+A 12 mm M12 lens sees 22°×16°; the UVC webcam Tier A actually specifies sees roughly 48°×36°, which cuts a 90°×40° volume from 24 tiles to about 4 — the one place the cheaper camera is strictly better. At 22°×16° it takes 24 tiles at
 20% overlap, and a 4 Hz blink needs at least two full periods — 0.5 s —
 to identify, so budget ~0.4 s per tile once settled. That is roughly
 **10 seconds for a full cold search**.
@@ -442,6 +455,25 @@ verified line is single-shaft; that is the motor most builders will
 actually have.
 
 ### Head
+
+**The camera-to-tilt-shaft standoff must be metal.** An M3 brass
+standoff out of the assortment already on the list is correct; a
+3D-printed one is not, and the difference is not marginal. For the
+42 mm span this build uses, carrying roughly 80 g of head:
+
+| Standoff material | Static droop | Natural frequency |
+|---|---|---|
+| Steel | 54 µrad (0.5 px) | 404 Hz |
+| Aluminium / brass | 158 µrad (1.4 px) | 237 Hz |
+| **PLA, 3D-printed** | **3,109 µrad (28.5 px)** | **53 Hz** |
+
+53 Hz sits on top of the 47 Hz platform mode this build's own benchmark
+scenario injects. A printed standoff is therefore a resonator tuned to
+the disturbance we are trying to reject — it manufactures the
+flex-reads-as-pointing-error failure §0 is built to avoid. The CAD model
+in `docs/cad/` carries the same warning, because the obvious thing to do
+with an STL is print all of it.
+
 
 The camera's USB cable and the laser's two wires run from the head,
 through the tilt axis, through the pan axis, to the base. Leave a

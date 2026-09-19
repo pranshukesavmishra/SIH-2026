@@ -309,8 +309,8 @@ ROWS = [
     ("Platform motion",          "\u00b1 20 px / frame, linear",  "linear drift, 6 px / frame",   True),
     ("Atmospheric conditions",   "Clear / Haze / Fog / Rain / Low light", "all five",          True),
     ("MP4 input, bypassing PTZ", "required (Benchmark-2)",    "--video, working",             True),
-    ("Tracking error",           "\u2264 10 px",                  "9.4 px  (drift nulled)",       None),
-    ("Acquisition time",         "\u2264 2 s",                    "1.77 s  (drift nulled)",       None),
+    ("Acquisition time",         "\u2264 2 s",                    "25.3 s \u2192 3.53 s  \u2014 open",  False),
+    ("Tracking error (median)",  "\u2264 10 px",                  "2,367 \u2192 170 px  \u2014 open",  False),
     ("Processing speed",         "\u2265 20 FPS",                 "9.2 FPS  \u2014 open",             False),
 ]
 
@@ -353,10 +353,12 @@ foot_y = y0 + rowh * (len(ROWS) + 1) + 0.10
 card(s, x0, foot_y, w, 0.76, fill=RGBColor(0xF3, 0xF7, 0xFA))
 _, tf = tb(s, x0 + 0.16, foot_y + 0.02, w - 0.32, 0.72)
 bullets(tf, [
-    ("~ measured with platform drift removed.  ",
-     "Ablation isolates the whole remaining failure to one cause: a constant-velocity "
-     "disturbance is a ramp, and a PD loop has finite steady-state error to a ramp. "
-     "A second integrator \u2014 type 2 \u2014 is the fix, not tuning."),
+    ("The three open rows are open, not footnoted.  ",
+     "Arrows are before \u2192 after our own fix, both measured with the full specified "
+     "disturbance present. A constant-velocity platform drift is a ramp, and a PD loop "
+     "has finite steady-state error to a ramp \u2014 wrong loop order, not bad tuning. "
+     "Adding a second integrator (type 2, leaky) cut acquisition 7x and median error "
+     "14x. It is implemented and shipped; it is not yet enough."),
     ("Every figure regenerates from  ",
      "scenarios/ps26169_benchmark.yaml, which encodes their table and nothing else."),
 ], size=9, gap=2)

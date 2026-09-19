@@ -133,7 +133,12 @@ def test_the_motor_rail_has_a_supply_that_is_not_the_laptop(bom):
     and the entire demo is a still photograph.
     """
     names = [i["item"].lower() for s in bom["sections"] for i in s["items"]]
-    assert any("battery pack" in n or "trigger" in n for n in names), (
+    # Match the property, not a product name: something on the list has to
+    # be a portable source at the A4988's VMOT voltage. Matching the exact
+    # phrase "battery pack" broke the moment the item was renamed to say
+    # it may be assembled from loose 18650s.
+    assert any(("li-ion" in n or "battery" in n or "trigger" in n) and "12 v" in n
+               for n in names), (
         "nothing on the list can supply the A4988's VMOT away from mains")
 
 

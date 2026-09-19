@@ -96,13 +96,17 @@ def rewrite_buylist(bom) -> bool:
             subtotal[src] = subtotal.get(src, 0) + sub
             qty = "—" if i["qty"] == 0 else str(i["qty"])
             tick = "✓" if i["price_basis"] == "verified" else "~"
+            icon = i.get("icon")
+            pic = (f'<svg class="ic" viewBox="0 0 64 64"><use href="#{icon}"/></svg>'
+                   if icon else "")
             cells = "".join(
                 f'<td class="ck{" yes" if c == src else ""}{" online-col" if c == "online" else ""}">'
                 f'{"&#10003;" if c == src else ""}</td>' for c in cols)
-            rows.append(f'<tr><td class="q">{qty}</td><td>{i["item"]}</td>'
+            rows.append(f'<tr><td class="pic">{pic}</td><td class="q">{qty}</td>'
+                        f'<td>{i["item"]}</td>'
                         f'<td class="p">{tick}</td><td class="v">₹{sub:,}</td>{cells}</tr>')
 
-    rows.append(f'<tr class="totrow"><td></td><td>GRAND TOTAL</td><td></td>'
+    rows.append(f'<tr class="totrow"><td></td><td></td><td>GRAND TOTAL</td><td></td>'
                 f'<td class="v">₹{bom["total_inr"]:,}</td>'
                 + "".join(f'<td class="ck{" online-col" if c == "online" else ""}">'
                           f'₹{subtotal[c]:,}</td>' for c in cols) + "</tr>")

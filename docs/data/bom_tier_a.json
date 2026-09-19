@@ -10,28 +10,32 @@
           "qty": 2,
           "unit_inr": 749,
           "price_basis": "verified",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-nema"
         },
         {
           "item": "A4988 stepper driver module",
           "qty": 2,
           "unit_inr": 170,
           "price_basis": "verified",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-a4988"
         },
         {
           "item": "NEMA17 L-bracket (pan + tilt)",
           "qty": 2,
           "unit_inr": 127,
           "price_basis": "verified",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-bracket"
         },
         {
           "item": "100 µF 25 V electrolytic capacitor",
           "qty": 2,
           "unit_inr": 10,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-cap"
         }
       ]
     },
@@ -43,21 +47,24 @@
           "qty": 2,
           "unit_inr": 249,
           "price_basis": "verified",
-          "source": "online"
+          "source": "online",
+          "icon": "p-as5600"
         },
         {
           "item": "Diametric magnet, 6 × 2.5 mm",
           "qty": 2,
           "unit_inr": 90,
           "price_basis": "estimate",
-          "source": "online"
+          "source": "online",
+          "icon": "p-magnet"
         },
         {
           "item": "TCA9548A I²C multiplexer",
           "qty": 1,
           "unit_inr": 199,
           "price_basis": "verified",
-          "source": "online"
+          "source": "online",
+          "icon": "p-mux"
         }
       ]
     },
@@ -69,28 +76,32 @@
           "qty": 1,
           "unit_inr": 1400,
           "price_basis": "estimate",
-          "source": "online"
+          "source": "online",
+          "icon": "p-camera"
         },
         {
           "item": "Red filter — gel sheet or red acrylic offcut",
           "qty": 1,
           "unit_inr": 100,
           "price_basis": "estimate",
-          "source": "online"
+          "source": "online",
+          "icon": "p-filter"
         },
         {
           "item": "KY-008 laser module",
           "qty": 0,
           "unit_inr": 0,
           "price_basis": "reuse Mk1",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-laser"
         },
         {
           "item": "ABS project box, head enclosure",
           "qty": 1,
           "unit_inr": 115,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-box"
         }
       ]
     },
@@ -102,56 +113,64 @@
           "qty": 0,
           "unit_inr": 0,
           "price_basis": "reuse Mk1",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-nano"
         },
         {
           "item": "Arduino Nano — beacon",
           "qty": 1,
           "unit_inr": 225,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-nano"
         },
         {
           "item": "12 V 3000 mAh Li-ion battery pack + charger, DC barrel out",
           "qty": 1,
           "unit_inr": 650,
           "price_basis": "estimate",
-          "source": "online"
+          "source": "online",
+          "icon": "p-battery"
         },
         {
           "item": "DC barrel jack to screw-terminal adapter",
           "qty": 1,
           "unit_inr": 30,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-barrel"
         },
         {
           "item": "SPST toggle switch — motor rail kill switch",
           "qty": 1,
           "unit_inr": 25,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-switch"
         },
         {
           "item": "Breadboard, 830 point (drivers + Nano + mux)",
           "qty": 1,
           "unit_inr": 90,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-breadboard"
         },
         {
           "item": "USB-B and mini-USB cables for the two Nanos",
           "qty": 2,
           "unit_inr": 99,
           "price_basis": "estimate",
-          "source": "blinkit"
+          "source": "blinkit",
+          "icon": "p-usb"
         },
         {
           "item": "Acrylic sheet 3 mm, 6″×6″ (pack of 2)",
           "qty": 1,
           "unit_inr": 199,
           "price_basis": "verified",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-acrylic"
         }
       ]
     },
@@ -163,14 +182,16 @@
           "qty": 1,
           "unit_inr": 20,
           "price_basis": "verified",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-vibe"
         },
         {
           "item": "Transistor + diode + resistor combo kit",
           "qty": 1,
           "unit_inr": 105,
           "price_basis": "verified",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-resistor"
         }
       ]
     },
@@ -182,42 +203,48 @@
           "qty": 1,
           "unit_inr": 22,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-led"
         },
         {
           "item": "2N2222 transistor + 220 Ω + 1 kΩ",
           "qty": 1,
           "unit_inr": 20,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-resistor"
         },
         {
           "item": "Ping-pong ball (diffuser)",
           "qty": 1,
           "unit_inr": 129,
           "price_basis": "verified",
-          "source": "blinkit"
+          "source": "blinkit",
+          "icon": "p-ball"
         },
         {
           "item": "USB power bank (any, 5V) — beacon supply",
           "qty": 0,
           "unit_inr": 0,
           "price_basis": "reuse Mk1",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-powerbank"
         },
         {
           "item": "SPST toggle switch",
           "qty": 1,
           "unit_inr": 25,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-switch"
         },
         {
           "item": "ABS project box",
           "qty": 1,
           "unit_inr": 115,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-box"
         }
       ]
     },
@@ -229,28 +256,32 @@
           "qty": 1,
           "unit_inr": 22,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-led"
         },
         {
           "item": "68 Ω resistor",
           "qty": 1,
           "unit_inr": 5,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-resistor"
         },
         {
           "item": "3×AA battery holder + 3 AA cells — decoy supply",
           "qty": 1,
           "unit_inr": 90,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-aa"
         },
         {
           "item": "Switch + scrap housing",
           "qty": 1,
           "unit_inr": 35,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-switch"
         }
       ]
     },
@@ -262,21 +293,24 @@
           "qty": 1,
           "unit_inr": 150,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-wires"
         },
         {
           "item": "M3 screws, nuts, standoffs assortment",
           "qty": 1,
           "unit_inr": 150,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-screws"
         },
         {
           "item": "Heat-shrink, solder, hot-glue sticks",
           "qty": 1,
           "unit_inr": 150,
           "price_basis": "estimate",
-          "source": "amar"
+          "source": "amar",
+          "icon": "p-misc"
         }
       ]
     }

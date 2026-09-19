@@ -29,7 +29,225 @@ tbody tr:nth-child(odd){background:#fafbfc;}
 .online-col{color:#b3261e;}
 h2{font-size:11.5px;margin:10px 0 4px;letter-spacing:.04em;text-transform:uppercase}
 .why{font-size:8.5px;line-height:1.35;color:#444}
+
+.ic{width:26px;height:26px;display:block;margin:0 auto}
+td.pic{width:30px;padding:1px 2px}
+th.pic{width:30px}
+.nobuy{margin:8px 0;padding:7px 10px;border:1.6px solid #9c2e23;border-radius:5px;background:#fcf0ee;display:flex;align-items:center;gap:10px}
+.nobuy svg{width:44px;height:44px;flex:0 0 auto}
+.nobuy .t{font-size:9px;line-height:1.4;color:#9c2e23}
 </style></head><body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+<!-- Line-art part icons for the buy list. Drawn rather than photographed:
+     a drawing can exaggerate the one feature that distinguishes a correct
+     part from a wrong one, which a catalogue photo cannot. The magnet
+     pair is the whole reason this file exists. -->
+<symbol id="p-nema" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<rect x="10" y="12" width="40" height="40" rx="3"/><circle cx="30" cy="32" r="8"/>
+<line x1="50" y1="32" x2="60" y2="32" stroke-width="5"/>
+<circle cx="16" cy="18" r="1.8" fill="#123"/><circle cx="44" cy="18" r="1.8" fill="#123"/>
+<circle cx="16" cy="46" r="1.8" fill="#123"/><circle cx="44" cy="46" r="1.8" fill="#123"/>
+<line x1="10" y1="24" x2="4" y2="24"/><line x1="10" y1="30" x2="4" y2="30"/>
+<line x1="10" y1="36" x2="4" y2="36"/><line x1="10" y1="42" x2="4" y2="42"/></g></symbol>
+
+<symbol id="p-a4988" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.4">
+<rect x="14" y="8" width="36" height="48" rx="2"/>
+<rect x="22" y="20" width="20" height="20" rx="1"/>
+<circle cx="32" cy="50" r="5"/><line x1="32" y1="45" x2="32" y2="55"/>
+<g stroke-width="2">
+<line x1="14" y1="14" x2="8" y2="14"/><line x1="14" y1="22" x2="8" y2="22"/>
+<line x1="14" y1="30" x2="8" y2="30"/><line x1="14" y1="38" x2="8" y2="38"/>
+<line x1="50" y1="14" x2="56" y2="14"/><line x1="50" y1="22" x2="56" y2="22"/>
+<line x1="50" y1="30" x2="56" y2="30"/><line x1="50" y1="38" x2="56" y2="38"/></g></g>
+<text x="32" y="17" font-size="9" text-anchor="middle" fill="#123" font-family="monospace">VREF</text></symbol>
+
+<symbol id="p-cap" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<rect x="20" y="10" width="24" height="36" rx="3"/>
+<path d="M24 10 v36" stroke-width="7" stroke-opacity=".28"/>
+<line x1="27" y1="46" x2="27" y2="60"/><line x1="37" y1="46" x2="37" y2="60"/></g>
+<text x="37" y="30" font-size="13" text-anchor="middle" fill="#123" font-family="monospace">+</text></symbol>
+
+<symbol id="p-as5600" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.4">
+<rect x="10" y="14" width="44" height="34" rx="3"/><circle cx="34" cy="31" r="9"/>
+<circle cx="34" cy="31" r="2.6" fill="#123" stroke="none"/>
+<circle cx="16" cy="20" r="1.6" fill="#123" stroke="none"/>
+<circle cx="16" cy="42" r="1.6" fill="#123" stroke="none"/>
+<g stroke-width="2"><line x1="10" y1="26" x2="4" y2="26"/><line x1="10" y1="31" x2="4" y2="31"/>
+<line x1="10" y1="36" x2="4" y2="36"/></g></g></symbol>
+
+<!-- The two magnets side by side. This is the single most expensive
+     confusion available in the build: they are the same cylinder and only
+     the pole axis differs. -->
+<symbol id="p-magnet" viewBox="0 0 64 64">
+<g fill="none" stroke="#1a7a3c" stroke-width="2.6">
+<ellipse cx="18" cy="16" rx="13" ry="5"/><path d="M5 16 v14"/><path d="M31 16 v14"/>
+<ellipse cx="18" cy="30" rx="13" ry="5"/></g>
+<line x1="18" y1="11" x2="18" y2="35" stroke="#1a7a3c" stroke-width="1.6" stroke-dasharray="3 2"/>
+<text x="9" y="26" font-size="10" fill="#1a7a3c" font-family="monospace" font-weight="bold">N</text>
+<text x="23" y="26" font-size="10" fill="#1a7a3c" font-family="monospace" font-weight="bold">S</text>
+<text x="18" y="46" font-size="8.5" text-anchor="middle" fill="#1a7a3c" font-family="monospace" font-weight="bold">DIAMETRIC</text>
+<text x="18" y="55" font-size="8.5" text-anchor="middle" fill="#1a7a3c" font-family="monospace">BUY THIS</text>
+<g fill="none" stroke="#9c2e23" stroke-width="2.6">
+<ellipse cx="48" cy="16" rx="13" ry="5"/><path d="M35 16 v14"/><path d="M61 16 v14"/>
+<ellipse cx="48" cy="30" rx="13" ry="5"/></g>
+<text x="48" y="15" font-size="9" text-anchor="middle" fill="#9c2e23" font-family="monospace" font-weight="bold">N</text>
+<text x="48" y="36" font-size="9" text-anchor="middle" fill="#9c2e23" font-family="monospace" font-weight="bold">S</text>
+<text x="48" y="46" font-size="8.5" text-anchor="middle" fill="#9c2e23" font-family="monospace" font-weight="bold">AXIAL</text>
+<text x="48" y="55" font-size="8.5" text-anchor="middle" fill="#9c2e23" font-family="monospace">DEAD</text>
+<line x1="36" y1="8" x2="60" y2="40" stroke="#9c2e23" stroke-width="2.4"/></symbol>
+
+<symbol id="p-mux" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.4">
+<rect x="12" y="12" width="40" height="40" rx="3"/>
+<rect x="24" y="24" width="16" height="16" rx="1"/>
+<g stroke-width="2"><line x1="12" y1="20" x2="6" y2="20"/><line x1="12" y1="32" x2="6" y2="32"/>
+<line x1="12" y1="44" x2="6" y2="44"/>
+<line x1="52" y1="18" x2="58" y2="18"/><line x1="52" y1="26" x2="58" y2="26"/>
+<line x1="52" y1="34" x2="58" y2="34"/><line x1="52" y1="42" x2="58" y2="42"/></g></g>
+<text x="32" y="36" font-size="8" text-anchor="middle" fill="#123" font-family="monospace">1:8</text></symbol>
+
+<!-- USB camera vs OV7670. Added after an OV7670 was nearly bought: it is
+     a parallel DVP part with no USB, and no laptop can open it. -->
+<symbol id="p-camera" viewBox="0 0 64 64">
+<g fill="none" stroke="#1a7a3c" stroke-width="2.6">
+<rect x="4" y="14" width="28" height="28" rx="2"/><circle cx="18" cy="28" r="9"/>
+<circle cx="18" cy="28" r="4.5"/>
+<path d="M32 28 h10 a4 4 0 0 1 4 4 v6"/>
+<rect x="41" y="38" width="10" height="7" rx="1"/>
+<path d="M44 45 v6 M48 45 v6"/></g>
+<text x="46" y="26" font-size="9" text-anchor="middle" fill="#1a7a3c" font-family="monospace" font-weight="bold">USB</text>
+<text x="18" y="52" font-size="8" text-anchor="middle" fill="#1a7a3c" font-family="monospace" font-weight="bold">UVC WEBCAM</text>
+<text x="18" y="60" font-size="7.5" text-anchor="middle" fill="#1a7a3c" font-family="monospace">M12 lens</text></symbol>
+
+<symbol id="p-ov7670" viewBox="0 0 64 64">
+<g fill="none" stroke="#9c2e23" stroke-width="2.6">
+<rect x="14" y="12" width="36" height="34" rx="2"/><circle cx="32" cy="29" r="9"/>
+<g stroke-width="1.8">
+<line x1="18" y1="12" x2="18" y2="6"/><line x1="23" y1="12" x2="23" y2="6"/>
+<line x1="28" y1="12" x2="28" y2="6"/><line x1="33" y1="12" x2="33" y2="6"/>
+<line x1="38" y1="12" x2="38" y2="6"/><line x1="43" y1="12" x2="43" y2="6"/></g></g>
+<line x1="12" y1="8" x2="52" y2="50" stroke="#9c2e23" stroke-width="3"/>
+<text x="32" y="56" font-size="8" text-anchor="middle" fill="#9c2e23" font-family="monospace" font-weight="bold">OV7670 — NO</text>
+<text x="32" y="63" font-size="7" text-anchor="middle" fill="#9c2e23" font-family="monospace">parallel, no USB</text></symbol>
+
+<symbol id="p-nano" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.4">
+<rect x="6" y="22" width="52" height="20" rx="2"/>
+<rect x="6" y="26" width="9" height="12" rx="1"/>
+<rect x="28" y="28" width="13" height="8" rx="1"/>
+<g stroke-width="1.6">
+<line x1="18" y1="22" x2="18" y2="18"/><line x1="24" y1="22" x2="24" y2="18"/>
+<line x1="30" y1="22" x2="30" y2="18"/><line x1="36" y1="22" x2="36" y2="18"/>
+<line x1="42" y1="22" x2="42" y2="18"/><line x1="48" y1="22" x2="48" y2="18"/>
+<line x1="18" y1="42" x2="18" y2="46"/><line x1="24" y1="42" x2="24" y2="46"/>
+<line x1="30" y1="42" x2="30" y2="46"/><line x1="36" y1="42" x2="36" y2="46"/>
+<line x1="42" y1="42" x2="42" y2="46"/><line x1="48" y1="42" x2="48" y2="46"/></g></g></symbol>
+
+<symbol id="p-battery" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<rect x="6" y="18" width="38" height="28" rx="3"/>
+<path d="M44 28 h6" /><circle cx="55" cy="32" r="7"/><circle cx="55" cy="32" r="2.4" fill="#123" stroke="none"/>
+<path d="M44 36 h6"/></g>
+<text x="25" y="37" font-size="13" text-anchor="middle" fill="#123" font-family="monospace" font-weight="bold">12V</text></symbol>
+
+<symbol id="p-barrel" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<circle cx="18" cy="32" r="10"/><circle cx="18" cy="32" r="3.4"/>
+<path d="M28 32 h8"/><rect x="36" y="22" width="22" height="20" rx="2"/>
+<circle cx="43" cy="32" r="3"/><circle cx="51" cy="32" r="3"/>
+<path d="M43 22 v-5 M51 22 v-5"/></g></symbol>
+
+<symbol id="p-breadboard" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.2">
+<rect x="5" y="12" width="54" height="40" rx="2"/><line x1="32" y1="20" x2="32" y2="44"/></g>
+<g fill="#123">
+<circle cx="12" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/><circle cx="24" cy="20" r="1.3"/>
+<circle cx="40" cy="20" r="1.3"/><circle cx="46" cy="20" r="1.3"/><circle cx="52" cy="20" r="1.3"/>
+<circle cx="12" cy="26" r="1.3"/><circle cx="18" cy="26" r="1.3"/><circle cx="24" cy="26" r="1.3"/>
+<circle cx="40" cy="26" r="1.3"/><circle cx="46" cy="26" r="1.3"/><circle cx="52" cy="26" r="1.3"/>
+<circle cx="12" cy="38" r="1.3"/><circle cx="18" cy="38" r="1.3"/><circle cx="24" cy="38" r="1.3"/>
+<circle cx="40" cy="38" r="1.3"/><circle cx="46" cy="38" r="1.3"/><circle cx="52" cy="38" r="1.3"/>
+<circle cx="12" cy="44" r="1.3"/><circle cx="18" cy="44" r="1.3"/><circle cx="24" cy="44" r="1.3"/>
+<circle cx="40" cy="44" r="1.3"/><circle cx="46" cy="44" r="1.3"/><circle cx="52" cy="44" r="1.3"/></g></symbol>
+
+<symbol id="p-switch" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<rect x="18" y="24" width="28" height="20" rx="3"/>
+<path d="M32 24 l8 -12" stroke-width="4"/><circle cx="41" cy="11" r="3.5" fill="#123" stroke="none"/>
+<line x1="24" y1="44" x2="24" y2="56"/><line x1="32" y1="44" x2="32" y2="56"/>
+<line x1="40" y1="44" x2="40" y2="56"/></g></symbol>
+
+<symbol id="p-led" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<path d="M20 36 a12 12 0 0 1 24 0 v6 h-24 z"/><line x1="18" y1="42" x2="46" y2="42"/>
+<line x1="27" y1="42" x2="27" y2="58"/><line x1="37" y1="42" x2="37" y2="54"/></g>
+<g stroke="#123" stroke-width="1.8"><path d="M46 22 l7 -7 M43 17 l6 -6"/></g></symbol>
+
+<symbol id="p-vibe" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<circle cx="30" cy="32" r="14"/><circle cx="30" cy="32" r="5"/>
+<path d="M44 30 h10 M44 36 h10"/></g>
+<g stroke="#123" stroke-width="1.8" fill="none">
+<path d="M12 22 q-5 10 0 20"/><path d="M6 18 q-7 14 0 28"/></g></symbol>
+
+<symbol id="p-ball" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<circle cx="32" cy="32" r="18"/><path d="M20 20 q12 12 0 24" stroke-opacity=".4"/>
+<path d="M44 20 q-12 12 0 24" stroke-opacity=".4"/></g></symbol>
+
+<symbol id="p-bracket" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.8">
+<path d="M14 12 v40 h36"/><circle cx="22" cy="22" r="2.4"/><circle cx="22" cy="34" r="2.4"/>
+<circle cx="32" cy="44" r="2.4"/><circle cx="42" cy="44" r="2.4"/></g></symbol>
+
+<symbol id="p-box" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<rect x="10" y="18" width="44" height="30" rx="2"/><path d="M10 26 h44"/>
+<circle cx="16" cy="22" r="1.4" fill="#123" stroke="none"/>
+<circle cx="48" cy="22" r="1.4" fill="#123" stroke="none"/></g></symbol>
+
+<symbol id="p-wires" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.4">
+<path d="M8 20 q16 -8 28 4 t20 4"/><path d="M8 32 q16 -8 28 4 t20 4"/>
+<path d="M8 44 q16 -8 28 4 t20 4"/></g>
+<g fill="#123"><rect x="4" y="17" width="5" height="6" rx="1"/>
+<rect x="4" y="29" width="5" height="6" rx="1"/><rect x="4" y="41" width="5" height="6" rx="1"/></g></symbol>
+
+<symbol id="p-usb" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<rect x="6" y="26" width="14" height="12" rx="1"/><path d="M20 32 q14 -10 26 0 t12 0"/>
+<rect x="46" y="27" width="12" height="10" rx="2"/></g></symbol>
+
+<symbol id="p-laser" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<rect x="10" y="24" width="24" height="16" rx="2"/><circle cx="36" cy="32" r="5"/>
+<path d="M42 32 h16" stroke-dasharray="4 3"/>
+<line x1="14" y1="40" x2="14" y2="52"/><line x1="22" y1="40" x2="22" y2="52"/>
+<line x1="30" y1="40" x2="30" y2="52"/></g></symbol>
+
+<symbol id="p-filter" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<rect x="12" y="14" width="40" height="36" rx="2"/></g>
+<rect x="12" y="14" width="40" height="36" rx="2" fill="#9c2e23" fill-opacity=".22"/>
+<text x="32" y="36" font-size="10" text-anchor="middle" fill="#9c2e23" font-family="monospace" font-weight="bold">650</text></symbol>
+
+<symbol id="p-aa" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.4">
+<rect x="8" y="16" width="48" height="12" rx="2"/><rect x="8" y="34" width="48" height="12" rx="2"/>
+<path d="M56 20 h3 v4 h-3" /><path d="M56 38 h3 v4 h-3"/></g>
+<text x="32" y="26" font-size="8" text-anchor="middle" fill="#123" font-family="monospace">AA  AA</text>
+<text x="32" y="44" font-size="8" text-anchor="middle" fill="#123" font-family="monospace">AA</text></symbol>
+
+<symbol id="p-acrylic" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<rect x="10" y="16" width="40" height="34" rx="1"/><path d="M14 12 h40 v34" stroke-opacity=".45"/></g></symbol>
+
+<symbol id="p-screws" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.4">
+<circle cx="18" cy="16" r="5"/><path d="M18 21 v22" stroke-dasharray="3 2"/>
+<circle cx="40" cy="20" r="7"/><circle cx="40" cy="20" r="3"/>
+<rect x="30" y="38" width="16" height="10" rx="1"/><circle cx="38" cy="43" r="3"/></g></symbol>
+
+<symbol id="p-misc" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.4">
+<path d="M10 40 q8 -16 20 -6 t18 -8"/><rect x="8" y="44" width="48" height="8" rx="2"/>
+<circle cx="46" cy="18" r="6"/></g></symbol>
+
+<symbol id="p-resistor" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<path d="M4 32 h12"/><rect x="16" y="24" width="32" height="16" rx="3"/><path d="M48 32 h12"/>
+<line x1="24" y1="24" x2="24" y2="40" stroke-width="3.4"/>
+<line x1="31" y1="24" x2="31" y2="40" stroke-width="3.4"/>
+<line x1="38" y1="24" x2="38" y2="40" stroke-width="3.4"/></g></symbol>
+
+<symbol id="p-powerbank" viewBox="0 0 64 64"><g fill="none" stroke="#123" stroke-width="2.6">
+<rect x="14" y="10" width="36" height="44" rx="4"/>
+<rect x="26" y="46" width="12" height="5" rx="1"/></g>
+<g fill="#123"><rect x="22" y="20" width="4" height="10"/><rect x="30" y="20" width="4" height="10"/>
+<rect x="38" y="20" width="4" height="10"/></g>
+<text x="32" y="42" font-size="8" text-anchor="middle" fill="#123" font-family="monospace">5V</text></symbol>
+</svg>
+
 
 <h1>ZeroDrift Mk3 — buy checklist, one item per row</h1>
 <div class="sub">Total ₹7,059 · ✓ = price verified against a live listing, ~ = estimate ·
@@ -42,46 +260,69 @@ from where I work), so treat every box as a suggestion to confirm, not a fact. T
 <span class="online-col"><b>online</b></span> items are the ones with real delivery lead time —
 order those first, tonight, regardless of what else is still open.</div>
 
+<div class="nobuy">
+<svg viewBox="0 0 64 64"><use href="#p-ov7670"/></svg>
+<div class="t"><b>DO NOT BUY THE OV7670.</b> It is a parallel-DVP sensor, not a USB camera,
+and it cannot work here for three independent reasons. (1)&nbsp;No USB &mdash; the pipeline runs on the
+laptop and opens the camera with OpenCV; the OV7670 exposes D0&ndash;D7, PCLK, HREF, VSYNC and SCCB,
+which no laptop can read. (2)&nbsp;The Nano cannot read it either: ~12&nbsp;MHz pixel clock against a
+16&nbsp;MHz ATmega328P with <b>2&nbsp;KB</b> of SRAM, when one 640&times;480 frame is <b>307&nbsp;KB</b>.
+(3)&nbsp;The bare board has no AL422B FIFO, and even the FIFO version manages a few FPS at 160&times;120
+where the spec needs <b>&ge;20&nbsp;FPS at 640&times;480</b>.</div>
+<svg viewBox="0 0 64 64"><use href="#p-camera"/></svg>
+<div class="t"><b>BUY THIS INSTEAD.</b> Ask for a <b>USB webcam module, UVC, 640&times;480 or better,
+M12 lens</b>. The test is simple: plug it into a laptop, and if it appears as an ordinary webcam it
+will work.</div>
+</div>
+<div class="nobuy" style="border-color:#1a7a3c;background:#f0f7f2">
+<svg viewBox="0 0 64 64" style="width:92px;height:56px"><use href="#p-magnet"/></svg>
+<div class="t" style="color:#123"><b style="color:#9c2e23">THE MAGNET IS THE ONE THAT LOOKS IDENTICAL.</b>
+A diametric magnet is polarised <b>across its diameter</b>; an axial magnet is polarised
+<b>through its thickness</b>. Same cylinder, same size, same price, same silver finish &mdash; and
+an axial magnet spinning in front of an AS5600 presents an <b>unchanging field</b>, so the encoder
+reads a constant and both feedback axes are dead. Nothing in the build tells you why.
+<b>Say the word &ldquo;diametric&rdquo; out loud at the counter and check the listing text before paying.</b></div>
+</div>
 <table>
-<thead><tr><th class="q">Qty</th><th>Item</th><th class="p"></th><th class="v">₹</th>
+<thead><tr><th class="pic"></th><th class="q">Qty</th><th>Item</th><th class="p"></th><th class="v">₹</th>
 <th class="ck">Amar<br>Robotics</th><th class="ck">Blinkit</th>
 <th class="ck online-col">Online</th><th class="ck">Have</th></tr></thead>
 <tbody>
-<tr><td class="q">2</td><td>NEMA17 stepper motor, 1.8°/step, 4.2 kg-cm</td><td class="p">✓</td><td class="v">₹1,498</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">2</td><td>A4988 stepper driver module</td><td class="p">✓</td><td class="v">₹340</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">2</td><td>NEMA17 L-bracket (pan + tilt)</td><td class="p">✓</td><td class="v">₹254</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">2</td><td>100 µF 25 V electrolytic capacitor</td><td class="p">~</td><td class="v">₹20</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">2</td><td>AS5600 magnetic encoder module</td><td class="p">✓</td><td class="v">₹498</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
-<tr><td class="q">2</td><td>Diametric magnet, 6 × 2.5 mm</td><td class="p">~</td><td class="v">₹180</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>TCA9548A I²C multiplexer</td><td class="p">✓</td><td class="v">₹199</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>USB camera module, M12 mount, 12 mm lens</td><td class="p">~</td><td class="v">₹1,400</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>Red filter — gel sheet or red acrylic offcut</td><td class="p">~</td><td class="v">₹100</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
-<tr><td class="q">—</td><td>KY-008 laser module</td><td class="p">~</td><td class="v">₹0</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>ABS project box, head enclosure</td><td class="p">~</td><td class="v">₹115</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">—</td><td>Arduino Nano — tracker</td><td class="p">~</td><td class="v">₹0</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>Arduino Nano — beacon</td><td class="p">~</td><td class="v">₹225</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>12 V 3000 mAh Li-ion battery pack + charger, DC barrel out</td><td class="p">~</td><td class="v">₹650</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>DC barrel jack to screw-terminal adapter</td><td class="p">~</td><td class="v">₹30</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>SPST toggle switch — motor rail kill switch</td><td class="p">~</td><td class="v">₹25</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>Breadboard, 830 point (drivers + Nano + mux)</td><td class="p">~</td><td class="v">₹90</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">2</td><td>USB-B and mini-USB cables for the two Nanos</td><td class="p">~</td><td class="v">₹198</td><td class="ck"></td><td class="ck yes">&#10003;</td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>Acrylic sheet 3 mm, 6″×6″ (pack of 2)</td><td class="p">✓</td><td class="v">₹199</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>Vibration motor, 3 V DC</td><td class="p">✓</td><td class="v">₹20</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>Transistor + diode + resistor combo kit</td><td class="p">✓</td><td class="v">₹105</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>High-brightness RED LED, 10 mm, 650 nm</td><td class="p">~</td><td class="v">₹22</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>2N2222 transistor + 220 Ω + 1 kΩ</td><td class="p">~</td><td class="v">₹20</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>Ping-pong ball (diffuser)</td><td class="p">✓</td><td class="v">₹129</td><td class="ck"></td><td class="ck yes">&#10003;</td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">—</td><td>USB power bank (any, 5V) — beacon supply</td><td class="p">~</td><td class="v">₹0</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>SPST toggle switch</td><td class="p">~</td><td class="v">₹25</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>ABS project box</td><td class="p">~</td><td class="v">₹115</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>High-brightness WHITE LED (brighter than beacon)</td><td class="p">~</td><td class="v">₹22</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>68 Ω resistor</td><td class="p">~</td><td class="v">₹5</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>3×AA battery holder + 3 AA cells — decoy supply</td><td class="p">~</td><td class="v">₹90</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>Switch + scrap housing</td><td class="p">~</td><td class="v">₹35</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>Dupont jumper wires — M-M, M-F, F-F</td><td class="p">~</td><td class="v">₹150</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>M3 screws, nuts, standoffs assortment</td><td class="p">~</td><td class="v">₹150</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr><td class="q">1</td><td>Heat-shrink, solder, hot-glue sticks</td><td class="p">~</td><td class="v">₹150</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
-<tr class="totrow"><td></td><td>GRAND TOTAL</td><td></td><td class="v">₹7,059</td><td class="ck">₹3,705</td><td class="ck">₹327</td><td class="ck online-col">₹3,027</td><td class="ck">₹0</td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-nema"/></svg></td><td class="q">2</td><td>NEMA17 stepper motor, 1.8°/step, 4.2 kg-cm</td><td class="p">✓</td><td class="v">₹1,498</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-a4988"/></svg></td><td class="q">2</td><td>A4988 stepper driver module</td><td class="p">✓</td><td class="v">₹340</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-bracket"/></svg></td><td class="q">2</td><td>NEMA17 L-bracket (pan + tilt)</td><td class="p">✓</td><td class="v">₹254</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-cap"/></svg></td><td class="q">2</td><td>100 µF 25 V electrolytic capacitor</td><td class="p">~</td><td class="v">₹20</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-as5600"/></svg></td><td class="q">2</td><td>AS5600 magnetic encoder module</td><td class="p">✓</td><td class="v">₹498</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-magnet"/></svg></td><td class="q">2</td><td>Diametric magnet, 6 × 2.5 mm</td><td class="p">~</td><td class="v">₹180</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-mux"/></svg></td><td class="q">1</td><td>TCA9548A I²C multiplexer</td><td class="p">✓</td><td class="v">₹199</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-camera"/></svg></td><td class="q">1</td><td>USB camera module, M12 mount, 12 mm lens</td><td class="p">~</td><td class="v">₹1,400</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-filter"/></svg></td><td class="q">1</td><td>Red filter — gel sheet or red acrylic offcut</td><td class="p">~</td><td class="v">₹100</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-laser"/></svg></td><td class="q">—</td><td>KY-008 laser module</td><td class="p">~</td><td class="v">₹0</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-box"/></svg></td><td class="q">1</td><td>ABS project box, head enclosure</td><td class="p">~</td><td class="v">₹115</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-nano"/></svg></td><td class="q">—</td><td>Arduino Nano — tracker</td><td class="p">~</td><td class="v">₹0</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-nano"/></svg></td><td class="q">1</td><td>Arduino Nano — beacon</td><td class="p">~</td><td class="v">₹225</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-battery"/></svg></td><td class="q">1</td><td>12 V 3000 mAh Li-ion battery pack + charger, DC barrel out</td><td class="p">~</td><td class="v">₹650</td><td class="ck"></td><td class="ck"></td><td class="ck yes online-col">&#10003;</td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-barrel"/></svg></td><td class="q">1</td><td>DC barrel jack to screw-terminal adapter</td><td class="p">~</td><td class="v">₹30</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-switch"/></svg></td><td class="q">1</td><td>SPST toggle switch — motor rail kill switch</td><td class="p">~</td><td class="v">₹25</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-breadboard"/></svg></td><td class="q">1</td><td>Breadboard, 830 point (drivers + Nano + mux)</td><td class="p">~</td><td class="v">₹90</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-usb"/></svg></td><td class="q">2</td><td>USB-B and mini-USB cables for the two Nanos</td><td class="p">~</td><td class="v">₹198</td><td class="ck"></td><td class="ck yes">&#10003;</td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-acrylic"/></svg></td><td class="q">1</td><td>Acrylic sheet 3 mm, 6″×6″ (pack of 2)</td><td class="p">✓</td><td class="v">₹199</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-vibe"/></svg></td><td class="q">1</td><td>Vibration motor, 3 V DC</td><td class="p">✓</td><td class="v">₹20</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-resistor"/></svg></td><td class="q">1</td><td>Transistor + diode + resistor combo kit</td><td class="p">✓</td><td class="v">₹105</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-led"/></svg></td><td class="q">1</td><td>High-brightness RED LED, 10 mm, 650 nm</td><td class="p">~</td><td class="v">₹22</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-resistor"/></svg></td><td class="q">1</td><td>2N2222 transistor + 220 Ω + 1 kΩ</td><td class="p">~</td><td class="v">₹20</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-ball"/></svg></td><td class="q">1</td><td>Ping-pong ball (diffuser)</td><td class="p">✓</td><td class="v">₹129</td><td class="ck"></td><td class="ck yes">&#10003;</td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-powerbank"/></svg></td><td class="q">—</td><td>USB power bank (any, 5V) — beacon supply</td><td class="p">~</td><td class="v">₹0</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-switch"/></svg></td><td class="q">1</td><td>SPST toggle switch</td><td class="p">~</td><td class="v">₹25</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-box"/></svg></td><td class="q">1</td><td>ABS project box</td><td class="p">~</td><td class="v">₹115</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-led"/></svg></td><td class="q">1</td><td>High-brightness WHITE LED (brighter than beacon)</td><td class="p">~</td><td class="v">₹22</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-resistor"/></svg></td><td class="q">1</td><td>68 Ω resistor</td><td class="p">~</td><td class="v">₹5</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-aa"/></svg></td><td class="q">1</td><td>3×AA battery holder + 3 AA cells — decoy supply</td><td class="p">~</td><td class="v">₹90</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-switch"/></svg></td><td class="q">1</td><td>Switch + scrap housing</td><td class="p">~</td><td class="v">₹35</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-wires"/></svg></td><td class="q">1</td><td>Dupont jumper wires — M-M, M-F, F-F</td><td class="p">~</td><td class="v">₹150</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-screws"/></svg></td><td class="q">1</td><td>M3 screws, nuts, standoffs assortment</td><td class="p">~</td><td class="v">₹150</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr><td class="pic"><svg class="ic" viewBox="0 0 64 64"><use href="#p-misc"/></svg></td><td class="q">1</td><td>Heat-shrink, solder, hot-glue sticks</td><td class="p">~</td><td class="v">₹150</td><td class="ck yes">&#10003;</td><td class="ck"></td><td class="ck online-col"></td><td class="ck"></td></tr>
+<tr class="totrow"><td></td><td></td><td>GRAND TOTAL</td><td></td><td class="v">₹7,059</td><td class="ck">₹3,705</td><td class="ck">₹327</td><td class="ck online-col">₹3,027</td><td class="ck">₹0</td></tr>
 </tbody>
 </table>
 

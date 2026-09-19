@@ -3,8 +3,13 @@
 // Every dimension is either a published mechanical standard (NEMA17)
 // or a number that already appears in docs/TERMINAL_MK3.md /
 // docs/data/bom_tier_a.json. Drawn to match the parts on the buy list,
-// including the single-shaft encoder mount fixed in this session
-// (magnet on the rotating platform, AS5600 on a fixed overhanging arm
+// SUPERSEDED by zerodrift_full_assembly.scad, which is the model the
+// build documents and the clearance test use. Kept because it is a
+// clean single-axis illustration, and corrected so it does not
+// contradict the assembly on the encoder geometry.
+//
+// Single-shaft encoder mount: magnet on the rotating platform, AS5600
+// on a fixed overhanging arm, chip concentric with the axis
 // -- these motors have no rear shaft to mount to).
 //
 // Convention used throughout: every module is built with its MOUNTING
@@ -76,18 +81,29 @@ module single_shaft_encoder(shaft_len) {
         translate([0,0,shaft_len + platform_h + magnet_h/2])
             cylinder(d = magnet_d, h = magnet_h, center = true);
 
-    arm_len = platform_d/2 + 14;
+    // The chip must be CONCENTRIC with the rotation axis, and the post
+    // must stand clear of the platform that sweeps past it. An earlier
+    // revision of this module got both wrong: the arm reached only
+    // part-way in, leaving the chip 6.5 mm off-axis, and the post stood
+    // at 15-17 mm radius inside a 17 mm platform. An AS5600 read
+    // off-axis still answers on I2C and still returns numbers; they are
+    // simply not angles, and nothing reports the fault.
+    post_r   = platform_d/2 + 6;                 // clear of the platform
     sensor_z = shaft_len + platform_h + magnet_h + magnet_gap;
     color("gold", 0.95) {
-        // fixed arm rises from the mounting face (z=0), not the shaft
-        translate([platform_d/2 - 2, -bracket_thick/2, 0])
+        // fixed post rises from the mounting face (z=0), not the shaft
+        translate([post_r, -bracket_thick/2, 0])
             cube([2, bracket_thick, sensor_z + as5600_pcb_h]);
-        translate([platform_d/2 - 2 - arm_len + 4, -sensor_arm_thick()/2, sensor_z])
-            cube([arm_len - 2, sensor_arm_thick(), 2]);
-        translate([platform_d/2 - 2 - arm_len + 4 + as5600_pcb/2, 0, sensor_z + 2])
+        // arm reaches past the axis so the chip can sit ON it
+        translate([-as5600_pcb/2 - 1, -sensor_arm_thick()/2, sensor_z])
+            cube([post_r + as5600_pcb/2 + 3, sensor_arm_thick(), 2]);
+        // chip on the axis, looking down at the magnet
+        translate([0, 0, sensor_z + as5600_pcb_h/2])
             color("forestgreen")
                 cube([as5600_pcb, as5600_pcb, as5600_pcb_h], center = true);
     }
+    assert(post_r - 1 > platform_d/2,
+           "gimbal encoder post fouls the rotating platform");
 }
 function sensor_arm_thick() = 6.0;
 

@@ -380,18 +380,54 @@
   </div></div>
 
   <div class="step"><div class="stepn">4</div><div>
-    <b>Encoders.</b> Both AS5600s through the multiplexer, magnets 0.5–3 mm from each
-    chip face.
+    <b>Encoders.</b> Both AS5600s through the multiplexer. Two dimensions on each
+    one are not adjustable, and getting either wrong fails <i>silently</i> — the chip
+    answers on I²C and returns numbers that are simply not angles:
+    <ul style="margin:4px 0 4px 16px;padding:0">
+      <li><b>The chip sits ON the centreline</b> of the axis it measures, within about
+      half a millimetre. Not near the axis, not merely over the platform — over its
+      <i>centre</i>. The AS5600 reads the <i>direction</i> of the field through its die;
+      off-axis that reading is a distorted, non-monotonic function of angle that looks
+      plausible over a few degrees on the bench and falls apart in a full sweep.</li>
+      <li><b>0.5–3 mm from chip face to magnet face.</b> Build to 1.5 mm, the middle of
+      the band. Too close saturates the die; too far drops the field below what the AGC
+      can lift.</li>
+    </ul>
+    Check both against the exploded view before gluing anything — it draws each arm at
+    its real length with the chip on the axis.
     <div class="chk"><b>CHECK ·</b> <code>?</code> returns <code>src=E</code>, and after a
-    move the encoder agrees with the commanded angle to within 0.05°. While the head is
+    move the encoder agrees with the commanded angle to within 0.05°. Then sweep one
+    axis through its <i>whole</i> range and watch the reading: it must climb
+    monotonically and wrap once. A reading that tracks for twenty degrees and then folds
+    back on itself is an off-axis magnet, not a software bug. While the head is
     slewing you will correctly see <code>src=C</code> — that is by design, not a fault.</div>
   </div></div>
 
   <div class="step"><div class="stepn">5</div><div>
     <b>Both axes, structure, cable loom.</b> Bolt the motors down — do not tape them.
-    Route the head cables with a service loop at each axis.
-    <div class="chk"><b>CHECK ·</b> Full travel (±90° pan, −30°/+45° tilt) with no cable
-    tension anywhere and no skipped steps.</div>
+    The tilt bracket stands on a <b>14 mm standoff riser</b> above the pan platform;
+    without it the head reaches the platform at only 17° of downward tilt. Route the
+    head cables with a service loop at each axis, and keep that loop <i>above</i> the
+    base plate — it is easy to leave enough slack that it fouls the plate at full pan.
+    <p style="margin:6px 0 2px"><b>Soft-limit the travel in firmware before the first
+    powered move.</b> These are measured on the CAD model, not estimated, and past them
+    the rig drives itself into its own structure:</p>
+    <table style="margin:2px 0 4px;border-collapse:collapse;font-size:inherit">
+      <tr><td style="padding:1px 10px 1px 0">Pan</td>
+          <td style="padding:1px 10px 1px 0"><b>±120°</b></td>
+          <td>tilt bracket vs the fixed encoder post (touches at 150°)</td></tr>
+      <tr><td style="padding:1px 10px 1px 0">Tilt, down</td>
+          <td style="padding:1px 10px 1px 0"><b>20°</b></td>
+          <td>the head vs <b>the pan platform</b> (touches at 21°)</td></tr>
+      <tr><td style="padding:1px 10px 1px 0">Tilt, up</td>
+          <td style="padding:1px 10px 1px 0"><b>40°</b></td>
+          <td>clear past 45°</td></tr>
+    </table>
+    Downward tilt is the tight one, and not for the reason you would guess: the head
+    meets the <i>platform</i> nine degrees before it would reach the base plate.
+    <div class="chk"><b>CHECK ·</b> Full travel to the soft limits above, with no cable
+    tension anywhere and no skipped steps. Then command 1° past a soft limit and confirm
+    the firmware refuses it.</div>
   </div></div>
 
   <div class="step"><div class="stepn">6</div><div>

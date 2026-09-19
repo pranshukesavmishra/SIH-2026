@@ -43,12 +43,14 @@ assortment. **Total stays ₹6,709.**
 |---|---|
 | `submission/ZeroDrift_Mk3_Build_Guide.pdf` | Full guide: BOM, wiring, build order, calibration |
 | `TERMINAL_MK3.md` | The source of that guide, and the authority |
-| `cad/renders/04_exploded_labelled.png` | **Start here.** Exploded, numbered 1–8 in the same order as the build stages |
+| `cad/renders/04_exploded_labelled.png` | **Start here.** Exploded, numbered 1–9 in the same order as the build stages |
+| `cad/renders/05_encoder_detail.png` | The encoder mount close up — match this before gluing a magnet |
 | `cad/renders/zerodrift_assembly.mp4` | The assembly animating together, then the mechanism tracking |
 | `cad/README.md` | What building and sweeping the model caught — nine faults, none visible in a render |
 | `../tools/cad/check_clearance.sh` | Re-runs the interference sweep against the shipped model |
 | `cad/renders/01_full_scene.png` | Rig + bench electronics + beacon + decoy |
-| `cad/*.scad`, `cad/*.stl` | Editable source and meshes |
+| `cad/*.scad` | Editable source — `geometry.scad` holds the numbers the mechanism imposes |
+| `cad/*.stl`, `cad/*.3mf` | Meshes for viewing or import. Regenerate after any source change: the ones committed before the clearance audit had both encoders off-axis |
 
 **Travel is mechanically limited — soft-limit it in firmware.**
 

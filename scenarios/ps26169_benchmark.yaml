@@ -1,0 +1,142 @@
+# PS26169 benchmark conditions, as published in the problem statement's
+# "Parameters and Specifications" table. Every value below that differs
+# from our own scenarios is here because the spec names it, and the
+# comment says which row it comes from.
+#
+# This file exists so that our reported numbers are reproducible under
+# the evaluators' conditions rather than under ours. Our other scenarios
+# model a real FSOC terminal tracking a LEO pass, which is a different
+# and in places easier problem -- a 6 deg field of view finds a target
+# faster than a 4 deg one, and a 20 deg/s mount closes on it faster than
+# a 5 deg/s one. Benchmarking on those and quoting the result against the
+# spec's limits would have been a measurement of the wrong thing.
+name: ps26169_benchmark
+description: 'PS26169 evaluation conditions: 4x3 deg FOV, 5 deg/s pan-tilt,
+  10 px square target on a figure-of-eight, +/-20 px camera jitter and
+  +/-20 px platform motion, salt-and-pepper impulse noise. Atmospheric
+  condition is applied on top with --atmosphere.'
+seed: 20261169
+duration_s: 120.0
+initial_pointing_deg:
+- 1.6
+- 20.9
+acquisition_fou_deg: 2.0
+
+camera:
+  width: 640                  # spec: camera resolution 640x480
+  height: 480
+  # Spec: FOV default 4 deg x 3 deg. Only the horizontal is configurable
+  # here because the vertical follows from square pixels and the 4:3
+  # sensor: 2*atan(tan(2 deg)*480/640) = 3.0007 deg. The spec's pair is
+  # self-consistent, which is a good sign we are reading it correctly.
+  fov_deg: 4.0
+  frame_rate_hz: 30.0         # spec: >= 20 FPS; 30 gives headroom
+  exposure_ms: 10.0
+  bit_depth: 12
+  full_well_e: 20000.0
+  read_noise_e: 6.0           # spec: Gaussian noise
+  dark_current_e_per_s: 50.0
+  psf_sigma_px: 1.3
+  hot_pixel_fraction: 0.0002
+  # Spec: Salt & Pepper noise. 0.1% of pixels per frame, half stuck high
+  # and half stuck low -- roughly 300 impulses per frame at 640x480,
+  # which is enough to be visibly obvious and to defeat a naive
+  # peak-pixel detector without being so dense that it destroys the
+  # image for everyone.
+  salt_pepper_fraction: 0.001
+
+gimbal:
+  # Spec: Max Pan/Tilt Speed 5-10 deg/s, default 5. Our own scenarios run
+  # the mount at 20 deg/s, so every acquisition-time number measured on
+  # those was obtained with a mount four times faster than the benchmark
+  # permits. This is the single most important line in the file.
+  max_rate_deg_s: 5.0
+  max_accel_deg_s2: 20.0      # scaled with the rate to keep slew shape sane
+  command_latency_ms: 40.0
+  encoder_noise_urad: 25.0
+  az_limits_deg: null
+  el_limits_deg:
+  - -5.0
+  - 89.0
+
+scene:
+  panorama_width: 1024
+  sky_brightness_e_s: 200000.0
+  cloud_amount: 0.35
+  cloud_contrast: 0.6
+  horizon_el_deg: 0.0
+  terrain_brightness_e_s: 60000.0
+  star_count: 900
+  star_max_e_s: 8000000.0
+  clutter_count: 40
+  clutter_max_e_s: 20000000.0
+  sun_az_deg: 120.0
+  sun_el_deg: 35.0
+  glint_probability: 0.004
+  glint_amplitude_e_s: 40000000.0
+
+beacons:
+# Spec: Target shape square, size 10x10 px (range 5-20). Spec: Motion
+# patterns >= 4 including Figure-of-8 -- the other three (static, linear,
+# circular) are covered by the existing scenario files; this is the one
+# that was missing, and it is the hardest of the four because elevation
+# acceleration reverses sign four times per period.
+- name: beacon
+  trajectory:
+    kind: figure_eight
+    params:
+      center_az_deg: 0.0
+      center_el_deg: 20.0
+      width_deg: 1.4          # stays inside the 4 deg FOV once acquired
+      height_deg: 0.9
+      period_s: 40.0          # peak rate ~0.22 deg/s, well inside 5 deg/s
+      range_km: 800.0
+  amplitude_e_s: 4000000.0
+  ref_range_km: 800.0
+  blink_hz: 4.0               # the identity signature, unchanged
+  blink_duty: 0.5
+  is_decoy: false
+  size_px: 10.0
+
+turbulence:
+  enabled: true
+  tilt_rms_urad: 120.0
+  greenwood_hz: 25.0
+  scintillation_index: 0.25
+  seeing_blur_px: 0.8
+
+vibration:
+  enabled: true
+  # Spec has two separate rows, camera jitter +/-20 px/frame and platform
+  # motion +/-20 px/frame, and they are not the same disturbance. At this
+  # FOV one pixel is 109.1 urad (focal length 9163.6 px), so 20 px is
+  # 2183 urad -- about eighteen times the jitter our own scenarios carry.
+  #
+  # The first mode is platform motion: low frequency, large excursion,
+  # what a vehicle or a tripod on a floor actually does. Measured over a
+  # 400 s run it reaches 19.8 px at the 99th percentile -- the spec's
+  # +/-20 px envelope -- while stepping only ~3 px between frames.
+  #
+  # The three structural modes are camera jitter: small excursions but
+  # fast, and at 30 fps the 47 Hz and 120 Hz modes alias, so successive
+  # frames land far apart. Measured frame-to-frame step is 19.8 px at the
+  # 99th percentile, which is the other reading of "+/-20 px/frame" and
+  # the reason both rows are modelled rather than one.
+  modes:
+  - - 0.7
+    - 850.0
+    - 0.02
+  - - 18.0
+    - 420.0
+    - 0.06
+  - - 47.0
+    - 185.0
+    - 0.08
+  - - 120.0
+    - 70.0
+    - 0.1
+  broadband_rms_urad: 95.0
+
+noise:
+  enabled: true
+  frame_drop_probability: 0.01

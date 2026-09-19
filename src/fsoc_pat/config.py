@@ -30,7 +30,8 @@ class CameraConfig:
     read_noise_e: float = 6.0
     dark_current_e_per_s: float = 50.0
     psf_sigma_px: float = 1.3            # diffraction + defocus, as a Gaussian
-    hot_pixel_fraction: float = 2e-4
+    hot_pixel_fraction: float = 2e-4     # fixed defects; a dark frame removes them
+    salt_pepper_fraction: float = 0.0    # impulse noise, redrawn every frame
 
 
 @dataclass
@@ -49,7 +50,8 @@ class TrajectoryConfig:
     """
     How a target moves. ``kind`` selects the generator in beacon.py.
 
-    Supported kinds: static, linear, circular, waypoint, random_walk, leo_pass.
+    Supported kinds: static, linear, circular, figure_eight, waypoint,
+    random_walk, leo_pass, tle.
     ``params`` carries whatever that generator needs, in degrees and seconds.
     """
     kind: str = "leo_pass"
@@ -75,6 +77,13 @@ class BeaconConfig:
     blink_hz: float = 0.0                # 0 = continuous wave
     blink_duty: float = 0.5
     is_decoy: bool = False
+    # Angular size, expressed as a square of this many pixels on a side.
+    # 0 means an unresolved point source -- correct for a real terminal at
+    # link range, and the default everywhere. PS26169's benchmark target is
+    # a 10 px square, which is a materially harder detection problem at the
+    # same total flux, so the size has to be a scenario parameter rather
+    # than an assumption baked into the renderer.
+    size_px: float = 0.0
 
 
 @dataclass

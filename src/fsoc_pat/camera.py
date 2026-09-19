@@ -159,7 +159,35 @@ class Detector:
         electrons = np.clip(electrons, 0.0, cfg.full_well_e)
 
         dn = np.round(electrons / cfg.full_well_e * self.max_dn)
-        return np.clip(dn, 0, self.max_dn).astype(np.uint16)
+        dn = np.clip(dn, 0, self.max_dn)
+
+        # Salt-and-pepper: impulse noise from the sensor's digital side --
+        # a dropped LVDS bit, a stuck ADC sample, a marginal ribbon cable.
+        # Named in the problem statement alongside Gaussian and Poisson,
+        # and genuinely a third thing rather than a restatement of either.
+        # Gaussian and Poisson are both applied to the charge and are
+        # therefore bounded by it, so a median or sigma-clip barely moves;
+        # salt lands at full scale regardless of what the pixel was
+        # collecting, which is exactly what a peak-finding detector
+        # mistakes for a beacon. Applied here, after quantisation, because
+        # that is where it happens -- putting it in electrons would let
+        # the full-well clip and the rounding soften it into something the
+        # detector no longer has to survive.
+        #
+        # Distinct from ``hot_pixel_fraction``: hot pixels sit at fixed
+        # coordinates for the life of the sensor and can be calibrated out
+        # by a dark frame, which is why they get drawn once in __init__.
+        # These move every frame and cannot be.
+        frac = getattr(cfg, "salt_pepper_fraction", 0.0)
+        if frac > 0.0:
+            n = int(round(frac * dn.size))
+            if n:
+                flat = self.rng.choice(dn.size, size=n, replace=False)
+                half = n // 2
+                dn.flat[flat[:half]] = self.max_dn         # salt
+                dn.flat[flat[half:]] = 0                   # pepper
+
+        return dn.astype(np.uint16)
 
 
 class VirtualCamera:

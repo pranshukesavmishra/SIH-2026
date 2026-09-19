@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import pathlib
+import sys
 import time
 from typing import Callable, Optional, Tuple
 
@@ -55,10 +56,20 @@ def main(argv=None) -> int:
                         help="override the scenario's duration in seconds")
     parser.add_argument("--out", default=None,
                         help="directory to write <scenario>.report.{json,txt} into")
+    parser.add_argument("--atmosphere", default=None,
+                        help="apply a named atmospheric condition on top of the "
+                             "scenario: clear, haze, fog, rain, low_light")
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args(argv)
 
     cfg = SimConfig.load(args.scenario)
+    if args.atmosphere:
+        from .atmosphere import apply as apply_atmosphere
+        try:
+            cfg = apply_atmosphere(cfg, args.atmosphere)
+        except ValueError as exc:
+            print(f"fsoc-pat: {exc}", file=sys.stderr)
+            return 2
     report, _ = run_scenario(cfg, duration_s=args.duration)
 
     if not args.quiet:

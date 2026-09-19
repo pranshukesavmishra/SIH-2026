@@ -437,6 +437,22 @@ const SELF_LASER_MATCH = 0.85;
 const ANALYSE_EVERY = 4;
 const TRACK_ROI = 46;                // px radius for the cheap per-frame follow
 const ROI_MAX = 96;                  // ceiling for the speed-grown follow radius
+const MAX_SPEED = 22;                // px/frame the estimator will believe
+const PREDICT_LEAD_MAX = 10;         // frames of lead the SEARCH may run ahead
+const LEAD_MAX_PX = 42;              // ...and never more than this far ahead
+const RESCUE_PULL = 0.4;             // how hard a LOST follower is pulled back
+                                     // onto the modulation map's answer
+const BLIND_CONTRAST_DECAY = 0.96;   // how fast the learned "lit" bar relaxes
+                                     // while nothing is clearing it
+const DARK_PHASE_FRAMES = 6;         // blind frames a normal blink-off explains
+const MAX_MAP_SILENCE = 20;          // analyses (~2.7 s) the map may stay quiet
+                                     // while the follower is still seeing the light
+const REFINER_ALIVE_FRAMES = 16;     // frames (~0.5 s) since the follower last
+                                     // measured the light and still counts as live
+const MAP_REBUILD_GRACE = 15;        // extra analyses of patience while the map's
+                                     // window is still washing out recent motion
+const SEARCH_TETHER = 40;            // px the search centre may sit from the anchor
+const ANCHOR_LAG_CAP = 26;           // px the map's answer may be nudged forward
 // The per-frame follower is allowed to sharpen the position, never to decide
 // it. These three numbers are what keep it subordinate to the modulation map:
 const ANCHOR_MAX = 38;               // px it may sit from the last confirmed detection
@@ -677,15 +693,6 @@ let onContrast = 0;
 const bgHist = new Uint16Array(256);
 let exposurePinned = false;
 let score = 0, margin = 0, detectedHz = 0, fps = 0, peakDepth = 0, peakBright = 0;
-// What the HUD shows. The raw score legitimately falls to zero on any analysis
-// that finds no peak -- the beacon is dark for half its own cycle, and the lock
-// is carried through those gaps by the coast logic. Measured on the synthetic
-// camera: 65% of frames while LOCKED had score === 0. Drawing that raw makes
-// the readout flicker to zero two frames in three while the system correctly
-// reports LOCKED, which reads as a fault. So the display holds the last real
-// measurement and says when it is holding, rather than showing a zero that
-// means "not measured this cycle" as though it meant "no signal".
-let shownScore = 0, shownMargin = 0, shownStale = 0;
 // Frames since the refiner last actually SAW the tracked light. While the
 // beacon is dark (half of every blink cycle) this ticks up and resets; if it
 // stays up -- fast motion, occlusion -- the lock is being carried by
@@ -697,7 +704,26 @@ let coastFrames = 0;
 // post-smoothing residual, as first tried, converges to roughly half of it,
 // which reads as the ring forever lagging a moving beacon.)
 let lastMeas = null;
-let lastFrameT = 0;
+// Why the last lock was abandoned. Read it from the console (ZeroDriftDrop())
+// when a lock dies unexpectedly on someone else's laptop -- "it just dropped"
+// is not diagnosable, this is.
+let lastDrop = null;
+// The identification readouts of the CURRENT lock, held between confirmations.
+// The map scores a track once every ANALYSE_EVERY frames and reports zero on
+// the cycles where nothing cleared threshold -- so a healthy lock flickers
+// "blink 0.00" between perfectly good confirmations, which reads as a dead
+// lock and was reported as exactly that. Showing the last real measurement is
+// both clearer and more honest than showing a transient zero; they are reset
+// the moment the lock is abandoned, so they can never describe a lock that no
+// longer exists.
+let heldScore = 0, heldMargin = 0, heldDepth = 0;
+// Frames since the scene last moved meaningfully. The modulation map scores a
+// pixel over an N-frame window, so right after a sweep its window is still
+// full of smeared motion and it legitimately has nothing to say for about a
+// second and a half. Silence that motion EXPLAINS must not kill a lock the
+// follower is still holding; silence with no such excuse must.
+let stillFrames = 0;
+window.ZeroDriftDrop = () => lastDrop;
 function displayState() {
   if (state !== 'LOCKED') return state;
   const mapStale = cand ? cand.misses > 0 : true;
@@ -1007,9 +1033,8 @@ function analyse() {
   }
 
   score = peak; margin = peak > 0 ? peak / bg : 0;
-  if (peak > 0) { shownScore = score; shownMargin = margin; shownStale = 0; }
-  else shownStale++;
   peakDepth = peak > 0 ? buf.bestDepth[peakIdx] : 0;
+  if (peak > 0) { heldScore = score; heldMargin = margin; heldDepth = peakDepth; }
 
   // The search grid is deliberately coarse to keep the whole-frame pass cheap,
   // but that makes the reported rate land on the nearest grid line (4.5 Hz for
@@ -1073,8 +1098,33 @@ function analyse() {
     // steady light sits inside the tether radius.
     const dropLim = DROP_MISSES +
       (state === 'LOCKED' ? Math.min(9, Math.round(3 * spd)) : 0);
-    const refinerAlive = state === 'LOCKED' && coastFrames < 10;
-    if (cand.misses > dropLim && (!refinerAlive || cand.misses > dropLim * 3)) {
+    // "The follower has seen the light RECENTLY", not "at this exact instant".
+    // A single bad patch mid-sweep briefly pushes coastFrames past a dark
+    // half-cycle, and a 10-frame window let that one moment coincide with map
+    // silence and kill an otherwise healthy lock. Half a second is still a
+    // strict definition of recent, and it is bounded.
+    const refinerAlive = state === 'LOCKED' && coastFrames < REFINER_ALIVE_FRAMES;
+    // The ceiling on map silence is ABSOLUTE, not a multiple of dropLim.
+    // dropLim collapses the moment the beacon stops moving -- which is
+    // exactly when the map is at its weakest, because its N-frame window is
+    // still full of the motion that just happened and needs about a second
+    // and a half of stillness to rebuild. Tying the ceiling to it killed good
+    // locks a fraction of a second after every fast move. MAX_MAP_SILENCE
+    // covers that rebuild and no more, so a beacon that truly vanished still
+    // drops on a fixed, explainable schedule.
+    // Extra patience only while the map's silence is explained by motion it
+    // has not yet washed out of its window. Once the scene has been still for
+    // a full window and the map STILL says nothing, the light being followed
+    // probably is not blinking, and the lock should die promptly.
+    const silenceBudget = MAX_MAP_SILENCE +
+      (stillFrames < N ? MAP_REBUILD_GRACE : 0);
+    if (cand.misses > dropLim &&
+        (!refinerAlive || cand.misses > silenceBudget)) {
+      lastDrop = { mapSilentAnalyses: cand.misses, dropLim: dropLim,
+                   silenceBudget: silenceBudget, stillFrames: stillFrames,
+                   refinerBlindFrames: coastFrames, speedPxFrame: +spd.toFixed(1),
+                   reason: !refinerAlive ? 'follower lost the light'
+                                         : 'modulation map silent too long' };
       cand = null;
     } else if (refinerAlive && pos && cand.misses > 1) {
       // Slide the stale candidate along with the carried lock, so the map's
@@ -1092,6 +1142,7 @@ function analyse() {
       anchor = { x: cand.x, y: cand.y };
       onContrast = 0;                 // relearned from the first lit frames
       vel = { x: 0, y: 0 }; lastMeas = null;
+      heldScore = heldMargin = heldDepth = 0;
       detectedHz = cand.freq;
       setState('LOCKED');
     } else {
@@ -1100,6 +1151,7 @@ function analyse() {
   } else if (!cand) {
     setState('SEARCHING'); pos = null; anchor = null; onContrast = 0;
     vel = { x: 0, y: 0 }; lastMeas = null;
+    heldScore = heldMargin = heldDepth = 0;
   } else {
     // Still locked: re-tether to where the modulation map says the beacon is
     // now. Without this the per-frame follower is the only thing moving `pos`
@@ -1114,20 +1166,22 @@ function analyse() {
     // answer forward by the measured velocity over that known lag, and blend
     // with the dead-reckoned anchor so a static beacon keeps the original
     // behaviour exactly (vel ~ 0 makes both terms collapse to cand).
-    const lagF = N / 2;
-    // Cap the lag projection by how far the follower actually is from the
-    // map's answer: while moving they disagree by about one lag's worth and
-    // the projection passes untouched; at a STOP they agree, and an uncapped
-    // projection would fling the anchor past the stop point and leave the
-    // ring hovering beyond a beacon that is already stationary.
-    let projx = vel.x * lagF, projy = vel.y * lagF;
-    const cap = (pos ? Math.hypot(cand.x - pos.x, cand.y - pos.y) : 0) * 1.3 + 6;
-    const pl = Math.hypot(projx, projy);
-    if (pl > cap) { projx *= cap / pl; projy *= cap / pl; }
-    const mx = cand.x + projx, my = cand.y + projy;
-    anchor = anchor
-      ? { x: 0.5 * anchor.x + 0.5 * mx, y: 0.5 * anchor.y + 0.5 * my }
-      : { x: mx, y: my };
+    // The map's answer is the energy centroid of the whole N-frame window, so
+    // it describes where the beacon was about half a window ago. Nudge it
+    // forward by the measured velocity -- but bound that nudge by a FIXED
+    // number of pixels, never by anything that grows with the follower's own
+    // error. (A cap proportional to |cand - pos| is self-reinforcing: drift
+    // buys more projection, which buys more drift. That was the runaway.)
+    // Trust the projection only while the follower can actually see the
+    // light; a velocity measured through a blind patch is a guess.
+    const lagF = Math.min(N / 2, 14);
+    let projx = 0, projy = 0;
+    if (coastFrames < 4) {
+      projx = vel.x * lagF; projy = vel.y * lagF;
+      const pl = Math.hypot(projx, projy);
+      if (pl > ANCHOR_LAG_CAP) { projx *= ANCHOR_LAG_CAP / pl; projy *= ANCHOR_LAG_CAP / pl; }
+    }
+    anchor = { x: cand.x + projx, y: cand.y + projy };
     detectedHz = cand.freq;
   }
 }
@@ -1183,33 +1237,32 @@ function loop() {
   // pixels. Following the actual bright spot at full resolution every frame
   // is what makes the marker sit on the beacon instead of near it, and what
   // keeps the servos moving smoothly between analyses.
-  if (state === 'LOCKED' && pos) {
-    // Constant-velocity feed-forward BEFORE the measurement: the follower
-    // then only corrects the residual, which is what lets a fast-moving
-    // beacon stay inside the search disc instead of leaving it behind.
-    // (vel was previously computed and never used -- the entire reason a
-    // briskly moved phone walked out of the lock.)
-    // Scaled by the MEASURED frame gap: browsers and webcams both stall
-    // (auto-exposure, tab pressure), and a two-frame gap means the world
-    // moved two frames' worth while we saw nothing.
-    const nowT = stamps[(head + filled - 1 + N) % N];
-    const dtF = lastFrameT ? Math.min(4, Math.max(0.5, (nowT - lastFrameT) * 30)) : 1;
-    lastFrameT = nowT;
-    pos.x += vel.x * dtF; pos.y += vel.y * dtF;
-    if (anchor) { anchor.x += vel.x * dtF; anchor.y += vel.y * dtF; }
-    vel.x *= 0.99; vel.y *= 0.99;      // an unrefreshed prediction decays slowly
-    refine();
-  }
+  // THE rule, learned the hard way: prediction may steer WHERE WE LOOK and
+  // nothing else. The reported position only ever moves toward something the
+  // camera actually measured this frame.
+  //
+  // The previous build extrapolated `pos` AND `anchor` by the velocity every
+  // frame, then re-projected the anchor by half a window again inside
+  // analyse() -- a double integration whose cap grew with the very drift it
+  // was meant to limit. The result was positive feedback: the ring accelerated
+  // away from the beacon and sat over blank wall reading brightness 10 while
+  // still claiming a lock. Velocity now informs the search window only.
+  stillFrames = Math.hypot(vel.x, vel.y) > 1.5 ? 0 : stillFrames + 1;
+  if (state === 'LOCKED' && pos) refine();
   drawHud();
   if (state === 'LOCKED' && pos && serialWriter) steer();
 
   paintState(displayState());
-  els.score.textContent = score.toFixed(2);
-  els.score.className = score > LOCK_MIN ? 'good' : '';
-  els.margin.textContent = margin.toFixed(1) + '×';
-  els.margin.className = margin > CFAR ? 'good' : '';
-  els.depth.textContent = peakDepth.toFixed(2);
-  els.depth.className = peakDepth >= MIN_DEPTH ? 'good' : '';
+  const lk = state === 'LOCKED';
+  const dScore = lk ? heldScore : score;
+  const dMargin = lk ? heldMargin : margin;
+  const dDepth = lk ? heldDepth : peakDepth;
+  els.score.textContent = dScore.toFixed(2);
+  els.score.className = dScore > LOCK_MIN ? 'good' : '';
+  els.margin.textContent = dMargin.toFixed(1) + '×';
+  els.margin.className = dMargin > CFAR ? 'good' : '';
+  els.depth.textContent = dDepth.toFixed(2);
+  els.depth.className = dDepth >= MIN_DEPTH ? 'good' : '';
   els.bright.textContent = peakBright.toFixed(0);
   els.bright.className = peakBright >= MIN_BRIGHT ? 'good' : '';
   els.freq.textContent = state === 'LOCKED' ? detectedHz.toFixed(1) + ' Hz' : '—';
@@ -1219,11 +1272,43 @@ function loop() {
 
 function refine() {
   const w = els.view.width, h = els.view.height;
-  const cx = anchor ? anchor.x : pos.x, cy = anchor ? anchor.y : pos.y;
-  // The box must out-run the worst plausible lag, or a fast target leaves it
-  // and the follower goes structurally blind until the map recovers it.
+
+  // ---- WHERE TO LOOK (prediction is allowed here, and only here) ----
+  // Carry the last measured position forward by the measured velocity over a
+  // bounded lead, so a moving beacon is still inside the box when we look.
+  // Tethered to the anchor -- the modulation map's answer, the only thing in
+  // this program that knows WHICH light is the beacon -- so a bad velocity
+  // estimate can widen the search but can never walk it into another room.
+  const spdR = Math.min(Math.hypot(vel.x, vel.y), MAX_SPEED);
+  // Lead grows with blind time: four dark frames at 8 px/frame puts the
+  // beacon 32 px from where we last measured it, and a one-frame lead simply
+  // cannot reach that.
+  const lead = Math.min(PREDICT_LEAD_MAX, 1 + coastFrames);
+  // Cap the lead in PIXELS, not just in frames. A hand decelerating at the end
+  // of a flick leaves the velocity estimate high for a few frames after the
+  // beacon has already stopped; an uncapped lead then flings the search a
+  // hundred pixels past a stationary light, and both the disc and the box
+  // miss it -- traced as the lock dying right at the end of the fastest
+  // sweep. Bounded lead + an uncertainty-sized disc covers the moving case
+  // and the just-stopped case with the same numbers.
+  let lx = vel.x * lead, ly = vel.y * lead;
+  const ll = Math.hypot(lx, ly);
+  if (ll > LEAD_MAX_PX) { lx *= LEAD_MAX_PX / ll; ly *= LEAD_MAX_PX / ll; }
+  let cx = pos.x + lx, cy = pos.y + ly;
+  if (anchor) {
+    const ax = cx - anchor.x, ay = cy - anchor.y, ar = Math.hypot(ax, ay);
+    // The anchor is the map's answer and lags the truth by about half a
+    // window; at speed that is a long way back, so a tight leash to it pins
+    // the SEARCH behind the beacon and the follower never sees the light
+    // again. Scale the leash with speed so it always reaches past that lag.
+    // Identity is still guarded -- by the modulation map, which never
+    // re-confirms a wrong light and drops the lock on schedule.
+    const lim = SEARCH_TETHER + 8 * spdR;
+    if (ar > lim) { cx = anchor.x + ax * (lim / ar); cy = anchor.y + ay * (lim / ar); }
+  }
+
   const roi = Math.min(ROI_MAX,
-    Math.round(TRACK_ROI + 6 * Math.hypot(vel.x, vel.y) + 2 * coastFrames));
+    Math.round(TRACK_ROI + 5 * spdR + 2 * Math.min(coastFrames, 12)));
   const x0 = Math.max(0, Math.round(cx) - roi);
   const y0 = Math.max(0, Math.round(cy) - roi);
   const x1 = Math.min(w, Math.round(cx) + roi);
@@ -1237,34 +1322,35 @@ function refine() {
   trackCtx.drawImage(video, x0, y0, rw, rh, 0, 0, rw, rh);
   const d = trackCtx.getImageData(0, 0, rw, rh).data;
 
-  // Two questions, and telling them apart is the whole fix. The ROI-wide peak
+  // ---- IS THE TRACKED LIGHT LIT RIGHT NOW? ----
+  // Two questions, and telling them apart is the whole job. The ROI-wide peak
   // answers "is anything near the lock bright?" -- which a ceiling lamp two
   // centimetres away answers yes to, forever. The LOCAL peak answers "is the
-  // light I am actually tracking lit right now?", which is the only useful one.
-  // Alongside it, the background level of the surrounding box, because in a
-  // lit room brightness alone cannot answer either question (see below).
-  // Everything below measures from the ANCHOR, not from pos. Centring on pos
-  // is self-reinforcing: the moment the estimate drifts a few pixels toward a
-  // neighbouring lamp, that lamp enters the disc, defeats the gate, and pulls
-  // the estimate further in -- which was measured, as capture within half a
-  // second whenever a lamp sat inside about 25 px. The anchor cannot drift,
-  // because the modulation map recomputes it from the blink itself. That makes
-  // this function structurally a refiner: it can sharpen the map's answer, and
-  // it cannot walk away from it.
+  // light I am actually tracking lit right now?", which is the only useful
+  // one. Alongside it the background level of the surrounding box, because in
+  // a lit room brightness alone cannot answer either question: a lit hall's
+  // bare wall already reads about 120, so any absolute bar is cleared by the
+  // empty room. CONTRAST against the immediate surroundings has no such floor.
   const rs = resScale();
-  const spdR = Math.hypot(vel.x, vel.y);
-  // The lit-detection disc grows with speed AND with how long the light has
-  // gone unseen. The second term is what survives a standstill-to-fast start:
-  // velocity is still zero then, the beacon leaves a fixed disc in two
-  // frames, and a disc that only stares at the old spot reads the receding
-  // beacon as "dark" forever. Looking progressively wider when blind is
-  // bounded (cap + tether + the map's 3x drop budget), so a truly vanished
-  // beacon still drops instead of latching whatever else is nearby.
-  const LOCAL_R = Math.min(60, LOCAL_R_REF * rs + 2.5 * spdR + 1.6 * coastFrames);
-  const FOCUS_SIGMA = FOCUS_SIGMA_REF * rs + spdR + 0.5 * coastFrames;
+  const blind = Math.min(coastFrames, 12);
+
+  // Size the "is it lit" disc to the actual POSITIONAL UNCERTAINTY -- roughly
+  // speed x blind-time, plus an allowance for the beacon having accelerated
+  // while we could not see it. A disc sized only for speed starves the loop:
+  // too small to reach the light -> no measurement -> the velocity estimate
+  // stays too small -> the disc stays too small. Traced live at 4 px/frame
+  // estimated against 10 actual, with the follower 130 px behind.
+  //
+  // The 70 px ceiling is not arbitrary and must not be raised: at 90 px the
+  // disc reached far enough to swallow a steady lamp sitting a few
+  // centimetres from the beacon, and locking a decoy is the one failure this
+  // project cannot have. Confining the wide search to the ANCHOR's
+  // neighbourhood instead was tried and is worse -- the anchor is precisely
+  // what goes stale during motion, so it cannot reach the beacon either.
+  const LOCAL_R = Math.min(70, LOCAL_R_REF * rs + 2.0 * spdR + 0.9 * spdR * blind + 2.5 * blind);
+  const FOCUS_SIGMA = FOCUS_SIGMA_REF * rs + 0.6 * spdR + 0.8 * Math.min(coastFrames, 8);
+  const recapture = coastFrames > 5;      // blind past any normal dark phase
   let localPeak = 0, nBg = 0;
-  const recapture = coastFrames > 5;   // blind past any normal 4 Hz dark phase
-  let roiPeak = 0, rpx = cx, rpy = cy;
   bgHist.fill(0);
   const lr2 = LOCAL_R * LOCAL_R;
   for (let y = 0; y < rh; y++) {
@@ -1276,79 +1362,119 @@ function refine() {
       if (dx * dx + dy * dy <= lr2) { if (v > localPeak) localPeak = v; }
       // Every second pixel is plenty for a median and halves the cost.
       else if (((x ^ y) & 1) === 0) { bgHist[v | 0]++; nBg++; }
-      if (recapture && v > roiPeak) { roiPeak = v; rpx = gx; rpy = gy; }
+
     }
   }
   // Median of the surroundings via histogram -- no sort, no allocation. The
   // median rather than the mean because a lamp in the box would drag a mean
   // upward, which is exactly the case this has to survive.
-  // Guard the degenerate case. Against a frame edge the box gets cropped, and
+  // Guard the degenerate case: against a frame edge the box gets cropped, and
   // if almost all of what survives falls inside the local disc there is no
-  // background left to compare against. The median of nothing is 0, which
-  // makes contrast equal the raw peak and holds the gate permanently open --
-  // the exact failure this gate exists to prevent, arriving silently. With no
-  // background to judge by, judge nothing: hold and wait for a better frame.
+  // background left to compare against. With nothing to judge by, judge
+  // nothing -- hold, and wait for a better frame.
   if (nBg < 8) return;
   let bg = 0, acc = 0;
   const halfBg = nBg >> 1;
   for (let i = 0; i < 256; i++) { acc += bgHist[i]; if (acc >= halfBg) { bg = i; break; } }
+
   let contrast = localPeak - bg;
-  // Recapture: blind for longer than any dark phase lasts, yet something in
-  // the box clears the same learned lit-contrast bar the beacon set -- the
-  // light was not where we were staring. Re-centre attention on it. Bounded
-  // three ways: the box, the (blind-extended) tether, and the modulation
-  // map's 3x drop budget -- if this spot is not the beacon, the map never
-  // confirms it there and the lock dies on schedule.
-  let fcx = cx, fcy = cy;
   const litBar = Math.max(MIN_CONTRAST, onContrast * OFF_PHASE_RATIO);
-  if (recapture && contrast < litBar && roiPeak - bg >= litBar) {
-    contrast = roiPeak - bg;
-    fcx = rpx; fcy = rpy;
+  // Blind for longer than any dark phase lasts, yet something in the box
+  // clears the same lit-contrast bar this beacon itself set -- the light is
+  // simply not where we were staring. Re-centre on it. Bounded by the box, by
+  // the tether below, and by the modulation map, which never re-confirms a
+  // wrong light and so drops the lock on schedule.
+  let fcx = cx, fcy = cy;
+  if (recapture && contrast < litBar) {
+    // Second pass, only when we are genuinely blind: find the NEAREST pixel
+    // that is lit by this beacon's own standard. Proximity, not brightness --
+    // a phone torch and a table lamp both saturate at 255, so "brightest in
+    // the box" is a coin flip the lamp regularly won (measured: the lock
+    // jumped to the steady lamp). The nearest qualifying light is the one the
+    // prediction was pointing at.
+    const thr = bg + litBar;
+    let bestD2 = Infinity, bx = 0, by = 0;
+    for (let y = 0; y < rh; y++) {
+      const gy = y0 + y, dy = gy - cy;
+      for (let x = 0; x < rw; x++) {
+        const q = (y * rw + x) << 2;
+        const v = d[q] * 0.299 + d[q+1] * 0.587 + d[q+2] * 0.114;
+        if (v < thr) continue;
+        const gx = x0 + x, dx = gx - cx;
+        const dd = dx * dx + dy * dy;
+        if (dd < bestD2) { bestD2 = dd; bx = gx; by = gy; }
+      }
+    }
+    if (bestD2 < Infinity) {
+      contrast = litBar;               // it clears the bar by construction
+      fcx = bx; fcy = by;
+    }
   }
 
-  // THE defect this block exists to fix. A beacon blinking at 4 Hz is dark for
-  // about half of every quarter-second -- four frames in a row at 30 fps.
-  // Chasing "the brightest thing near the lock" through those frames means
-  // chasing whatever the background offers: a window, a screen edge, a face.
-  // Every dark phase nudges the marker a little off target; once it is off,
-  // the beacon is outside the search box and it never comes back. That is a
-  // marker visibly wandering away from a light that is still blinking fine.
-  //
-  // The test has to be CONTRAST against the immediate surroundings, not raw
-  // brightness. Measured on the synthetic bright-hall case: a lit hall's bare
-  // background reads about 120, so an absolute bar of 115 is cleared by the
-  // empty room and the gate never once fired -- the marker crept 0.5, then
-  // 0.6, then 0.9 px per dark frame onto a nearby lamp and was captured inside
-  // half a second. Contrast has no such floor: a dark beacon stops standing
-  // out from its surroundings no matter how bright the room is.
-  //
-  // A beacon that is off carries no position information, so use none of it.
-  // But do not merely freeze: freezing alone deadlocks, because a stranded
-  // lock stares at dark background forever and never re-lights. Fall back on
-  // the one thing that still knows where the beacon is -- the modulation map,
+  // ---- DARK PHASE: measure nothing, invent nothing ----
+  // A beacon blinking at 4 Hz is dark for about four frames in a row at
+  // 30 fps. A dark beacon carries no position information, so use none of it:
+  // do not chase the brightest thing left in the box (a window, a screen
+  // edge, a face), and do not extrapolate either -- extrapolation through a
+  // blind patch is exactly how the ring used to sail away. Hold, and lean on
+  // the one thing that still knows where the beacon is: the modulation map,
   // which is measuring the blink regardless of this frame.
-  if (contrast < Math.max(MIN_CONTRAST, onContrast * OFF_PHASE_RATIO)) {
+  if (contrast < litBar) {
     coastFrames++;
-    if (anchor) {
-      pos = { x: pos.x + (anchor.x - pos.x) * ANCHOR_PULL,
-              y: pos.y + (anchor.y - pos.y) * ANCHOR_PULL };
+    // Relax the learned expectation while it is going unmet. onContrast is
+    // "how far this beacon rises above its own surroundings when lit", learned
+    // from the beacon itself -- but one bloomed frame (the torch swung close,
+    // or a saturated exposure) latches it far above what the beacon normally
+    // manages, and at the lit branch's 0.995 decay the bar then stays too high
+    // for seconds. Every frame the bar goes unmet is evidence the bar is
+    // wrong. It can never fall below MIN_CONTRAST, and the recapture it
+    // enables now picks the nearest lit thing rather than the brightest, so
+    // relaxing it cannot hand the lock to a lamp.
+    onContrast *= BLIND_CONTRAST_DECAY;
+    if (coastFrames <= DARK_PHASE_FRAMES && spdR > 1 && anchor) {
+      // Inside a NORMAL blink-off we are not lost -- we know exactly why we
+      // cannot see the beacon, and we know it is still travelling. Holding
+      // still here forfeits a whole dark half-cycle of ground (8 px/frame x
+      // 4 frames = 32 px, every cycle), which is most of the residual lag.
+      // This is the one place extrapolation is honest, and it is bounded
+      // three ways: it stops at DARK_PHASE_FRAMES, it is clamped to the
+      // anchor's tether, and it never writes to the anchor itself -- so it
+      // cannot feed back on itself the way the previous build's did.
+      let nx2 = pos.x + vel.x, ny2 = pos.y + vel.y;
+      const dx = nx2 - anchor.x, dy = ny2 - anchor.y, r = Math.hypot(dx, dy);
+      const tether = ANCHOR_MAX + 6 * spdR;
+      if (r > tether) { nx2 = anchor.x + dx * (tether / r); ny2 = anchor.y + dy * (tether / r); }
+      pos = { x: nx2, y: ny2 };
+    } else if (anchor) {
+      // Past a plausible dark phase we ARE lost, so stop guessing and lean on
+      // the map. Weaken the pull as speed rises: the anchor is stale by
+      // construction, so at speed it sits behind the beacon and pulling hard
+      // toward it drags the ring backwards against the motion (traced: pos
+      // going 90 -> 85 while the light ran 164 -> 184).
+      const pull = coastFrames > DARK_PHASE_FRAMES
+        ? RESCUE_PULL                              // lost: trust the map
+        : ANCHOR_PULL / (1 + 0.35 * spdR);         // dark: it is stale, be gentle
+      pos = { x: pos.x + (anchor.x - pos.x) * pull,
+              y: pos.y + (anchor.y - pos.y) * pull };
     }
+    // Do NOT decay the estimate through a normal dark phase: a 4 Hz beacon is
+    // off for about four frames at 30 fps and the target keeps moving the
+    // whole time. Decaying here shrank the search lead precisely when the gap
+    // was widest -- measured as the follower freezing mid-sweep while the
+    // light carried on without it. Past any plausible dark half-cycle the
+    // estimate really is stale, and then it fades.
+    if (coastFrames > DARK_PHASE_FRAMES) { vel.x *= 0.88; vel.y *= 0.88; }
     return;
   }
   coastFrames = 0;
   onContrast = Math.max(contrast, onContrast * 0.995);
 
-  // Brightness-weighted centroid of the tracked blob, not just its hottest
-  // pixel: a saturated LED is a patch of equal 255s and picking any one of
-  // them makes the marker jitter inside it.
-  // The distance term is what keeps a BRIGHTER neighbour from dragging the
-  // centroid: this refines the light we are on, it does not average it with
-  // whatever else clears the threshold. Thresholding against the local peak
-  // rather than the ROI peak matters for the same reason -- a brighter lamp
-  // nearby would otherwise raise the bar until the beacon itself fell under it.
-  // Relative for the same reason the gate is: an absolute cut in a bright room
-  // either admits the entire background or, if the beacon is the dimmer light,
-  // excludes the beacon itself.
+  // ---- MEASURE: brightness-weighted centroid of the tracked blob ----
+  // Not just its hottest pixel: a saturated LED is a patch of equal 255s and
+  // picking any one of them makes the marker jitter inside it. The distance
+  // term keeps a BRIGHTER neighbour from dragging the centroid -- this
+  // refines the light we are on, it does not average it with whatever else
+  // clears the threshold.
   const cut = bg + Math.max(4, contrast * 0.5);
   let sx = 0, sy = 0, sw = 0;
   for (let y = 0; y < rh; y++) {
@@ -1363,52 +1489,63 @@ function refine() {
     }
   }
   if (sw <= MIN_WEIGHT) return;
-  let nx = sx / sw, ny = sy / sw;
+  const nx = sx / sw, ny = sy / sw;
 
-  // Never let one frame teleport the marker. A jump this big is not the beacon
-  // moving -- at 30 fps that would be an implausible speed -- it is a different
-  // object having entered the box. Step toward it rather than onto it, so a
-  // genuine move still tracks within a few frames while a passing reflection
-  // cannot capture the lock in one.
-  // Speed raises the believable per-frame step: prediction has already
-  // absorbed the expected motion, so this cap now guards against a DIFFERENT
-  // object, not against the beacon's own speed.
-  const stepLim = REFINE_STEP + 2.5 * Math.hypot(vel.x, vel.y)
-                + (coastFrames > 5 ? 3 * coastFrames : 0);
-  const jump = Math.hypot(nx - pos.x, ny - pos.y);
+  // ---- MOVE: toward the measurement, and only toward the measurement ----
+  // Step limit: a jump this big is not the beacon moving -- at 30 fps that
+  // would be an implausible speed -- it is a different object having entered
+  // the box. Step toward it rather than onto it, so a genuine move still
+  // tracks within a few frames while a passing reflection cannot capture the
+  // lock in one. The allowance grows with measured speed and with blind time,
+  // because after a dark patch the beacon genuinely has moved further.
+  // The step limit exists to reject a DIFFERENT object entering the box, not
+  // to throttle the beacon's own speed -- identity is guarded by the
+  // modulation map and the tether. After a blind patch the beacon has
+  // genuinely travelled, so the allowance has to travel with it or the ring
+  // closes the gap far slower than the beacon opens it.
+  const stepLim = REFINE_STEP + 3 * spdR + 5 * blind;
+  let tx = nx, ty = ny;
+  const jump = Math.hypot(tx - pos.x, ty - pos.y);
   if (jump > stepLim) {
     const k = stepLim / jump;
-    nx = pos.x + (nx - pos.x) * k;
-    ny = pos.y + (ny - pos.y) * k;
+    tx = pos.x + (tx - pos.x) * k;
+    ty = pos.y + (ty - pos.y) * k;
   }
+  // High gain on purpose: this is a measurement, not a guess, so closing on it
+  // quickly is what puts the ring ON the light instead of trailing it.
+  const smooth = Math.min(0.8, REFINE_SMOOTH + 0.05 * spdR);
+  let px = pos.x + (tx - pos.x) * smooth;
+  let py = pos.y + (ty - pos.y) * smooth;
 
-  const smooth = Math.min(0.75, REFINE_SMOOTH + 0.06 * spdR);
-  let px = pos.x + (nx - pos.x) * smooth;
-  let py = pos.y + (ny - pos.y) * smooth;
-
-  // The tether. The modulation map is the only thing in this program that
-  // knows WHICH light is the beacon; brightness alone does not. So the
-  // follower may sharpen the position within a small radius of the last
-  // confirmed detection and no further: bounded correction, never a free walk.
+  // The tether. The modulation map is the only thing here that knows WHICH
+  // light is the beacon; brightness alone does not. So the follower may
+  // sharpen the position within a bounded radius of the last confirmed
+  // detection and no further: correction, never a free walk.
   if (anchor) {
     const dx = px - anchor.x, dy = py - anchor.y;
     const r = Math.hypot(dx, dy);
-    const tether = ANCHOR_MAX + 3 * Math.hypot(vel.x, vel.y)
-                 + (coastFrames > 5 ? 3 * coastFrames : 0);
+    const tether = ANCHOR_MAX + 6 * spdR;
     if (r > tether) {
       px = anchor.x + dx * (tether / r);
       py = anchor.y + dy * (tether / r);
     }
   }
 
+  // Velocity is learned from MEASURED position deltas over elapsed frames --
+  // the only estimator that converges on the target's true speed. (Learning
+  // from the post-smoothing residual, as an earlier build did, converges to
+  // roughly half of it, so the ring fell further behind on every dark phase.)
+  // Clamped, because a wild estimate is what steers the search off target.
   if (lastMeas) {
     const df = frameNo - lastMeas.f;
-    if (df >= 1 && df <= 12) {          // spans the blink's dark half too
-      const mvx = (nx - lastMeas.x) / df, mvy = (ny - lastMeas.y) / df;
-      // Adaptive gain: small disagreement = smoothing; large disagreement
-      // (a direction REVERSAL above all) = the old estimate is simply
-      // wrong, and clinging to it predicts the wrong way through the turn.
-      const wN = Math.min(0.85, 0.5 + 0.05 * Math.hypot(mvx - vel.x, mvy - vel.y));
+    if (df >= 1 && df <= 12) {
+      let mvx = (nx - lastMeas.x) / df, mvy = (ny - lastMeas.y) / df;
+      const ms = Math.hypot(mvx, mvy);
+      if (ms > MAX_SPEED) { mvx *= MAX_SPEED / ms; mvy *= MAX_SPEED / ms; }
+      // Adaptive gain: small disagreement = smoothing; a direction reversal
+      // means the old estimate is simply wrong, and clinging to it would
+      // steer the search the wrong way through the turn.
+      const wN = Math.min(0.85, 0.45 + 0.06 * Math.hypot(mvx - vel.x, mvy - vel.y));
       vel.x += wN * (mvx - vel.x);
       vel.y += wN * (mvy - vel.y);
     }
@@ -1420,10 +1557,11 @@ function refine() {
 function drawHud() {
   const c = outCtx, w = els.view.width, h = els.view.height;
   const ds = displayState();
+  const locked = state === 'LOCKED';
 
   // Everything below is sized in canvas pixels, so it has to scale with the
   // camera. resScale() already exists for the detection radii and is reused
-  // here: previously the HUD used fixed 12-15px fonts at a fixed x=110, which
+  // here: the original HUD used fixed 12-15px fonts at a fixed x=110, which
   // on a 320-wide camera ran 180px past the right edge (the readouts were
   // simply cut off) and on a 1280-wide one was too small to read across a room.
   const k = Math.max(0.75, Math.min(2.6, w / 480));
@@ -1447,37 +1585,31 @@ function drawHud() {
 
   // --- the two gates, drawn as meters -----------------------------------
   //
-  // This is the demonstration, so it should be legible as a picture rather
-  // than as four numbers a judge has to hold in their head. Each meter fills
-  // to the current value with a tick at the threshold that must be crossed:
-  // point the camera at a bright lamp and the bars sit below their ticks
-  // however bright it is; point it at the blinking beacon and they cross.
+  // Legible as a picture rather than as four numbers a judge has to hold in
+  // their head. Each meter fills toward a tick at the threshold that must be
+  // crossed: point the camera at a bright lamp and the bars sit below their
+  // ticks however bright it is; point it at the blinking beacon and they cross.
   //
-  // Both are shown because both matter and they say different things. Blink
-  // is the fraction of variance at the beacon's frequency. Margin is how far
-  // the peak beats its own background -- and per the constant's own comment,
-  // that is the discriminator; the blink floor is a sanity check.
-  const locked = state === 'LOCKED';
+  // Values come from heldScore/heldMargin, not the raw per-analysis score --
+  // the map legitimately reports zero on any analysis where nothing cleared
+  // threshold (a blinking beacon is dark half the time), and drawing that raw
+  // makes the meter flicker to empty every other reading under a green LOCKED
+  // banner. coastFrames doubles as the staleness signal for the dim: it is
+  // already the project's own measure of "how long since a real detection".
+  const hScore = locked ? heldScore : score;
+  const hMargin = locked ? heldMargin : margin;
   const meterX = pad + chipW + 14 * k;
   const meterW = Math.max(120 * k, Math.min(260 * k, w - meterX - 104 * k));
   const rowH = Math.round(11 * k);
 
   function meter(y, name, value, gate) {
-    // shownStale counts analyses since a real measurement. Holding is normal
-    // -- a blinking beacon is dark half the time -- so this dims rather than
-    // warns, and only once the hold is long enough to be worth knowing about.
-    const held = shownStale > 2;
+    const held = locked && coastFrames > 2;
     c.globalAlpha = held ? 0.55 : 1;
-    // The threshold sits at the CENTRE of the bar, and the value is placed
-    // by its ratio to that threshold on a log scale. Two reasons:
-    //
-    //  - it cannot saturate. A linear bar needs a fixed maximum, and these
-    //    quantities have no natural one -- a locked beacon's margin runs to
-    //    40x while the gate is 3.8, so any fixed scale pegs the bar full and
-    //    stops telling you anything. That is what the first version did.
-    //  - "left of centre is failing, right of centre is passing" is readable
-    //    across a room without reading a single number, which is the point
-    //    of putting it on screen during a live demo at all.
+    // The threshold sits at the CENTRE of the bar, and the value is placed by
+    // its ratio to that threshold on a log scale: a linear bar needs a fixed
+    // maximum, and these quantities have none -- a locked beacon's margin
+    // runs to 40x while the gate is 3.8, so a fixed scale pegs the bar full
+    // and stops telling you anything.
     const r = gate > 0 && value > 0 ? Math.log(value / gate) : -4;
     const frac = Math.max(0.02, Math.min(0.98, 0.5 + 0.5 * Math.tanh(0.55 * r)));
     const over = value >= gate;
@@ -1491,7 +1623,6 @@ function drawHud() {
     c.fillStyle = 'rgba(142,164,196,.16)';
     c.fillRect(bx, y + 2 * k, bw, rowH - 4 * k);
 
-    // Fill from the centre outward, so the direction of travel is the meaning.
     const mid = bx + bw * 0.5;
     c.fillStyle = over ? 'rgba(59,214,140,.85)' : 'rgba(255,145,120,.75)';
     if (over) c.fillRect(mid, y + 2 * k, bw * frac - bw * 0.5, rowH - 4 * k);
@@ -1507,8 +1638,8 @@ function drawHud() {
     c.globalAlpha = 1;
   }
 
-  meter(pad + Math.round(25 * k), 'blink', shownScore, locked ? HOLD_MIN : LOCK_MIN);
-  meter(pad + Math.round(25 * k) + rowH + 3 * k, 'margin', shownMargin,
+  meter(pad + Math.round(25 * k), 'blink', hScore, locked ? HOLD_MIN : LOCK_MIN);
+  meter(pad + Math.round(25 * k) + rowH + 3 * k, 'margin', hMargin,
         locked ? HOLD_CFAR : CFAR);
 
   // --- right-hand readouts ---------------------------------------------
@@ -1527,43 +1658,29 @@ function drawHud() {
   c.beginPath(); c.moveTo(w/2 - 13, h/2); c.lineTo(w/2 + 13, h/2);
   c.moveTo(w/2, h/2 - 13); c.lineTo(w/2, h/2 + 13); c.stroke();
 
-  if (state === 'LOCKED' && pos) {
+  if (locked && pos) {
     // pos is in true camera coordinates; the picture under it is mirrored, so
-    // the ring has to be mirrored too or it lands on the wrong side of the
+    // the reticle has to be mirrored too or it lands on the wrong side of the
     // screen from the beacon the operator is looking at.
     const mx = MIRROR_VIEW ? w - pos.x : pos.x;
     const coasting = ds === 'COASTING';
-    const col = coasting ? '#FFC24D' : '#3BD68C';
-    // Reticle scale. Clamped tighter than the HUD's: the figure should stay
-    // small and precise on a 720p camera rather than growing with the frame,
-    // because its job is to point at a source a few pixels across.
+    const col2 = coasting ? '#FFC24D' : '#3BD68C';
+    // A minimal precision reticle: a thin ring with four short cardinal
+    // ticks outside it, nothing else. The original was two plain concentric
+    // circles; a heavier graduated-scope design was tried in between and
+    // discarded -- both competed with the beacon for attention, and the
+    // beacon here is only a few pixels across. A thin figure with a clear
+    // centre reads as an instrument and leaves the thing it is pointing at
+    // visible, which is the only job it has.
     const hk = Math.max(0.8, Math.min(1.7, w / 560));
-    // Four-arc instrument reticle, identical in geometry to the Qt view
-    // (gui/frameview.py) and the exported video (video.py). Gaps sit on
-    // the diagonals and are bridged by ticks, so the break reads as
-    // design; the cardinals stay clear of the beacon itself. Previously
-    // two plain concentric circles here, which worked but did not match
-    // the other two renderers -- one instrument, three surfaces.
-    // A minimal precision reticle: a thin ring, four short cardinal ticks
-    // sitting outside it, nothing else. Earlier versions of this were a
-    // heavy double-arc and then a graduated scope; both competed with the
-    // beacon for attention, and the beacon here is only a few pixels
-    // across. A thin figure with a clear centre reads as an instrument and
-    // leaves the thing it is pointing at visible, which is the only job it
-    // has.
-    const R = 13 * hk;
-    const GAP = 16 * Math.PI / 180;
-    const Q = Math.PI / 2;
+    const R = 13 * hk, GAP = 16 * Math.PI / 180, Q = Math.PI / 2;
     const arcs = [0, 1, 2, 3].map(i => (Math.PI / 4) + i * Q);
     const lw = Math.max(0.9, 1.1 * hk);
 
-    c.save();
     c.lineCap = 'butt';
     if (coasting) c.setLineDash([5, 4]);
 
-    // A faint wide pass underneath, so the figure holds its edge against a
-    // dark room and against a blown-out source alike.
-    c.strokeStyle = col; c.globalAlpha = .15; c.lineWidth = lw * 3.5;
+    c.strokeStyle = col2; c.globalAlpha = .15; c.lineWidth = lw * 3.5;
     c.beginPath();
     for (const a2 of arcs) c.arc(mx, pos.y, R, a2 + GAP, a2 + Q - GAP);
     c.stroke();
@@ -1574,7 +1691,6 @@ function drawHud() {
     }
     c.setLineDash([]);
 
-    // Four short ticks on the cardinals, outside the ring.
     const T0 = R + 3.5 * hk, T1 = R + 9 * hk;
     for (const [ux, uy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
       c.beginPath();
@@ -1582,12 +1698,11 @@ function drawHud() {
       c.lineTo(mx + ux * T1, pos.y + uy * T1);
       c.stroke();
     }
-    c.restore();
-    c.strokeStyle = col;
+
     // Velocity vector: makes "the tracker knows where it is going" visible.
     const spd = Math.hypot(vel.x, vel.y);
     if (spd > 1.2) {
-      const k = 6, vx = (MIRROR_VIEW ? -vel.x : vel.x) * k, vy = vel.y * k;
+      const vk = 6, vx = (MIRROR_VIEW ? -vel.x : vel.x) * vk, vy = vel.y * vk;
       c.globalAlpha = .85; c.lineWidth = 1.5;
       c.beginPath(); c.moveTo(mx, pos.y); c.lineTo(mx + vx, pos.y + vy); c.stroke();
     }

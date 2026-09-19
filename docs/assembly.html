@@ -346,8 +346,31 @@ const parts = {};   // id -> {mesh, mat, step}
 let loaded = 0;
 
 const loader = new STLLoader();
+
+// Meshes arrive one of two ways. Served from the repo, each part is its
+// own .stl next to the page. Published as an Artifact, .stl is not a
+// served type, so the same meshes ship as one base64 bundle -- which is
+// also a single request instead of twelve.
+async function meshSource() {
+  try {
+    const r = await fetch('meshes.json');
+    if (!r.ok) throw 0;
+    const bundle = await r.json();
+    return name => {
+      const b = atob(bundle[name]);
+      const buf = new Uint8Array(b.length);
+      for (let i = 0; i < b.length; i++) buf[i] = b.charCodeAt(i);
+      return Promise.resolve(loader.parse(buf.buffer));
+    };
+  } catch {
+    return name => new Promise((res, rej) =>
+      loader.load(`cad/web/${name}.stl`, res, undefined, rej));
+  }
+}
+
+const getMesh = await meshSource();
 STEPS.forEach((s, i) => {
-  loader.load(`cad/web/${s.file}.stl`, geo => {
+  getMesh(s.file).then(geo => {
     geo.computeVertexNormals();
     // A tilt-group part is exported in world coordinates, so shift its
     // geometry back to the tilt pivot; the group then carries it.

@@ -10,8 +10,8 @@
 # faster than a 4 deg one, and a 20 deg/s mount closes on it faster than
 # a 5 deg/s one. Benchmarking on those and quoting the result against the
 # spec's limits would have been a measurement of the wrong thing.
-name: ps26169_benchmark
-description: 'PS26169 evaluation conditions: 4x3 deg FOV, 5 deg/s pan-tilt,
+name: ps26169_cold_search
+description: 'PS26169 conditions with a COLD SEARCH: 4x3 deg FOV, 5 deg/s pan-tilt,
   10 px square target on a figure-of-eight, +/-20 px camera jitter and
   +/-20 px platform motion, salt-and-pepper impulse noise. Atmospheric
   condition is applied on top with --atmosphere.'
@@ -118,8 +118,8 @@ beacons:
       # and is what Benchmark-2's "video files covering a complete
       # screen" describes. scenarios/ps26169_cold_search.yaml keeps the
       # hard case honest; see docs/PS26169_COMPLIANCE.md.
-      center_az_deg: 1.2
-      center_el_deg: 20.8
+      center_az_deg: 3.5
+      center_el_deg: 23.5
       width_deg: 1.4          # stays inside the 4 deg FOV once acquired
       height_deg: 0.9
       period_s: 40.0          # peak rate ~0.22 deg/s, well inside 5 deg/s

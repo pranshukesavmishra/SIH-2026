@@ -743,6 +743,28 @@ body {
   .flow-step { flex-direction: column; align-items: flex-start; gap: 8px; }
   .step-metric-badge { align-self: flex-start; }
 }
+
+/* ---------- MK1 / MK2 3D ---------- */
+.rig-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; width: 100%; margin-top: 8px; }
+@media (max-width: 860px) { .rig-duo { grid-template-columns: 1fr; } }
+.rig-card { background: rgba(8,16,32,.85); border: 1px solid #15263F; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 12px 35px -10px rgba(0,0,0,.8), 0 0 16px rgba(79,199,234,.12); }
+.rig-view { position: relative; aspect-ratio: 4 / 3; background: #050a14; }
+.rig-view canvas { width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
+.rig-view canvas:active { cursor: grabbing; }
+.rig-badge { position: absolute; top: 12px; left: 12px; padding: 5px 11px; border-radius: 7px;
+  font: 700 12px/1 ui-monospace, monospace; letter-spacing: .16em; color: #7FE0F8;
+  background: rgba(4,9,21,.8); border: 1px solid rgba(79,199,234,.4); }
+.rig-badge.mk2 { color: #3BD68C; border-color: rgba(59,214,140,.45); }
+.rig-read { position: absolute; right: 12px; bottom: 10px; font: 11px ui-monospace, monospace; color: #8EA4C4;
+  background: rgba(4,9,21,.7); padding: 4px 8px; border-radius: 6px; white-space: pre; }
+.rig-meta { padding: 14px 16px 16px; }
+.rig-name { font: 700 15px/1.3 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #EAF4FD; }
+.rig-name em { font: 400 11px ui-monospace, monospace; color: #536988; letter-spacing: .08em; margin-left: 8px; font-style: normal; }
+.rig-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.rig-chips span { font: 11px ui-monospace, monospace; color: #8EA4C4; padding: 4px 9px; border-radius: 6px;
+  border: 1px solid #15263F; background: rgba(255,255,255,.03); }
+.rig-hint { margin-top: 12px; font: 11px ui-monospace, monospace; color: #536988; letter-spacing: .08em; text-align: center; }
 </style>
 </head>
 <body>
@@ -761,8 +783,12 @@ body {
     <span class="dot-label">01 HERO</span>
     <span class="dot-circle"></span>
   </div>
+  <div class="dot-item" id="dot-sec-hardware" onclick="scrollToSection('sec-hardware')" title="Hardware">
+    <span class="dot-label">02 HARDWARE</span>
+    <span class="dot-circle"></span>
+  </div>
   <div class="dot-item" id="dot-sec-pipeline" onclick="scrollToSection('sec-pipeline')" title="Proposed Solution">
-    <span class="dot-label">02 SOLUTION</span>
+    <span class="dot-label">03 SOLUTION</span>
     <span class="dot-circle"></span>
   </div>
 </nav>
@@ -826,7 +852,7 @@ body {
     </h2>
     
     <p class="hero-desc">
-      A physics-true virtual test-range and AI-assisted tracker proving sub-microradian optical pointing in pure software — without costly hardware test benches.
+      Finds the blinking beacon, ignores the decoys, and keeps the laser link in view.
     </p>
 
     <div class="cta-group">
@@ -871,19 +897,53 @@ body {
         <small>100% decoy rejection</small>
       </div>
       <div class="kpi-item">
-        <b>73 / 73</b>
+        <b>250</b>
         <span>TESTS PASS</span>
         <small>automated suite</small>
       </div>
     </div>
 
-    <button class="scroll-nav-btn" onclick="scrollToSection('sec-pipeline')">
-      HOW OUR SOLUTION WORKS
+    <button class="scroll-nav-btn" onclick="scrollToSection('sec-hardware')">
+      SEE THE HARDWARE
       <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
     </button>
   </section>
 
-  <!-- SECTION 2: CONNECTED VERTICAL LINE PIPELINE FLOW (DIRECT FROM SIH PDF) -->
+
+  <!-- SECTION 2: THE HARDWARE, MK1 AND MK2, LIVE IN 3D -->
+  <section class="section-view" id="sec-hardware">
+    <div class="timeline-section-header">
+      <div class="section-tag">HARDWARE · BUILT, THEN REBUILT</div>
+      <h3 class="section-title">MK1 → MK2</h3>
+    </div>
+    <div class="rig-duo">
+      <div class="rig-card">
+        <div class="rig-view">
+          <canvas id="rigMk1" aria-label="MK1 servo rig, 3D"></canvas>
+          <span class="rig-badge">MK1</span>
+          <span class="rig-read" id="rigMk1Read"></span>
+        </div>
+        <div class="rig-meta">
+          <div class="rig-name">Servo rig <em>built · demo video</em></div>
+          <div class="rig-chips"><span>2× SG90 servo</span><span>Laptop webcam</span><span>KY-008 laser</span><span>Open loop</span></div>
+        </div>
+      </div>
+      <div class="rig-card">
+        <div class="rig-view">
+          <canvas id="rigMk2" aria-label="MK2 stepper terminal, 3D"></canvas>
+          <span class="rig-badge mk2">MK2</span>
+          <span class="rig-read" id="rigMk2Read"></span>
+        </div>
+        <div class="rig-meta">
+          <div class="rig-name">Stepper terminal <em>building now · ₹6,709</em></div>
+          <div class="rig-chips"><span>2× NEMA17 + A4988</span><span>Camera on gimbal</span><span>AS5600 closed loop</span><span>3S battery</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="rig-hint">Drag to rotate · click, then scroll to zoom · double-click to resume</div>
+  </section>
+
+  <!-- SECTION 3: CONNECTED VERTICAL LINE PIPELINE FLOW (DIRECT FROM SIH PDF) -->
   <section class="section-view" id="sec-pipeline">
     <div class="timeline-section-header">
       <div class="section-tag">PROPOSED SOLUTION &amp; ARCHITECTURE</div>
@@ -901,7 +961,7 @@ body {
         <div class="step-num">01</div>
         <div class="step-body">
           <h4>Physics-True Virtual World &amp; Sensor Simulation</h4>
-          <p>Simulates real SGP4 orbital orbits, Greenwood turbulence, angular vibrations, and sensor noise producing 9.2 MPx/s of realistic sky imagery.</p>
+          <p>Real orbits, turbulence, vibration and sensor noise.</p>
         </div>
         <div class="step-metric-badge">9.2 MPx / s Imagery</div>
       </div>
@@ -911,7 +971,7 @@ body {
         <div class="step-num">02</div>
         <div class="step-body">
           <h4>2D CA-CFAR Sub-Pixel Centroiding</h4>
-          <p>Morphological top-hat filter and Cell-Averaging CFAR extract faint point-source beacon spots from heavy stellar background clutter.</p>
+          <p>Finds faint beacon spots in a cluttered sky.</p>
         </div>
         <div class="step-metric-badge">&approx; 6 Candidates / Frame</div>
       </div>
@@ -921,7 +981,7 @@ body {
         <div class="step-num">03</div>
         <div class="step-body">
           <h4>4 Hz Blink-Signature Hard Gating</h4>
-          <p>The beacon blinks at an agreed 4 Hz. Stars and sun-glints score zero and are rejected — 0 wrong-target locks across 64 Monte-Carlo runs.</p>
+          <p>Only a 4 Hz blink passes. Stars and glints are rejected.</p>
         </div>
         <div class="step-metric-badge">0 / 64 False Locks</div>
       </div>
@@ -931,7 +991,7 @@ body {
         <div class="step-num">04</div>
         <div class="step-body">
           <h4>Dual-Model IMM Kalman State Estimator</h4>
-          <p>Two motion models (Constant Velocity &amp; Constant Acceleration) dynamically re-weighted every frame to track sharp maneuvering targets.</p>
+          <p>Two motion models, blended every frame.</p>
         </div>
         <div class="step-metric-badge">Adaptive State Tracking</div>
       </div>
@@ -941,7 +1001,7 @@ body {
         <div class="step-num">05</div>
         <div class="step-body">
           <h4>Smith Predictor Latency Cancellation</h4>
-          <p>Internal forward model predicts 40 ms ahead to cancel mount latency, keeping the 30 Hz gimbal control loop fully stable.</p>
+          <p>Predicts 40 ms ahead to cancel mount delay.</p>
         </div>
         <div class="step-metric-badge">40 ms Delay Canceled</div>
       </div>
@@ -951,15 +1011,10 @@ body {
         <div class="step-num">06</div>
         <div class="step-body">
           <h4>Deterministic Closed-Loop Link Closure</h4>
-          <p>Runs in 8–21 ms on 2 CPU cores (no GPU/cloud required), holding median 198 µrad error to close the link 99.3% of the time (vs 14.7% open loop).</p>
+          <p>8–21 ms per frame on 2 CPU cores. No GPU.</p>
         </div>
         <div class="step-metric-badge">99.3% Link Closure</div>
       </div>
-    </div>
-
-    <div class="telemetry-note">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-      Every readout and marker is measured from logged runs of the real engine — 100% reproducible and verifiable against hidden ground truth.
     </div>
 
     <div class="cta-group" style="margin-bottom: 0;">
@@ -1384,7 +1439,7 @@ setTimeout(() => {
       C(s.lock_retention_pct.toFixed(1)+' %','LOCK RETENTION','across pass')+
       C(s.pointing_error_urad.p50.toFixed(0)+' µrad','MEDIAN ERROR','in closed lock')+
       C('0 / 64','WRONG-TARGET LOCKS','100% decoy rejection')+
-      C('73 / 73','TESTS PASS','automated suite');
+      C('250','TESTS PASS','automated suite');
   }).catch(()=>{});
 
   // 5. Active Section Dot Indicator on Scroll
@@ -1422,5 +1477,13 @@ setTimeout(() => {
   });
 })();
 </script>
+<script type="importmap">
+{"imports":{
+  "three":"./vendor/three/three.module.js",
+  "three/addons/controls/OrbitControls.js":"./vendor/three/OrbitControls.js",
+  "three/addons/loaders/STLLoader.js":"./vendor/three/STLLoader.js"
+}}
+</script>
+<script type="module" src="rigs3d.js"></script>
 </body>
 </html>

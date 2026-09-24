@@ -18,6 +18,7 @@ WHITE = RGBColor(0xFF, 0xFF, 0xFF)
 RED   = RGBColor(0x9C, 0x2E, 0x23)
 
 prs = Presentation("template.pptx")
+N_TESTS = 250                 # pytest tests/: 250 passed, 1 skipped
 S = list(prs.slides)
 
 
@@ -156,9 +157,19 @@ def clone_slide(prs, source_index, insert_before):
     for shp in list(dst.shapes):
         shp._element.getparent().remove(shp._element)
     keep = ("Rectangle", "Title", "Slide Number", "Footer", "Oval", "Picture")
+    from pptx.opc.constants import RELATIONSHIP_TYPE as RT
     for shp in src.shapes:
         if shp.name.startswith(keep):
-            dst.shapes._spTree.append(_copy.deepcopy(shp._element))
+            el = _copy.deepcopy(shp._element)
+            # A copied picture still points at the SOURCE slide's image
+            # relationship id; re-link it on the new slide, or the file
+            # opens as corrupt in PowerPoint (LibreOffice hides this).
+            for blip in el.iter("{http://schemas.openxmlformats.org/drawingml/2006/main}blip"):
+                key = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed"
+                rid = blip.get(key)
+                if rid:
+                    blip.set(key, dst.part.relate_to(src.part.related_part(rid), RT.IMAGE))
+            dst.shapes._spTree.append(el)
     ids = prs.slides._sldIdLst
     ids.insert(insert_before, ids[-1])
     return dst
@@ -214,47 +225,234 @@ set_runs(tf.paragraphs[0], [("The problem in one line:  ", {"bold": True, "size"
 pic(s, "c1_isro.jpg", 6.55, 6.32, h=0.95)
 pic(s, "logo_banner.png", 8.35, 6.28, h=1.02)
 
-# ================= SLIDE 2 — IDEA =================
+# ================= SLIDE 2 — IDEA: PROBLEM → SOLUTION =================
+# Left: the problem, three verified facts and ISRO's own acceptance bar.
+# Right: the answer, the three-card graphic the team approved, measured
+# chips, and what makes it different. Every external number has its source
+# on the slide.
 s = S[1]
 clean_title(s); team_oval(s)
 style_pointer_box(s, h=0.60, size=9)
+RED_TINT = RGBColor(0xFB, 0xEE, 0xEC)
+LINE = RGBColor(0xD5, 0xDD, 0xE5)
 
-_, tf = tb(s, 0.30, 1.94, 6.75, 0.44)
-set_runs(tf.paragraphs[0],
-         [("Problem in one line:  ", {"bold": True, "size": 11, "color": RED}),
-          ("find the partner's blinking beacon among stars and glints, verify it, and hold "
-           "it centred to micro-radian accuracy — automatically, in software.",
-           {"size": 11, "color": NAVY})])
-_, tf = tb(s, 0.30, 2.44, 6.75, 0.44)
-set_runs(tf.paragraphs[0],
-         [("Our answer — the eyes & neck of a laser terminal:  ",
-           {"bold": True, "size": 12, "color": CYAN}),
-          ("simulate the sky · verify the beacon · track & predict.  Built, measured, live.",
-           {"size": 11.5, "color": NAVY})])
+_, tf = tb(s, 0.32, 1.98, 4.95, 0.32)
+set_runs(tf.paragraphs[0], [("THE PROBLEM", {"bold": True, "size": 14, "color": RED}),
+                            ("   why pointing is the hard part", {"size": 10, "color": GRAY})])
+PROBS = [
+    ("µrad", "Laser beams are hair-thin. Both terminals must stay pointed at each "
+             "other to micro-radians, on platforms that move and shake.",
+     "Kaymak et al., IEEE Commun. Surveys & Tutorials 20(2), 2018"),
+    ("100 Gbps", "The record 100 Gbps link to a moving drone stayed up only because a "
+                 "camera tracked the target (10 Hz vision + 200 Hz tip/tilt).",
+     "Walsh et al., Scientific Reports 12, 2022"),
+    ("1/5 cost", "Free-space optics costs about one-fifth of laying fibre and deploys in "
+                 "hours — India's last-mile and disaster links need it mobile.",
+     "TEC / DoT, White Paper on Free Space Optics"),
+]
+y = 2.38
+for big, text, src in PROBS:
+    shp, _ = card(s, 0.32, y, 4.95, 0.92, fill=LIGHT)
+    _, tf = tb(s, 0.44, y + 0.06, 1.30, 0.80, anchor=MSO_ANCHOR.MIDDLE)
+    set_runs(tf.paragraphs[0], [(big, {"bold": True, "size": 19 if len(big) < 6 else 16, "color": RED})])
+    _, tf = tb(s, 1.80, y + 0.08, 3.38, 0.60)
+    set_runs(tf.paragraphs[0], [(text, {"size": 9.5, "color": NAVY})])
+    _, tf = tb(s, 1.80, y + 0.68, 3.38, 0.18)
+    set_runs(tf.paragraphs[0], [(src, {"italic": True, "size": 7.5, "color": GRAY})])
+    y += 1.02
 
-pic(s, "c2_cards.jpg", 0.32, 2.94, w=6.30)                       # h = 3.16
+shp, tf = card(s, 0.32, 5.46, 4.95, 1.36, fill=RED_TINT)
+set_runs(tf.paragraphs[0], [("ISRO PS26169 asks for the coarse-alignment brain:",
+                             {"bold": True, "size": 10.5, "color": RED})], align=PP_ALIGN.LEFT)
+p = tf.add_paragraph(); p.space_before = Pt(3)
+set_runs(p, [("find the partner's beacon among stars, glints and decoys, prove it is the "
+              "right one, and hold it centred — in software.", {"size": 9.5, "color": NAVY})], align=PP_ALIGN.LEFT)
+for i, (v, l) in enumerate([("≤ 2 s", "acquire"), ("≤ 10 px", "error"), ("≥ 20", "FPS")]):
+    x = 0.46 + i * 1.60
+    shp2, tf2 = card(s, x, 6.22, 1.48, 0.50, fill=WHITE, line=RGBColor(0xE3, 0xB9, 0xB3))
+    tf2.vertical_anchor = MSO_ANCHOR.MIDDLE
+    set_runs(tf2.paragraphs[0], [(v + "  ", {"bold": True, "size": 12, "color": RED}),
+                                 (l, {"size": 8.5, "color": GRAY})], align=PP_ALIGN.CENTER)
+
+arrow = s.shapes.add_shape(MSO_SHAPE.CHEVRON, Inches(5.40), Inches(3.70), Inches(0.36), Inches(0.70))
+arrow.fill.solid(); arrow.fill.fore_color.rgb = CYAN; arrow.line.fill.background(); arrow.shadow.inherit = False
+
+_, tf = tb(s, 5.92, 1.98, 7.10, 0.32)
+set_runs(tf.paragraphs[0], [("OUR SOLUTION — ZERODRIFT", {"bold": True, "size": 14, "color": CYAN}),
+                            ("   the eyes and neck of a laser terminal", {"size": 10, "color": GRAY})])
+pic(s, "c2_cards.jpg", 5.92, 2.38, w=4.70)                        # h = 2.36
 for i, chp in enumerate(["c2_chip1p.jpg", "c2_chip2p.jpg", "c2_chip3.jpg"]):
-    pic(s, chp, 0.32 + i * 2.19, 6.16, w=2.05)
+    pic(s, chp, 10.78, 2.38 + i * 0.81, h=0.74)
+_, tf = tb(s, 10.78, 4.80, 2.25, 0.18)
+set_runs(tf.paragraphs[0], [("64 simulated LEO passes", {"italic": True, "size": 7.5, "color": GRAY})],
+         align=PP_ALIGN.CENTER)
 
-pic(s, "c2_shot.jpg", 7.42, 2.02, h=3.00, border=GRAY)           # w = 4.90
-_, tf = tb(s, 7.05, 5.08, 5.90, 0.26)
-set_runs(tf.paragraphs[0], [("Our console locked on the beacon — the exact view the live demo link opens",
-                             {"italic": True, "size": 10, "color": GRAY})], align=PP_ALIGN.CENTER)
-_, tf = tb(s, 7.05, 5.36, 5.90, 0.24)
-set_runs(tf.paragraphs[0],
-         [("Measured: ", {"bold": True, "size": 11, "color": NAVY}),
-          ("median 198 µrad", {"bold": True, "size": 11, "color": CYAN}),
-          (" in lock · in-FOV ", {"size": 11, "color": NAVY}),
-          ("100%", {"bold": True, "size": 11, "color": GREEN}),
-          (" · the live-demo run", {"size": 11, "color": NAVY})], align=PP_ALIGN.CENTER)
-pic(s, "chart_convergence.png", 7.05, 5.64, w=5.90,
-    border=RGBColor(0xD5, 0xDD, 0xE5))                            # h = 1.30
+DIFF = [
+    ("Identity, not brightness", "Locks only on the 4 Hz blink. Lamps, stars, glints and "
+                                 "wrong-rate strobes are rejected."),
+    ("Built and running", "Live webcam demo, MK1 servo rig, MK2 stepper terminal "
+                          "— ₹6,709 bill of materials."),
+    ("Measured, not claimed", f"{N_TESTS} passing tests. Every number on these slides "
+                              "regenerates from one command."),
+]
+for i, (h, t) in enumerate(DIFF):
+    x = 5.92 + i * 2.39
+    shp, tf = card(s, x, 5.08, 2.28, 1.74, fill=LIGHT, line=LINE)
+    tf.margin_top = Inches(0.12)
+    set_runs(tf.paragraphs[0], [(f"0{i + 1}", {"bold": True, "size": 18, "color": CYAN})], align=PP_ALIGN.LEFT)
+    p = tf.add_paragraph(); p.space_before = Pt(2)
+    set_runs(p, [(h, {"bold": True, "size": 11, "color": NAVY})], align=PP_ALIGN.LEFT)
+    p = tf.add_paragraph(); p.space_before = Pt(3)
+    set_runs(p, [(t, {"size": 9.5, "color": NAVY})], align=PP_ALIGN.LEFT)
 
-# ================= SLIDE 3 — TECHNICAL =================
+# ================= SLIDE 3 — TECHNICAL: THE LOOP, THE STATES, THE NUMBERS =================
 s = S[2]
 clean_title(s); team_oval(s)
 style_pointer_box(s, h=0.26, size=9)
-pic(s, "c3_all.jpg", 1.20, 1.72, w=10.94)                         # h = 5.16
+from pptx.chart.data import CategoryChartData, XyChartData
+from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION, XL_LABEL_POSITION
+from pptx.oxml.ns import qn
+import json as _json
+from lxml import etree
+
+STAGES = [
+    ("Camera", "640×480 · 30 fps", "rides the gimbal, boresighted"),
+    ("Detect", "salt & pepper filter", "sub-pixel spots · CFAR"),
+    ("Identify", "4 Hz blink test", "decoys + wrong rates vetoed"),
+    ("Track", "IMM Kalman filter", "coasts the dark half-cycle"),
+    ("Control", "Smith predictor", "type-2 loop cancels drift"),
+    ("Gimbal", "2× NEMA17 steppers", "AS5600 angle feedback"),
+]
+BW, BH, GAP, X0, Y0 = 1.86, 1.02, 0.26, 0.42, 1.76
+for i, (h, l1, l2) in enumerate(STAGES):
+    x = X0 + i * (BW + GAP)
+    shp, tf = card(s, x, Y0, BW, BH, fill=LIGHT, line=RGBColor(0xB9, 0xD3, 0xDE))
+    tf.margin_left = Inches(0.10); tf.margin_top = Inches(0.04); tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    set_runs(tf.paragraphs[0], [(f"{i + 1}  ", {"bold": True, "size": 12, "color": CYAN}),
+                                (h, {"bold": True, "size": 14, "color": NAVY})])
+    p = tf.add_paragraph(); p.space_before = Pt(4)
+    set_runs(p, [(l1, {"bold": True, "size": 10, "color": NAVY})])
+    p = tf.add_paragraph(); p.space_before = Pt(1)
+    set_runs(p, [(l2, {"size": 9, "color": GRAY})])
+    if i < len(STAGES) - 1:
+        ar = s.shapes.add_shape(MSO_SHAPE.RIGHT_ARROW, Inches(x + BW + 0.03), Inches(Y0 + BH / 2 - 0.10),
+                                Inches(GAP - 0.06), Inches(0.20))
+        ar.fill.solid(); ar.fill.fore_color.rgb = CYAN; ar.line.fill.background(); ar.shadow.inherit = False
+
+
+def seg(slide, x1, y1, x2, y2, head=False):
+    c = slide.shapes.add_connector(1, Inches(x1), Inches(y1), Inches(x2), Inches(y2))
+    c.line.color.rgb = CYAN; c.line.width = Pt(1.75)
+    if head:
+        ln = c.line._get_or_add_ln()
+        te = etree.SubElement(ln, qn("a:tailEnd")); te.set("type", "triangle"); te.set("w", "med"); te.set("len", "med")
+    return c
+
+
+# the closed loop: gimbal back to camera, under the chain
+yl = Y0 + BH + 0.20
+xg = X0 + 5 * (BW + GAP) + BW / 2; xc = X0 + BW / 2
+seg(s, xg, Y0 + BH, xg, yl); seg(s, xg, yl, xc, yl); seg(s, xc, yl, xc, Y0 + BH, head=True)
+_, tf = tb(s, 3.2, yl + 0.03, 7.0, 0.22)
+set_runs(tf.paragraphs[0], [("closed optical loop — the camera moves with the laser, so the error is "
+                             "measured on the image itself", {"italic": True, "size": 9, "color": CYAN})],
+         align=PP_ALIGN.CENTER)
+
+# acquisition state machine
+ys = 3.50
+_, tf = tb(s, 0.42, ys + 0.06, 2.1, 0.26)
+set_runs(tf.paragraphs[0], [("STATE MACHINE", {"bold": True, "size": 10, "color": GRAY})])
+PILLS = [("SEARCH", RGBColor(0xE3, 0xEB, 0xFB)), ("ACQUIRE", RGBColor(0xFD, 0xF1, 0xD8)),
+         ("TRACK", RGBColor(0xDF, 0xF3, 0xE8)), ("COAST", RGBColor(0xFD, 0xE8, 0xD8)),
+         ("REACQUIRE", RGBColor(0xFB, 0xE3, 0xE1))]
+PW = 1.55
+for i, (lab, col) in enumerate(PILLS):
+    x = 2.30 + i * (PW + 0.44)
+    shp = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(ys), Inches(PW), Inches(0.38))
+    shp.adjustments[0] = 0.5; shp.fill.solid(); shp.fill.fore_color.rgb = col
+    shp.line.fill.background(); shp.shadow.inherit = False
+    tf = shp.text_frame; tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    set_runs(tf.paragraphs[0], [(lab, {"bold": True, "size": 10, "color": NAVY})], align=PP_ALIGN.CENTER)
+    if i < len(PILLS) - 1:
+        _, tf = tb(s, x + PW, ys + 0.02, 0.44, 0.34, anchor=MSO_ANCHOR.MIDDLE)
+        set_runs(tf.paragraphs[0], [("⇄" if lab == "TRACK" else "→", {"bold": True, "size": 14, "color": CYAN})],
+                 align=PP_ALIGN.CENTER)
+
+# ---- chart A: pointing error on the ISS pass, native, log scale ----
+run = _json.load(open("../../media/telemetry_run.json"))
+fr = run["frames"]
+step = max(1, len(fr) // 180)
+pts = [(f["t"], f["err_urad"]) for f in fr[::step] if f.get("err_urad")]
+fov = run["constants"]["fov_half_width_urad"]
+cd = XyChartData()
+s1 = cd.add_series("Pointing error")
+for t_, e_ in pts: s1.add_data_point(t_, max(e_, 10))
+s2 = cd.add_series("Field-of-view edge")
+s2.add_data_point(0, fov); s2.add_data_point(pts[-1][0], fov)
+gf = s.shapes.add_chart(XL_CHART_TYPE.XY_SCATTER_LINES_NO_MARKERS, Inches(0.32), Inches(4.10),
+                        Inches(4.95), Inches(2.72), cd)
+ch = gf.chart
+ch.has_title = True
+ch.chart_title.text_frame.text = "Pointing error, ISS pass (µrad, log)"
+tp = ch.chart_title.text_frame.paragraphs[0]
+set_runs(tp, [("ISS pass: ", {"bold": True, "size": 10.5, "color": NAVY}),
+              (f"lock in {run['summary']['acquisition_time_s']:.2f} s, median "
+               f"{run['summary']['pointing_error_urad']['p50']:.0f} µrad", {"size": 10, "color": NAVY})])
+ch.has_legend = True; ch.legend.position = XL_LEGEND_POSITION.BOTTOM; ch.legend.include_in_layout = False
+ch.legend.font.size = Pt(8); ch.legend.font.color.rgb = GRAY
+ser = ch.plots[0].series
+ser[0].format.line.color.rgb = CYAN; ser[0].format.line.width = Pt(1.25); ser[0].smooth = False
+ser[1].format.line.color.rgb = RED; ser[1].format.line.width = Pt(1.25); ser[1].format.line.dash_style = 4
+va, ca = ch.value_axis, ch.category_axis
+va.minimum_scale, va.maximum_scale = 10, 100000
+sc = va._element.find(qn("c:scaling"))
+lb = etree.SubElement(sc, qn("c:logBase")); lb.set("val", "10"); sc.remove(lb); sc.insert(0, lb)
+va.has_major_gridlines = True; va.major_gridlines.format.line.color.rgb = RGBColor(0xE4, 0xEA, 0xF0)
+va.tick_labels.font.size = Pt(8); va.tick_labels.font.color.rgb = GRAY; va.tick_labels.number_format = '#,##0'
+va.tick_labels.number_format_is_linked = False
+ca.minimum_scale, ca.maximum_scale = 0, 45
+ca.tick_labels.font.size = Pt(8); ca.tick_labels.font.color.rgb = GRAY
+ca.has_title = True; ca.axis_title.text_frame.text = "time (s)"
+set_runs(ca.axis_title.text_frame.paragraphs[0], [("time (s)", {"size": 8, "color": GRAY})])
+for ax in (va, ca): ax.format.line.color.rgb = RGBColor(0xC8, 0xD2, 0xDC)
+
+# ---- chart B: the live-demo tracker, measured on 12 synthetic scenes ----
+BENCH = [("Still", 100.0), ("Slow circle", 100.0), ("Figure-8", 100.0), ("Fast figure-8", 93.7),
+         ("Hand, run 1", 95.4), ("Hand, run 2", 99.5), ("Hand, run 3", 97.9), ("Past a lamp", 100.0),
+         ("Phone screen", 100.0), ("4.6 Hz beacon", 99.6), ("Torch turning", 100.0), ("Wrong-rate strobes", 99.7)]
+cd = CategoryChartData()
+cd.categories = [b[0] for b in BENCH][::-1]
+cd.add_series("Lock held (%)", [b[1] for b in BENCH][::-1])
+gf = s.shapes.add_chart(XL_CHART_TYPE.BAR_CLUSTERED, Inches(5.45), Inches(4.10), Inches(4.35), Inches(2.72), cd)
+ch = gf.chart
+ch.has_title = True; ch.chart_title.text_frame.text = "Live demo: lock held"
+set_runs(ch.chart_title.text_frame.paragraphs[0],
+         [("Live demo: ", {"bold": True, "size": 10.5, "color": NAVY}),
+          ("% of time locked, 12 scenes", {"size": 10, "color": NAVY})])
+ch.has_legend = False
+pl = ch.plots[0]; pl.gap_width = 45
+pl.series[0].format.fill.solid(); pl.series[0].format.fill.fore_color.rgb = GREEN
+pl.has_data_labels = True
+dl = pl.data_labels; dl.number_format = '0.0'; dl.number_format_is_linked = False
+dl.position = XL_LABEL_POSITION.INSIDE_END; dl.font.size = Pt(7.5); dl.font.color.rgb = WHITE; dl.font.bold = True
+va, ca = ch.value_axis, ch.category_axis
+va.minimum_scale, va.maximum_scale = 0, 100
+va.has_major_gridlines = False; va.visible = False
+ca.tick_labels.font.size = Pt(8); ca.tick_labels.font.color.rgb = NAVY
+ca.format.line.color.rgb = RGBColor(0xC8, 0xD2, 0xDC)
+
+# ---- the stack ----
+shp, tf = card(s, 9.98, 4.10, 3.03, 2.72, fill=LIGHT, line=LINE)
+tf.margin_left = Inches(0.14); tf.margin_top = Inches(0.10)
+set_runs(tf.paragraphs[0], [("BUILT WITH", {"bold": True, "size": 10, "color": GRAY})], align=PP_ALIGN.LEFT)
+STACK = [("Engine", "Python · NumPy · OpenCV"), ("Web demo", "JavaScript · three.js · Web Serial"),
+         ("Hardware", "Arduino Nano · A4988 · AS5600"), ("Proof", f"pytest · {N_TESTS} tests · GitHub Actions"),
+         ("Acquisition", "0.55–1.1 s in the live demo")]
+for h, t in STACK:
+    p = tf.add_paragraph(); p.space_before = Pt(5)
+    set_runs(p, [(h, {"bold": True, "size": 10, "color": NAVY})], align=PP_ALIGN.LEFT)
+    p = tf.add_paragraph()
+    set_runs(p, [(t, {"size": 9.5, "color": GRAY})], align=PP_ALIGN.LEFT)
 
 # ================= SLIDE 4 — FEASIBILITY =================
 s = S[3]
@@ -293,7 +491,15 @@ pic(s, "c5_linkbox.png", 7.20, 5.66, w=5.75)                      # h = 1.26
 # values demonstrates that in one glance, where restating their
 # background paragraph demonstrates nothing.
 s = clone_slide(prs, 2, 5)
-set_title(s, "Compliance with PS26169 — their table, our values")
+set_title(s, "PS26169 compliance: their table, our values")
+_t = find(s, "Title 1")
+if _t is not None:   # clear of the SIH logo on the right
+    _t.left, _t.width = Inches(1.95), Inches(8.60)
+    _t.top, _t.height = Inches(0.30), Inches(0.80)
+    _t.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+    _t.text_frame.word_wrap = True
+    for _r in _t.text_frame.paragraphs[0].runs:
+        _r.font.size = Pt(24)
 # No pointer box here: the clone deliberately drops the template's body
 # text placeholder, and this slide is the table.
 
@@ -311,7 +517,7 @@ ROWS = [
     ("MP4 input, bypassing PTZ", "required (Benchmark-2)",    "--video, working",             True),
     ("Acquisition time",         "\u2264 2 s",                    "25.3 s \u2192 3.53 s  \u2014 open",  False),
     ("Tracking error (median)",  "\u2264 10 px",                  "2,367 \u2192 170 px  \u2014 open",  False),
-    ("Processing speed",         "\u2265 20 FPS",                 "9.2 FPS  \u2014 open",             False),
+    ("Processing speed",         "\u2265 20 FPS",                 "9.2 \u2192 14.7 FPS  \u2014 open",  False),
 ]
 
 x0, y0, w, rowh = 0.62, 1.66, 12.1, 0.325
@@ -423,7 +629,7 @@ lk.font.color.rgb = CYAN; lk.font.underline = True
 lk.hyperlink.address = "https://zerodrift-fsoc-pat.netlify.app/"
 pr2.space_after = Pt(4)
 bullets(tf, [
-    ("Inside:  ", "5,500+ documented lines · 83 automated tests · 6 validated scenarios · Monte-Carlo logs · technical report · user manual · demo video."),
+    ("Inside:  ", f"5,500+ documented lines · {N_TESTS} passing tests · 6 validated scenarios · Monte-Carlo logs · technical report · user manual · demo video."),
     ("Reproducible:  ", "every figure regenerates from one command; every random draw is logged and replayable."),
 ], size=10.5, gap=4)
 

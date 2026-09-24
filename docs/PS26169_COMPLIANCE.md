@@ -180,9 +180,11 @@ against the 20 px/frame jitter we already survive.
       blinks at 4 Hz with a 50% duty cycle against a 30 fps camera.
       Prediction steers the search; measurement moves the boresight.
       This is the rule the live demo was rewritten around.
-- [ ] **Processing throughput 9.2 fps** against a ≥20 FPS floor. Impulse
-      rejection at 10% density iterates and costs two median plus two
-      morphological passes per iteration.
+- [ ] **Processing throughput 14.7 fps** (was 9.2) against a ≥20 FPS
+      floor. The impulse filter's medians now come from a histogram,
+      bit-identical output, 53 → 34 ms on its own; the remaining cost is
+      the morphological passes per iteration. 120 s benchmark, same
+      acquisition (3.53 s) and median error (170 px) as before.
 - [ ] Re-run the Monte Carlo campaign on the benchmark scenario and
       republish every number that currently comes from our own
       scenarios.

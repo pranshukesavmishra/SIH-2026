@@ -268,9 +268,9 @@ def test_convergence_stops_early_on_a_clean_frame(detector):
     calls = {"n": 0}
     original = detector._reject_impulse_pass
 
-    def counted(arr):
+    def counted(arr, *args, **kwargs):
         calls["n"] += 1
-        return original(arr)
+        return original(arr, *args, **kwargs)
 
     detector._reject_impulse_pass = counted
     detector.reject_impulse_noise(img)

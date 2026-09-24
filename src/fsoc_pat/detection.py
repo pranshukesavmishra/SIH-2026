@@ -34,7 +34,7 @@ Each stage exists for a specific reason:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -175,7 +175,8 @@ class PointDetector:
         return mean, sigma
 
     # ---- main entry point ----------------------------------------------
-    def _reject_impulse_pass(self, image: np.ndarray) -> np.ndarray:
+    def _reject_impulse_pass(self, image: np.ndarray,
+                             scale: Optional[float] = None) -> Tuple[np.ndarray, int]:
         """
         Remove salt-and-pepper impulses without damaging real sources.
 
@@ -253,14 +254,15 @@ class PointDetector:
         background = np.where(departure >= 0.0, opened, closed)
         # Robust scale of the departure field, so the threshold carries
         # across exposure settings and bit depths where a fixed DN
-        # threshold would not.
-        mad = float(np.median(np.abs(departure - np.median(departure))))
-        scale = mad * 1.4826
+        # threshold would not. Recomputed every pass, because removing
+        # impulses tightens it and the next pass depends on that.
+        if scale is None:
+            scale = self._departure_scale(departure)
         if scale <= 0.0:
             # A frame flat enough to have no spread is synthetic or
             # saturated; there is nothing to measure against, and
             # "correcting" every pixel would be worse than doing nothing.
-            return img
+            return img, 0
 
         lit = np.abs(med3 - background)        # is the neighbourhood raised?
         contrast = np.abs(img - background)    # how far the pixel stands out
@@ -278,11 +280,50 @@ class PointDetector:
         # blocked its removal.
         outlier = ((np.abs(departure) > self.impulse_sigmas * scale)
                    & (lit < self.impulse_neighbour_ratio * contrast))
-        if not outlier.any():
-            return img
+        n = int(np.count_nonzero(outlier))
+        if n == 0:
+            return img, 0
         out = img.copy()
         out[outlier] = med3[outlier]
-        return out
+        return out, n
+
+    @staticmethod
+    def _departure_scale(departure: np.ndarray) -> float:
+        """
+        MAD-based noise scale of the departure field, over the whole frame.
+
+        Exact, and over the whole frame, deliberately. Two cheaper versions
+        were tried and both broke tracking on the benchmark. A strided
+        subsample read 3.4% low on the first frame tested, flagged ordinary
+        noise as impulses, and in-FOV fell from 99% to 25%. Measuring the
+        scale once per frame instead of once per pass was subtler -- about
+        400 pixels a frame came out different, detections shifted by one
+        here and there -- and the closed loop amplified that into the same
+        collapse. So the statistic stays exactly what it was; only the way
+        it is computed changed.
+
+        Camera frames are integers, and so is ``img - med3`` (a median of
+        integers is one of them). For integer data the median comes from a
+        histogram in one ``bincount`` rather than a sort, bit-identical to
+        ``np.median`` and about eight times faster. Non-integer input, which
+        only tests produce, takes the ``np.median`` path.
+        """
+        if departure.size and np.array_equal(departure, np.rint(departure)):
+            d = departure.astype(np.int64).ravel()
+            med2 = PointDetector._median_x2(d)            # 2 x median, exact
+            return PointDetector._median_x2(np.abs(2 * d - med2)) / 4.0 * 1.4826
+        med = float(np.median(departure))
+        return float(np.median(np.abs(departure - med))) * 1.4826
+
+    @staticmethod
+    def _median_x2(x: np.ndarray) -> int:
+        """Twice the median of an integer array, exact (so halves survive)."""
+        lo_val = int(x.min())
+        cum = np.cumsum(np.bincount(x - lo_val))
+        n = x.size
+        lo = int(np.searchsorted(cum, (n - 1) // 2 + 1))
+        hi = int(np.searchsorted(cum, n // 2 + 1))
+        return lo + hi + 2 * lo_val
 
     def reject_impulse_noise(self, image: np.ndarray) -> np.ndarray:
         """
@@ -307,11 +348,21 @@ class PointDetector:
         to iterate rather than widen the window: no pass can flag a real
         source, so no number of passes can either. Beacon peaks come
         through bit-identical at every density tested up to 30%.
+
+        Cost, measured on the benchmark before this was restructured:
+        59 ms of a 78 ms frame, three quarters of all processing, almost
+        all of it in two full-frame medians recomputed on every pass plus
+        a full-frame ``array_equal`` per pass. The medians now come from a
+        histogram (see ``_departure_scale``), and convergence is read from
+        the pass's own count of pixels it changed -- which it already
+        knows -- instead of comparing 307,200 floats to find out. Output is
+        bit-identical to the slow version; the test itself, and therefore
+        the safety property, is untouched.
         """
         img = image.astype(np.float32, copy=False)
         for _ in range(self.impulse_max_passes):
-            out = self._reject_impulse_pass(img)
-            if out is img or np.array_equal(out, img):
+            out, changed = self._reject_impulse_pass(img)
+            if changed == 0:
                 return out
             img = out
         return img

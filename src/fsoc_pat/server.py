@@ -18,13 +18,18 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
+from fsoc_pat import resources
 from fsoc_pat.config import SimConfig
 from fsoc_pat.metrics import build_report
 from fsoc_pat.pipeline import CoarseAlignmentTracker
 from fsoc_pat.simulator import Frame, Simulator
 
-WEB_DIR = pathlib.Path(__file__).parent / "web"
-SCENARIOS_DIR = pathlib.Path(__file__).parent.parent.parent / "scenarios"
+# Scenarios ship with the application and are read-only. The web asset
+# directory is created and served at run time, so it must live somewhere
+# writable — inside a PyInstaller bundle it would not be.
+SCENARIOS_DIR = resources.scenarios_dir()
+_BUNDLED_WEB = resources.bundled("web")
+WEB_DIR = _BUNDLED_WEB if _BUNDLED_WEB.is_dir() else resources.writable_dir("web")
 
 
 class SimulationSession:

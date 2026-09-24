@@ -11,6 +11,7 @@ runs headless and inside the packaged binary.
 from __future__ import annotations
 
 import argparse
+import math
 from collections import deque
 
 import cv2
@@ -20,6 +21,7 @@ from . import geometry as geo
 from .config import SimConfig
 from .pipeline import CoarseAlignmentTracker
 from .simulator import Simulator
+from . import display
 
 # The GUI's palette (gui/theme.py), as BGR for OpenCV, so exported frames and
 # the live console are visibly the same instrument.
@@ -35,10 +37,33 @@ STATE_BGR = {"SEARCH": (255, 159, 90), "ACQUIRE": (77, 194, 255),
 PANEL_W = 360
 
 
+def _reticle(view, cx: int, cy: int, r: int, colour) -> None:
+    """
+    The same four-arc instrument reticle the Qt view draws.
+
+    Gaps sit on the diagonals and are bridged by tick marks, so the break
+    reads as design rather than as a rendering fault. Cardinals stay
+    clear, which is the only reason to gap a reticle at all.
+    """
+    gap = 13                                  # half-gap, degrees
+    for start in (45, 135, 225, 315):
+        cv2.ellipse(view, (cx, cy), (r, r), 0,
+                    start + gap, start + 90 - gap, colour, 2, cv2.LINE_AA)
+    for deg in (45, 135, 225, 315):
+        a = math.radians(deg)
+        ca, sa = math.cos(a), -math.sin(a)
+        cv2.line(view,
+                 (int(cx + ca * (r + 2)), int(cy + sa * (r + 2))),
+                 (int(cx + ca * (r + 7)), int(cy + sa * (r + 7))),
+                 colour, 1, cv2.LINE_AA)
+
+
 def render(frame, telemetry, tracker, error_trace) -> np.ndarray:
     img = frame.image
     h, w = img.shape
-    view = np.clip(img.astype(np.float32) / max(img.max(), 1) * 255, 0, 255).astype(np.uint8)
+    # Shared with the Qt view: see display.py for why max()-normalisation
+    # was wrong in both places.
+    view = display.to_display(img)
     view = cv2.cvtColor(view, cv2.COLOR_GRAY2BGR)
 
     colour = STATE_BGR.get(telemetry.state.value, (200, 200, 200))
@@ -86,10 +111,12 @@ def render(frame, telemetry, tracker, error_trace) -> np.ndarray:
             cam_az, cam_el = frame.pointing_reported
             u, v, vis = geo.project(az, el, cam_az, cam_el, tracker.focal_px, w, h)
             if vis:
-                # Double-arc reticle; dashed reads as circle at video scale,
-                # so coast is distinguished by colour alone here.
-                cv2.ellipse(view, (int(u), int(v)), (13, 13), 0, 20, 130, colour, 2, cv2.LINE_AA)
-                cv2.ellipse(view, (int(u), int(v)), (13, 13), 0, 200, 310, colour, 2, cv2.LINE_AA)
+                # Four-arc instrument reticle, matching the Qt view. The
+                # exported video is what a judge actually watches, so it
+                # must not still be drawing the old asymmetric double-arc
+                # that reads as a broken circle -- and did, here, after
+                # the GUI had already been fixed.
+                _reticle(view, int(u), int(v), 15, colour)
                 ra, re = track.imm.rates
                 u2, v2, vis2 = geo.project(az + ra * 0.5, el + re * 0.5,
                                            cam_az, cam_el, tracker.focal_px, w, h)

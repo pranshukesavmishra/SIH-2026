@@ -3,7 +3,9 @@ The live camera view: the detector's world, annotated with the tracker's
 opinion of it.
 
 Overlays are drawn in widget space from the frame's data, not baked into the
-image, so they stay one-pixel crisp at any window size. Everything the view
+image, so they stay one-pixel crisp at any window size. The underlying frame
+goes through `fsoc_pat.display`, shared with the video exporter so the two
+cannot drift apart again. Everything the view
 draws is something the system actually knows; the one exception — ground
 truth — is behind a toggle that is OFF by default, because an honest
 demonstration and a debugging session are different activities.
@@ -14,9 +16,12 @@ What each element means:
                            instrument it is;
   * boresight cross      — where the mount is pointing (the reticle gap
                            leaves the target itself unobscured);
-  * track reticle        — the filter's estimate. Solid double-arc ring while
-                           tracking, dashed while coasting on prediction: the
-                           dashes literally say "this is a guess";
+  * track reticle        — the filter's estimate. A symmetric four-arc ring
+                           whose gaps sit on the diagonals and are bridged by
+                           tick marks, so the break reads as design rather
+                           than as a rendering fault; dashed while coasting on
+                           prediction, because the dashes literally say "this
+                           is a guess";
   * lock pulse           — one expanding ring the moment ACQUIRE becomes
                            TRACK, so the acquisition instant is visible from
                            across a demo hall;
@@ -32,6 +37,7 @@ What each element means:
 """
 from __future__ import annotations
 
+import math
 import time
 from typing import Optional
 
@@ -41,6 +47,7 @@ from PySide6.QtGui import (QColor, QFont, QImage, QLinearGradient, QPainter,
                            QPainterPath, QPen)
 from PySide6.QtWidgets import QWidget
 
+from .. import display
 from .. import geometry as geo
 from . import theme
 
@@ -60,18 +67,19 @@ class FrameView(QWidget):
         self._tracker = None
         self._last_state: Optional[str] = None
         self._pulse_started: Optional[float] = None
+        self._stretch: Optional[tuple] = None   # smoothed (black, white) points
         self.show_truth = False
         self.show_detections = True
         self.setAttribute(Qt.WA_OpaquePaintEvent)
 
     def update_frame(self, frame, telemetry, tracker) -> None:
-        # 12-bit image -> 8-bit display with a fixed stretch so brightness is
-        # comparable frame to frame (auto-stretch would hide scintillation).
         img = frame.image
-        display = np.clip(img.astype(np.float32) / max(img.max(), 1) * 255, 0, 255
-                          ).astype(np.uint8)
-        h, w = display.shape
-        self._image = QImage(display.data, w, h, w, QImage.Format_Grayscale8).copy()
+        # Not named `display`: that is the module this file imports, and
+        # shadowing it here would make any later use of it in this method
+        # fail with an unhelpful AttributeError on a numpy array.
+        shown = self._to_display(img)
+        h, w = shown.shape
+        self._image = QImage(shown.data, w, h, w, QImage.Format_Grayscale8).copy()
         self._frame = frame
         self._telemetry = telemetry
         self._tracker = tracker
@@ -81,6 +89,23 @@ class FrameView(QWidget):
             self._pulse_started = time.perf_counter()
         self._last_state = state
         self.update()
+
+    # ---- display transform ----------------------------------------------
+    def _to_display(self, img: np.ndarray) -> np.ndarray:
+        """
+        8-bit view of the sensor frame, with the stretch held steady.
+
+        The transform itself lives in `fsoc_pat.display`, shared with the
+        video exporter -- it was written twice before, and both copies
+        carried the same max()-normalisation defect.
+
+        Holding the stretch steady across frames is the part that matters
+        here: a stretch recomputed per frame breathes, and breathing hides
+        exactly the brightness variation this system identifies targets by.
+        """
+        self._stretch = display.smooth_points(self._stretch,
+                                              display.stretch_points(img))
+        return display.to_display(img, self._stretch)
 
     # ---- helpers ---------------------------------------------------------
     def _to_widget(self, u: float, v: float, rect: QRectF, w: int, h: int) -> QPointF:
@@ -123,7 +148,7 @@ class FrameView(QWidget):
         painter.setRenderHint(QPainter.Antialiasing, True)
 
         self._draw_frame_furniture(painter, rect)
-        frame, tel = self._frame, self._telemetry
+        tel = self._telemetry
 
         if self.show_truth:
             self._draw_truth(painter, rect, iw, ih)
@@ -220,17 +245,47 @@ class FrameView(QWidget):
         colour = theme.state_colour(tel.state.value)
         coasting = tel.state.value == "COAST"
 
-        # Double-arc reticle: two 110-degree arcs leave the target visible
-        # through the gaps. Dashed while coasting.
-        pen = QPen(colour, 2)
+        # Instrument reticle.
+        #
+        # This used to be two 110-degree arcs starting at 20 and 200
+        # degrees. On screen that reads as a broken circle rather than a
+        # deliberate one -- the gaps are large, the figure is asymmetric,
+        # and at 13 px it is too small to look like anything but a
+        # rendering fault. Replaced with a symmetric four-arc ring whose
+        # gaps sit on the diagonals and are filled by tick marks, so the
+        # break is legible as design. The cardinal directions stay clear,
+        # which is the point of gapping a reticle at all.
+        r = 18.0
+        gap_deg = 13.0                       # half-gap, centred on each diagonal
+        span = int((90.0 - 2 * gap_deg) * 16)
+        box = QRectF(p.x() - r, p.y() - r, 2 * r, 2 * r)
+
+        # Outer halo first: a wide, low-alpha stroke under the ring gives
+        # it an edge against both black sky and a saturated source, without
+        # a hard outline that would read as a second circle.
+        halo = QColor(colour)
+        halo.setAlpha(45)
+        painter.setPen(QPen(halo, 5))
+        for start in (45, 135, 225, 315):
+            painter.drawArc(box, int((start + gap_deg) * 16), span)
+
+        pen = QPen(colour, 1.8)
+        pen.setCapStyle(Qt.FlatCap)
         if coasting:
             pen.setStyle(Qt.DashLine)
         painter.setPen(pen)
-        r = 13.0
-        span = 110 * 16
-        box = QRectF(p.x() - r, p.y() - r, 2 * r, 2 * r)
-        painter.drawArc(box, 20 * 16, span)
-        painter.drawArc(box, 200 * 16, span)
+        for start in (45, 135, 225, 315):
+            painter.drawArc(box, int((start + gap_deg) * 16), span)
+
+        # Diagonal ticks bridging the gaps, drawn outward so they never
+        # touch the target.
+        tick = QPen(colour, 1.4)
+        painter.setPen(tick)
+        for deg in (45, 135, 225, 315):
+            a = math.radians(deg)
+            ca, sa = math.cos(a), -math.sin(a)
+            painter.drawLine(QPointF(p.x() + ca * (r + 2), p.y() + sa * (r + 2)),
+                             QPointF(p.x() + ca * (r + 7), p.y() + sa * (r + 7)))
 
         # Lock pulse: one ring expanding out of the reticle at lock-on.
         if self._pulse_started is not None:

@@ -1,5 +1,12 @@
 # ZeroDrift Mini-Rig Mk2 — Build Guide
 
+> ## ⚠️ SUPERSEDED by `docs/TERMINAL_MK3.md`
+>
+> Mk2 put the camera on a tripod beside the rig. Mk3 puts it on the gimbal,
+> boresighted with the laser, which is what changes the alignment problem.
+> The AS5600 and multiplexer reasoning here is still correct and is why this
+> file is kept; the architecture, budget and servo fine-stage are not.
+
 > Still **not in the pitch deck**, on purpose — same reasoning as Mk1
 > (`docs/rig_build_guide.md`, `docs/zero_cost_demo.md`): the PS is
 > Software category, validated without hardware. Mk2 exists for one

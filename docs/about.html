@@ -986,7 +986,7 @@ body {
         <div class="step-num">01</div>
         <div class="step-body">
           <h4>Sub-Pixel Target Acquisition</h4>
-          <p>Cold-start detection convergence in 1.1s under severe orbital rate dynamics and photon noise.</p>
+          <p>Locks from a cold start in about a second.</p>
         </div>
         <div class="step-metric-badge">1.1 s Acquisition</div>
       </div>
@@ -996,7 +996,7 @@ body {
         <div class="step-num">02</div>
         <div class="step-body">
           <h4>Fourier Modulation Discrimination</h4>
-          <p>4 Hz beacon frequency signature gating completely suppresses high-intensity false targets and crossing decoys.</p>
+          <p>Only the 4 Hz blink passes. Bright decoys are rejected.</p>
         </div>
         <div class="step-metric-badge">0 / 64 Decoy Rejection</div>
       </div>
@@ -1006,7 +1006,7 @@ body {
         <div class="step-num">03</div>
         <div class="step-body">
           <h4>Adaptive IMM State Estimation</h4>
-          <p>Interacting Multiple Model Kalman filter maintains sub-microradian accuracy through dynamic orbital slew regimes.</p>
+          <p>Two-model Kalman filter follows fast, turning targets.</p>
         </div>
         <div class="step-metric-badge">98.8% Lock Retention</div>
       </div>
@@ -1016,7 +1016,7 @@ body {
         <div class="step-num">04</div>
         <div class="step-body">
           <h4>Smith Predictor Dead-Time Control</h4>
-          <p>Internal delay model eliminates the 40 ms transport dead-time, stabilizing closed-loop gimbal execution.</p>
+          <p>Cancels the 40 ms mount delay.</p>
         </div>
         <div class="step-metric-badge">40 ms Delay Fixed</div>
       </div>
@@ -1026,9 +1026,9 @@ body {
         <div class="step-num">05</div>
         <div class="step-body">
           <h4>Deterministic Verification Suite</h4>
-          <p>73 comprehensive unit and physics-honest tests validating SGP4 orbital tracking across ISS and GEO passes.</p>
+          <p>Automated tests on every change.</p>
         </div>
-        <div class="step-metric-badge">73 / 73 Tests Pass</div>
+        <div class="step-metric-badge">250 Tests Pass</div>
       </div>
     </div>
 
@@ -1059,7 +1059,7 @@ body {
         <img src="media/console_track.png" alt="Operator Replay Console">
         <div class="visual-card-body">
           <h4>Operator Replay Console</h4>
-          <p>Real-time optical viewport with reticle overlay, 4× target patch magnifier, pointing error trace, and timeline strip.</p>
+          <p>Replay any logged run, frame by frame.</p>
         </div>
       </div>
 
@@ -1077,7 +1077,7 @@ body {
         <img src="media/demo_loop.gif" alt="Live tracking demonstration">
         <div class="visual-card-body">
           <h4>Live Beacon Lock</h4>
-          <p>Autonomous mount holding lock on a satellite beacon with real-time 4 Hz modulation gating.</p>
+          <p>Holding lock on a blinking beacon.</p>
         </div>
       </div>
 
@@ -1086,7 +1086,7 @@ body {
         <img src="media/video_frame.png" alt="Orbital AI Verification">
         <div class="visual-card-body">
           <h4>Orbital AI Verification</h4>
-          <p>Continuous lock maintenance on an ISS orbital pass at 281 µrad pointing error with active confidence scoring.</p>
+          <p>ISS pass, lock held throughout.</p>
         </div>
       </div>
     </div>

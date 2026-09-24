@@ -4,7 +4,8 @@
 clone this repo and read this file first. It is the authority on what is
 done, what is open, and which number is the real one.
 
-Last updated: 2026-09-18 (deck v3 rebuilt + packaging spec landed)
+Last updated: 2026-09-18 (rev 5 — session branch merged with main: accuracy
+work, Mk2 live software and the Mk3 physical design now in one history)
 
 ---
 ## 1. Identity
@@ -14,7 +15,16 @@ Last updated: 2026-09-18 (deck v3 rebuilt + packaging spec landed)
 | Team | **ZeroDrift** — Jabalpur Engineering College |
 | Problem Statement | **SIH26169**, set by **ISRO** (Dept. of Space) |
 | Title | AI-Based Virtual Camera Tracking System for Coarse Alignment of Mobile FSOC Terminals |
-| Theme / Category | Smart Automation / **Software** |
+| Theme / Category | Smart Automation / **Software**
+- [x] ~~`hil/` could not drive either firmware~~ — **found and fixed 18 Sept.**
+  Three layers written across three weeks each assumed a different wire
+  format: `hil/rig.py` sent degrees, the Mk2 firmware parsed motor steps
+  (a silent 4.4× error), the status query `?` did not exist so the host
+  spun its whole timeout and reported the gimbal had never moved, and
+  `rig_track.py` sent laser commands with no newline, which ate the next
+  pointing command. All fixed, one spec in `docs/HARDWARE_PROTOCOL.md`,
+  and `check_protocol()` now catches a mismatch at startup. This was our
+  own drift, not the parallel account's — those files predate it. |
 | Repo | `github.com/pranshukesavmishra/SIH-2026` |
 | Live replay console | `zerodrift-fsoc-pat.netlify.app` |
 | Status | 2nd Runner-Up, institute internal round (11 Sept 2026) |
@@ -48,7 +58,7 @@ of a judge.
 | **14.7%** | Link closure, **coarse stage alone** | `docs/technical_report.md` L281 |
 | **3.1 dB** | Mean link margin | `docs/technical_report.md` L283 |
 | **AUC 0.957 vs 0.900** | NN verifier vs classical, short window | `docs/defence_brief.md` |
-| **83 / 83** | Automated tests passing | CI |
+| **132 / 132** | Automated tests passing (+1 skipped) | CI, verified 18 Sept post-merge |
 | **8–21 ms** | Tracker time per 33 ms frame, 2 cores | engine benchmark |
 | **₹0.22** | Electricity, full 64-run campaign | `docs/economic_feasibility.md` |
 | **207×** | Throughput vs hardware bench | `docs/economic_feasibility.md` |
@@ -67,16 +77,28 @@ docs/
   defence_brief.md         deep Q&A prep for judges
   pitch_script.md          3-min pitch + role split
   PROJECT_STATE.md         ← you are here
-  rig_build_guide.md       Mk1 physical rig (built, tilt servo dead)
-  rig_mk2_build_guide.md   Mk2 spec — steppers + encoders, ₹4.5k, not built
+  WINNING_PLAN.md          full national-round strategy, tiered by effort/impact
+  FABLE5_BRIEFING.md       briefing for the parallel software session
+  TERMINAL_MK3.md          ← THE physical build. Supersedes Mk1 and Mk2.
+  HARDWARE_PROTOCOL.md     wire format, v3 — firmware and host both obey it
+  rig_build_guide.md       Mk1 (built, both servos dead) — historical
+  rig_mk2_build_guide.md   Mk2 spec — superseded by Mk3, kept for the encoder notes
+  beacon_build_guide.md    Beacon + decoy units — the target, not the tracker
+  PHYSICAL_BOM_MASTER.md   Mk2-era parts list — superseded by TERMINAL_MK3.md §2
   zero_cost_demo.md        ₹0 webcam fallback demo
   user_manual.md           deliverable
   submission/              the deck PDF
   media/                   telemetry, panels, assets
 src/fsoc_pat/              the engine (detector, tracker, control, ai, gui)
+  resources.py             resolves shipped data; frozen-build-safe
+  hil/engine.py            the REAL tracker on live frames
+  hil/mk2.py               Mk2 protocol driver + safety envelope + dry-run
+  hil/serve.py             engine + SSE telemetry + MJPEG + ZD-1 dashboard
+  hil/rig_detect.py        lightweight low-dependency detector (live console)
+  hil/boresight.py         dot-vs-beacon loop — cancels parallax, Mk3
 tools/rig/                 firmware + tracker + accuracy logger
 runs/mc-leo/summary.json   the 64-run campaign — source of most numbers
-packaging/                 build scripts + fsoc-pat.spec (spec-based build, cv2-Qt conflict fixed)
+packaging/                 build scripts + fsoc-pat.spec (cv2-Qt conflict fixed)
 ```
 
 ---
@@ -99,6 +121,13 @@ assets: `docs/submission/deck_src/` — `python build_deck_v3.py` regenerates it
 - [ ] Team ID still blank on slide 1 — fill when SIH portal issues it
 
 **Software**
+- [x] ~~`hil/` could not drive either firmware~~ — **this was a stale-branch
+  artefact, not a live bug.** The mismatch was real in this session's working
+  tree, but `main` had already fixed it on **10 Sept** (`05005b7`), eight days
+  before it was "found" here; this branch was 42 commits behind and reading an
+  old snapshot. Recorded because the wrong version of this claim was stated
+  confidently to the team and is worth not repeating: check the merge-base
+  before reporting a bug in shared code.
 - [x] `packaging/fsoc-pat.spec` committed (root cause: `.gitignore`'s `*.spec` was
       hiding it — negated now). Both build scripts and CI use the spec; it bundles
       `scenarios/` + `models/`, strips cv2's bundled Qt (which otherwise shadows
@@ -151,6 +180,38 @@ assets: `docs/submission/deck_src/` — `python build_deck_v3.py` regenerates it
       worst case = temporary lag with honest COASTING and recovery; zero lock
       losses, zero decoy captures across all runs.
 
+**Physical terminal — Mk3 (`docs/TERMINAL_MK3.md` is the authority)**
+
+Architecture decided 18 Sept: a self-contained scanning terminal, not a
+table demo. Camera rides on the gimbal boresighted with the laser; the
+Pi runs the pipeline on-board; the Nano does motion only.
+
+- [x] ~~Servos~~ — **removed from the design entirely.** Mk1 stripped two.
+  A hobby servo's backlash (~17 mrad) exceeds the error this rig measures.
+  Resolution comes from microstepping instead: Tier A is 1.96 mrad/step
+  with the AS5600 measuring to 1.53 mrad, and nothing to shear.
+- [x] Parallax problem solved without modelling it — beacon 4 Hz, laser
+  7 Hz, loop closes on the dot-to-beacon pixel error. `hil/boresight.py`,
+  14 tests passing.
+- [x] Re-budgeted to a student build: **Tier A, ₹6,345**, in
+  TERMINAL_MK3.md §2. Nothing load-bearing was cut — the dot-closed loop
+  and modulation-identity are software and cost ₹0; the encoders are
+  ₹697 and stay. What was cut is margin: Pi 5, global shutter, TMC2209,
+  0.9° motors, belt reduction, true bandpass filter. Laptop runs the
+  pipeline; the camera still rides on the gimbal.
+- [ ] Order parts — TERMINAL_MK3.md §2 Tier A. **Two order-time traps:**
+  magnets must be **diametric** not axial, and buy the 100 µF caps for
+  VMOT or the first power-up kills both drivers. Also set the A4988 Vref
+  before attaching a motor.
+- [ ] Prices: ✅ verified are NEMA17 ₹749, A4988 ₹170, AS5600 ₹249,
+  TCA9548A ₹199, PSU ₹279, acrylic+brackets ₹450. The rest are estimates
+  — price-check before ordering, and say which is which if a judge asks.
+- [ ] **If budget ever allows one upgrade, buy the GT2 3:1 belt (+₹1,740).**
+  1.96 → 0.65 mrad/step, and it divides the motor's own error by three,
+  which microstepping cannot do. Everything else in Tier B is comfort.
+- [ ] Build per §3, stage by stage. Do not pass a stage that fails its check.
+- [ ] Beacon needs rebuilding at 650 nm to match the camera's bandpass filter
+
 **Live demo tracking rewrite — v3 (18 Sept, `live-tracker-v2`)**
 - [x] v2's velocity feed-forward was a runaway: it integrated velocity into
       BOTH `pos` and `anchor` every frame, then re-projected the anchor by half
@@ -183,13 +244,47 @@ assets: `docs/submission/deck_src/` — `python build_deck_v3.py` regenerates it
   finding (the anchor is what goes stale in motion), and the tight-primary-disc
   experiment (starved the follower, 0/8).
 
-**Rig (no deadline — Grand Finale, Dec 2026 if selected)**
-- [ ] Mk1 tilt servo dead (stripped gears); replacement also not moving — free-spin test never reported back
-- [ ] Mk2: priced at ₹4,480–4,550; ABS enclosure size still unconfirmed
-- [ ] Camera+laser combined head — diagram not yet drawn
-
 **Outreach**
 - [ ] DRDO chairman brief — message drafted, send status unknown
+
+**Verification pass — 18 Sept, post-merge**
+
+Everything below was checked against its source, not restated:
+
+- [x] All 9 campaign numbers re-derived from `runs/mc-leo/summary.json`; all
+      match the table above to the stated precision. 7 doc-sourced claims
+      (99.3 / 14.7 / 3.1 dB / AUC 0.957 vs 0.900 / ₹0.22 / 207×) confirmed
+      present at their cited files.
+- [x] Every remote branch is contained in this one; nothing unmerged, nothing
+      unpushed. Fable 5's work is fully present via PRs #2–#5.
+- [x] Every file path referenced in `docs/*.md` exists.
+- [x] **Fixed: the parts list disagreed with itself.** `TERMINAL_MK3.md` §2
+      summed to ₹5,944 while claiming ₹6,124, and the printed guide said
+      ₹6,331. The missing row was the diametric magnets — the one part whose
+      absence stops the build. There is now a single source
+      (`docs/data/bom_tier_a.json`), the markdown table is generated from it,
+      and `tests/test_bom_consistency.py` fails if the JSON, the markdown and
+      the PDF disagree, if a build-stopping part is dropped, or if the deleted
+      servos reappear. Verified by mutation.
+- [x] **Fixed: `83 / 83` tests was stale** — 132 passing.
+- [x] **Fixed: four superseded docs carried no warning.** `PHYSICAL_BOM_MASTER.md`
+      in particular still listed the MG90S servos and omitted the magnets and
+      capacitors; anyone buying from it would repeat the exact mistake. All four
+      now carry a header.
+
+**Known gaps — open, not fixed**
+
+- [ ] **`docs/technical_report.md` is ~2,491 words ≈ 5 pages. PS26169 requires
+      10–15.** This is a submission deliverable and the largest outstanding
+      risk on the list.
+- [ ] `docs/user_manual.md` is ~957 words ≈ 2 pages; thin for a deliverable.
+- [ ] `src/fsoc_pat/hil/boresight.py` is tested (14 tests) but **wired to
+      nothing** — it targets Mk3 hardware that does not exist yet. Legitimate,
+      but it is not currently proving anything at runtime, and `main`'s
+      self-laser rejection in `docs/live.html` is the better mechanism to fold
+      into it (a matched filter against the recorded laser command history,
+      rather than assuming a fixed 7 Hz).
+- [ ] The frozen build still has not been run and launched on real Windows.
 
 ---
 ## 5. Git topology — how not to clobber anything
@@ -197,9 +292,14 @@ assets: `docs/submission/deck_src/` — `python build_deck_v3.py` regenerates it
 ```
 origin/main ──────●  (team's PowerPoint + site work)
                    \
-                    ●──●──●──●──●──●──●──●──●  claude/session-01f6…h9tr19
-                                             (9 commits: docs, deck rebuilds,
-                                              rig specs, economic feasibility)
+                    ●──●──●──●──●──●──●──●──●──●──●──●  claude/session-01f6…h9tr19
+                    |                        (docs, deck rebuilds, rig specs,
+                    |                         economic feasibility, build fix,
+                    |                         beacon/decoy units)
+                    \
+                     ●···  (Fable 5's branch, name unknown to this session —
+                            it should be something like accuracy-work,
+                            created fresh off main, per docs/FABLE5_BRIEFING.md)
 ```
 
 - The session branch **contains everything on main** — no divergence, a

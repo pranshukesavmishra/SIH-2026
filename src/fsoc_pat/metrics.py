@@ -71,6 +71,17 @@ class PerformanceReport:
     acquisition_time_s: Optional[float] = None
     tracking_error_urad: Dict[str, float] = field(default_factory=dict)
     pointing_error_urad: Dict[str, float] = field(default_factory=dict)
+    # The same two errors in pixels. PS26169 states its tracking limit in
+    # pixels (<= 10 px) and both benchmark stages are scored on
+    # "centroiding error", which is a pixel quantity. Microradians are
+    # the physically meaningful unit -- they are what decides whether a
+    # link closes, and they are comparable between systems with
+    # different optics -- but a report that gives only microradians
+    # leaves the evaluator to do the conversion, against a threshold
+    # written in the other unit. Give both.
+    tracking_error_px: Dict[str, float] = field(default_factory=dict)
+    pointing_error_px: Dict[str, float] = field(default_factory=dict)
+    focal_px: Optional[float] = None
     lock_retention_pct: float = 0.0
     processing_ms: Dict[str, float] = field(default_factory=dict)
     # -- the quantities a judge should ask about next ---------------------
@@ -125,8 +136,10 @@ class PerformanceReport:
             "",
             "  Pointing error (true boresight vs true beacon — decides the link)",
             fmt(self.pointing_error_urad, "urad"),
+            fmt(self.pointing_error_px, "px"),
             "  Estimate error (filter vs true beacon)",
             fmt(self.tracking_error_urad, "urad"),
+            fmt(self.tracking_error_px, "px"),
             "",
             f"  Wrong-target time        {self.decoy_locked_frames} frames"
             f"  ({self.decoy_locked_pct:.2f} % of locked time)",
@@ -138,7 +151,8 @@ class PerformanceReport:
 
 
 def build_report(telemetry: List[TrackerTelemetry], scenario_name: str,
-                 simulated_fps: float, wall_time_s: Optional[float] = None) -> PerformanceReport:
+                 simulated_fps: float, wall_time_s: Optional[float] = None,
+                 focal_px: Optional[float] = None) -> PerformanceReport:
     """Reduce a run's telemetry to a report. Pure function of its inputs."""
     r = PerformanceReport(scenario_name=scenario_name)
     if not telemetry:
@@ -166,6 +180,17 @@ def build_report(telemetry: List[TrackerTelemetry], scenario_name: str,
         [t.truth_error_rad for t in locked if t.truth_error_rad is not None])))
     r.pointing_error_urad = _urad(_percentiles(np.array(
         [t.pointing_error_rad for t in locked if t.pointing_error_rad is not None])))
+
+    # Radians to pixels is exactly the focal length, small-angle: at the
+    # spec's 4 deg over 640 px the focal length is 9163.6 px, so one
+    # pixel is 109.1 urad. Without the focal length there is no honest
+    # conversion, so the fields stay empty rather than being filled with
+    # a guess at what optics produced the run.
+    if focal_px:
+        r.focal_px = float(focal_px)
+        scale = 1e-6 * float(focal_px)          # urad -> px
+        r.tracking_error_px = {k: v * scale for k, v in r.tracking_error_urad.items()}
+        r.pointing_error_px = {k: v * scale for k, v in r.pointing_error_urad.items()}
 
     r.decoy_locked_frames = sum(1 for t in locked if t.on_decoy)
     r.decoy_locked_pct = 100.0 * r.decoy_locked_frames / max(len(locked), 1)

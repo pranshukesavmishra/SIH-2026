@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>ZeroDrift Mk3 — still to buy</title><style>
+  @page { size: A4; margin: 11mm 12mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "DejaVu Sans", Arial, sans-serif; color: #15181c;
+         font-size: 10pt; line-height: 1.38; margin: 0; }
+  h1 { font-size: 17pt; margin: 0 0 1.5mm; letter-spacing: -0.3pt; }
+  .sub { color: #5a6570; font-size: 9pt; margin: 0 0 4.5mm; }
+  .total { background: #f2f5f8; border: 1px solid #d8e0e8; border-radius: 4px;
+           padding: 3mm 3.5mm; margin: 0 0 4mm; font-size: 9.5pt; }
+  .total b { font-size: 13pt; }
+  .item { border: 1px solid #d8e0e8; border-radius: 5px; padding: 3mm 3.5mm;
+          margin: 0 0 3mm; page-break-inside: avoid; }
+  .head { display: flex; justify-content: space-between; align-items: baseline;
+          gap: 4mm; margin-bottom: 2.5mm; }
+  .name { font-weight: bold; font-size: 11.5pt; }
+  .price { white-space: nowrap; color: #15181c; font-weight: bold; }
+  .qty { display: inline-block; background: #15181c; color: #fff;
+         border-radius: 3px; padding: 0.3mm 1.8mm; font-size: 9pt;
+         margin-right: 2mm; }
+  dl { margin: 0; display: grid; grid-template-columns: 20mm 1fr;
+       gap: 1.4mm 3mm; }
+  dt { font-size: 8.5pt; font-weight: bold; text-transform: uppercase;
+       letter-spacing: 0.4pt; color: #5a6570; padding-top: 0.4mm; }
+  dd { margin: 0; }
+  .trap dt { color: #a11b1b; }
+  .trap dd { color: #7d1414; }
+  .foot { margin-top: 4mm; border-top: 1px solid #d8e0e8; padding-top: 3mm;
+          font-size: 9pt; color: #5a6570; }
+  .foot b { color: #15181c; }
+</style></head>
+<body>
+  <h1>Still to buy</h1>
+  <p class="sub">ZeroDrift Mk3 &middot; Team ZeroDrift, Jabalpur Engineering
+     College &middot; SIH 2026, PS26169 (ISRO)</p>
+
+  <div class="total">
+    <b>₹1,747</b> outstanding across 4 lines &mdash; everything
+    else on the ₹6,709 bill of materials is already in hand.
+    Generated from <code>docs/data/bom_tier_a.json</code>; do not hand-edit.
+  </div>
+  
+      <div class="item">
+        <div class="head">
+          <div class="name"><span class="qty">2&times;</span>AS5600 magnetic encoder module</div>
+          <div class="price">₹498 &nbsp;<span style="color:#5a6570;font-weight:normal">(₹249 each)</span></div>
+        </div>
+        <dl><dt>Why</dt><dd>Closed-loop position feedback. Without these the rig is open-loop and &#x27;accurate&#x27; stops being a measurement.</dd><dt>Check</dt><dd>Small board about 11 × 11 mm with a 4-pin header (VCC, GND, SDA, SCL) and &#x27;AS5600&#x27; on the chip.</dd></dl><dl class="trap"><dt>Trap</dt><dd>Buy TWO. Both are hard-wired to I²C address 0x36, which is why the multiplexer below is not optional.</dd></dl>
+      </div>
+      <div class="item">
+        <div class="head">
+          <div class="name"><span class="qty">1&times;</span>TCA9548A I²C multiplexer</div>
+          <div class="price">₹199</div>
+        </div>
+        <dl><dt>Why</dt><dd>Both AS5600s answer to 0x36 and cannot share a bus. This gives each one its own channel.</dd><dt>Check</dt><dd>8-channel board, roughly 20 × 15 mm, marked TCA9548A or PCA9548A.</dd></dl><dl class="trap"><dt>Trap</dt><dd>PCA9548A is the same part for our purposes — either is fine.</dd></dl>
+      </div>
+      <div class="item">
+        <div class="head">
+          <div class="name"><span class="qty">1&times;</span>USB webcam, UVC, 640x480+ — housing removed before mounting</div>
+          <div class="price">₹800</div>
+        </div>
+        <dl><dt>Why</dt><dd>The camera has to ride the gimbal, so a laptop or clip-on webcam that cannot be bolted down is no use. Buy an ordinary UVC webcam and take the housing off.</dd><dt>Check</dt><dd>The listing must say UVC or &#x27;driver-free / plug and play&#x27;, and 640×480 or better.</dd></dl><dl class="trap"><dt>Trap</dt><dd>Do NOT buy an M12 &#x27;board camera&#x27; or a CCTV module. Those are an industrial category at ₹2,000–5,000 and many are not UVC, so they will not open as a webcam at all. OV7670 and OV2640 modules are parallel DVP — they have no USB and cannot plug into a laptop. The JEC lab has one, but this build needs the HOUSING REMOVED so the bare PCB bolts rigidly inside the head; you likely cannot dismantle issued lab property. Ask first. If the answer is no, buy your own — a camera that is not rigid on the moving head breaks the architecture.</dd></dl>
+      </div>
+      <div class="item">
+        <div class="head">
+          <div class="name"><span class="qty">1&times;</span>3S 12.6 V balance charger — NOT a single-cell charger</div>
+          <div class="price">₹250</div>
+        </div>
+        <dl><dt>Why</dt><dd>The 18650 pack is three cells in series and there is no mains adapter in this build — the pack is the only motor supply, so it has to be chargeable between runs.</dd><dt>Check</dt><dd>Listing says 3S and 12.6 V. You plug into the small white JST balance lead, not the main power leads.</dd></dl><dl class="trap"><dt>Trap</dt><dd>A single-cell 18650 charger cannot charge a 3S pack. Forcing one is a fire risk, not just a slow charge.</dd></dl>
+      </div>
+
+  <div class="foot">
+    <b>Before you glue anything:</b> the diametric magnets must say
+    <b>DIAMETRIC</b>, not axial. The two look identical and an axial magnet
+    makes an AS5600 read a constant &mdash; both feedback axes dead, with no
+    error message. Test: spin one past a phone compass. The needle must flip
+    twice per rotation. An axial magnet will not.<br><br>
+    <b>And when you mount them:</b> each AS5600 chip sits <b>on the
+    centreline</b> of the axis it measures, 1.5&nbsp;mm from the magnet face.
+    Not near the axis &mdash; on it. Off-axis, the chip still answers on I²C
+    and still returns numbers; they are simply not angles.
+  </div>
+</body></html>

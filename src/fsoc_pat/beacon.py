@@ -174,6 +174,42 @@ def _leo_pass(b: Beacon, t: float):
     return float(az), float(max(el, 0.0)), slant_range_km(max(float(el), 0.0), altitude)
 
 
+def _figure_eight(b: Beacon, t: float):
+    """
+    A lemniscate of Gerono -- the figure-of-eight the problem statement
+    names explicitly among the required motion patterns.
+
+    ``az = W sin(theta)``, ``el = H sin(theta) cos(theta)``, so the path
+    closes, crosses itself at the centre, and is traversed twice per
+    period in elevation for once in azimuth.
+
+    It is in the spec for a reason no other listed pattern covers. A
+    circle has constant angular speed and constant-magnitude
+    acceleration, so a constant-velocity filter lags it by a fixed
+    amount and any tuning hides the lag. The figure-of-eight reverses
+    the sign of elevation acceleration four times per period and passes
+    through the crossing point twice with different velocity vectors --
+    which is precisely the case where a single-model filter mispredicts
+    and an IMM has to switch. Tracking error is therefore worst here,
+    and that is what makes it the honest benchmark.
+
+    Parameters (degrees, seconds): ``center_az_deg``, ``center_el_deg``,
+    ``width_deg`` (half-width of the figure), ``height_deg`` (peak
+    elevation excursion), ``period_s``, ``range_km``.
+    """
+    p = b.cfg.trajectory.params
+    period = max(p.get("period_s", 30.0), 1e-6)
+    width = np.radians(p.get("width_deg", 2.0))
+    # The lemniscate's elevation peaks at height/2, not height, because
+    # max(sin x cos x) = 1/2. Scaling by 2 here makes ``height_deg`` mean
+    # the excursion a user actually measures on screen.
+    height = np.radians(p.get("height_deg", 1.0)) * 2.0
+    theta = 2.0 * np.pi * t / period
+    az = np.radians(p.get("center_az_deg", 0.0)) + width * np.sin(theta)
+    el = np.radians(p.get("center_el_deg", 20.0)) + height * np.sin(theta) * np.cos(theta)
+    return az, el, p.get("range_km", b.cfg.ref_range_km)
+
+
 def _tle(b: Beacon, t: float):
     """
     A real satellite pass, propagated from its actual two-line elements.
@@ -204,10 +240,10 @@ def _tle(b: Beacon, t: float):
         b._walk_state = Satrec.twoline2rv(p["line1"], p["line2"])
     sat = b._walk_state
 
-    import datetime as _dt
-    epoch = _dt.datetime(2000, 1, 1) + _dt.timedelta(
-        days=sat.epochdays - 1.0) + _dt.timedelta(days=365.25 * (sat.epochyr - 2000) * 0)
-    # Days since epoch year start handled by sgp4 internally via jd fields:
+    # sgp4 carries the epoch in jdsatepoch/jdsatepochF, so there is nothing
+    # to reconstruct here. An earlier revision built a datetime from
+    # epochdays/epochyr and never used it -- its final term was multiplied
+    # by zero, which is the tell.
     jd = sat.jdsatepoch + sat.jdsatepochF + (p.get("epoch_offset_s", 0.0) + t) / 86400.0
     err, r_teme, _ = sat.sgp4(jd, 0.0)
     if err != 0:
@@ -247,6 +283,7 @@ _GENERATORS = {
     "tle": _tle,
     "linear": _linear,
     "circular": _circular,
+    "figure_eight": _figure_eight,
     "waypoint": _waypoint,
     "random_walk": _random_walk,
     "leo_pass": _leo_pass,

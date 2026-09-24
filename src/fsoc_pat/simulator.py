@@ -20,7 +20,7 @@ from .beacon import Beacon
 from .camera import VirtualCamera
 from .config import SimConfig
 from .disturbance import Turbulence, Vibration
-from .optics import splat_gaussian
+from .optics import splat_gaussian, splat_square
 from .scene import Scene
 
 
@@ -170,7 +170,10 @@ class Simulator:
             u, v, in_frame = geo.project(az_app, el_app, cam_az, cam_el,
                                          self.focal_px, cam.width, cam.height)
             if in_frame and signal_rate > 0.0:
-                splat_gaussian(rate, u, v, signal_rate, sigma)
+                # A sized target is rendered as the spec's square, blurred
+                # by the same PSF; size 0 falls through to the point source.
+                splat_square(rate, u, v, signal_rate,
+                             getattr(beacon.cfg, "size_px", 0.0), sigma)
 
             out.append(TargetTruth(
                 name=beacon.cfg.name, is_decoy=beacon.cfg.is_decoy,

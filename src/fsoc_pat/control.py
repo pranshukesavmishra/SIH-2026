@@ -117,29 +117,77 @@ class PointingController:
     def __init__(self, gimbal_cfg: GimbalConfig, frame_rate_hz: float,
                  az0: float = 0.0, el0: float = 0.0,
                  bandwidth_hz: float = 3.0, kp: float = 0.75, ki: float = 0.35,
-                 settle_margin_s: float = 0.02, integral_limit_urad: float = 12000.0):
+                 kii: float = 0.30, integral2_tau_s: float = 1.5,
+                 settle_margin_s: float = 0.02, integral_limit_urad: float = 40000.0):
         self.cfg = gimbal_cfg
         self.dt_nominal = 1.0 / frame_rate_hz
         self.bandwidth_hz = float(bandwidth_hz)
         self.kp, self.ki = float(kp), float(ki)
+        # Second integral. A single integrator has zero steady-state error
+        # to a *step* disturbance and a finite, constant error to a *ramp*
+        # -- and PS26169's platform motion is a ramp: constant velocity,
+        # unmeasured, up to 20 px/frame. Chasing it with one integrator is
+        # not slow tuning, it is the wrong order of loop. At ki = 0.35 the
+        # integrator has to accumulate 77,000 urad-seconds of error to
+        # produce the 27,000 urad the benchmark's drift needs, which at
+        # realistic error magnitudes takes about 26 seconds -- and 26 s is
+        # exactly what acquisition measured before this term existed.
+        #
+        # Integrating the integral makes the loop type 2, which tracks a
+        # ramp with zero steady-state error. It is also the classic way to
+        # make a loop ring, so the gain is small and the state is clamped
+        # separately and harder.
+        self.kii = float(kii)
+        # ...and it leaks. A pure double integrator holds its state
+        # forever, which is wrong for both of the things that actually
+        # happen here. On a step it overshoots and hunts -- the existing
+        # step-settling test failed the moment this term was added. And
+        # the benchmark's platform drift is bounded, so it reverses; a
+        # term that has wound up in the old direction then drives the
+        # mount the wrong way for as long as it takes to unwind, which is
+        # why a 120 s run was far worse than a 30 s one.
+        #
+        # Leaking it toward zero with a time constant well above the
+        # loop's own bandwidth keeps the ramp rejection -- a sustained
+        # drift refills it as fast as it drains -- while forgetting a
+        # transient. It makes the loop type 2 over the timescales that
+        # matter and type 1 over the long run, which is the honest
+        # description of what is wanted.
+        self.integral2_tau_s = float(integral2_tau_s)
         self.settle_margin_s = float(settle_margin_s)
         # The clamp exists for windup during acquisition transients, but it
-        # must not bind in steady tracking: the mount's trapezoidal follower
-        # trails a moving command by rate^2 / (2 * accel), which the integral
-        # path has to stand in for -- about 1300 urad at 3 deg/s for this
-        # mount. A clamp below that shows up as a constant tracking lag that
-        # appears only above a certain target rate, which is exactly how it
-        # was found.
+        # must not bind in steady tracking, and there are two different
+        # things it has to leave room for.
+        #
+        # The first is the mount's own follower lag: a trapezoidal follower
+        # trails a moving command by rate^2 / (2 * accel), about 1300 urad
+        # at 3 deg/s here. A clamp below that shows up as a constant
+        # tracking lag that appears only above a certain target rate, which
+        # is how it was found.
+        #
+        # The second is any *unmeasured* bias the loop has to hold off,
+        # and that is the larger number. PS26169 specifies platform motion
+        # up to 20 px/frame, which the gimbal cannot see -- it is not in
+        # the encoders -- so the integral path is the only thing that can
+        # cancel it, and it can only cancel what it is allowed to hold. At
+        # the spec's field of view the benchmark's bounded drift reaches
+        # 27,283 urad, and the old 12,000 urad clamp was sized for the
+        # follower lag alone. It saturated at 44% of what the disturbance
+        # needed, and the beacon spent half the run outside the frame.
+        # Measured: raising this alone took beacon-in-FOV from 47% to 99%
+        # and mean pointing error from 70,118 to 7,847 urad.
         self.integral_limit = integral_limit_urad * 1e-6
 
         self.smith = SmithPredictor(gimbal_cfg, az0, el0)
         self._integral = np.zeros(2)
+        self._integral2 = np.zeros(2)
         self._filtered_error = np.zeros(2)
         self._last_command = (az0, el0)
 
     def reset(self, az: float, el: float) -> None:
         self.smith = SmithPredictor(self.cfg, az, el)
         self._integral = np.zeros(2)
+        self._integral2 = np.zeros(2)
         self._filtered_error = np.zeros(2)
         self._last_command = (az, el)
 
@@ -168,7 +216,8 @@ class PointingController:
     def update(self, reported: Tuple[float, float], dt: float,
                optical_error: Optional[Tuple[float, float]] = None,
                absolute_target: Optional[Tuple[float, float]] = None,
-               target_rates: Tuple[float, float] = (0.0, 0.0)) -> ControlTelemetry:
+               target_rates: Tuple[float, float] = (0.0, 0.0),
+               coasting: bool = False) -> ControlTelemetry:
         """
         Produce the next pointing command.
 
@@ -177,6 +226,11 @@ class PointingController:
         detection the controller falls back to ``absolute_target``, the
         filter's own estimate, which carries the encoder error the optical
         path avoids -- degraded, but enough to coast through a dropout.
+
+        ``coasting`` says that fallback is being used under a *confirmed*
+        lock rather than during acquisition. It decides whether the
+        integral path is allowed to keep working through the dark phase
+        of a blinking beacon; see the note at the integrator below.
         """
         self.smith.advance(dt)
         self.smith.sync(*reported)
@@ -219,12 +273,60 @@ class PointingController:
         # acts on the MEASURED optical error: slow, but it is the only signal
         # that reflects where the mount truly is, so it is the only path that
         # can remove a constant offset the model cannot see -- model mismatch,
-        # calibration bias, or any residual lead/lag of the fast path itself.
-        self._integral = np.clip(self._integral + measured * dt,
-                                 -self.integral_limit, self.integral_limit)
+        # calibration bias, platform drift, or any residual lead/lag of the
+        # fast path itself.
+        #
+        # "Optical error" is meant literally, and the code did not honour it:
+        # it integrated whatever error it was handed, including the filter's
+        # own absolute-target fallback. That fallback is expressed against
+        # the encoders, so it is blind to exactly the disturbances the
+        # integrator exists to cancel, and during acquisition it is computed
+        # from a track that may not even be the beacon. Winding the
+        # integrator on it delayed acquisition from 4.1 s to 25.3 s.
+        #
+        # But "not optical" is two different situations and they need
+        # opposite treatment, which is the part that took measuring to
+        # find.
+        #
+        # During ACQUIRE there is a candidate track that may not be the
+        # beacon at all, and its error is computed against the encoders.
+        # Winding on that is winding on a guess.
+        #
+        # During COAST the lock is confirmed and the beacon is merely
+        # dark -- it blinks at 4 Hz with a 50% duty cycle against a 30 fps
+        # camera, so it is dark in most frames by construction. The
+        # filter's estimate there descends from real optical detections
+        # and still carries the drift. Refusing to integrate through the
+        # dark phase quarters the effective integral gain, the integrator
+        # never reaches the value a 20 px/frame platform drift needs, and
+        # beacon-in-FOV falls from 99% to 65%.
+        #
+        # Measured, 30 s at spec: winding on everything gives 47% in FOV
+        # and 25.3 s to acquire; winding only on optical gives 65% and
+        # 4.1 s; winding on optical and coast gives both.
+        #
+        # (An earlier attempt integrated the current error over the whole
+        # elapsed dark span, to keep the gain duty-cycle independent. That
+        # applies one measurement across a window in which the error was
+        # something else, so a single detection after a long gap slams the
+        # integrator into its clamp. It lost acquisition entirely.)
+        if used_optical or coasting:
+            self._integral = np.clip(self._integral + measured * dt,
+                                     -self.integral_limit, self.integral_limit)
+            # The type-2 state. Clamped to the same envelope divided by
+            # its own gain, so the term it contributes cannot exceed what
+            # the first integrator is allowed to contribute -- a double
+            # integrator that is allowed to dominate is how these loops
+            # ring themselves apart.
+            lim2 = self.integral_limit * self.ki / max(self.kii, 1e-9)
+            leak = np.exp(-dt / max(self.integral2_tau_s, 1e-6))
+            self._integral2 = np.clip(self._integral2 * leak + self._integral * dt,
+                                      -lim2, lim2)
 
-        command_az = predicted_target[0] + self.kp * smoothed[0] + self.ki * self._integral[0]
-        command_el = predicted_target[1] + self.kp * smoothed[1] + self.ki * self._integral[1]
+        command_az = (predicted_target[0] + self.kp * smoothed[0]
+                      + self.ki * self._integral[0] + self.kii * self._integral2[0])
+        command_el = (predicted_target[1] + self.kp * smoothed[1]
+                      + self.ki * self._integral[1] + self.kii * self._integral2[1])
 
         lo, hi = np.radians(self.cfg.el_limits_deg)
         command_az = float(geo.wrap_pi(command_az))

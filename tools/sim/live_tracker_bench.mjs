@@ -72,6 +72,8 @@ const traj = {
   circle: t => [320 + 130 * Math.cos(2 * Math.PI * t / 5), 240 + 110 * Math.sin(2 * Math.PI * t / 5)],
   medium: t => [320 + 200 * Math.sin(2 * Math.PI * 0.45 * t), 240 + 140 * Math.sin(2 * Math.PI * 0.7 * t + 1)],
   fast: t => [320 + 220 * Math.sin(2 * Math.PI * 0.7 * t), 240 + 150 * Math.sin(2 * Math.PI * 1.05 * t + 1)],
+  // held up and nearly still: a hand's tremor and slow sway
+  hold: t => [300 + 6 * Math.sin(2 * Math.PI * 0.7 * t) + 2 * Math.sin(2 * Math.PI * 7.3 * t), 200 + 5 * Math.sin(2 * Math.PI * 0.45 * t + 1) + 2 * Math.sin(2 * Math.PI * 6.1 * t)],
   // across the ceiling lamp at (520, 90) and back
   overLamp: t => { const u = 0.5 - 0.5 * Math.cos(2 * Math.PI * t / 4); return [300 + 300 * u, 250 - 180 * u]; },
 };
@@ -132,6 +134,11 @@ const SCEN = [
   { name: 'real_dark_hand',  path: jerky(61),     dur: 14, real: true, stretch: true },
   { name: 'real_lit_hand',   path: jerky(62),     dur: 14, real: true, lit: true, stretch: true },
   { name: 'real_bright_hand',path: jerky(63),     dur: 14, real: true, lit: 2, stretch: true },
+  // A phone held up close and nearly still: its flash glare spills well
+  // past the phone onto the wall behind it.
+  { name: 'real_dark_hold',  path: traj.hold,     dur: 12, real: true, glare: true },
+  { name: 'real_lit_hold',   path: traj.hold,     dur: 12, real: true, glare: true, lit: true },
+  { name: 'real_bright_hold',path: traj.hold,     dur: 12, real: true, glare: true, lit: 2 },
   { name: 'real_dark_none',  path: null,          dur: 40, real: true },
   { name: 'real_lit_none',   path: null,          dur: 40, real: true, lit: true },
   { name: 'real_bright_none',path: null,          dur: 40, real: true, lit: 2 },
@@ -214,6 +221,7 @@ function run(sc, verbose) {
         if (sc.turning) amp = 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(2 * Math.PI * 0.4 * ts));
         // A phone screen at full white reads ~220 on a webcam across a room.
         if (sc.screen) box(img, bx, by, 18, 30, 190 * amp / sub);
+        else if (sc.glare) { disc(img, bx, by, 9, 500 * amp / sub, 0); disc(img, bx, by, 12, 220 * amp / sub, 16); }
         else if (sc.real) { disc(img, bx, by, 7, 450 * amp / sub, 0); disc(img, bx, by, 8, 160 * amp / sub, 12); }
         else { disc(img, bx, by, 6, 400 * amp / sub, 0); disc(img, bx, by, 6, 110 * amp / sub, 9); }
       }

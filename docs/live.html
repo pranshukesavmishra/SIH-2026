@@ -113,6 +113,9 @@ details[open] summary::before { content: '− '; }
   border: 1px solid rgba(79,199,234,.28); background: rgba(79,199,234,.07); color: #BFE6F4; }
 .note.err { border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.09); color: #FFB4B4; }
 .note b { color: #fff; font-weight: 600; }
+.rig-log { margin-top: 10px; font: 10.5px/1.5 var(--font-mono); color: var(--ink-muted); white-space: pre-wrap; max-height: 64px; overflow: hidden; }
+.field + .btn { margin-top: 10px; }
+.viewport.aiming canvas { cursor: crosshair; }
 
 .steps { margin-top: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 14px; }
 .step { background: var(--panel); border: 1px solid var(--edge); border-radius: 12px; padding: 16px 18px; }
@@ -183,14 +186,24 @@ details[open] summary::before { content: '− '; }
         <h3>CONTROL</h3>
         <button class="btn" id="startBtn">
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>START CAMERA</button>
+        <div class="field" id="camField" style="display:none">
+          <div class="lbl"><span>CAMERA</span></div>
+          <select id="camSel" style="margin-top:6px"></select>
+        </div>
+        <div class="field" id="expField" style="display:none">
+          <div class="lbl"><span>EXPOSURE</span><b id="expVal">AUTO</b></div>
+          <input type="range" id="expSlider" min="0" max="1" step="0.05" value="1">
+        </div>
+        <button class="btn ghost" id="rigBtn" title="Chrome or Edge only">
+          <svg viewBox="0 0 24 24"><path d="M15 7v4h1v2h-3V5h2l-3-4-3 4h2v8H8v-2.07A1.99 1.99 0 0 0 9 9.2a2 2 0 1 0-3 1.73V13a2 2 0 0 0 2 2h3v3.05A2.5 2.5 0 1 0 13 18.05V15h3a2 2 0 0 0 2-2v-2h1V7h-4z"/></svg>CONNECT RIG</button>
+        <button class="btn ghost" id="testRigBtn" disabled>
+          <svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>TEST MOTION</button>
+        <button class="btn ghost" id="beaconBtn">
+          <svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM4.2 4.2a1 1 0 0 1 1.4 0l2.1 2.1a1 1 0 1 1-1.4 1.4L4.2 5.6a1 1 0 0 1 0-1.4zm15.6 0a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 1 1-1.4-1.4l2.1-2.1a1 1 0 0 1 1.4 0z"/></svg>USE AS BEACON</button>
         <button class="btn ghost" id="mk1Btn">
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>MK1 DEMO VIDEO</button>
         <button class="btn ghost" id="mk2Btn">
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>MK2 DEMO VIDEO</button>
-        <button class="btn ghost" id="beaconBtn">
-          <svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM4.2 4.2a1 1 0 0 1 1.4 0l2.1 2.1a1 1 0 1 1-1.4 1.4L4.2 5.6a1 1 0 0 1 0-1.4zm15.6 0a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 1 1-1.4-1.4l2.1-2.1a1 1 0 0 1 1.4 0z"/></svg>USE AS BEACON</button>
-        <button class="btn ghost" id="rigBtn" title="Chrome or Edge only">
-          <svg viewBox="0 0 24 24"><path d="M15 7v4h1v2h-3V5h2l-3-4-3 4h2v8H8v-2.07A1.99 1.99 0 0 0 9 9.2a2 2 0 1 0-3 1.73V13a2 2 0 0 0 2 2h3v3.05A2.5 2.5 0 1 0 13 18.05V15h3a2 2 0 0 0 2-2v-2h1V7h-4z"/></svg>CONNECT RIG</button>
       </div>
 
       <div class="card">
@@ -202,6 +215,7 @@ details[open] summary::before { content: '− '; }
         <div class="readout"><span>FRAME RATE</span><b id="rFps">—</b></div>
         <div class="readout"><span>PROCESSING</span><b id="rMs">—</b></div>
         <div class="readout"><span>RIG</span><b id="rRig">not connected</b></div>
+        <div class="readout"><span>GIMBAL PAN / TILT</span><b id="rGim">—</b></div>
       </div>
 
       <div class="card">
@@ -229,25 +243,35 @@ details[open] summary::before { content: '− '; }
 
       <div class="card" id="calCard" style="display:none">
         <h3>RIG</h3>
-        <button class="btn ghost" id="testRigBtn">
-          <svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>TEST MOTION</button>
-        <button class="btn ghost" id="centreBtn">
-          <svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/></svg>CENTRE</button>
+        <div class="field" style="margin-top:0">
+          <div class="lbl"><span>TYPE</span><b id="rigTypeVal">auto</b></div>
+          <select id="rigType" style="margin-top:6px">
+            <option value="auto">Auto-detect</option>
+            <option value="mk1">MK1 · servos, fixed camera</option>
+            <option value="mk2">MK2 · steppers, camera on gimbal</option>
+          </select>
+        </div>
+        <div class="btn-row" style="margin-top:10px">
+          <button class="btn ghost" id="centreBtn">CENTRE</button>
+          <button class="btn ghost" id="aimBtn" title="Click the video where the laser dot lands">SET AIM</button>
+        </div>
+        <label class="row" id="scanRow" style="display:none"><input type="checkbox" id="scanChk"> SCAN WHEN LOST</label>
         <details>
           <summary>CALIBRATION</summary>
           <label class="row"><input type="checkbox" id="invPan"> INVERT PAN</label>
           <label class="row"><input type="checkbox" id="invTilt"> INVERT TILT</label>
           <label class="row"><input type="checkbox" id="swapAxes"> SWAP PAN / TILT</label>
           <div class="field"><div class="lbl"><span>CAMERA FOV H</span><b id="fovHVal">60°</b></div>
-            <input type="range" id="fovHSlider" min="30" max="90" step="1" value="60"></div>
+            <input type="range" id="fovHSlider" min="10" max="90" step="1" value="60"></div>
           <div class="field"><div class="lbl"><span>CAMERA FOV V</span><b id="fovVVal">45°</b></div>
-            <input type="range" id="fovVSlider" min="20" max="70" step="1" value="45"></div>
+            <input type="range" id="fovVSlider" min="8" max="70" step="1" value="45"></div>
           <div class="field"><div class="lbl"><span>PAN TRIM</span><b id="trimPanVal">0°</b></div>
             <input type="range" id="trimPan" min="-20" max="20" step="0.5" value="0"></div>
           <div class="field"><div class="lbl"><span>TILT TRIM</span><b id="trimTiltVal">0°</b></div>
             <input type="range" id="trimTilt" min="-20" max="20" step="0.5" value="0"></div>
-          <p class="hint">Laser moves the wrong way: flip INVERT. Lands off the beacon: adjust TRIM.</p>
+          <p class="hint">Wrong direction: INVERT. Wrong axis: SWAP. MK1 lands off the beacon: TRIM. MK2: SET AIM on the laser dot.</p>
         </details>
+        <div class="rig-log" id="rigLog"></div>
       </div>
 
       <div id="noteSlot"></div>
@@ -298,6 +322,8 @@ const els = {
   overlay: $('beaconOverlay'), beaconExit: $('beaconExit'),
   videoOverlay: $('videoOverlay'), demoVideo: $('demoVideo'), videoExit: $('videoExit'), videoTag: $('videoTag'),
   videoPending: $('videoPending'),
+  camField: $('camField'), camSel: $('camSel'), expField: $('expField'), expSlider: $('expSlider'), expVal: $('expVal'), gim: $('rGim'), rigType: $('rigType'), rigTypeVal: $('rigTypeVal'),
+  aimBtn: $('aimBtn'), scanRow: $('scanRow'), scanChk: $('scanChk'), rigLog: $('rigLog'), viewport: $('viewport'),
 };
 
 // Storage can throw (private windows, blocked site data); every setting
@@ -321,22 +347,33 @@ els.brightSlider.oninput = () => { const v = parseFloat(els.brightSlider.value);
 els.depthSlider.oninput = () => { const v = parseFloat(els.depthSlider.value); tracker.setOption('minDepth', v); els.depthVal.textContent = v.toFixed(2); store.set('zd_minDepth2', v); };
 els.hz.onchange = () => { tracker.setOption('targetHz', parseFloat(els.hz.value)); tracker.reset(); };
 
-/* ---------------- rig calibration (a fact about the mount, so persisted) ---------------- */
-const cal = {
-  invPan: store.get('zd_invPan', '0') === '1', invTilt: store.get('zd_invTilt', '0') === '1', swap: store.get('zd_swap', '0') === '1',
-  trimPan: parseFloat(store.get('zd_trimPan', '0')), trimTilt: parseFloat(store.get('zd_trimTilt', '0')),
-  fovH: parseFloat(store.get('zd_fovH', '60')), fovV: parseFloat(store.get('zd_fovV', '45')),
-};
-function bindCheck(el, key, k) { el.checked = cal[k]; el.onchange = () => { cal[k] = el.checked; store.set(key, el.checked ? '1' : '0'); }; }
-function bindRange(el, out, key, k, fmt) {
-  el.value = cal[k]; out.textContent = fmt(cal[k]);
-  el.oninput = () => { cal[k] = parseFloat(el.value); out.textContent = fmt(cal[k]); store.set(key, cal[k]); };
+/* ---------------- rig calibration ----------------
+   A fact about each mount, so persisted -- and kept separately per rig:
+   MK1's laptop webcam sees ~60 deg, MK2's 12 mm lens ~22 deg, and their
+   axis directions have nothing to do with each other. */
+const CAL_DEFAULTS = { mk1: { fovH: 60, fovV: 45 }, mk2: { fovH: 22, fovV: 16 } };
+const cal = { mode: 'mk1' };
+const aimJSON = store.get('zd_aim2', '');
+try { cal.aim2 = aimJSON ? JSON.parse(aimJSON) : null; } catch (e) { cal.aim2 = null; }
+const CAL_FIELDS = [
+  ['invPan', els.invPan, null, 'bool'], ['invTilt', els.invTilt, null, 'bool'], ['swap', els.swapAxes, null, 'bool'],
+  ['fovH', els.fovHSlider, els.fovHVal, v => v.toFixed(0) + '°'], ['fovV', els.fovVSlider, els.fovVVal, v => v.toFixed(0) + '°'],
+  ['trimPan', els.trimPan, els.trimPanVal, v => v.toFixed(1) + '°'], ['trimTilt', els.trimTilt, els.trimTiltVal, v => v.toFixed(1) + '°'],
+];
+const calKey = k => 'zd_' + k + '_' + cal.mode;
+function loadCal(mode) {
+  cal.mode = mode === 'mk2' ? 'mk2' : 'mk1';
+  const d = CAL_DEFAULTS[cal.mode];
+  for (const [k, el, out, fmt] of CAL_FIELDS) {
+    if (fmt === 'bool') { cal[k] = store.get(calKey(k), '0') === '1'; el.checked = cal[k]; }
+    else { cal[k] = parseFloat(store.get(calKey(k), String(d[k] ?? 0))); el.value = cal[k]; out.textContent = fmt(cal[k]); }
+  }
 }
-bindCheck(els.invPan, 'zd_invPan', 'invPan'); bindCheck(els.invTilt, 'zd_invTilt', 'invTilt'); bindCheck(els.swapAxes, 'zd_swap', 'swap');
-bindRange(els.fovHSlider, els.fovHVal, 'zd_fovH', 'fovH', v => v.toFixed(0) + '°');
-bindRange(els.fovVSlider, els.fovVVal, 'zd_fovV', 'fovV', v => v.toFixed(0) + '°');
-bindRange(els.trimPan, els.trimPanVal, 'zd_trimPan', 'trimPan', v => v.toFixed(1) + '°');
-bindRange(els.trimTilt, els.trimTiltVal, 'zd_trimTilt', 'trimTilt', v => v.toFixed(1) + '°');
+for (const [k, el, out, fmt] of CAL_FIELDS) {
+  if (fmt === 'bool') el.onchange = () => { cal[k] = el.checked; store.set(calKey(k), el.checked ? '1' : '0'); };
+  else el.oninput = () => { cal[k] = parseFloat(el.value); out.textContent = fmt(cal[k]); store.set(calKey(k), cal[k]); };
+}
+loadCal(store.get('zd_rigType', 'auto') === 'mk2' ? 'mk2' : 'mk1');
 
 /* ---------------- demo videos: MK1 and MK2 ---------------- */
 const VIDEOS = {
@@ -390,22 +427,29 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && els.videoO
 // Tracking and every servo command stay in true camera coordinates.
 const MIRROR_VIEW = true;
 let video = null, stream = null, work, workCtx, outCtx;
-let lastVT = -1, lastSig = 0, procMs = 0, laserOn = false, serialWriter = null, pan = 90, tilt = 90;
+let lastVT = -1, lastSig = 0, procMs = 0;
 
 async function start() {
   els.start.disabled = true;
+  const want = store.get('zd_cam', '');
+  const base = { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } };
   try {
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } }, audio: false });
+      video: want ? { ...base, deviceId: { exact: want } } : base, audio: false });
   } catch (e) {
-    els.start.disabled = false;
-    note('Camera blocked (<b>' + e.name + '</b>). Allow camera access and close other apps using it.', true);
-    return;
+    // The remembered camera is unplugged: fall back to any camera.
+    try { if (!want) throw e; store.set('zd_cam', ''); stream = await navigator.mediaDevices.getUserMedia({ video: base, audio: false }); }
+    catch (e2) {
+      els.start.disabled = false;
+      note('Camera blocked (<b>' + e2.name + '</b>). Allow camera access and close other apps using it.', true);
+      return;
+    }
   }
   video = document.createElement('video');
   video.srcObject = stream; video.playsInline = true; video.muted = true;
   await video.play();
   await pinExposure();
+  await listCameras();
   const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
   // Processed at up to 640 wide: plenty for a beacon, and it keeps every
   // frame inside a few milliseconds.
@@ -423,27 +467,85 @@ async function start() {
   pump();
 }
 
+/* Every camera the browser can see, so the gimbal's USB webcam can be
+   picked over the laptop's own. Labels only exist after permission. */
+async function listCameras() {
+  let devs = [];
+  try { devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput'); } catch (e) {}
+  const cur = stream && stream.getVideoTracks()[0] && stream.getVideoTracks()[0].getSettings().deviceId;
+  els.camSel.innerHTML = devs.map((d, i) =>
+    `<option value="${d.deviceId}"${d.deviceId === cur ? ' selected' : ''}>${(d.label || 'Camera ' + (i + 1)).replace(/</g, '')}</option>`).join('');
+  els.camField.style.display = devs.length > 1 ? 'block' : 'none';
+}
+els.camSel.onchange = async () => {
+  store.set('zd_cam', els.camSel.value);
+  if (stream) { stop(true); await start(); }
+};
+
 // Auto-exposure chasing the blink makes the whole frame pulse with it. The
 // tracker copes, but where the browser allows it, stop it at the source.
+// In a bright room, turning the exposure DOWN is the single biggest help:
+// the room goes dark and the torch still clips white, which is the dark-room
+// case the tracker is strongest in.
+const expo = { track: null, kind: null, lo: 0, hi: 0, step: 0, s: 1, auto: true, mean: -1, lastAdj: 0 };
 async function pinExposure() {
   const track = stream.getVideoTracks()[0];
+  Object.assign(expo, { track, kind: null, s: 1, auto: true, mean: -1, lastAdj: 0 });
+  els.expField.style.display = 'none';
   if (!track || !track.getCapabilities) return;
-  let caps = {};
-  try { caps = track.getCapabilities() || {}; } catch (e) { return; }
+  let caps = {}, set = {};
+  try { caps = track.getCapabilities() || {}; set = track.getSettings() || {}; } catch (e) { return; }
   const wanted = [];
   if (caps.exposureMode && caps.exposureMode.includes('manual')) wanted.push({ exposureMode: 'manual' });
   if (caps.whiteBalanceMode && caps.whiteBalanceMode.includes('manual')) wanted.push({ whiteBalanceMode: 'manual' });
   if (wanted.length) { try { await track.applyConstraints({ advanced: wanted }); } catch (e) {} }
+  // Exposure time where the camera takes it (manual mode), else exposure
+  // compensation. Slider 1 = where the camera started, 0 = darkest.
+  if (caps.exposureTime && caps.exposureMode && caps.exposureMode.includes('manual') && caps.exposureTime.max > caps.exposureTime.min) {
+    const start = set.exposureTime || caps.exposureTime.max;
+    Object.assign(expo, { kind: 'time', lo: Math.max(caps.exposureTime.min, start / 64, 1e-6), hi: start, step: caps.exposureTime.step || 0 });
+  } else if (caps.exposureCompensation && caps.exposureCompensation.max > caps.exposureCompensation.min) {
+    Object.assign(expo, { kind: 'comp', lo: caps.exposureCompensation.min, hi: set.exposureCompensation || 0, step: caps.exposureCompensation.step || 0 });
+  }
+  if (!expo.kind || expo.hi <= expo.lo) { expo.kind = null; return; }
+  els.expSlider.value = 1; els.expVal.textContent = 'AUTO';
+  els.expField.style.display = 'block';
+}
+async function setExposure(s) {
+  if (!expo.kind || !expo.track) return;
+  expo.s = Math.max(0, Math.min(1, s));
+  let v = expo.kind === 'time' ? expo.lo * Math.pow(expo.hi / expo.lo, expo.s) : expo.lo + (expo.hi - expo.lo) * expo.s;
+  if (expo.step) v = Math.round(v / expo.step) * expo.step;
+  v = Math.max(expo.lo, Math.min(expo.hi, v));
+  const c = expo.kind === 'time' ? { exposureMode: 'manual', exposureTime: v } : { exposureCompensation: v };
+  try { await expo.track.applyConstraints({ advanced: [c] }); } catch (e) {}
+  els.expSlider.value = expo.s;
+  els.expVal.textContent = expo.s >= 0.999 ? 'AUTO' : '−' + Math.round((1 - expo.s) * 100) + '%';
+}
+els.expSlider.oninput = () => { expo.auto = false; setExposure(parseFloat(els.expSlider.value)); };
+// Once, before a lock: a clearly bright room is dimmed in small steps until
+// the scene sits mid-grey. Only ever down, and never while locked -- an
+// exposure that moves with the scene would pulse like a beacon.
+function autoExposure(d, now) {
+  let sum = 0, n = 0;
+  for (let i = 0; i < d.length; i += 4 * 211) { sum += d[i + 1]; n++; }
+  const m = sum / Math.max(1, n);
+  expo.mean = expo.mean < 0 ? m : expo.mean + 0.2 * (m - expo.mean);
+  if (!expo.auto || !expo.kind || expo.s <= 0.05 || tracker.lock) return;
+  if (now - expo.lastAdj < 350) return;
+  if (expo.mean > 125) { expo.lastAdj = now; setExposure(expo.s - 0.1); }
+  else if (expo.s < 1) expo.auto = false;   // settled: hold it there
 }
 
-function stop() {
+function stop(switching) {
   if (stream) stream.getTracks().forEach(t => t.stop());
   stream = null;
+  if (switching) return;
   els.view.style.display = 'none'; els.placeholder.style.display = 'block';
   els.start.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>START CAMERA';
   els.start.onclick = start;
   paintState('STANDBY');
-  if (serialWriter) sendRig(90, 90, false);
+  rigLaser(false);
 }
 
 /* A timer, not requestAnimationFrame: rAF stops when the browser decides
@@ -471,9 +573,11 @@ function loop() {
     for (let i = 0; i < d.length; i += 4 * 97) sig = (sig * 31 + d[i] + 7 * d[i + 1]) | 0;
     if (sig !== lastSig) {
       lastSig = sig;
-      tracker.process(d, work.width, work.height, performance.now() / 1000, laserOn);
+      autoExposure(d, t0);
+      applyEgo();
+      tracker.process(d, work.width, work.height, performance.now() / 1000, !!rig.laser && rig.laser !== 'L0');
       procMs += ((performance.now() - t0) - procMs) * 0.1;
-      if (serialWriter) steer();
+      steer();
     }
   }
   draw();
@@ -503,6 +607,14 @@ function draw() {
   c.moveTo(cx, cy - a); c.lineTo(cx, cy - g); c.moveTo(cx, cy + g); c.lineTo(cx, cy + a);
   c.stroke();
 
+  // MK2's aim point: where its own laser lands in the image.
+  const aimP = work && rig.type === 'mk2' ? aimPoint() : null;
+  if (aimP && cal.aim2) {
+    const ax = X(aimP.x), ay = Yc(aimP.y), r = 7 * u;
+    c.strokeStyle = '#FF5A5A'; c.lineWidth = 1.4 * u;
+    c.beginPath(); c.moveTo(ax, ay - r); c.lineTo(ax + r, ay); c.lineTo(ax, ay + r); c.lineTo(ax - r, ay); c.closePath(); c.stroke();
+  }
+
   const L = tracker.target;
 
   // Other lights the tracker is watching, and why each is not the beacon.
@@ -528,7 +640,8 @@ function draw() {
 
     // Line of sight from boresight to target: the pointing error, drawn.
     c.setLineDash([3 * u, 4 * u]); c.strokeStyle = 'rgba(234,244,253,0.35)'; c.lineWidth = 1 * u;
-    c.beginPath(); c.moveTo(cx, cy); c.lineTo(px, py); c.stroke(); c.setLineDash([]);
+    const ox = aimP && cal.aim2 ? X(aimP.x) : cx, oy = aimP && cal.aim2 ? Yc(aimP.y) : cy;
+    c.beginPath(); c.moveTo(ox, oy); c.lineTo(px, py); c.stroke(); c.setLineDash([]);
 
     // Track history: where it has been, fading with age.
     const tr = L.trail;
@@ -636,68 +749,258 @@ function readouts() {
   const fps = tracker.fps || 0, need = 2.5 * (parseFloat(els.hz.value) + 1);
   els.fps.textContent = fps.toFixed(0); els.fps.className = fps && fps < need ? 'warn' : '';
   els.ms.textContent = procMs.toFixed(1) + ' ms';
+  if (rig.type === 'mk2') {
+    const fp = rig.fbPan ?? rig.panSteps, ft = rig.fbTilt ?? rig.tiltSteps;
+    els.gim.textContent = fmtSigned(fp / STEPS_PER_DEG) + '° / ' + fmtSigned(ft / STEPS_PER_DEG) + '°' +
+      (rig.fbSrc === 'E' ? ' enc' : rig.fbSrc === 'C' ? ' cmd' : '');
+    els.gim.className = rig.fbSrc === 'E' ? 'good' : '';
+  } else if (rig.type === 'mk1') {
+    els.gim.textContent = (rig.servoPan - 90).toFixed(0) + '° / ' + (rig.servoTilt - 90).toFixed(0) + '°';
+  }
 }
 
-/* ---------------- the rig, over USB (Chrome / Edge) ---------------- */
+/* ---------------- the rig, over USB (Chrome / Edge) ----------------
+   Two rigs, two protocols (docs/HARDWARE_PROTOCOL.md):
+     MK1  servos, camera FIXED beside the rig.  P<deg> T<deg>, servo degrees
+          centred on 90, L0/L1. A pixel offset IS an angle off the camera
+          axis, so the laser is commanded absolutely.
+     MK2  steppers, camera ON the gimbal.  P<steps> T<steps> from centre,
+          3200 steps/rev; L7.0 = laser modulated at 7 Hz; ? = status;
+          C = centre. The camera turns with the laser, so this is a closed
+          loop: nudge the gimbal until the beacon sits on the aim point.
+   The rig type is read from the firmware's own start-up line. */
+const STEPS_PER_DEG = 3200 / 360;
+// Host-side travel limits, tighter than the firmware's backstop: the build
+// guide's stage-5 check is +/-90 deg pan and -30/+45 deg tilt with no cable
+// tension, so that is all the loop is ever allowed to ask for.
+const MK2_LIM = { panMin: -90 * STEPS_PER_DEG, panMax: 90 * STEPS_PER_DEG,
+                  tiltMin: -30 * STEPS_PER_DEG, tiltMax: 45 * STEPS_PER_DEG };
+const rig = { port: null, writer: null, type: null, laser: '', panSteps: 0, tiltSteps: 0,
+              fbPan: null, fbTilt: null, fbSrc: '', moving: false, enc: null,
+              servoPan: 90, servoTilt: 90, lastSend: 0, lastPoll: 0, log: [], aimArm: false,
+              searchSince: 0, scanIdx: 0, scanUntil: 0 };
+
+function rigSend(line) {
+  if (!rig.writer) return;
+  // One command per line: the firmware only acts on a complete line.
+  rig.writer.write(new TextEncoder().encode(line + '\n')).catch(() => {});
+}
+function rigLaser(on) {
+  if (!rig.writer) return;
+  const want = !on ? 'L0' : rig.type === 'mk2' ? 'L7.0' : 'L1';
+  if (want !== rig.laser) { rigSend(want); rig.laser = want; }
+}
+function rigLogLine(t) {
+  rig.log.push(t); if (rig.log.length > 4) rig.log.shift();
+  els.rigLog.textContent = rig.log.join('\n');
+}
+function setRigType(t, why) {
+  rig.type = t;
+  els.rigTypeVal.textContent = t === 'mk2' ? 'MK2 · steppers' : 'MK1 · servos';
+  els.rigState.textContent = (t === 'mk2' ? 'MK2' : 'MK1') + (rig.enc === null ? '' : rig.enc ? ' · encoders' : ' · no encoders');
+  els.rigState.className = 'good';
+  els.scanRow.style.display = t === 'mk2' ? 'flex' : 'none';
+  loadCal(t);
+  if (why) rigLogLine('# ' + why);
+}
+
+async function readLoop(port) {
+  const reader = port.readable.getReader(), dec = new TextDecoder();
+  let buf = '';
+  try {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf('\n')) >= 0) {
+        const line = buf.slice(0, i).replace('\r', '').trim(); buf = buf.slice(i + 1);
+        if (!line) continue;
+        if (line.startsWith('# ZeroDrift Mk2')) {
+          rig.enc = /encoders=yes/.test(line);
+          if (els.rigType.value === 'auto') setRigType('mk2', 'MK2 firmware detected');
+        }
+        if (line.startsWith('S ')) {
+          const f = line.split(/\s+/);
+          rig.fbPan = +f[1]; rig.fbTilt = +f[2]; rig.fbSrc = f[3]; rig.moving = f[4] === '1';
+          if (!rig.type && els.rigType.value === 'auto') setRigType('mk2', 'MK2 answered a status query');
+        } else if (line.startsWith('#')) rigLogLine(line);
+      }
+    }
+  } catch (e) { /* port closed */ }
+  finally { try { reader.releaseLock(); } catch (e) {} }
+}
+
 async function openPort(port, silent) {
   await port.open({ baudRate: 115200 });
-  serialWriter = port.writable.getWriter();
-  els.rigState.textContent = 'connected'; els.rigState.className = 'good';
-  els.calCard.style.display = 'block';
+  rig.port = port; rig.writer = port.writable.getWriter(); rig.type = null; rig.enc = null; rig.laser = '';
+  readLoop(port);
+  els.rigState.textContent = 'connected · detecting…'; els.rigState.className = '';
+  els.calCard.style.display = 'block'; els.testRig.disabled = false;
   els.rig.classList.add('good');
   els.rig.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>RIG CONNECTED';
-  if (!silent) note('Rig connected. It points the laser whenever the status reads <b>LOCKED</b>.');
-  setTimeout(() => sendRig(90, 90, false), 1800);        // the Nano reboots on open
+  // The Nano reboots when the port opens and prints its banner ~2 s later.
+  // No MK2 banner and no answer to "?" means the older MK1 firmware.
+  const forced = els.rigType.value;
+  if (forced !== 'auto') setRigType(forced, 'type set manually');
+  setTimeout(() => { if (!rig.type) rigSend('?'); }, 2300);
+  setTimeout(() => {
+    if (!rig.type) setRigType('mk1', 'no MK2 banner: MK1 servo firmware');
+    rigCentre();
+    if (!silent) note('Rig connected (<b>' + (rig.type === 'mk2' ? 'MK2' : 'MK1') + '</b>). Press <b>TEST MOTION</b> once, then show it the beacon.');
+  }, 3000);
 }
 async function connectRig() {
   if (!('serial' in navigator)) { note('Driving the rig needs Chrome or Edge (Web Serial).', true); return; }
   try { await openPort(await navigator.serial.requestPort(), false); }
   catch (e) { note('Rig not connected: ' + e.message, true); }
 }
-// Once permission is granted, the port comes back on later visits.
 if ('serial' in navigator) {
-  navigator.serial.addEventListener('connect', e => { if (!serialWriter) openPort(e.target, true).catch(() => {}); });
+  navigator.serial.addEventListener('connect', e => { if (!rig.writer) openPort(e.target, true).catch(() => {}); });
   navigator.serial.addEventListener('disconnect', () => {
-    serialWriter = null; els.rigState.textContent = 'disconnected'; els.rigState.className = 'warn';
+    rig.writer = null; rig.port = null; rig.type = null;
+    els.rigState.textContent = 'disconnected'; els.rigState.className = 'warn'; els.testRig.disabled = true;
   });
+  // Once permission is granted, the port comes back on later visits.
   navigator.serial.getPorts().then(p => { if (p.length) openPort(p[0], true).catch(() => {}); }).catch(() => {});
 }
-function sendRig(p, t, laser) {
-  if (!serialWriter) return;
-  const enc = new TextEncoder();
-  // One command per line: the firmware only acts on a complete line.
-  serialWriter.write(enc.encode('P' + Math.round(p) + ' T' + Math.round(t) + '\n'));
-  if (laser !== laserOn) { serialWriter.write(enc.encode((laser ? 'L1' : 'L0') + '\n')); laserOn = laser; }
+els.rigType.onchange = () => {
+  store.set('zd_rigType', els.rigType.value);
+  if (rig.writer && els.rigType.value !== 'auto') setRigType(els.rigType.value, 'type set manually');
+};
+els.rigType.value = store.get('zd_rigType', 'auto');
+
+function mk2Go(panSteps, tiltSteps) {
+  rig.panSteps = Math.round(Math.max(MK2_LIM.panMin, Math.min(MK2_LIM.panMax, panSteps)));
+  rig.tiltSteps = Math.round(Math.max(MK2_LIM.tiltMin, Math.min(MK2_LIM.tiltMax, tiltSteps)));
+  rigSend('P' + rig.panSteps + ' T' + rig.tiltSteps);
 }
+function mk1Go(p, t) {
+  rig.servoPan = Math.max(20, Math.min(160, p)); rig.servoTilt = Math.max(40, Math.min(140, t));
+  rigSend('P' + Math.round(rig.servoPan) + ' T' + Math.round(rig.servoTilt));
+}
+function rigCentre() {
+  if (rig.type === 'mk2') { rigSend('C'); rig.panSteps = rig.tiltSteps = 0; }
+  else mk1Go(90, 90);
+}
+
 async function testRig() {
-  if (!serialWriter) return;
+  if (!rig.writer) return;
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  note('Watch the laser: pan left/right, then tilt up/down.');
-  sendRig(60, 90, true); await wait(900); sendRig(120, 90, true); await wait(900);
-  sendRig(90, 70, true); await wait(900); sendRig(90, 110, true); await wait(900);
-  sendRig(90, 90, false); pan = 90; tilt = 90;
-  note('Wrong axis: tick <b>SWAP</b>. Wrong direction: tick <b>INVERT</b>. Nothing moved: check wiring.');
+  els.testRig.disabled = true;
+  note('Watch it: <b>pan right</b>, then <b>tilt up</b>, then the laser blinks.');
+  if (rig.type === 'mk2') {
+    const d = Math.round(15 * STEPS_PER_DEG);
+    const sp = cal.invPan ? -1 : 1, st = cal.invTilt ? -1 : 1;
+    mk2Go(sp * d, 0); await wait(1200); mk2Go(0, 0); await wait(900);
+    mk2Go(0, st * d); await wait(1200); mk2Go(0, 0); await wait(900);
+    rigSend('L7.0'); await wait(1500); rigSend('L0'); rig.laser = 'L0';
+  } else {
+    const sp = cal.invPan ? 1 : -1, st = cal.invTilt ? 1 : -1;
+    mk1Go(90 - sp * 25, 90); await wait(900); mk1Go(90, 90); await wait(700);
+    mk1Go(90, 90 - st * 20); await wait(900); mk1Go(90, 90); await wait(700);
+    rigSend('L1'); await wait(700); rigSend('L0'); rig.laser = 'L0';
+  }
+  els.testRig.disabled = false;
+  note('Went the other way: tick <b>INVERT</b>. Moved the wrong axis: tick <b>SWAP</b>. Nothing moved: check power and wiring.');
 }
-/* The webcam is fixed and the laser rides the pan/tilt, so a pixel offset IS
-   an angle off the camera axis: command it absolutely, every frame. Aim at
-   where the beacon will be when the servo gets there (~80 ms). */
-let lastSteerState = '';
+
+/* Where the laser lands in the image. MK1: the camera is fixed, so this is
+   only used for display. MK2: this is the point the loop drives the beacon
+   onto -- the image centre until SET AIM puts it on the actual laser dot,
+   which removes the camera-to-laser parallax. */
+function aimPoint() {
+  const a = rig.type === 'mk2' ? cal.aim2 : null;
+  return a ? { x: a.x * work.width, y: a.y * work.height } : { x: work.width / 2, y: work.height / 2 };
+}
+els.aimBtn.onclick = () => {
+  rig.aimArm = !rig.aimArm;
+  els.viewport.classList.toggle('aiming', rig.aimArm);
+  note(rig.aimArm ? 'Click the video exactly on the <b>laser dot</b>. Click SET AIM again to cancel.' : '');
+};
+els.view.addEventListener('click', ev => {
+  if (!rig.aimArm || !work) return;
+  const r = els.view.getBoundingClientRect();
+  let fx = (ev.clientX - r.left) / r.width, fy = (ev.clientY - r.top) / r.height;
+  if (MIRROR_VIEW) fx = 1 - fx;                        // back to true camera coordinates
+  cal.aim2 = { x: fx, y: fy }; store.set('zd_aim2', JSON.stringify(cal.aim2));
+  rig.aimArm = false; els.viewport.classList.remove('aiming');
+  note('Aim point set. MK2 now drives the beacon onto the laser dot.');
+});
+
+/* Called once per processed frame. */
 function steer() {
-  const L = tracker.target;
-  const locked = L && tracker.state === 'LOCKED';
-  if (!locked) { if (lastSteerState === 'LOCKED') sendRig(pan, tilt, false); lastSteerState = tracker.state; return; }
-  lastSteerState = 'LOCKED';
-  const p = tracker.predict(0.08) || L;
-  let o = offsetDeg(p.x, p.y), ax = o.az, ay = -o.el;
-  if (cal.swap) { const t = ax; ax = ay; ay = t; }
-  const sp = cal.invPan ? 1 : -1, stt = cal.invTilt ? 1 : -1;
-  pan = Math.max(20, Math.min(160, 90 + sp * ax + cal.trimPan));
-  tilt = Math.max(40, Math.min(140, 90 + stt * ay + cal.trimTilt));
-  sendRig(pan, tilt, true);
+  if (!rig.writer || !rig.type) return;
+  const L = tracker.target, locked = L && tracker.state === 'LOCKED';
+  const now = performance.now();
+  if (rig.type === 'mk2' && now - rig.lastPoll > 250) { rigSend('?'); rig.lastPoll = now; }
+
+  if (rig.type === 'mk1') {
+    // Fixed camera: the pixel offset is the angle off the camera axis.
+    rigLaser(!!locked);
+    if (!locked) return;
+    const p = tracker.predict(0.08) || L;
+    let o = offsetDeg(p.x, p.y), ax = o.az, ay = -o.el;
+    if (cal.swap) { const t = ax; ax = ay; ay = t; }
+    const sp = cal.invPan ? 1 : -1, st = cal.invTilt ? 1 : -1;
+    mk1Go(90 + sp * ax + cal.trimPan, 90 + st * ay + cal.trimTilt);
+    return;
+  }
+
+  // ---- MK2: camera on the gimbal, closed loop on the image ----
+  rigLaser(!!L);
+  if (!locked) { mk2Scan(now); return; }
+  rig.searchSince = 0;
+  if (now - rig.lastSend < 60) return;                  // ~16 Hz is plenty for steppers
+  rig.lastSend = now;
+  const p = tracker.predict(0.12) || L, aim = aimPoint();
+  const e = offsetDeg(p.x, p.y), a = offsetDeg(aim.x, aim.y);
+  let ex = e.az - a.az, ey = e.el - a.el;               // degrees the gimbal still has to turn
+  if (Math.hypot(ex, ey) < 0.12) return;                // inside the deadband: hold still
+  if (cal.swap) { const t = ex; ex = ey; ey = t; }
+  // Proportional step toward the target, capped so one bad frame cannot
+  // fling the head. The steppers settle between updates.
+  const g = 0.55, cap = 6;
+  const dx = Math.max(-cap, Math.min(cap, g * ex)), dy = Math.max(-cap, Math.min(cap, g * ey));
+  const sp = cal.invPan ? -1 : 1, st = cal.invTilt ? -1 : 1;
+  const beforeP = rig.panSteps, beforeT = rig.tiltSteps;
+  mk2Go(rig.panSteps + sp * dx * STEPS_PER_DEG, rig.tiltSteps + st * dy * STEPS_PER_DEG);
+  // The camera turns with the gimbal, so the whole image is about to slide.
+  // Tell the tracker, so it does not read its own motion as the world's.
+  const turnedPan = (rig.panSteps - beforeP) / STEPS_PER_DEG * sp, turnedTilt = (rig.tiltSteps - beforeT) / STEPS_PER_DEG * st;
+  let px = -turnedPan * work.width / cal.fovH, py = turnedTilt * work.height / cal.fovV;
+  if (cal.swap) { const t = px; px = py; py = t; }
+  egoPending.x += px; egoPending.y += py;
 }
+
+/* MK2 search: dwell long enough to identify the blink, then step on. */
+function mk2Scan(now) {
+  if (!els.scanChk.checked || tracker.state === 'CONFIRMING' || tracker.state === 'COASTING') return;
+  if (!rig.searchSince) { rig.searchSince = now; rig.scanUntil = now + 2500; return; }
+  if (now < rig.scanUntil || rig.moving) return;
+  const stepH = cal.fovH * 0.8, stepV = cal.fovV * 0.8;
+  const cols = [-2, -1, 0, 1, 2], rows = [0, 1, -1];
+  const k = rig.scanIdx++ % (cols.length * rows.length);
+  const r = Math.floor(k / cols.length), c = k % cols.length;
+  const col = r % 2 ? cols[cols.length - 1 - c] : cols[c];
+  mk2Go(col * stepH * STEPS_PER_DEG, rows[r] * stepV * STEPS_PER_DEG);
+  tracker.reset();
+  rig.scanUntil = now + 2200;                           // slew + ~1.5 s look
+}
+
+/* The image slides over the next few frames as the steppers move; spread
+   the correction the same way. */
+const egoPending = { x: 0, y: 0 };
+function applyEgo() {
+  const fx = egoPending.x * 0.35, fy = egoPending.y * 0.35;
+  if (Math.abs(fx) + Math.abs(fy) < 0.05) { egoPending.x = egoPending.y = 0; return; }
+  egoPending.x -= fx; egoPending.y -= fy;
+  tracker.egoShift(fx, fy);
+}
+
 els.rig.onclick = connectRig;
 els.testRig.onclick = testRig;
-els.centre.onclick = () => { pan = 90; tilt = 90; sendRig(90, 90, laserOn); };
+els.centre.onclick = rigCentre;
 
 /* ---------------- desktop engine (python -m fsoc_pat.hil.serve) ---------------- */
 const ENGINE_URL = 'http://localhost:8765';

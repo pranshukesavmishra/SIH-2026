@@ -13,7 +13,7 @@
 // Exit code is non-zero if any scenario misses its pass bar.
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const Tracker = require('../../docs/tracker-core.js');
+const Tracker = require(process.env.CORE || '../../docs/tracker-core.js');
 
 const W = 640, H = 480;
 
@@ -24,19 +24,21 @@ function rng(seed) {
 function gauss(r) { return Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r()); }
 
 // ---- the static room ------------------------------------------------------
-function buildRoom(r) {
+function buildRoom(r, lit) {
   const base = new Float32Array(W * H);
+  // A lit room: walls at ~190 on the camera, a window near white, a pale
+  // table -- the conditions where the torch barely stands above the scene.
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    base[y * W + x] = 70 + 40 * (y / H) + 15 * Math.sin(x / 90);
+    base[y * W + x] = lit === 2 ? 212 + 18 * (y / H) + 8 * Math.sin(x / 90) : lit ? 178 + 26 * (y / H) + 10 * Math.sin(x / 90) : 70 + 40 * (y / H) + 15 * Math.sin(x / 90);
   }
   const rect = (x0, y0, w, h, v) => {
     for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++)
       if (x >= 0 && y >= 0 && x < W && y < H) base[y * W + x] = v;
   };
-  rect(20, 300, 180, 160, 45);      // sofa
-  rect(470, 330, 150, 120, 150);    // table top, pale
-  rect(250, 380, 120, 90, 120);
-  rect(40, 30, 150, 110, 236);      // window: large, bright, steady
+  rect(20, 300, 180, 160, lit ? 120 : 45);      // sofa
+  rect(470, 330, 150, 120, lit ? 228 : 150);    // table top, pale
+  rect(250, 380, 120, 90, lit ? 205 : 120);
+  rect(40, 30, 150, 110, lit ? 252 : 236);      // window: large, bright, steady
   return base;
 }
 
@@ -103,13 +105,22 @@ const SCEN = [
   { name: 'camera_20fps',    path: traj.medium,   dur: 12, fps: 20, stretch: true },
   { name: 'jerky_hand_3',    path: jerky(2024),   dur: 14 },
   { name: 'wrong_rate_blinkers', path: traj.medium, dur: 12, blinkers: true },
+  { name: 'lit_static',      path: traj.static,   dur: 6,  lit: true },
+  { name: 'lit_figure8',     path: traj.medium,   dur: 12, lit: true },
+  { name: 'lit_hand',        path: jerky(31),     dur: 14, lit: true },
+  { name: 'lit_phone_screen',path: traj.circle,   dur: 10, lit: true, screen: true },
   { name: 'no_beacon',       path: null,          dur: 12 },
+  { name: 'bright_figure8',  path: traj.medium,   dur: 12, lit: 2 },
+  { name: 'bright_hand',     path: jerky(47),     dur: 14, lit: 2 },
+  { name: 'bright_screen',   path: traj.circle,   dur: 10, lit: 2, screen: true },
+  { name: 'lit_no_beacon',   path: null,          dur: 12, lit: true, blinkers: true },
+  { name: 'bright_no_beacon',path: null,          dur: 12, lit: 2, blinkers: true },
   { name: 'blinkers_only',   path: null,          dur: 12, blinkers: true },
 ];
 
 function run(sc, verbose) {
-  const r = rng(12345 + sc.name.length * 77);
-  const room = buildRoom(r);
+  const r = rng(12345 + sc.name.length * 77 + 1000 * (+process.env.SEED || 0));
+  const room = buildRoom(r, sc.lit);
   const img = new Float32Array(W * H);
   const rgba = new Uint8ClampedArray(W * H * 4);
   const tk = new Tracker({ targetHz: 4 });

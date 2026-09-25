@@ -194,6 +194,45 @@ const MK2_PARTS = {
   standoff: ['tilt', { c: 0xd4a94a, m: .95, r: .2 }], head: ['tilt', { c: 0xe8dcc8, m: .1, r: .6 }],
 };
 
+/* Soft additive glow, for LEDs that are lit. */
+function glowSprite(color, size) {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(255,255,255,0.55)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 64, 64);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), color,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  sp.scale.setScalar(size); return sp;
+}
+
+/* A mesh plus its hard edges drawn in dark lines: the CAD look. */
+function cadMesh(geo, mat, edgeOpacity = 0.32) {
+  const m = new THREE.Mesh(geo, mat);
+  m.castShadow = m.receiveShadow = true;
+  const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 28),
+    new THREE.LineBasicMaterial({ color: 0x06101c, transparent: true, opacity: edgeOpacity }));
+  m.add(e);
+  return m;
+}
+
+/* One of the stage targets, loaded from its CAD parts, turned to face the
+   gimbal (its LED looks along +Z in the model; the gimbal is at +Y). */
+function loadUnit(loader, parts, centre, onMesh) {
+  const g = new THREE.Group(), inner = new THREE.Group();
+  inner.rotation.x = -Math.PI / 2;                 // model +Z -> world +Y
+  inner.position.set(0, 0, 0);
+  g.add(inner);
+  for (const [name, mat] of parts) {
+    loader.load(`cad/web/${name}.stl`, geo => {
+      geo.computeVertexNormals();
+      geo.translate(-centre[0], -centre[1], -centre[2]);
+      const m = cadMesh(geo, mat, 0.25);
+      inner.add(m); if (onMesh) onMesh(name, m);
+    });
+  }
+  return g;
+}
+
 function buildMk2(v, onLoaded) {
   const { scene } = v;
   // The pan motor hangs 43 mm under the base plate, so the plate stands on
@@ -213,35 +252,70 @@ function buildMk2(v, onLoaded) {
     loader.load(`cad/web/${name}.stl`, geo => {
       geo.computeVertexNormals();
       if (grp === 'tilt') geo.translate(-TILT_PIVOT.x, -TILT_PIVOT.y, -TILT_PIVOT.z);
-      const m = new THREE.Mesh(geo, std(sp.c, sp.m, sp.r, sp.o ? { transparent: true, opacity: sp.o } : {}));
-      m.castShadow = m.receiveShadow = true; G[grp].add(m);
+      const o = name === 'head' ? 0.88 : sp.o;
+      G[grp].add(cadMesh(geo, std(sp.c, sp.m, sp.r, o ? { transparent: true, opacity: o } : {})));
       if (++n === Object.keys(MK2_PARTS).length && onLoaded) onLoaded();
     });
   }
-  // the laser leaves the head's front face (see assembly.html)
-  const beam = makeBeam(400); beam.position.set(20, -88, -2); gTilt.add(beam);
 
-  // beacon: ABS box with a red LED under a ping-pong diffuser
-  const bc = new THREE.Group(); scene.add(bc);
-  const box = new THREE.Mesh(new THREE.BoxGeometry(90, 40, 60), std(0xd9c3a6, 0.05, 0.7)); box.castShadow = true; bc.add(box);
-  const dome = new THREE.Mesh(new THREE.SphereGeometry(17, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xff2a2a }));
-  dome.rotation.x = Math.PI / 2; dome.position.set(0, 20, 0); bc.add(dome);
-  const glow = new THREE.PointLight(0xff3030, 0, 320); glow.position.set(0, 40, 0); bc.add(glow);
+  // Head front face (y = -88 from the tilt pivot): the webcam lens behind
+  // its red filter, and the KY-008 laser beside it -- boresighted.
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 4, 24), std(0x0a0a0c, 0.6, 0.25));
+  lens.position.set(-16, -90, 0); gTilt.add(lens);
+  const glass = new THREE.Mesh(new THREE.CircleGeometry(4.2, 24), std(0x1a2a44, 0.9, 0.05));
+  glass.rotation.x = Math.PI / 2; glass.position.set(-16, -92.1, 0); gTilt.add(glass);
+  const filt = new THREE.Mesh(new THREE.BoxGeometry(22, 0.8, 22), new THREE.MeshStandardMaterial({
+    color: 0xd01c1c, transparent: true, opacity: 0.45, roughness: 0.2, metalness: 0 }));
+  filt.position.set(-16, -92.8, 0); gTilt.add(filt);
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(3.25, 3.25, 5, 20), std(0xc9a227, 0.95, 0.2));
+  barrel.position.set(20, -90.5, -2); gTilt.add(barrel);
+  const aperture = new THREE.Mesh(new THREE.CircleGeometry(1.6, 16), new THREE.MeshBasicMaterial({ color: 0xff2020 }));
+  aperture.rotation.x = Math.PI / 2; aperture.position.set(20, -93.1, -2); gTilt.add(aperture);
+
+  // the laser, modulated at 7 Hz so the camera can tell its own dot apart
+  const beam = makeBeam(400); beam.position.set(20, -93, -2); gTilt.add(beam);
+
+  // ---- the beacon: ABS box, red LED under a ping-pong diffuser, a Nano ----
+  const beacon = loadUnit(loader, [
+    ['beacon_case', std(0xd9c3a6, 0.05, 0.7, { transparent: true, opacity: 0.6 })],
+    ['beacon_led', new THREE.MeshStandardMaterial({ color: 0xff4040, emissive: 0xff1a1a, emissiveIntensity: 1, roughness: 0.5 })],
+    ['beacon_nano', std(0x2b5c8a, 0.4, 0.5)],
+    ['beacon_switch', std(0x8892a0, 0.8, 0.35)],
+  ], [45, 30, 21], (name, m) => { if (name === 'beacon_led') beacon.userData.led = m; });
+  beacon.scale.setScalar(K); scene.add(beacon);
+  // glow at the diffuser, which sits ~45 mm in front of the box centre
+  const bGlow = glowSprite(0xff3030, 90); bGlow.position.set(0, 45, 0); beacon.add(bGlow);
+  const bLight = new THREE.PointLight(0xff3030, 0, 380); bLight.position.set(0, 60, 0); beacon.add(bLight);
+
+  // ---- the decoy: brighter, white, steady -- and ignored ----
+  const decoy = loadUnit(loader, [
+    ['decoy_case', std(0xc9cdd2, 0.05, 0.7, { transparent: true, opacity: 0.6 })],
+    ['decoy_led', new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1 })],
+    ['decoy_cells', std(0x6b7f94, 0.5, 0.5)],
+    ['decoy_switch', std(0x8892a0, 0.8, 0.35)],
+  ], [35, 27, 14]);
+  decoy.scale.setScalar(K); decoy.position.set(-300, -660, 150); scene.add(decoy);
+  const dGlow = glowSprite(0xffffff, 110); dGlow.position.set(0, 26, 0); decoy.add(dGlow);
+  const dLight = new THREE.PointLight(0xffffff, 3.5e4, 420); dLight.position.set(0, 60, 0); decoy.add(dLight);
+  const post = (x, y, z, h) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, h, 12), std(0x2a3446, 0.6, 0.4));
+    m.rotation.x = Math.PI / 2; m.position.set(x, y, h / 2); m.castShadow = true; scene.add(m); };
+  post(-300, -660, 150 - 30);
 
   // steppers: fast and fine
   const aim = aimer(THREE.MathUtils.degToRad(600), 14);
   return (t, dt) => {
-    const bx = 190 * Math.sin(2 * Math.PI * 0.08 * t), bz = 150 + 80 * Math.sin(2 * Math.PI * 0.16 * t + 0.5);
-    const by = -620;
-    bc.position.set(bx, by, bz);
+    const bx = 60 + 170 * Math.sin(2 * Math.PI * 0.08 * t), bz = 170 + 70 * Math.sin(2 * Math.PI * 0.16 * t + 0.5);
+    const by = -640;
+    beacon.position.set(bx, by, bz);
     const lit = (t * BLINK_HZ) % 1 < 0.5;
-    dome.material.color.setHex(lit ? 0xff3030 : 0x3a0c0c); glow.intensity = lit ? 3e4 : 0;
+    const led = beacon.userData.led;
+    if (led) { led.material.emissiveIntensity = lit ? 1.4 : 0.02; led.material.color.setHex(lit ? 0xff4040 : 0x4a1414); }
+    bGlow.visible = lit; bLight.intensity = lit ? 3e4 : 0;
     const P = TILT_PIVOT.clone().multiplyScalar(K).add(new THREE.Vector3(0, 0, LEG * K));
-    const tx = bx - P.x, ty = by + 20 - P.y, tz = bz - P.z;
+    const tx = bx - P.x, ty = by + 40 * K - P.y, tz = bz - P.z;
     const s = aim(Math.atan2(tx, -ty), -Math.atan2(tz, Math.hypot(tx, ty)), dt);
     gPan.rotation.z = s.pan; gTilt.rotation.x = s.tilt;
     beam.scale.y = Math.hypot(tx, ty, tz) / K / 400;
-    // Mk2's laser is modulated at 7 Hz so the camera can tell it from the beacon
     beam.material.opacity = (t * 7) % 1 < 0.5 ? 0.6 : 0.18;
     return { pan: s.pan, tilt: -s.tilt };
   };
@@ -254,7 +328,7 @@ function start() {
   // Both framed from the side, so the mechanism, the beam and the beacon
   // it is chasing are all in view.
   const v1 = makeViewer(c1, { cam: [820, -300, 520], target: [0, -120, 130] });
-  const v2 = makeViewer(c2, { cam: [860, 560, 640], target: [0, -250, 130], autoRotate: -0.5 });
+  const v2 = makeViewer(c2, { cam: [760, 520, 560], target: [-40, -290, 150], autoRotate: -0.45 });
   const step1 = buildMk1(v1), step2 = buildMk2(v2);
   const out1 = document.getElementById('rigMk1Read'), out2 = document.getElementById('rigMk2Read');
   const deg = r => (r * 180 / Math.PI).toFixed(1).padStart(6);

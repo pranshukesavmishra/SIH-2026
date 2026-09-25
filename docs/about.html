@@ -844,6 +844,17 @@ body {
   .step-metric-badge { align-self: flex-start; }
   .fullpage-container { padding-bottom: 70px; }
 }
+
+/* Organisations: ISRO (problem statement), SIH 2026, JEC. Official
+   colours, so each sits on its own white chip. */
+.org-strip { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 24px auto 22px; }
+.org-chip { background: #fff; border-radius: 8px; height: 46px; padding: 6px 12px; display: inline-flex; align-items: center; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,.35); }
+.org-chip img { height: 34px; width: auto; display: block; }
+.org-txt { font: 600 10px/1.55 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .14em; color: #8ea4c4; text-align: left; margin-left: 4px; }
+.org-txt b { color: #eaf4fd; font-weight: 700; }
+.org-mini { display: inline-flex; gap: 6px; vertical-align: middle; margin-right: 10px; }
+.org-mini .org-chip { height: 24px; padding: 3px 6px; border-radius: 5px; box-shadow: none; }
+.org-mini .org-chip img { height: 18px; }
 </style>
 </head>
 <body>
@@ -917,6 +928,11 @@ body {
     </div>
     <h1 class="hero-title">TEAM <span>ZERODRIFT</span></h1>
     <p class="hero-dept">Department of Computer Science &amp; Engineering · Jabalpur Engineering College (JEC)</p>
+    <div class="org-strip">
+      <span class="org-chip"><img src="brand/isro.png" alt="ISRO"></span>
+      <span class="org-chip"><img src="brand/sih2026.png" alt="Smart India Hackathon 2026"></span>
+      <span class="org-txt"><b>PS SIH26169</b><br>ISRO · FSOC PAT</span>
+    </div>
 
     <div class="team-layout">
       <!-- Top Row: Aryan Singh (Team Head) & Pranshu Mishra -->
@@ -924,12 +940,10 @@ body {
         <div class="member-card team-head-card">
           <span class="head-badge">★ TEAM HEAD</span>
           <div class="member-name">Aryan Singh</div>
-          <div class="member-college">Department of Computer Science &amp; Engineering<br>Jabalpur Engineering College</div>
         </div>
 
         <div class="member-card">
           <div class="member-name" style="margin-top: 14px;">Pranshu Mishra</div>
-          <div class="member-college">Department of Computer Science &amp; Engineering<br>Jabalpur Engineering College</div>
         </div>
       </div>
 
@@ -937,33 +951,29 @@ body {
       <div class="team-bottom-row">
         <div class="member-card">
           <div class="member-name">Aashna Verma</div>
-          <div class="member-college">Department of CSE · JEC</div>
         </div>
 
         <div class="member-card">
           <div class="member-name">Vivek Rajput</div>
-          <div class="member-college">Department of CSE · JEC</div>
         </div>
 
         <div class="member-card">
           <div class="member-name">Palak Uikey</div>
-          <div class="member-college">Department of CSE · JEC</div>
         </div>
 
         <div class="member-card">
           <div class="member-name">Shivanand Sahu</div>
-          <div class="member-college">Department of CSE · JEC</div>
         </div>
       </div>
 
       <!-- Faculty Mentor Banner -->
       <div class="mentor-banner">
-        <span>FACULTY MENTOR:</span> <b>Dr. Jitendra Singh Thakur</b> — Head of Department, Computer Science &amp; Engineering, Jabalpur Engineering College.
+        <span>FACULTY MENTOR:</span> <b>Dr. Jitendra Singh Thakur</b> — HoD, CSE · JEC
       </div>
     </div>
 
     <button class="scroll-nav-btn" data-target="#sec-architecture">
-      SYSTEM CAPABILITIES &amp; ARCHITECTURE
+      CAPABILITIES
       <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
     </button>
   </section>
@@ -971,8 +981,8 @@ body {
   <!-- SECTION 2: SYSTEM CAPABILITIES & ARCHITECTURE (VERTICAL CONNECTED LINE FLOW) -->
   <section class="section-view" id="sec-architecture">
     <div class="points-section-header">
-      <div class="section-tag">ENGINE OVERVIEW &amp; METRICS</div>
-      <h2 class="section-title">Core Capabilities &amp; Validated Architecture</h2>
+      <div class="section-tag">ENGINE</div>
+      <h2 class="section-title">What It Does</h2>
     </div>
 
     <!-- Vertical Line Connected Points Graphic -->
@@ -986,9 +996,9 @@ body {
         <div class="step-num">01</div>
         <div class="step-body">
           <h4>Sub-Pixel Target Acquisition</h4>
-          <p>Locks from a cold start in about a second.</p>
+          <p>Cold start to lock, no operator input.</p>
         </div>
-        <div class="step-metric-badge">1.1 s Acquisition</div>
+        <div class="step-metric-badge">1.27 s Acquisition</div>
       </div>
 
       <div class="flow-step">
@@ -1008,7 +1018,7 @@ body {
           <h4>Adaptive IMM State Estimation</h4>
           <p>Two-model Kalman filter follows fast, turning targets.</p>
         </div>
-        <div class="step-metric-badge">98.8% Lock Retention</div>
+        <div class="step-metric-badge">98.3% Lock Retention</div>
       </div>
 
       <div class="flow-step">
@@ -1032,16 +1042,9 @@ body {
       </div>
     </div>
 
-    <!-- Center Button linking to Console -->
-    <div class="center-cta-wrap">
-      <a class="btn-console-main" href="console.html">
-        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        OPEN THE REPLAY CONSOLE
-      </a>
-    </div>
 
     <button class="scroll-nav-btn" data-target="#sec-replay">
-      VIEW LIVE TELEMETRY &amp; REPLAY
+      REPLAY
       <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
     </button>
   </section>
@@ -1049,8 +1052,8 @@ body {
   <!-- SECTION 3: INSTRUMENTATION & LIVE REPLAY -->
   <section class="section-view" id="sec-replay">
     <div class="points-section-header">
-      <div class="section-tag">HARDWARE-IN-THE-LOOP INSTRUMENTATION</div>
-      <h2 class="section-title">Telemetry &amp; Live Tracking Replay</h2>
+      <div class="section-tag">INSTRUMENTATION</div>
+      <h2 class="section-title">Telemetry &amp; Replay</h2>
     </div>
 
     <div class="instrumentation-grid">
@@ -1125,7 +1128,7 @@ body {
 </nav>
 
 <footer class="page-footer">
-  ZeroDrift · Jabalpur Engineering College · Smart India Hackathon 2026 — 
+  <span class="org-mini"><span class="org-chip"><img src="brand/isro.png" alt="ISRO"></span><span class="org-chip"><img src="brand/sih2026.png" alt="SIH 2026"></span></span>ZeroDrift · Jabalpur Engineering College · Smart India Hackathon 2026 — 
   <a href="https://github.com/pranshukesavmishra/SIH-2026" target="_blank" rel="noopener">github.com/pranshukesavmishra/SIH-2026</a>
 </footer>
 

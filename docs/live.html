@@ -142,6 +142,17 @@ details[open] summary::before { content: '− '; }
 .video-overlay .pending b { display: block; color: #fff; font-size: 15px; letter-spacing: .14em; margin-bottom: 10px; }
 .video-overlay.missing video { display: none; }
 .video-overlay.missing .pending { display: block; }
+
+/* Organisations: ISRO (problem statement), SIH 2026, JEC. Official
+   colours, so each sits on its own white chip. */
+.org-strip { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 24px auto 22px; }
+.org-chip { background: #fff; border-radius: 8px; height: 46px; padding: 6px 12px; display: inline-flex; align-items: center; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,.35); }
+.org-chip img { height: 34px; width: auto; display: block; }
+.org-txt { font: 600 10px/1.55 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .14em; color: #8ea4c4; text-align: left; margin-left: 4px; }
+.org-txt b { color: #eaf4fd; font-weight: 700; }
+.org-mini { display: inline-flex; gap: 6px; vertical-align: middle; margin-right: 10px; }
+.org-mini .org-chip { height: 24px; padding: 3px 6px; border-radius: 5px; box-shadow: none; }
+.org-mini .org-chip img { height: 18px; }
 </style>
 </head>
 <body>
@@ -169,8 +180,8 @@ details[open] summary::before { content: '− '; }
 <div class="wrap">
   <div class="eyebrow">LIVE DEMO · RUNS ON YOUR CAMERA</div>
   <h1>Locks onto the blink.<br>Ignores everything else.</h1>
-  <p class="lede">Show the camera a light blinking at the set rate. Lamps, screens, faces and
-    lights blinking at the wrong rate are rejected.</p>
+  <p class="lede">Show it a light blinking at the set rate. Lamps, screens, faces and wrong-rate
+    blinkers are ignored.</p>
 
   <div class="stage">
     <div class="viewport" id="viewport">
@@ -284,7 +295,12 @@ details[open] summary::before { content: '− '; }
     <div class="step"><div class="step-n">02 · BEACON</div>
       <p>On a phone, open this page and press <b>USE AS BEACON</b>. Any 4&nbsp;Hz strobe works too.</p></div>
     <div class="step"><div class="step-n">03 · LOCK</div>
-      <p>Hold it in view. It turns <b style="color:var(--green)">LOCKED</b> in under a second. Move it anywhere.</p></div>
+      <p>Hold it in view: <b style="color:var(--green)">LOCKED</b> in about a second. Move it anywhere. Bright room? Lower <b>EXPOSURE</b>.</p></div>
+  </div>
+  <div class="org-strip">
+    <span class="org-chip"><img src="brand/isro.png" alt="ISRO"></span>
+    <span class="org-chip"><img src="brand/sih2026.png" alt="Smart India Hackathon 2026"></span>
+    <span class="org-txt"><b>PS SIH26169</b><br>JABALPUR ENGINEERING COLLEGE</span>
   </div>
 </div>
 

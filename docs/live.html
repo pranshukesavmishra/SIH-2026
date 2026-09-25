@@ -73,6 +73,7 @@ h1 { font-size: clamp(26px, 4vw, 38px); line-height: 1.12; letter-spacing: -.02e
 .btn.ghost { border-color: var(--edge); background: rgba(255,255,255,.03); color: var(--ink-secondary); }
 .btn.ghost:hover:not(:disabled) { border-color: var(--ink-muted); background: rgba(255,255,255,.06); box-shadow: none; }
 .btn.ghost.good { border-color: rgba(59,214,140,.45); color: var(--green); }
+.btn.ghost.on { border-color: rgba(79,199,234,.55); color: var(--cyan); background: rgba(79,199,234,.08); }
 .btn + .btn, .btn-row + .btn, .btn + .btn-row { margin-top: 9px; }
 .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
 .btn-row .btn { margin: 0; padding: 12px 8px; }
@@ -207,6 +208,8 @@ details[open] summary::before { content: '− '; }
         </div>
         <button class="btn ghost" id="rigBtn" title="Chrome or Edge only">
           <svg viewBox="0 0 24 24"><path d="M15 7v4h1v2h-3V5h2l-3-4-3 4h2v8H8v-2.07A1.99 1.99 0 0 0 9 9.2a2 2 0 1 0-3 1.73V13a2 2 0 0 0 2 2h3v3.05A2.5 2.5 0 1 0 13 18.05V15h3a2 2 0 0 0 2-2v-2h1V7h-4z"/></svg>CONNECT RIG</button>
+        <button class="btn ghost" id="usbCamBtn" title="Show and track from the MK2's USB camera">
+          <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg><span id="usbCamTxt">MK2 CAMERA (USB)</span></button>
         <button class="btn ghost" id="testRigBtn" disabled>
           <svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>TEST MOTION</button>
         <button class="btn ghost" id="beaconBtn">
@@ -326,7 +329,7 @@ details[open] summary::before { content: '− '; }
 const $ = id => document.getElementById(id);
 const els = {
   view: $('view'), placeholder: $('placeholder'), start: $('startBtn'),
-  mk1: $('mk1Btn'), mk2: $('mk2Btn'), beacon: $('beaconBtn'), rig: $('rigBtn'),
+  mk1: $('mk1Btn'), mk2: $('mk2Btn'), beacon: $('beaconBtn'), rig: $('rigBtn'), usbCam: $('usbCamBtn'), usbCamTxt: $('usbCamTxt'),
   chip: $('stateChip'), chipText: $('stateText'),
   freq: $('rFreq'), off: $('rOff'), spd: $('rSpd'), fps: $('rFps'), ms: $('rMs'), rigState: $('rRig'),
   hz: $('hzSel'), note: $('noteSlot'),
@@ -439,9 +442,10 @@ document.addEventListener('fullscreenchange', () => {
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && els.videoOverlay.classList.contains('on')) closeDemoVideo(); });
 
 /* ---------------- camera ---------------- */
-// The display is mirrored so a hand moving left moves left on screen.
-// Tracking and every servo command stay in true camera coordinates.
-const MIRROR_VIEW = true;
+// The laptop camera is shown mirrored, so a hand moving left moves left on
+// screen. The MK2's USB camera looks OUT along the laser, so it is shown as
+// it sees. Tracking and every servo command stay in true camera coordinates.
+let MIRROR_VIEW = true, camKind = 'laptop', camLabel = '';
 let video = null, stream = null, work, workCtx, outCtx;
 let lastVT = -1, lastSig = 0, procMs = 0;
 
@@ -454,7 +458,7 @@ async function start() {
       video: want ? { ...base, deviceId: { exact: want } } : base, audio: false });
   } catch (e) {
     // The remembered camera is unplugged: fall back to any camera.
-    try { if (!want) throw e; store.set('zd_cam', ''); stream = await navigator.mediaDevices.getUserMedia({ video: base, audio: false }); }
+    try { if (!want) throw e; store.set('zd_cam', ''); store.set('zd_camkind', 'laptop'); stream = await navigator.mediaDevices.getUserMedia({ video: base, audio: false }); }
     catch (e2) {
       els.start.disabled = false;
       note('Camera blocked (<b>' + e2.name + '</b>). Allow camera access and close other apps using it.', true);
@@ -466,6 +470,12 @@ async function start() {
   await video.play();
   await pinExposure();
   await listCameras();
+  const trk = stream.getVideoTracks()[0];
+  camLabel = (trk && trk.label) || '';
+  camKind = store.get('zd_camkind', 'laptop') === 'usb' && store.get('zd_cam', '') ? 'usb' : 'laptop';
+  MIRROR_VIEW = camKind === 'laptop';
+  els.usbCamTxt.textContent = camKind === 'usb' ? 'LAPTOP CAMERA' : 'MK2 CAMERA (USB)';
+  els.usbCam.classList.toggle('on', camKind === 'usb');
   const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
   // Processed at up to 640 wide: plenty for a beacon, and it keeps every
   // frame inside a few milliseconds.
@@ -495,8 +505,55 @@ async function listCameras() {
 }
 els.camSel.onchange = async () => {
   store.set('zd_cam', els.camSel.value);
+  const opt = els.camSel.selectedOptions[0];
+  store.set('zd_camkind', opt && !isBuiltIn(opt.textContent) ? 'usb' : 'laptop');
   if (stream) { stop(true); await start(); }
 };
+
+/* MK2 CAMERA: switch the view -- and the tracker -- to the USB webcam on the
+   gimbal instead of the laptop's own camera, and back. Built-in cameras are
+   told apart by name (FaceTime, Integrated, iPhone Continuity...). */
+const BUILTIN_CAM = /facetime|built.?in|integrated|internal|isight|front|rear|back camera|iphone|continuity|desk view|virtual|obs|snap|manycam|droidcam/i;
+function isBuiltIn(label) { return !label || BUILTIN_CAM.test(label); }
+async function videoInputs() {
+  let devs = [];
+  try { devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput'); } catch (e) {}
+  if (devs.length && !devs.some(d => d.label)) {
+    // Names are hidden until camera permission is granted once.
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      s.getTracks().forEach(t => t.stop());
+      devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+    } catch (e) {}
+  }
+  return devs;
+}
+async function toggleUsbCam() {
+  if (!navigator.mediaDevices) return;
+  els.usbCam.disabled = true;
+  try {
+    const devs = await videoInputs();
+    const toUsb = !(camKind === 'usb' && stream);
+    // Always a camera other than the one in use (or, before START, other
+    // than the default one); names only decide which, when there are several.
+    const cur = stream && stream.getVideoTracks()[0] ? stream.getVideoTracks()[0].getSettings().deviceId
+              : (devs[0] && devs[0].deviceId);
+    const others = devs.filter(d => d.deviceId !== cur);
+    const pick = toUsb ? (others.find(d => !isBuiltIn(d.label)) || others[0])
+                       : (others.find(d => isBuiltIn(d.label)) || others[0]);
+    if (!pick) {
+      note(toUsb ? 'No second camera found. Plug the MK2 camera into a USB port, then press <b>MK2 CAMERA</b> again.'
+                 : 'Only one camera is connected.', true);
+      return;
+    }
+    store.set('zd_cam', pick.deviceId);
+    store.set('zd_camkind', toUsb ? 'usb' : 'laptop');
+    if (stream) stop(true);
+    await start();
+    if (camKind === 'usb') note('Showing the MK2 camera: <b>' + camLabel.replace(/</g, '') + '</b>. Tracking runs on this view.');
+  } finally { els.usbCam.disabled = false; }
+}
+els.usbCam.onclick = toggleUsbCam;
 
 // Auto-exposure chasing the blink makes the whole frame pulse with it. The
 // tracker copes, but where the browser allows it, stop it at the source.
@@ -568,11 +625,15 @@ function stop(switching) {
    not to paint, which silently freezes tracking. Frames the camera has not
    yet replaced are drawn but not re-processed, so every processed frame is
    a real, new one. */
-function pump() {
-  if (!stream) return;
+// One loop per camera session: switching cameras must not leave the old
+// loop running alongside the new one.
+let pumpGen = 0;
+function pump(gen) {
+  if (gen === undefined) gen = ++pumpGen;
+  if (!stream || gen !== pumpGen) return;
   const t0 = performance.now();
   try { loop(); } catch (e) { console.error('loop', e); }
-  setTimeout(pump, Math.max(4, 16 - (performance.now() - t0)));
+  setTimeout(() => pump(gen), Math.max(4, 16 - (performance.now() - t0)));
 }
 
 function loop() {
@@ -720,7 +781,7 @@ function draw() {
   const st = tracker.state;
   const sc = st === 'LOCKED' ? COL.lock : st === 'COASTING' || st === 'REACQUIRING' ? COL.coast : st === 'CONFIRMING' ? COL.cand : '#8EA4C4';
   c.font = `600 ${Math.round(11 * u)}px ui-monospace, monospace`;
-  const txt = `${st}   ${(tracker.fps || 0).toFixed(0)} FPS`;
+  const txt = `${st}   ${(tracker.fps || 0).toFixed(0)} FPS   ${camKind === 'usb' ? 'MK2 CAM' : 'LAPTOP CAM'}`;
   const w = c.measureText(txt).width + 30 * u, h = 24 * u;
   c.fillStyle = 'rgba(4,9,21,0.72)'; c.fillRect(10 * u, 10 * u, w, h);
   c.fillStyle = sc; c.beginPath(); c.arc(20 * u, 22 * u, 3.5 * u, 0, 2 * Math.PI); c.fill();

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ZeroDrift ZD-1 — FSOC Coarse Alignment Console</title>
-<link rel="icon" type="image/png" href="media/logo_emblem.png">
+<link rel="icon" type="image/png" href="brand/zerodrift_mark.png">
 <style>
 :root {
   --bg-deep: #03070D;
@@ -936,6 +936,10 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
 .org-mini { display: inline-flex; gap: 6px; vertical-align: middle; margin-right: 10px; }
 .org-mini .org-chip { height: 24px; padding: 3px 6px; border-radius: 5px; box-shadow: none; }
 .org-mini .org-chip img { height: 18px; }
+
+/* Brand logo (transparent PNG, drawn for a dark background). */
+.brand-logo-full { height: 42px; width: auto; display: block; margin: -4px 0; }
+@media (max-width: 720px) { .brand-logo-full { height: 42px; } }
 </style>
 </head>
 <body>
@@ -947,11 +951,7 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
 
 <div class="top">
   <a href="index.html" class="brand-group">
-    <img src="media/logo_emblem.png" alt="ZeroDrift" class="brand-logo-img">
-    <div class="brand-text">
-      <b>ZERO<span>DRIFT</span> <span class="zd-id">· ZD-1</span></b>
-      <small>FSOC-PAT COARSE ALIGNMENT CONSOLE · ISRO SIH26169</small>
-    </div>
+    <img src="brand/zerodrift_logo.png" alt="ZeroDrift" class="brand-logo-full">
   </a>
 
   <div class="nav-links">

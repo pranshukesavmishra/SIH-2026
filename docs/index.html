@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ZeroDrift — FSOC-PAT Coarse Alignment System · ISRO SIH26169</title>
-<link rel="icon" type="image/png" href="media/logo_emblem.png">
+<link rel="icon" type="image/png" href="brand/zerodrift_mark.png">
 <style>
 :root {
   --bg-deep: #02050E;
@@ -93,7 +93,7 @@ body {
   height: 100vh;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.72;
+  opacity: 0.55;
 }
 
 /* Sticky Top Navigation Bar */
@@ -791,6 +791,12 @@ body {
 .org-mini { display: inline-flex; gap: 6px; vertical-align: middle; margin-right: 10px; }
 .org-mini .org-chip { height: 24px; padding: 3px 6px; border-radius: 5px; box-shadow: none; }
 .org-mini .org-chip img { height: 18px; }
+
+/* Brand logo (transparent PNG, drawn for a dark background). */
+.brand-logo-full { height: 52px; width: auto; display: block; margin: -6px 0; }
+@media (max-width: 720px) { .brand-logo-full { height: 42px; } }
+.hero-logo { margin: 0 0 12px; line-height: 0; }
+.hero-logo img { width: min(460px, 82vw); height: auto; filter: drop-shadow(0 0 22px rgba(79,199,234,.35)); animation: logoFloat 4s ease-in-out infinite alternate; }
 </style>
 </head>
 <body>
@@ -822,11 +828,7 @@ body {
 <!-- Sticky Top Navigation -->
 <header class="top-nav">
   <a href="index.html" class="brand-group">
-    <img src="media/logo_emblem.png" alt="ZeroDrift Logo" class="brand-logo-img">
-    <div class="brand-text">
-      <b>ZERO<span>DRIFT</span></b>
-      <small>FSOC COARSE ALIGNMENT · ISRO SIH26169</small>
-    </div>
+    <img src="brand/zerodrift_logo.png" alt="ZeroDrift" class="brand-logo-full">
   </a>
 
   <nav class="nav-links">
@@ -858,11 +860,7 @@ body {
 <div class="fullpage-container">
   <!-- SECTION 1: HERO SHOWCASE -->
   <section class="section-view" id="sec-hero">
-    <div class="hero-emblem-wrap">
-      <img src="media/logo_emblem.png" alt="ZeroDrift Emblem" class="hero-emblem">
-    </div>
-
-    <h1 class="hero-title">ZERO<span>DRIFT</span></h1>
+    <h1 class="hero-logo"><img src="brand/zerodrift_logo.png" alt="ZeroDrift"></h1>
     
     <div class="mission-badge">
       <span class="badge-dot"></span>

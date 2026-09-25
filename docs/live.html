@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ZeroDrift — Live Camera Demo · ISRO SIH26169</title>
-<link rel="icon" type="image/png" href="media/logo_emblem.png">
+<link rel="icon" type="image/png" href="brand/zerodrift_mark.png">
 <style>
 :root {
   --bg-deep: #02050E;
@@ -154,17 +154,17 @@ details[open] summary::before { content: '− '; }
 .org-mini { display: inline-flex; gap: 6px; vertical-align: middle; margin-right: 10px; }
 .org-mini .org-chip { height: 24px; padding: 3px 6px; border-radius: 5px; box-shadow: none; }
 .org-mini .org-chip img { height: 18px; }
+
+/* Brand logo (transparent PNG, drawn for a dark background). */
+.brand-logo-full { height: 52px; width: auto; display: block; margin: -6px 0; }
+@media (max-width: 720px) { .brand-logo-full { height: 42px; } }
 </style>
 </head>
 <body>
 
 <header class="top-nav">
   <a href="index.html" class="brand-group">
-    <img src="media/logo_emblem.png" alt="ZeroDrift Logo" class="brand-logo-img">
-    <div class="brand-text">
-      <b>ZERO<span>DRIFT</span></b>
-      <small>FSOC COARSE ALIGNMENT · ISRO SIH26169</small>
-    </div>
+    <img src="brand/zerodrift_logo.png" alt="ZeroDrift" class="brand-logo-full">
   </a>
   <nav class="nav-links">
     <a href="index.html" class="nav-link">
@@ -243,6 +243,8 @@ details[open] summary::before { content: '− '; }
             <option value="6">6 Hz</option>
           </select>
         </div>
+        <button class="btn ghost" id="recBtn" style="margin-top:12px" title="Saves 15 s of the raw camera feed for offline tuning">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg><span id="recTxt">RECORD TEST CLIP</span></button>
         <details>
           <summary>ADVANCED</summary>
           <div class="field"><div class="lbl"><span>MIN BRIGHTNESS</span><b id="brightVal">150</b></div>
@@ -332,7 +334,7 @@ const els = {
   mk1: $('mk1Btn'), mk2: $('mk2Btn'), beacon: $('beaconBtn'), rig: $('rigBtn'), usbCam: $('usbCamBtn'), usbCamTxt: $('usbCamTxt'),
   chip: $('stateChip'), chipText: $('stateText'),
   freq: $('rFreq'), off: $('rOff'), spd: $('rSpd'), fps: $('rFps'), ms: $('rMs'), rigState: $('rRig'),
-  hz: $('hzSel'), note: $('noteSlot'),
+  hz: $('hzSel'), note: $('noteSlot'), rec: $('recBtn'), recTxt: $('recTxt'),
   brightSlider: $('brightSlider'), brightVal: $('brightVal'), depthSlider: $('depthSlider'), depthVal: $('depthVal'),
   engineBtn: $('engineBtn'), calCard: $('calCard'), testRig: $('testRigBtn'), centre: $('centreBtn'),
   invPan: $('invPan'), invTilt: $('invTilt'), swapAxes: $('swapAxes'),
@@ -365,6 +367,45 @@ els.depthSlider.value = tracker.o.minDepth; els.depthVal.textContent = tracker.o
 els.brightSlider.oninput = () => { const v = parseFloat(els.brightSlider.value); tracker.setOption('minBright', v); els.brightVal.textContent = v.toFixed(0); store.set('zd_minBright2', v); };
 els.depthSlider.oninput = () => { const v = parseFloat(els.depthSlider.value); tracker.setOption('minDepth', v); els.depthVal.textContent = v.toFixed(2); store.set('zd_minDepth2', v); };
 els.hz.onchange = () => { tracker.setOption('targetHz', parseFloat(els.hz.value)); tracker.reset(); };
+
+/* RECORD TEST CLIP: 15 s of the raw camera feed (no overlay), saved as a
+   file. Replayed offline through this exact tracker
+   (tools/sim/replay_clip.mjs), it shows every miss on a real camera in a
+   real room -- what a simulated room cannot. */
+let recorder = null;
+els.rec.onclick = () => {
+  if (recorder) { recorder.stop(); return; }
+  if (!stream) { note('Press <b>START CAMERA</b> first, then record.', true); return; }
+  if (typeof MediaRecorder === 'undefined') { note('This browser cannot record video. Use Chrome or Edge.', true); return; }
+  const types = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
+  const type = types.find(t => MediaRecorder.isTypeSupported(t)) || '';
+  const chunks = [];
+  try { recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 12e6 }); }
+  catch (e) { note('Recording failed: ' + e.message, true); recorder = null; return; }
+  recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+  const t0 = performance.now();
+  const tick = setInterval(() => {
+    const left = Math.max(0, 15 - (performance.now() - t0) / 1000);
+    els.recTxt.textContent = 'RECORDING… ' + left.toFixed(0) + ' s';
+    if (left <= 0 && recorder) recorder.stop();
+  }, 250);
+  recorder.onstop = () => {
+    clearInterval(tick);
+    const blob = new Blob(chunks, { type: recorder.mimeType || 'video/webm' });
+    const d = new Date(), pad = n => String(n).padStart(2, '0');
+    const name = `zerodrift_clip_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}` +
+                 `_${els.hz.value}hz_${camKind}.${(blob.type || '').includes('mp4') ? 'mp4' : 'webm'}`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+    recorder = null;
+    els.recTxt.textContent = 'RECORD TEST CLIP'; els.rec.classList.remove('on');
+    note('Saved <b>' + name + '</b> (' + (blob.size / 1e6).toFixed(1) + ' MB) to Downloads.');
+  };
+  recorder.start(500);
+  els.rec.classList.add('on');
+  note('Recording 15 s. Move the beacon the way it fails. Press again to stop early.');
+};
 
 /* ---------------- rig calibration ----------------
    A fact about each mount, so persisted -- and kept separately per rig:

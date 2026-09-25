@@ -24,7 +24,7 @@ function rng(seed) {
 function gauss(r) { return Math.sqrt(-2 * Math.log(r() + 1e-12)) * Math.cos(2 * Math.PI * r()); }
 
 // ---- the static room ------------------------------------------------------
-function buildRoom(r, lit) {
+function buildRoom(r, lit, real) {
   const base = new Float32Array(W * H);
   // A lit room: walls at ~190 on the camera, a window near white, a pale
   // table -- the conditions where the torch barely stands above the scene.
@@ -39,6 +39,15 @@ function buildRoom(r, lit) {
   rect(470, 330, 150, 120, lit ? 228 : 150);    // table top, pale
   rect(250, 380, 120, 90, lit ? 205 : 120);
   rect(40, 30, 150, 110, lit ? 252 : 236);      // window: large, bright, steady
+  if (real) {
+    // A real room is busy: shelves of bottles, posters, a cupboard -- small
+    // bright and dark patches everywhere, which a moving person uncovers.
+    for (let i = 0; i < 60; i++) {
+      const w = 5 + 30 * r(), h = 5 + 45 * r();
+      rect(Math.round(200 + 430 * r()), Math.round(20 + 300 * r()), Math.round(w), Math.round(h),
+           lit ? 90 + 165 * r() : 25 + 190 * r());
+    }
+  }
   return base;
 }
 
@@ -116,11 +125,23 @@ const SCEN = [
   { name: 'lit_no_beacon',   path: null,          dur: 12, lit: true, blinkers: true },
   { name: 'bright_no_beacon',path: null,          dur: 12, lit: 2, blinkers: true },
   { name: 'blinkers_only',   path: null,          dur: 12, blinkers: true },
+  // Real-room scenes: busy shelves, a moving operator, webcam noise. The
+  // no-beacon ones gate (a lock on a face or a shelf is the failure seen on
+  // a real webcam); following the beacon through that much clutter at
+  // jerky-hand speed is reported, not gated.
+  { name: 'real_dark_hand',  path: jerky(61),     dur: 14, real: true, stretch: true },
+  { name: 'real_lit_hand',   path: jerky(62),     dur: 14, real: true, lit: true, stretch: true },
+  { name: 'real_bright_hand',path: jerky(63),     dur: 14, real: true, lit: 2, stretch: true },
+  { name: 'real_dark_none',  path: null,          dur: 40, real: true },
+  { name: 'real_lit_none',   path: null,          dur: 40, real: true, lit: true },
+  { name: 'real_bright_none',path: null,          dur: 40, real: true, lit: 2 },
 ];
 
 function run(sc, verbose) {
   const r = rng(12345 + sc.name.length * 77 + 1000 * (+process.env.SEED || 0));
-  const room = buildRoom(r, sc.lit);
+  const room = buildRoom(r, sc.lit, sc.real);
+  const head = sc.real ? jerky(900 + (+process.env.SEED || 0)) : null;
+  const wave = sc.real && !sc.path ? jerky(500 + (+process.env.SEED || 0)) : null;
   const img = new Float32Array(W * H);
   const rgba = new Uint8ClampedArray(W * H * 4);
   const tk = new Tracker({ targetHz: 4 });
@@ -146,7 +167,33 @@ function run(sc, verbose) {
       if (((t * 7.5) % 1) < 0.5) disc(img, 600, 200, 5, 300, 4);
     }
     // a person drifting across: large, mid-bright, moving
-    disc(img, 120 + 60 * Math.sin(t * 0.6), 250, 38, 75, 8);
+    if (!sc.real) disc(img, 120 + 60 * Math.sin(t * 0.6), 250, 38, 75, 8);
+    else {
+      // The operator: head and shoulders that sway and jerk, a face with a
+      // specular shine, dark shirt, blue headphones -- sitting in front of
+      // the busy shelves, covering and uncovering them.
+      const [hx0, hy0] = head(t);
+      const px = 250 + 0.25 * (hx0 - 320), py = 290 + 0.15 * (hy0 - 240);
+      for (let y = Math.round(py + 60); y < H; y++) for (let x = Math.round(px - 150); x < Math.round(px + 150); x++)
+        if (x >= 0 && x < W) img[y * W + x] = 38;
+      const skin = sc.lit === 2 ? 185 : sc.lit ? 160 : 95;
+      for (let y = Math.round(py - 60); y < Math.round(py + 60); y++) for (let x = Math.round(px - 45); x < Math.round(px + 45); x++) {
+        if (x < 0 || x >= W || y < 0 || y >= H) continue;
+        const e = ((x - px) / 45) ** 2 + ((y - py) / 60) ** 2;
+        if (e < 1) img[y * W + x] = y < py - 30 ? 30 : skin;           // hair on top
+      }
+      disc(img, px - 50, py, 14, 0, 0); box(img, px - 50, py, 22, 40, 60); box(img, px + 50, py, 22, 40, 60);
+      disc(img, px + 8 + 6 * Math.sin(t * 1.3), py - 18, 3, 70, 2);    // shine on the forehead
+      disc(img, px + 3, py + 8, 2, 50, 1.5);                              // and the nose
+    }
+    // A phone waved around with its light OFF: a dark body sweeping across
+    // bright things, which "appear" as it passes.
+    if (wave) {
+      const [wx, wy] = wave(t);
+      for (let y = Math.max(0, Math.round(wy - 30)); y < Math.min(H, Math.round(wy + 30)); y++)
+        for (let x = Math.max(0, Math.round(wx - 15)); x < Math.min(W, Math.round(wx + 15)); x++) img[y * W + x] = 30;
+      box(img, wx, wy + 45, 26, 40, sc.lit ? 140 : 80);                  // the hand
+    }
 
     let truth = null;
     if (sc.path) {
@@ -167,16 +214,29 @@ function run(sc, verbose) {
         if (sc.turning) amp = 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(2 * Math.PI * 0.4 * ts));
         // A phone screen at full white reads ~220 on a webcam across a room.
         if (sc.screen) box(img, bx, by, 18, 30, 190 * amp / sub);
+        else if (sc.real) { disc(img, bx, by, 7, 450 * amp / sub, 0); disc(img, bx, by, 8, 160 * amp / sub, 12); }
         else { disc(img, bx, by, 6, 400 * amp / sub, 0); disc(img, bx, by, 6, 110 * amp / sub, 9); }
       }
       truth = sc.path(t - exp / 2);
       const lit = ((t * hz + phase0) % 1) < 0.5;
       agc += ((lit ? 0.9 : 1.0) - agc) * 0.35;      // auto-exposure chasing the blink
     }
-    const flick = 1 + 0.02 * Math.sin(2 * Math.PI * 10 * t);   // mains alias
-    for (let i = 0, q = 0; i < W * H; i++, q += 4) {
-      const v = Math.min(255, Math.max(0, img[i] * agc * flick + 4 * gauss(r)));
-      rgba[q] = rgba[q + 1] = rgba[q + 2] = v; rgba[q + 3] = 255;
+    let flick = 1 + 0.02 * Math.sin(2 * Math.PI * 10 * t);   // mains alias
+    if (!sc.real) {
+      for (let i = 0, q = 0; i < W * H; i++, q += 4) {
+        const v = Math.min(255, Math.max(0, img[i] * agc * flick + 4 * gauss(r)));
+        rgba[q] = rgba[q + 1] = rgba[q + 2] = v; rgba[q + 3] = 255;
+      }
+    } else {
+      // A laptop webcam: more sensor noise, exposure that jitters frame to
+      // frame, and compression blocks that shift level independently.
+      flick *= 1 + 0.03 * gauss(r);
+      const bo = new Float32Array((W / 8) * (H / 8));
+      for (let i = 0; i < bo.length; i++) bo[i] = 3 * gauss(r);
+      for (let y = 0, i = 0, q = 0; y < H; y++) for (let x = 0; x < W; x++, i++, q += 4) {
+        const v = Math.min(255, Math.max(0, img[i] * agc * flick + 6 * gauss(r) + bo[(y >> 3) * (W / 8) + (x >> 3)]));
+        rgba[q] = rgba[q + 1] = rgba[q + 2] = v; rgba[q + 3] = 255;
+      }
     }
     tk.process(rgba, W, H, t, false);
 

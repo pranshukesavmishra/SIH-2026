@@ -58,6 +58,7 @@
     this.w = 0; this.h = 0;
     this.target = null; this.candidate = null;
     this.statics = [];         // lights proven steady by the lock itself
+    this.events = []; this.hot = [];
   };
 
   Tracker.prototype.setOption = function (k, v) { this.o[k] = v; };
@@ -138,7 +139,13 @@
       for (let x = 1; x < w - 1; x += 2) {
         const i = y * w + x, v = Y[i];
         if (v < o.minBright) continue;
-        if (v < this.bbg[by * bw + ((x / B) | 0)] + o.seedContrast) continue;
+        const bgs = this.bbg[by * bw + ((x / B) | 0)];
+        if (v < bgs + this._seedBar(bgs)) continue;
+        // ...and above its OWN surroundings. The block background is the
+        // darkest nearby area, which in a lit room makes every patch of
+        // white wall look like a light.
+        const rb = this._ringBg(x, y);
+        if (v < rb + this._seedBar(rb)) continue;
         if (ns < seeds.length) { seeds[ns++] = i; cnt[v]++; }
       }
     }
@@ -151,8 +158,10 @@
       const i = order[s];
       if (mark[i] === stamp) continue;
       const y = (i / w) | 0, x = i - y * w, v = Y[i];
-      const bg = this.bbg[((y / B) | 0) * bw + ((x / B) | 0)];
-      const grow = Math.max(bg + 0.6 * o.seedContrast, 0.8 * o.minBright, v - 0.5 * (v - bg));
+      // Grown against the light's own surroundings, so a torch in front of
+      // a white wall stays the size of the torch instead of flooding the wall.
+      const bg = Math.max(this.bbg[((y / B) | 0) * bw + ((x / B) | 0)], this._ringBg(x, y));
+      const grow = Math.max(bg + 0.6 * this._seedBar(bg), 0.8 * o.minBright, v - 0.5 * (v - bg));
       const me = blobs.length;
       let sp = 0; stack[sp++] = i; mark[i] = stamp; owner[i] = me;
       let area = 0, peak = 0, peakI = i, x0 = x, x1 = x, y0 = y, y1 = y, touches = -1;
@@ -223,15 +232,86 @@
     return m;
   };
 
+  /* Mean luma over a small disc: the level AT the light, not the brightest
+     thing near it. In a lit room the torch's dark phase is the phone body
+     (dark) with a white wall a few pixels away; a max over the
+     neighbourhood reads the wall and makes the blink look shallow -- the
+     reason tracking was weaker in daylight than in the dark. */
+  Tracker.prototype._meanNear = function (x, y, r) {
+    const { w, h, Y } = this;
+    const xi = Math.round(x), yi = Math.round(y), R = Math.max(1, Math.round(r)), r2 = R * R;
+    let s = 0, n = 0;
+    for (let yy = Math.max(0, yi - R); yy <= Math.min(h - 1, yi + R); yy++) {
+      const row = yy * w, dy = yy - yi;
+      for (let xx = Math.max(0, xi - R); xx <= Math.min(w - 1, xi + R); xx++) {
+        const dx = xx - xi; if (dx * dx + dy * dy > r2) continue;
+        s += Y[row + xx]; n++;
+      }
+    }
+    return n ? s / n : 0;
+  };
+
+  /* Background right around a point: the median of eight samples on a ring,
+     taken at two radii and the darker kept -- so a close, large torch whose
+     own glow fills the inner ring still gets a real background. */
+  Tracker.prototype._ringBg = function (x, y, radius) {
+    const { w, h, Y } = this, k = this._k();
+    const ring = R => {
+      const v = [];
+      for (let a = 0; a < 8; a++) {
+        const xx = Math.round(x + R * Math.cos(a * Math.PI / 4)), yy = Math.round(y + R * Math.sin(a * Math.PI / 4));
+        if (xx >= 0 && yy >= 0 && xx < w && yy < h) v.push(Y[yy * w + xx]);
+      }
+      if (!v.length) return 0;
+      v.sort((p, q) => p - q);
+      return v[v.length >> 1];
+    };
+    return radius ? ring(radius) : Math.min(ring(12 * k), ring(30 * k));
+  };
+
+  /* The blink test's sample, identical whether the light was detected this
+     frame or not: mean luma at the light minus the ring around it. Using
+     the brightest pixel when detected and the mean when not made a noise
+     speck flickering at the detection threshold look like a blinking light
+     (measured: it locked a speck in a dark window). One estimator for both
+     phases cannot manufacture a swing that is not there. */
+  Tracker.prototype._level = function (x, y, size) {
+    const k = this._k();
+    // One ring, sized to the light, just outside it. Taking the darker of
+    // two rings here let the background flip between them frame to frame
+    // at the edge of a window, which read as a blink.
+    this._ring = this._ringBg(x, y, Math.max(10 * k, 1.5 * size + 6 * k));
+    return this._meanNear(x, y, Math.max(2 * k, 0.35 * size)) - this._ring;
+  };
+
+  /* Seed bar above the local background. A fixed 38 is right in a dim
+     room; against a 225 wall a saturated torch only clears it by 30, so the
+     bar shrinks with the headroom left above the background. */
+  Tracker.prototype._seedBar = function (bg) {
+    return Math.min(this.o.seedContrast, Math.max(18, 0.45 * (255 - bg)));
+  };
+
   /* ================================================================
      IDENTIFY: generic tracks + blink test
      ================================================================ */
   function newTrack(id, b, t) {
     return { id, x: b.x, y: b.y, vx: 0, vy: 0, size: b.size, born: t,
              lastSeen: t, hits: 1, misses: 0, path: 0, anchored: false,
-             hist: [{ t, c: b.c }], onLevel: b.c, bgLevel: b.bg,
+             hist: [{ t, c: b.lvl }], onLevel: b.c, bgLevel: b.bg,
              score: 0, freq: 0, depth: 0, phase: 0, t0: t,
              pass: 0, passing: false, lit: true };
+  }
+
+  /* On/off transitions in a brightness history, with hysteresis. */
+  function switches(H, i0, lo, hi) {
+    const a = lo + 0.3 * (hi - lo), b = lo + 0.7 * (hi - lo);
+    let st = 0, n = 0;
+    for (let i = i0; i < H.length; i++) {
+      const c = H[i].c;
+      if (c >= b && st <= 0) { if (st < 0) n++; st = 1; }
+      else if (c <= a && st >= 0) { if (st > 0) n++; st = -1; }
+    }
+    return n;
   }
 
   Tracker.prototype._score = function (tr, now) {
@@ -267,7 +347,13 @@
     const p10 = s[Math.floor(0.1 * (n - 1))], p90 = s[Math.floor(0.9 * (n - 1))];
     // Depth against the lit level including background: a beacon's off
     // phase in a lit room is not black, it is back down at the background.
-    const depth = p90 > 0 ? (p90 - p10) / (p90 + (tr.bgLevel || 0)) : 0;
+    const bgL = tr.bgLevel || 0;
+    const depth = p90 > p10 ? Math.min(1, (p90 - p10) / Math.max(1, Math.max(0, p90) + bgL)) : 0;
+    // Against a near-white wall a lit screen cannot stand out at all: the
+    // camera clips both. The floor on the lit level eases off as the
+    // background nears saturation; the swing test below still applies.
+    const wall = tr.ring !== undefined ? tr.ring : bgL;
+    const litMin = 10 - 18 * Math.min(1, Math.max(0, (wall - 170) / 40));
     // Energy peaking at the band edge is the roll-off of something outside
     // it (mains flicker aliasing in), not a beacon inside it.
     const edge = bestF <= o.targetHz - 0.85 || bestF >= o.targetHz + 0.85;
@@ -277,7 +363,7 @@
     let fout = 0;
     const nyq = 0.5 * (this.fps || 30);
     const outF = [];
-    for (let f = 0.75; f <= o.targetHz - 2; f += 0.25) outF.push(f);
+    for (let f = 1.25; f <= o.targetHz - 2; f += 0.25) outF.push(f);
     for (let f = o.targetHz + 2; f < nyq - 0.5; f += 0.5) outF.push(f);
     for (const f of outF) {
       let re = 0, im = 0;
@@ -288,10 +374,16 @@
       }
       fout = Math.max(fout, (2 * (re * re + im * im) / n) / pow);
     }
-    tr.wrongRate = depth >= o.minDepth && fout > 0.35 && fout > 1.6 * best;
+    // ...and only if it actually switches: a slow drift (a track sliding
+    // along a gradient) also piles its energy at the bottom of the scale,
+    // and branding the beacon's own track "wrong rate" for that cost locks.
+    tr.wrongRate = depth >= o.minDepth && fout > 0.35 && fout > 1.6 * best && switches(H, i0, p10, p90) >= 4;
     tr.score = Math.min(1, best); tr.freq = bestF; tr.depth = depth;
     tr.phase = Math.atan2(bestIm, bestRe); tr.t0 = t0;
-    return best >= o.minFrac && depth >= o.minDepth && p10 <= 0.6 * p90 && !edge && p90 >= 25 && !tr.wrongRate;
+    // Lit must stand above its surroundings, but in a white room a phone
+    // screen only just does (~20); what marks it is the swing down to the
+    // dark phone body, so the swing carries the test.
+    return best >= o.minFrac && depth >= o.minDepth && p10 <= 0.6 * p90 && !edge && p90 >= litMin && p90 - p10 >= 40 && !tr.wrongRate;
   };
 
   Tracker.prototype._updateTracks = function (blobs, t) {
@@ -328,7 +420,8 @@
       tr.lastSeen = t; tr.hits++; tr.misses = 0; tr.lit = true;
       tr.onLevel = Math.max(b.c, tr.onLevel * 0.97); tr.bgLevel = b.bg;
       tr.anchored = tr.hits >= 15 && tr.path / tr.hits < 0.8 * k;
-      tr.hist.push({ t, c: b.c });
+      tr.hist.push({ t, c: this._level(b.x, b.y, tr.size) });
+      tr.ring = tr.ring === undefined ? this._ring : 0.8 * tr.ring + 0.2 * this._ring;
     }
     this.tracks.forEach((tr, ti) => {
       if (used[ti]) return;
@@ -336,11 +429,13 @@
       // assume it: a steady light that association missed must not look
       // like it blinked.
       tr.misses++; tr.lit = false;
-      const c = Math.max(0, this._peakNear(tr.px, tr.py, Math.max(3 * k, 0.6 * tr.size)) - this._bgAt(tr.px, tr.py));
-      tr.hist.push({ t, c });
+      // Signed: the phone body in the dark phase is DARKER than the wall
+      // behind it, and that is the deepest part of the blink.
+      tr.hist.push({ t, c: this._level(tr.px, tr.py, tr.size) });
     });
     for (const b of blobs) {
       if (b.taken || this.tracks.length >= o.maxTracks) continue;
+      b.lvl = this._level(b.x, b.y, b.size);
       const tr = newTrack(this.nextId++, b, t);
       b.owner = tr;
       this.tracks.push(tr);
@@ -477,7 +572,12 @@
         // switches on, lit and sized like it, is taken from much further out.
         // Anything wrong this admits is thrown out by the dark-phase vetoes.
         const rescue = blind && fresh && d <= Gr;
-        if (d > G && !rescue) continue;
+        // Not blind, but the hand turned while the light was off, so the
+        // prediction runs on in the old direction. A light switching on in
+        // the lit half of the cycle, within a hand's reach of the last
+        // sighting, is taken from outside the gate too.
+        const turn = fresh && !deepDark && ph < 0.5 && d <= Math.min(Gr, (70 + 30 * nf) * k);
+        if (d > G && !rescue && !turn) continue;
         // A light a generic track has proven stationary, or that this lock
         // has caught being steady, is a poor candidate: only right on the
         // prediction, and even then it loses to anything that just switched
@@ -504,8 +604,15 @@
       // Rescued from far outside the gate: the old velocity is exactly what
       // was wrong, so start over -- position from this light, velocity from
       // the next one (the seen < 3 branch below).
-      const rescued = Math.hypot(rx, ry) > G;
-      if (rescued) {
+      const outside = Math.hypot(rx, ry) > G;
+      const bmx = best.x - L.mx, bmy = best.y - L.my;
+      // Caught on a turn: seen recently, so the displacement since then IS
+      // the new velocity; the old one is what just failed.
+      const turned = outside && nf <= 3 && Math.hypot(bmx, bmy) <= (70 + 30 * nf) * k;
+      const rescued = outside && !turned;
+      if (turned) {
+        L.vx = bmx / nf; L.vy = bmy / nf; L.ax = 0; L.ay = 0;
+      } else if (rescued) {
         // Borrow the velocity of the generic track that owns this light, if
         // it has one worth borrowing; otherwise start from rest.
         const q = best.owner;
@@ -525,7 +632,7 @@
       }
       const vmax = 50 * k, sp = Math.hypot(L.vx, L.vy);
       if (sp > vmax) { L.vx *= vmax / sp; L.vy *= vmax / sp; }
-      if (rescued) { L.x = best.x; L.y = best.y; }
+      if (rescued || turned) { L.mx = L.x = best.x; L.my = L.y = best.y; }
       else { L.mx = L.x = px + 0.85 * rx; L.my = L.y = py + 0.85 * ry; }
       // A lit run starts after any frame the beacon was not taken -- whether
       // or not the dark was seen (the prediction may have sat over a bright
@@ -584,7 +691,7 @@
     // Rate check on the lock's own brightness history. A 50%-duty beacon
     // has no energy at twice its rate; a strobe running at twice the rate
     // has most of it there. Onset spacing alone cannot tell them apart.
-    L.hist.push({ t, c: best ? best.c : Math.max(0, this._peakNear(L.x, L.y, Math.max(4 * k, 0.8 * L.size)) - this._bgAt(L.x, L.y)) });
+    L.hist.push({ t, c: this._level(L.x, L.y, L.size), x: L.x, y: L.y });
     while (L.hist.length && t - L.hist[0].t > 1.5) L.hist.shift();
     // Rate check on the lock's own brightness over the last 0.8 s (short,
     // so a decoy the lock has slid onto soon dominates the window): the
@@ -592,7 +699,13 @@
     // it. Onset spacing alone cannot tell a beacon from a strobe at twice
     // its rate, or from a slow indicator, and this can.
     const Hs = L.hist.filter(h => t - h.t <= 0.8);
-    if (t - L.since > 0.6 && Hs.length > 14) {
+    // Only while the lock is (nearly) still. The lights this catches -- a
+    // strobe, an indicator -- are fixed; a lock sweeping across the frame
+    // samples at predicted positions, and that noise read as a wrong rate.
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (const h of Hs) { if (h.x < x0) x0 = h.x; if (h.x > x1) x1 = h.x; if (h.y < y0) y0 = h.y; if (h.y > y1) y1 = h.y; }
+    const still = Math.hypot(x1 - x0, y1 - y0) < 60 * k;
+    if (still && t - L.since > 0.6 && Hs.length > 14) {
       let m = 0, v = 0;
       for (const h of Hs) m += h.c;
       m /= Hs.length;
@@ -606,8 +719,10 @@
       let fin = 0, fout = 0;
       for (let f = Math.max(0.5, f0 - 1); f <= f0 + 1.001; f += 0.25) fin = Math.max(fin, frac(f));
       for (let f = f0 + 2; f < nyq - 0.5; f += 0.5) fout = Math.max(fout, frac(f));
-      for (let f = 0.75; f <= f0 - 2; f += 0.25) fout = Math.max(fout, frac(f));
-      if (v > 1e-3 && fout > 0.35 && fout > 1.6 * fin) {
+      for (let f = 1.25; f <= f0 - 2; f += 0.25) fout = Math.max(fout, frac(f));
+      const cs = Hs.map(h => h.c).sort((p, q) => p - q);
+      const lo = cs[Math.floor(0.1 * (cs.length - 1))], hi = cs[Math.floor(0.9 * (cs.length - 1))];
+      if (v > 1e-3 && fout > 0.35 && fout > 1.6 * fin && switches(Hs, 0, lo, hi) >= 3) {
         this._reject(L, { x: L.x, y: L.y }, t, 'blinks at the wrong rate');
         return;
       }
@@ -661,30 +776,55 @@
     const prev = this.prevBlobs || [];
     for (const b of blobs) {
       if (b.lockTaken) continue;           // (generic tracks take everything; that is fine)
-      if (b.c < (R ? Math.max(40, 0.45 * R.onLevel) : 60)) continue;
+      // Lit like a beacon -- scaled to the room: against a bright wall a
+      // saturated torch only stands ~30 above it.
+      if (b.c < (R ? Math.max(24, 0.45 * R.onLevel) : Math.max(24, Math.min(60, 0.5 * (255 - b.bg))))) continue;
       if (b.area > 2500 * k * k || b.size > 60 * k) continue;
-      if (b.rise < 0.6 * b.c) continue;
+      if (b.rise < Math.max(40, 0.6 * b.c)) continue;
       if (this._steadyOwner(b) || this._isStatic(b, t)) continue;
       if (b.owner && b.owner.wrongRate) continue;
-      if (prev.some(q => q.c >= 0.5 * b.c && Math.hypot(q.x - b.x, q.y - b.y) < 70 * k)) continue;
+      // (A lamp proven steady is not somewhere the beacon could have come
+      // from: counting it cost every onset the hand made near a lamp.)
+      if (prev.some(q => !q.st && q.c >= 0.5 * b.c && Math.hypot(q.x - b.x, q.y - b.y) < 70 * k)) continue;
+      // A fragment of a brighter onset this same frame (motion blur splits
+      // a fast torch) is that onset, not a second light -- and certainly
+      // not a strobe firing twice.
+      if (this.events.some(e => e.t === t && Math.hypot(b.x - e.x, b.y - e.y) < 40 * k)) continue;
       // An onset too soon after another one in reach is a strobe faster
       // than the band: its every-other flash spaced like a beacon was how a
       // 7.5 Hz indicator first got locked (a subharmonic at 3.75 Hz).
-      const fast = this.events.some(e => t - e.t < 0.8 * pLo &&
+      let fast = this.events.some(e => t - e.t < 0.8 * pLo &&
         Math.hypot(b.x - e.x, b.y - e.y) < (50 + 1100 * (t - e.t)) * k);
-      let best = null;
+      // A strobe caught once is a strobe for a while: a dropped frame can
+      // stretch one of its gaps to a beacon-like period, and that onset --
+      // or one it fired before it was caught -- then seeded a chain that
+      // ended on some other light. The place is marked, not just the event.
+      this.hot = (this.hot || []).filter(q => t - q.t < 1.5);
+      if (!fast && this.hot.some(q => Math.hypot(b.x - q.x, b.y - q.y) < 20 * k)) fast = true;
+      if (fast) {
+        this.hot.push({ x: b.x, y: b.y, t });
+        for (const e of this.events) if (Math.hypot(b.x - e.x, b.y - e.y) < 20 * k) e.fast = true;
+      }
+      let best = null, bestN = 1;
       for (const e of fast ? [] : this.events) {
         if (e.fast) continue;
-        const dt = t - e.t;
-        if (dt < 0.85 * pLo || dt > 1.15 * pHi) continue;
-        if (e.per && Math.abs(dt - e.per) > 0.3 * e.per) continue;
-        if (Math.hypot(b.x - e.x, b.y - e.y) > (50 + 1100 * dt) * k) continue;
+        const dt = t - e.t, dd = Math.hypot(b.x - e.x, b.y - e.y);
+        if (dd > (50 + 1100 * dt) * k) continue;
         if (b.c > 2 * e.c || b.c < 0.5 * e.c) continue;
-        if (!best || e.len > best.len || (e.len === best.len && e.t > best.t)) best = e;
+        // One flash may be missed in between -- a fast hand crossing a lamp
+        // hides it -- but only by a light that moved: a fixed indicator at
+        // half the rate must not pass as a beacon missing every other flash.
+        let n = 1;
+        if (dt > 1.15 * pHi && dd > 60 * k && !e.skip) n = 2;
+        const d1 = dt / n;
+        if (d1 < 0.85 * pLo || d1 > 1.15 * pHi) continue;
+        if (e.per && Math.abs(d1 - e.per) > 0.3 * e.per) continue;
+        if (!best || e.len > best.len || (e.len === best.len && e.t > best.t)) { best = e; bestN = n; }
       }
       const ev = { t, fast, x: b.x, y: b.y, c: b.c, bg: b.bg, size: b.size, area: b.area,
-                   len: best ? best.len + 1 : 1, per: best ? (best.per ? 0.5 * (best.per + (t - best.t)) : t - best.t) : 0,
-                   from: best };
+                   len: best ? best.len + 1 : 1,
+                   per: best ? (best.per ? 0.5 * (best.per + (t - best.t) / bestN) : (t - best.t) / bestN) : 0,
+                   skip: bestN > 1 || !!(best && best.skip), from: best };
       this.events.push(ev);
       const near = R && Math.hypot(b.x - R.x, b.y - R.y) < (120 + 900 * (t - R.t)) * k;
       const perOk = ev.per >= 0.93 * pLo && ev.per <= 1.07 * pHi;
@@ -746,9 +886,39 @@
     this.candidate = cand;
 
     const tmp = this.prevY; this.prevY = this.Y; this.Y = tmp; this.hasPrev = true;
-    this.prevBlobs = blobs.map(b => ({ x: b.x, y: b.y, c: b.c }));
+    this.prevBlobs = blobs.map(b => ({ x: b.x, y: b.y, c: b.c, st: this._steadyOwner(b) || this._isStatic(b, t) }));
     void laserOn;
     return this;
+  };
+
+  /* Ego-motion: when the camera itself turns (MK2 -- it rides the gimbal),
+     everything in the image slides by the same pixel amount. Shifting every
+     remembered position by that amount keeps tracks, the lock and the
+     steady-light memory aligned with the scene instead of reading the
+     camera's own motion as the world moving. */
+  Tracker.prototype.egoShift = function (dx, dy) {
+    if (!dx && !dy) return;
+    const mv = o => { if (o) { o.x += dx; o.y += dy; } };
+    for (const tr of this.tracks) {
+      tr.x += dx; tr.y += dy;
+      if (tr.px !== undefined) { tr.px += dx; tr.py += dy; }
+    }
+    const L = this.lock;
+    if (L) {
+      L.x += dx; L.y += dy; L.mx += dx; L.my += dy;
+      if (L.litX !== undefined) { L.litX += dx; L.litY += dy; }
+      for (const q of L.trail) mv(q);
+    }
+    for (const q of this.statics) mv(q);
+    for (const q of this.prevBlobs || []) mv(q);
+    for (const q of this.events || []) mv(q);
+    for (const q of this.hot || []) mv(q);
+    mv(this.lost); mv(this.prov);
+    // A big jump means the previous frame no longer lines up with this one,
+    // so nothing can be called "new" by comparing the two. Small corrections
+    // keep the comparison: a few pixels of misregistration is far less than
+    // a beacon switching on.
+    if (Math.hypot(dx, dy) > 3 * this._k()) this.hasPrev = false;
   };
 
   /* Where the locked beacon will be `lead` seconds from now. */

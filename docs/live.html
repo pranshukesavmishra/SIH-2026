@@ -448,13 +448,15 @@ loadCal(store.get('zd_rigType', 'auto') === 'mk2' ? 'mk2' : 'mk1');
 
 /* ---------------- demo videos: MK1 and MK2 ---------------- */
 const VIDEOS = {
-  mk1: { src: 'demo-video.mp4', tag: 'MK1 · SERVO RIG, LAPTOP CAMERA' },
+  mk1: { src: 'demo-video.mp4', alt: 'demo-video.webm', tag: 'MK1 · SERVO RIG, LAPTOP CAMERA' },
   mk2: { src: 'demo-mk2.mp4', tag: 'MK2 DEMO',
          missing: '<b>MK2 DEMO</b>Recording follows the Mk2 build.<br>Save it as <span style="color:#fff">docs/demo-mk2.mp4</span> and this button plays it.' },
 };
 const CANT_PLAY = '<b>VIDEO</b>This browser could not play the file.<br>Open it directly: ';
 function openDemoVideo(which) {
-  const v = VIDEOS[which];
+  const v = Object.assign({}, VIDEOS[which]);
+  // MP4 (H.264) where the browser plays it, else the WebM copy.
+  if (v.alt && !els.demoVideo.canPlayType('video/mp4; codecs="avc1.42E01E"')) v.src = v.alt;
   els.videoTag.textContent = v.tag;
   els.videoOverlay.classList.remove('missing');
   els.videoOverlay.classList.add('on');

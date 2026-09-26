@@ -55,6 +55,13 @@ header nav a:hover{color:var(--cyan)}
 .warnflag{display:inline-block;margin-top:6px;padding:3px 8px;border:1px solid var(--amber);
   color:var(--amber);font-size:10px;letter-spacing:.3px;max-width:400px;line-height:1.5;text-align:left}
 .warnflag.hard{border-color:var(--red);color:var(--red)}
+.warnflag.opt{border-style:dashed;margin-right:6px}
+.hud .fix{color:#8fb3cf;max-width:400px;font-size:10.5px;line-height:1.5;margin-top:4px;letter-spacing:0}
+.hud .fix b,.step .fix b{color:var(--ink);font-weight:700}
+.step .fix{font-size:10.5px;color:#8fb3cf;line-height:1.45;margin-top:4px}
+.opt{display:inline-block;padding:0 5px;border:1px dashed var(--amber);border-radius:3px;
+  color:var(--amber);font-size:9px;letter-spacing:.4px;vertical-align:1px;white-space:nowrap}
+
 
 .legend{position:absolute;right:14px;top:12px;font-size:10px;color:var(--ink-dim);
   text-align:right;pointer-events:none;letter-spacing:.4px;z-index:2}
@@ -128,6 +135,8 @@ td.bad{color:var(--red)}
   .side{border-left:0;border-top:1px solid var(--edge)}
   .steps,.rpanel{overflow:visible}
   header nav{display:none}
+  /* the HUD text is also in the step list right below the view */
+  .legend,.hud .why,.hud .fix{display:none}
 }
 </style>
 </head>
@@ -146,6 +155,7 @@ td.bad{color:var(--red)}
   <nav>
     <a href="index.html">overview</a>
     <a href="build.html">build guide</a>
+    <a href="submission/ZeroDrift_MK2_Picture_Guide.pdf">picture guide</a>
     <a href="submission/ZeroDrift_MK2_Build_Guide.pdf">build PDF</a>
     <a href="live.html">live demo</a>
   </nav>
@@ -161,11 +171,13 @@ td.bad{color:var(--red)}
       <div class="now" id="hudTitle">—</div>
       <div id="hudSub"></div>
       <div class="why" id="hudWhy"></div>
+      <div class="fix" id="hudFix"></div>
       <div id="hudWarn"></div>
     </div>
 
     <div class="legend" id="legend">
       <b>drag</b> orbit &nbsp;·&nbsp; <b>scroll</b> zoom &nbsp;·&nbsp; <b>right-drag</b> pan<br>
+      <b>click a part</b> isolate it &nbsp;·&nbsp; <b>← →</b> previous / next stage<br>
       <span id="poseRead">pan 0.0° · tilt 0.0°</span>
     </div>
 
@@ -202,7 +214,7 @@ td.bad{color:var(--red)}
   </div>
 
   <div class="side">
-    <h3 id="sideTitle">Build order — click any stage</h3>
+    <h3 id="sideTitle">Build order — click a stage, or ‹ step › to page through</h3>
     <div class="steps" id="steps"></div>
 
     <div class="rpanel" id="rpanel" hidden>
@@ -244,9 +256,11 @@ td.bad{color:var(--red)}
       <div class="row"><span>list</span><b><a href="submission/ZeroDrift_MK2_Amar_Shopping_List.pdf">shopping list PDF</a></b></div>
       <div class="row"><span>pan / tilt travel</span><b>±90° · ±18° (soft limits)</b></div>
       <div style="margin-top:7px;color:var(--ink-dim)">
-        Geometry comes from <b>zerodrift_full_assembly.scad</b>, the same source as
-        the build PDF. Travel limits are measured by
-        <b>tools/cad/check_clearance.sh</b>, not estimated.
+        The same build as the <b>picture guide</b>: no coupler, both discs glued
+        on with M-Seal, magnet on the shaft tip, stilts under the bracket.
+        Geometry comes from <b>docs/cad/zerodrift_full_assembly.scad</b>; soft
+        limits are the firmware's (<b>rig_firmware_v2.ino</b>), swept clear with
+        <b>tools/cad/check_clearance.sh</b>.
       </div>
     </div>
   </div>
@@ -276,36 +290,124 @@ const $ = id => document.getElementById(id);
 // The only thing this file computes is a staging offset that decays to
 // zero. Re-deriving transforms in a second language is what put the
 // camera on the ceiling the first time this model was built.
-const TILT_PIVOT = new THREE.Vector3(0, 6, 62);   // geometry.scad: TILT_Z
+// The build is the picture guide's (docs/submission/picture_guide_source.html):
+// NO coupler. Both discs are glued straight onto their motor shafts with a
+// ring of M-Seal, the magnet sits on the clean shaft tip, three M3 x 40
+// stilts carry the L-bracket, and the head box is screwed flat and centred
+// on the small disc. Numbers mirror docs/cad/geometry.scad (world mm, Z up,
+// pan = 0, tilt = 0); they only place labels and wires -- the parts
+// themselves come from the exported meshes.
+const GEO = {PLATE:152.4, LEG_H:60, TABLE_Z:-63, PAN_TIP_Z:16.2, PLATFORM_Z:11.2,
+  PAN_SENS_Z:22.7, POST_R:50, STILT_R:36, FOOT_Z:45.8, LEG_X:-8, TILT_Z:73.35,
+  TILT_DISC_X:11, HEAD_X:42, CAM_X:32, LASER_X:52};
+const TILT_PIVOT = new THREE.Vector3(0, 0, GEO.TILT_Z);   // geometry.scad: TILT_Y, TILT_Z
 
+// Stage fields: files = [[mesh, material]], or build = a wiring builder;
+// dims = [[label, part point, label point]] drawn in the scene while that
+// stage is the current one; fix = the fasteners, as on each picture-guide
+// page; optional = not needed for tonight's build.
 const GIMBAL = [
-  {id:'base', t:'Base plate', file:'base', group:'fixed', from:[0,0,-70],
-   d:'White sheet, about 150 mm square, on four M4 x 80 bolts as legs. Shaft hole in the middle, the four M3 motor holes on a 31 mm square around it.'},
-  {id:'pan_motor', t:'Pan motor', file:'pan_motor', group:'fixed', from:[0,0,-105],
-   d:'NEMA17 bolts to the UNDERSIDE and hangs below. A face-mounted stepper’s shaft leaves through the same face that bolts down, so it cannot sit on top of a solid plate.'},
-  {id:'platform', t:'Platform + diametric magnet', file:'platform', group:'pan', from:[0,0,75],
-   d:'60 mm clear acrylic disc, bolted to a 5 mm rigid flange coupling on the pan shaft. The magnet glues (Fevikwik) to its centre, on the axis.',
-   warn:'The magnet must say DIAMETRIC. An axial magnet looks identical and makes the encoder read a constant — both feedback axes dead, with no error message.', hard:true},
-  {id:'pan_encoder', t:'Pan encoder arm', file:'pan_encoder', group:'fixed', from:[95,10,25],
-   d:'An M3 x 40 screw standing on the base at 38 mm radius, with a 15 x 60 mm clear acrylic strip reaching in over the axis. It does NOT turn with the platform — a post that rotates with the magnet it measures reads a constant.',
-   warn:'The AS5600 chip sits ON the centreline, 1.5 mm above the magnet face. Not near the axis — on it. Off-axis it still answers on I²C and still returns numbers; they are simply not angles.', hard:true},
-  {id:'riser', t:'14 mm standoff riser', file:'riser', group:'pan', from:[0,0,62],
-   d:'Four 15 mm M3 standoffs. Without them the head reaches the platform at only 17° of downward tilt.'},
-  {id:'bracket', t:'L-bracket', file:'bracket', group:'pan', from:[-60,25,48],
-   d:'Carries the tilt motor. Sits on the riser, not directly on the platform.'},
-  {id:'tilt_motor', t:'Tilt motor', file:'tilt_motor', group:'pan', from:[-95,0,38],
-   d:'Shaft horizontal, along world X. Tilt axis across the look direction, so the head nods rather than panning twice.'},
-  {id:'tilt_encoder', t:'Tilt encoder arm', file:'tilt_encoder', group:'pan', from:[-18,0,86],
-   d:'A second 15 x 60 mm clear acrylic strip, fixed to the L-bracket (the side that does not tilt), reaching UP and over the shaft end so the chip faces the tilt magnet.'},
-  {id:'tilt_magnet', t:'Tilt magnet on the shaft end', file:'tilt_magnet', group:'tilt', from:[-70,0,48],
-   d:'Disc on the tilt shaft, magnet centred on the tilt axis, 1.5 mm from its chip.'},
-  {id:'standoff', t:'M3 BRASS standoff', file:'standoff', group:'tilt', from:[0,-30,42],
-   d:'Two 20 mm brass standoffs screwed together (about 40 mm), carrying about 80 g of head.',
-   warn:'Never print this part. In PLA it droops 28.5 px and resonates at 53 Hz — sitting on the 47 Hz platform mode the benchmark injects. Brass: 1.4 px, 237 Hz.'},
-  {id:'head', t:'Head — webcam, red filter, laser', file:'head', group:'tilt', from:[15,-38,62],
-   d:'70 x 50 x 30 mm ABS box: webcam board behind the red filter and the laser beside it, both looking the same way, so the loop closes on its own dot. The cable gets a service loop with slack for full travel — and it stays above the base plate.'},
-  {id:'vibration', t:'Vibration injector', file:'vibration', group:'pan', from:[70,25,45],
-   d:'Optional, not needed for the demo build. Bolted to the moving structure to show robustness.'},
+  {id:'base', t:'Base plate on 4 legs', group:'fixed', from:[0,0,-70],
+   files:[['base','acrylic'],['base_legs','wood']],
+   d:"A: a 15 x 15 cm clear acrylic square, 3 mm thick, standing on 4 legs at least 6 cm tall (wood blocks, books or long bolts) so the motor underneath hangs free of the table. Holes: one LOOSE 8 mm hole in the middle (the shaft must spin without touching it), 4 small motor holes on a 31 mm square around it (use the motor as a stencil), and 1 small hole 5 cm out for the sensor post.",
+   fix:"base A, 4 legs (6 cm or taller), marker, drill or a hot nail.",
+   dims:[['A: 15 x 15 cm, 3 mm acrylic', [76,-50,0], [135,-120,15]],
+         ['middle hole 8 mm, LOOSE', [4,-4,0], [-70,-125,5]],
+         ['legs 6 cm or taller', [-63,-63,-33], [-135,-95,-40]]]},
+  {id:'pan_motor', t:'Bottom (pan) motor under the base', group:'fixed', from:[0,0,-105],
+   files:[['pan_motor','motor'],['pan_motor_screws','steel']],
+   d:"The bottom NEMA17 bolts to the UNDERSIDE of the base and hangs below it, its shaft pushed up through the big middle hole. A face-mounted stepper leaves its shaft through the same face that bolts down, so it cannot sit on top of a solid plate. Thread 2 nuts onto each screw first: they are spacers between the base and the motor.",
+   fix:"4 x M3 x 12-16 mm screws down through the base, 2 nuts on each as spacers (8 nuts).",
+   dims:[['NEMA17 hangs under the base', [-21,-21,-30], [-95,-120,-45]],
+         ['4 x M3 x 12-16, 2 spacer nuts each', [11,-11,-6], [110,-125,-20]]]},
+  {id:'platform', t:'Big disc, glued straight onto the shaft', group:'pan', from:[0,0,60],
+   files:[['platform','acrylic'],['platform_glue','putty']],
+   d:"B: a 9 cm clear acrylic disc. Its middle hole is a TIGHT fit on the 5 mm shaft, plus 3 small holes on one side for the stilts. No coupler: push the disc down the shaft until about 2 mm of the tip sticks out on top, then pack a fat ring of mixed M-Seal UNDER the disc, all round the shaft. Keep the tip clean. Level it with a phone level app and leave it untouched for 1 hour.",
+   fix:"big disc B, M-Seal or Araldite (equal bits of both colours, rolled to one colour), phone level app.",
+   warn:"The M-Seal ring must stay clear of the base plate. The shaft spins free in its 8 mm hole; putty that reaches the base glues the pan axis solid.",
+   dims:[['B: 9 cm disc, TIGHT on the shaft', [23,-39,14.2], [95,-125,45]],
+         ['M-Seal ring UNDER the disc', [0,-7,7], [-80,-125,-5]],
+         ['2 mm of shaft tip left clean', [0,-2,16.2], [-60,-120,50]]]},
+  {id:'pan_magnet', t:'Magnet on the shaft tip', group:'pan', from:[0,0,40],
+   files:[['pan_magnet_n','magnetN'],['pan_magnet_s','magnetS']],
+   d:"One drop of Fevikwik on the clean 2 mm shaft tip, then press the 6 mm magnet on flat and centred: on the TIP of the shaft, not on the disc. Red and blue here are its north and south halves, across the diameter.",
+   fix:"diametric magnet, Fevikwik (superglue).",
+   warn:"Test it first: the magnet must be DIAMETRIC (N and S on the two halves of the face). An axial magnet looks identical and makes the sensor read a constant, with no error message.", hard:true,
+   dims:[['magnet on the shaft TIP (Fevikwik)', [0,-3,18], [-75,-120,55]]]},
+  {id:'pan_encoder', t:'Pan sensor arm (fixed)', group:'fixed', from:[95,10,25],
+   files:[['pan_post','steel'],['pan_strip','acrylic'],['pan_sensor','pcb']],
+   d:"An M3 x 40 screw stands up through the base 5 cm from the centre, just outside the big disc, locked with a nut. D: the 1.5 x 6 cm acrylic strip slides onto it and reaches in over the axis. The AS5600 is stuck under its far end, chip facing DOWN over the magnet. Slip 2 credit cards on the magnet as a spacer, set a nut under and over the strip, then slide the cards out: about 1.5 mm gap. It never turns with the disc.",
+   fix:"1 x M3 x 40 mm + 3 nuts, strip D, AS5600, 2 credit cards as the gap gauge.",
+   warn:"The chip sits ON the shaft centreline, 1.5 mm above the magnet. Off-axis it still answers and still returns numbers; they are simply not angles.", hard:true,
+   dims:[['M3 x 40 post: fixed, never turns', [50,0,32], [125,-75,60]],
+         ['D: strip 1.5 x 6 cm', [30,-7.5,25.7], [100,-115,75]],
+         ['AS5600 chip DOWN, 1.5 mm gap', [0,-5.5,20.5], [-70,-120,35]]]},
+  {id:'stilts', t:'Stilts: 3 long screws', group:'pan', from:[0,0,55],
+   files:[['stilts','steel']],
+   d:"Push 3 M3 x 40 screws UP through the 3 small holes of the big disc, heads underneath, on the side AWAY from the sensor arm. Lock each with a nut on top of the disc. The stilts replace the old standoff riser: the nuts on them set how high the bracket rides, so it clears the sensor arm.",
+   fix:"3 x M3 x 40 mm, 3 nuts now (1 on the disc per stilt), 6 more in the next stage.",
+   dims:[['3 x M3 x 40 stilts, away from the arm', [-36,0,30], [-130,-70,20]],
+         ['nut on the disc per stilt', [-31,-18,15.4], [-120,-115,5]]]},
+  {id:'bracket', t:'L-bracket on the stilts', group:'pan', from:[-60,25,48],
+   files:[['bracket','alu']],
+   d:"The flat foot rests on top of the 3 stilts, a nut below and a nut above it on each one; the standing part is where the top motor bolts on. Turn the disc a quarter turn left and right by hand: the bracket must pass OVER the sensor arm with a gap. Raise the stilt nuts if it does not.",
+   fix:"L-bracket, 6 nuts (1 under and 1 over the foot on each stilt).",
+   warn:"Check the gap before the motor goes on: across the 90 degrees each way the firmware allows, the bracket never touches the sensor arm or its post.",
+   dims:[['foot on the stilts, nut below + above', [-31,-18,47.3], [-120,-115,75]],
+         ['gap over the sensor arm', [-4,0,45.8], [40,-120,95]]]},
+  {id:'tilt_motor', t:'Top (tilt) motor on the bracket', group:'pan', from:[-95,0,38],
+   files:[['tilt_motor','motor'],['tilt_motor_screws','steel']],
+   d:"The top NEMA17 bolts to the standing part of the bracket with its shaft pointing SIDEWAYS, through the big hole. The tilt axis crosses the look direction, so the head nods up and down instead of panning a second time.",
+   fix:"4 x M3 x 6 mm screws through the bracket into the motor face.",
+   dims:[['shaft points SIDEWAYS', [14,0,73.35], [60,-115,125]],
+         ['4 x M3 x 6 into the motor face', [-4,-11,62], [-85,-120,120]]]},
+  {id:'tilt_disc', t:'Small disc on the tilt shaft', group:'tilt', from:[60,0,0],
+   files:[['tilt_disc','acrylic'],['tilt_glue','putty']],
+   d:"C: a 4 cm acrylic disc, middle hole a TIGHT fit plus 2 small holes for the head screws. Glued exactly like the big disc: M-Seal ring on the motor side of the disc, 2 mm of shaft tip left sticking out, and the putty kept clear of the bracket. Leave it 1 hour to harden.",
+   fix:"small disc C, M-Seal.",
+   dims:[['C: 4 cm disc, TIGHT on the shaft', [12.5,-20,73.35], [45,-120,110]],
+         ['M-Seal ring, clear of the bracket', [8,-6,73.35], [-60,-120,95]]]},
+  {id:'head', t:'Head: camera + laser, flat on the small disc', group:'tilt', from:[40,0,40],
+   files:[['head_box','abs'],['head_camera','camera'],['head_laser','brass']],
+   d:"The head box screws FLAT onto the small disc through its 2 holes, CENTRED on the tilt axis so it balances and the motor does not strain (no standoff). A small hole in its back lets the 2 mm shaft tip through. Webcam hot-glued inside behind the clear front window, laser hot-glued 2 cm beside it, both pointing the exact same way, so the camera always sees its own dot. Leave cable slack at every joint.",
+   fix:"2 x M3 screws + nuts (box to disc), hot glue, webcam, KY-008 laser.",
+   dims:[['box FLAT + CENTRED on the small disc', [14,-23,94], [30,-120,150]],
+         ['camera + laser 2 cm apart, same way', [42,-23,73.35], [135,-95,120]]]},
+  {id:'tilt_encoder', t:'Tilt sensor (2nd AS5600)', group:'pan', from:[0,0,0], optional:true,
+   files:[],
+   d:"OPTIONAL: skip it tonight. The top motor works without it: rig_firmware_v2.ino runs the pan axis closed-loop on its own and reports encoders=pan. In this build the head box covers the tilt shaft tip, so nothing is fitted at this stage. If a 2nd sensor is added later it goes on multiplexer channel 1.",
+   fix:"nothing tonight.",
+   dims:[['2nd sensor: OPTIONAL, skip tonight', [16,0,73.35], [-40,-125,140]]]},
+  {id:'wire_power', t:'Wiring 1: 12 V for the motors only', group:'fixed', from:[0,0,30], wire:true,
+   build:'power',
+   d:"12 V adapter into the DC socket, socket + through the switch to the red (+12 V) rail, socket - to the blue (GND) rail. Each driver: VMOT to +12 V and GND to GND, with a 100 uF capacitor across them (long leg to +, stripe to GND). The Arduino runs from the laptop USB, never from the 12 V; one wire from its GND pin to the GND rail is the single shared ground.",
+   fix:"12 V adapter, DC socket, switch, breadboard, 2 x 100 uF capacitors, jumper wires, multimeter.",
+   warn:"12 V goes ONLY to the drivers (VMOT). Never pull a motor wire while the switch is on. Switched on with nothing else plugged in, the red rail reads about 12 V.", hard:true,
+   dims:[['12 V to VMOT only, both drivers', [150,-10,-53], [215,-40,-5]],
+         ['100 uF across VMOT and GND', [144,-13,-44], [225,5,15]],
+         ['DC socket, switch, + rail', [172,-62,-52], [240,-100,-25]],
+         ['Arduino on laptop USB; GND to GND rail', [108,45,-51], [200,95,-10]]]},
+  {id:'wire_drivers', t:'Wiring 2: the two motor drivers', group:'fixed', from:[0,0,30], wire:true,
+   build:'drivers',
+   d:"Two A4988s, wired the same way. Jumpers on each: RST to SLP, MS1 MS2 MS3 to 5 V, EN to GND. STEP / DIR: bottom (pan) driver to D2 / D3, top (tilt) driver to D4 / D5. Coils: with the multimeter on ohms, the 2 wires that read 1-4 ohms are one pair (usually black + green, red + blue); one pair to 1A-1B, the other to 2A-2B. Never mix the pairs.",
+   fix:"2 x A4988, multimeter, small screwdriver, jumper wires.",
+   warn:"Set Vref to 0.55 V on both drivers with USB only and the 12 V switch OFF: black probe on GND, red probe on the little screw, turn gently. Then switch on: both shafts go stiff and the drivers only get warm.",
+   dims:[['D2 / D3 to pan STEP / DIR; D4 / D5 to tilt', [124,10,-50], [205,45,15]],
+         ['RST-SLP, MS1-3 to 5 V, EN to GND', [132,25,-46], [215,75,30]],
+         ['Vref 0.55 V, 12 V switch OFF', [132,-5,-45], [215,-35,25]],
+         ['coil pairs to 1A-1B and 2A-2B', [70,-45,-55], [100,-125,-35]]]},
+  {id:'wire_sensor', t:'Wiring 3: sensor and laser', group:'fixed', from:[0,0,30], wire:true,
+   build:'sensor',
+   d:"Arduino to the TCA9548A multiplexer: A4 to SDA, A5 to SCL, 5 V to VIN, GND to GND, and its A0 A1 A2 pins to GND (address 0x70). The pan AS5600 plugs into channel 0 (SD0 / SC0), with its VCC to 5 V, GND to GND and DIR to GND. Laser: S to D7, - to GND, middle pin empty. The webcam goes to the laptop USB. After uploading the code the Arduino reports encoders=pan.",
+   fix:"TCA9548A multiplexer, jumper wires, the webcam USB cable.",
+   dims:[['A4 to SDA, A5 to SCL, A0-A2 to GND', [108,-35,-51], [210,-70,5]],
+         ['mux channel 0 to the pan AS5600', [60,9,21], [135,-100,55]],
+         ['D7 to laser S, middle pin empty', [60,18,100], [140,-40,135]],
+         ['webcam USB to the laptop', [60,40,108], [150,60,120]]]},
+  {id:'vibration', t:'Vibration injector', group:'pan', from:[70,25,45], optional:true,
+   files:[['vibration','vibration']],
+   d:"Optional, not part of tonight's build. A coin vibration motor on the big disc, to show the lock surviving a shaking platform.",
+   fix:"coin vibration motor, glue."},
 ];
 
 const TARGETS = [
@@ -329,7 +431,7 @@ const TARGETS = [
 ];
 
 const TAB = {
-  gimbal:  {steps:GIMBAL,  title:'Build order — click any stage'},
+  gimbal:  {steps:GIMBAL,  title:'Build order — click a stage, or ‹ step › to page through'},
   targets: {steps:TARGETS, title:'Targets — click any stage'},
 };
 
@@ -374,10 +476,10 @@ scene.add(rim);
 
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000),
   new THREE.ShadowMaterial({opacity:0.34}));
-ground.position.z = -3.01; ground.receiveShadow = true;
+ground.position.z = -63.01;          // the table, under the 6 cm legs ground.receiveShadow = true;
 scene.add(ground);
 const grid = new THREE.GridHelper(900, 45, 0x16233a, 0x0e1828);
-grid.rotation.x = Math.PI / 2; grid.position.z = -3.02;
+grid.rotation.x = Math.PI / 2; grid.position.z = -63.02;
 scene.add(grid);
 
 // the three kinematic groups the clearance sweep tests, plus the targets
@@ -388,27 +490,156 @@ scene.add(gFixed, gPan, gTgt);
 const GROUPS = {fixed:gFixed, pan:gPan, tilt:gTilt, tgt:gTgt};
 
 const MAT = {
-  base:{c:0xa8d8ef,m:0,r:.15,o:.5}, pan_motor:{c:0x2b2f36,m:.85,r:.42},
-  platform:{c:0x6b7f94,m:.7,r:.4},  pan_encoder:{c:0xc9a227,m:.85,r:.3},
-  riser:{c:0xc9a227,m:.9,r:.25},    bracket:{c:0x5b7f9c,m:.8,r:.35},
-  tilt_motor:{c:0x2b2f36,m:.85,r:.42}, tilt_encoder:{c:0xc9a227,m:.85,r:.3},
-  tilt_magnet:{c:0x6b7f94,m:.7,r:.4},  standoff:{c:0xd4a94a,m:.95,r:.2},
-  head:{c:0xe8dcc8,m:.1,r:.6},      vibration:{c:0x8a6a3a,m:.6,r:.45},
+  acrylic:{c:0xa8d8ef,m:0,r:.15,o:.55}, wood:{c:0xc79e6e,m:0,r:.8},
+  motor:{c:0x2b2f36,m:.85,r:.42},        steel:{c:0xb4bcc6,m:.85,r:.3},
+  putty:{c:0x9a9d78,m:0,r:.9},           magnetN:{c:0xe23b3b,m:.3,r:.4},
+  magnetS:{c:0x2f6fe0,m:.3,r:.4},        pcb:{c:0x7c4ddb,m:.2,r:.5},
+  alu:{c:0x9aa3ae,m:.8,r:.35},           abs:{c:0xe8dcc8,m:.1,r:.6,o:.4},
+  camera:{c:0x2a8a5a,m:.3,r:.5},         brass:{c:0xc9a227,m:.9,r:.25},
+  vibration:{c:0x8a6a3a,m:.6,r:.45},
   beacon_case:{c:0xd9c3a6,m:.05,r:.7,o:.55}, beacon_led:{c:0xe03131,m:0,r:.3},
   beacon_nano:{c:0x2b5c8a,m:.4,r:.5},        beacon_switch:{c:0x8892a0,m:.8,r:.35},
   decoy_case:{c:0xc9cdd2,m:.05,r:.7,o:.55},  decoy_led:{c:0xd83a2e,m:0,r:.25},
   decoy_cells:{c:0x6b7f94,m:.5,r:.5},        decoy_switch:{c:0x8892a0,m:.8,r:.35},
 };
+const newMat = sp => new THREE.MeshStandardMaterial({
+  color:sp.c, metalness:sp.m ?? .2, roughness:sp.r ?? .5, transparent:true, opacity:sp.o ?? 1});
 
+// ------------------------------------------------------------- labels
+// A label is a sprite (always faces the camera, drawn over the model)
+// with a leader line to the point it names. World coordinates in; a
+// tilt-group stage shifts them back to the pivot like its meshes.
+function makeLabel(text, at, pos, shift) {
+  const g = new THREE.Group();
+  const c = document.createElement('canvas'), x = c.getContext('2d');
+  const F = '600 30px "DejaVu Sans Mono", Consolas, monospace';
+  x.font = F;
+  const w = Math.ceil(x.measureText(text).width) + 28, h = 46;
+  c.width = w; c.height = h;
+  x.font = F;
+  x.fillStyle = 'rgba(6,11,20,0.88)'; x.fillRect(0, 0, w, h);
+  x.strokeStyle = '#4FC7EA'; x.lineWidth = 3; x.strokeRect(1.5, 1.5, w - 3, h - 3);
+  x.fillStyle = '#EAF4FD'; x.textBaseline = 'middle'; x.fillText(text, 14, h / 2 + 1);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:tex, depthTest:false, transparent:true}));
+  const H = 8.5; sp.scale.set(H * w / h, H, 1);
+  const P = new THREE.Vector3(...pos).sub(shift), A = new THREE.Vector3(...at).sub(shift);
+  sp.position.copy(P); sp.renderOrder = 20;
+  const ln = new THREE.Line(new THREE.BufferGeometry().setFromPoints([P, A]),
+    new THREE.LineBasicMaterial({color:0x4FC7EA, depthTest:false, transparent:true, opacity:.9}));
+  ln.renderOrder = 19;
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(1.3, 10, 8),
+    new THREE.MeshBasicMaterial({color:0x4FC7EA, depthTest:false, transparent:true}));
+  dot.position.copy(A); dot.renderOrder = 19;
+  g.add(ln, dot, sp);
+  return g;
+}
+
+// ------------------------------------------------------------- wiring
+// Bench electronics beside the rig (the breadboard is 165 mm; the base is
+// 152 mm, so it lives on the table). Schematic, but every connection is
+// the one in the picture guide's cards 8-10 and rig_firmware_v2.ino.
+const WC = {v12:0xdc2626, v5:0xea8a0c, gnd:0x4b5563, sda:0x2563eb, scl:0x16a34a,
+  step:0x8b5cf6, dir:0xdb2777, usb:0x9ca3af, red:0xdc2626, blue:0x2563eb, black:0x4b5563, green:0x16a34a};
+function tube(pts, col, r = 0.9) {
+  const curve = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)));
+  return new THREE.Mesh(new THREE.TubeGeometry(curve, 80, r, 8), newMat({c:col, m:.1, r:.55}));
+}
+// several wires side by side, offset along d = [dx,dy,dz] per wire
+function bundle(pts, cols, d = [0,0,1.5], r = 0.8) {
+  return cols.map((c, i) => { const k = i - (cols.length - 1) / 2;
+    return tube(pts.map(p => [p[0] + d[0]*k, p[1] + d[1]*k, p[2] + d[2]*k]), c, r); });
+}
+function box(sz, pos, col, o = {}) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(...sz), newMat({c:col, m:o.m ?? .2, r:o.r ?? .6, o:o.o}));
+  m.position.set(...pos); return m;
+}
+function cyl(d, h, pos, col, axis = 'z', o = {}) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(d/2, d/2, h, 18), newMat({c:col, m:o.m ?? .3, r:o.r ?? .5}));
+  if (axis === 'z') m.rotation.x = Math.PI / 2; else if (axis === 'x') m.rotation.z = Math.PI / 2;
+  m.position.set(...pos); return m;
+}
+const BB = {x:125, y:0, top:-53};          // breadboard centre and top face
+const BUILD = {
+  power() {
+    const T = GEO.TABLE_Z, top = BB.top;
+    const out = [
+      box([55, 165, 10], [BB.x, BB.y, T + 5], 0xe8e4d9, {r:.8}),          // breadboard
+      box([1.2, 158, .3], [150.5, 0, top + .2], WC.red),                 // +12 V rail
+      box([1.2, 158, .3], [146.5, 0, top + .2], WC.blue),                // GND rail
+      box([1.2, 158, .3], [99.5, 0, top + .2], WC.red),                  // +5 V rail
+      box([1.2, 158, .3], [103.5, 0, top + .2], WC.blue),                // GND rail
+      box([18, 45, 1.6], [110, 45, top + 1], 0x1d5a8a),                  // Arduino Nano
+      box([7, 8, 3.2], [110, 70, top + 2.5], 0x9aa3ad, {m:.8}),          // its USB
+      box([15, 20, 1.6], [132, -5, top + 1], 0xa8342a),                  // pan A4988
+      box([9, 9, 5], [132, -5, top + 4.3], 0x8d9298, {m:.8}),
+      box([15, 20, 1.6], [132, 25, top + 1], 0xa8342a),                  // tilt A4988
+      box([9, 9, 5], [132, 25, top + 4.3], 0x8d9298, {m:.8}),
+      cyl(8, 12, [144, -13, top + 6], 0x2b4a7a),                         // 100 uF each
+      cyl(8, 12, [144, 17, top + 6], 0x2b4a7a),
+      box([14, 22, 11], [172, -62, T + 5.5], 0x1f2937),                  // DC socket
+      box([12, 10, 8], [160, -78, T + 4], 0x1f2937),                     // switch
+      cyl(2.5, 9, [160, -78, T + 12], 0xc9302c),
+      box([34, 26, 24], [215, -95, T + 12], 0x111827),                   // 12 V adapter
+    ];
+    out.push(tube([[200,-95,T+6],[190,-80,T+2],[180,-62,T+3],[179,-62,T+6]], 0x111827, 1.6));
+    out.push(tube([[172,-51,T+9],[168,-60,T+14],[160,-72,T+10]], WC.v12));  // socket + to switch
+    out.push(tube([[160,-80,T+9],[156,-80,top+6],[150.5,-72,top+.5]], WC.v12)); // switch to + rail
+    out.push(tube([[168,-51,T+9],[158,-55,top+6],[146.5,-68,top+.5]], WC.gnd)); // socket - to GND rail
+    for (const y of [-5, 25]) {                                            // VMOT / GND per driver
+      out.push(tube([[139,y-7,top+1.6],[145,y-7,top+5],[150.5,y-7,top+.5]], WC.v12));
+      out.push(tube([[139,y-4,top+1.6],[143,y-3,top+4],[146.5,y-3,top+.5]], WC.gnd));
+    }
+    out.push(tube([[101,30,top+1.6],[115,15,top+8],[140,10,top+6],[146.5,8,top+.5]], WC.gnd));  // Nano GND
+    out.push(tube([[110,74,top+2.5],[110,95,T+4],[108,130,T+1]], WC.usb, 1.6));  // USB to laptop
+    return out;
+  },
+  drivers() {
+    const top = BB.top, out = [];
+    // STEP / DIR: D2, D3 to the pan driver; D4, D5 to the tilt driver
+    [[33,-8,WC.step],[36,-3,WC.dir],[39,22,WC.step],[42,27,WC.dir]].forEach(([ny, dy, c]) =>
+      out.push(tube([[119,ny,top+1.6],[122,ny,top+8],[124,(ny+dy)/2,top+9],[125,dy,top+1.6]], c, .7)));
+    // on-board jumpers: RST-SLP, MS1-3 to 5 V, EN to GND (short links)
+    for (const y of [-5, 25]) {
+      out.push(tube([[125,y+1,top+1.6],[123,y+2.5,top+3],[125,y+4,top+1.6]], WC.step, .5));
+      out.push(tube([[125,y-4,top+1.6],[112,y-4,top+5],[99.5,y-4,top+.5]], WC.v5, .5));
+      out.push(tube([[125,y+8,top+1.6],[114,y+8,top+4],[103.5,y+8,top+.5]], WC.gnd, .5));
+    }
+    const coils = [WC.red, WC.blue, WC.black, WC.green];
+    // pan coils: under the base, between the legs, to the motor lead
+    out.push(...bundle([[139,-2,top+1.6],[150,-18,top+6],[118,-48,-58],[70,-45,-55],[25,-38,-45],[0,-29,-40]], coils, [0,0,1.6]));
+    // tilt coils: slack loop up and over to the lead on the tilt motor
+    out.push(...bundle([[139,28,top+1.6],[152,45,top+10],[120,88,-10],[40,88,40],[-62,52,72],[-66,-12,74],[-50,-33,73],[-40,-29,73]], coils, [0,0,1.6]));
+    return out;
+  },
+  sensor() {
+    const top = BB.top, out = [];
+    out.push(box([15, 20, 1.6], [110, -35, top + 1], 0x1e3a5f));        // TCA9548A
+    out.push(box([4, 4, 1], [110, -35, top + 2.2], 0x111111));
+    // Arduino A4 / A5 / 5V / GND to the multiplexer
+    out.push(...bundle([[101,58,top+1.6],[96,40,top+9],[96,-10,top+9],[103,-27,top+1.6]], [WC.sda, WC.scl, WC.v5, WC.gnd], [1.4,0,0], .6));
+    // channel 0 (SD0 / SC0) plus 5 V and GND up to the pan AS5600
+    out.push(...bundle([[117,-38,top+1.6],[128,-55,top+8],[100,-25,-35],[86,6,-18],[82,9,6],[62,9,21],[22,9,21],[4,7,20.6]],
+      [WC.sda, WC.scl, WC.v5, WC.gnd], [0,1.3,0], .6));
+    // D7 and GND to the laser, slack loop up into the head
+    out.push(...bundle([[119,48,top+1.6],[132,62,-40],[100,95,0],[75,62,72],[60,18,100],[53,8,98],[52,5,80]], [WC.step, WC.gnd], [1.5,0,0], .7));
+    // the webcam USB cable, out of the head and away to the laptop
+    out.push(tube([[32,-4,82],[34,4,100],[60,40,108],[125,110,60],[150,150,-40],[150,170,T_LAPTOP]], WC.usb, 1.6));
+    return out;
+  },
+};
+const T_LAPTOP = GEO.TABLE_Z + 2;
+
+// --------------------------------------------------------------- load
 const parts = {};
 const ALL = GIMBAL.concat(TARGETS);
-let loaded = 0;
+const pickable = [];
 const loader = new STLLoader();
 
 // Meshes arrive one of two ways. Served from the repo, each part is its
 // own .stl next to the page. Published as an Artifact, .stl is not a
 // served type, so the same meshes ship as one base64 bundle -- which is
-// also a single request instead of twenty.
+// also a single request instead of thirty.
 async function meshSource() {
   try {
     const r = await fetch('meshes.json');
@@ -425,30 +656,49 @@ async function meshSource() {
 }
 
 const getMesh = await meshSource();
+const fileList = s => s.files || (s.file ? [[s.file, s.id]] : []);
+const NEED = ALL.reduce((n, s) => n + fileList(s).length, 0);
+let loaded = 0;
+function adopt(p, mesh, base) {
+  mesh.castShadow = mesh.receiveShadow = true;
+  mesh.userData.stage = p.stage;
+  p.root.add(mesh); p.mats.push({mat:mesh.material, base}); pickable.push(mesh);
+}
+function oneLoaded() {
+  $('lbar').style.width = (++loaded / NEED * 100) + '%';
+  if (loaded < NEED) return;
+  $('loading').style.display = 'none';
+  const q = new URLSearchParams(location.search);
+  const want = q.get('tab');
+  buildSteps();
+  seek(parseFloat(q.get('t')) || 0);
+  measureBounds(); fitView();
+  if (want === 'targets' || want === 'result') switchTab(want);
+  if (q.get('play') === '1') setPlaying(true);
+}
 ALL.forEach(s => {
-  getMesh(s.file).then(geo => {
-    geo.computeVertexNormals();
-    // A tilt-group part is exported in world coordinates, so shift its
-    // geometry back to the tilt pivot; the group then carries it.
-    if (s.group === 'tilt') geo.translate(-TILT_PIVOT.x, -TILT_PIVOT.y, -TILT_PIVOT.z);
-    const sp = MAT[s.id];
-    const mat = new THREE.MeshStandardMaterial({
-      color:sp.c, metalness:sp.m, roughness:sp.r, transparent:true, opacity:sp.o ?? 1});
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.castShadow = mesh.receiveShadow = true;
-    GROUPS[s.group].add(mesh);
-    parts[s.id] = {mesh, mat, base:sp.o ?? 1};
-    $('lbar').style.width = (++loaded / ALL.length * 100) + '%';
-    if (loaded === ALL.length) {
-      $('loading').style.display = 'none';
-      const q = new URLSearchParams(location.search);
-      const want = q.get('tab');
-      buildSteps();
-      seek(parseFloat(q.get('t')) || 0);
-      measureBounds(); fitView();
-      if (want === 'targets' || want === 'result') switchTab(want);
-      if (q.get('play') === '1') setPlaying(true);
-    }
+  const shift = s.group === 'tilt' ? TILT_PIVOT : new THREE.Vector3();
+  const p = {root:new THREE.Group(), mats:[], labels:null, stage:s.id};
+  GROUPS[s.group].add(p.root);
+  parts[s.id] = p;
+  if (s.dims) {
+    p.labels = new THREE.Group(); p.labels.visible = false;
+    s.dims.forEach(([txt, at, pos]) => p.labels.add(makeLabel(txt, at, pos, shift)));
+    p.root.add(p.labels);
+  }
+  if (s.build) BUILD[s.build]().forEach(m => {
+    m.position.sub(shift); adopt(p, m, m.material.opacity);
+  });
+  fileList(s).forEach(([file, mk]) => {
+    getMesh(file).then(geo => {
+      geo.computeVertexNormals();
+      // A tilt-group part is exported in world coordinates, so shift its
+      // geometry back to the tilt pivot; the group then carries it.
+      if (s.group === 'tilt') geo.translate(-shift.x, -shift.y, -shift.z);
+      const sp = MAT[mk];
+      adopt(p, new THREE.Mesh(geo, newMat(sp)), sp.o ?? 1);
+      oneLoaded();
+    }).catch(e => { console.error('mesh failed', file, e); oneLoaded(); });
   });
 });
 
@@ -458,11 +708,29 @@ beamGeo.translate(0, -150, 0);
 const beam = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({
   color:0xff3b3b, transparent:true, opacity:0, depthWrite:false,
   side:THREE.DoubleSide, blending:THREE.AdditiveBlending}));
-// The barrel's FRONT FACE: head() puts the KY-008 at y = -5 inside a head
-// centred at y = -65, and the barrel is 18 mm long, so the beam leaves at
-// y = -88. Starting it at the laser's origin draws beam inside the box.
-beam.position.set(20, -88, -2);
+// The KY-008 barrel's FRONT FACE: the laser sits at x = LASER_X on the
+// tilt axis, and its 18 mm barrel ends at the head's front face, y = -23.
+// Starting the beam at the laser's origin draws beam inside the box.
+beam.position.set(GEO.LASER_X, -23.2, 0);
 gTilt.add(beam);
+
+// ------------------------------------------------ click a part to isolate
+// Click (not drag) on a part: jump to its stage and dim everything else.
+// Click empty space to show everything again.
+const ray = new THREE.Raycaster();
+let isolate = null, downAt = null;
+renderer.domElement.addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener('pointerup', e => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  const r = renderer.domElement.getBoundingClientRect();
+  ray.setFromCamera(new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1,
+                                      -(e.clientY - r.top) / r.height * 2 + 1), camera);
+  const hit = ray.intersectObjects(pickable.filter(m => m.visible && steps.some(s => s.id === m.userData.stage)), false)[0];
+  const i = hit ? steps.findIndex(s => s.id === hit.object.userData.stage) : -1;
+  setPlaying(false);
+  isolate = i >= 0 ? i : null;
+  if (i >= 0) goStage(i); else apply();
+});
 
 // ================================================================== ui
 function buildSteps() {
@@ -471,9 +739,11 @@ function buildSteps() {
     const d = document.createElement('div');
     d.className = 'step';
     d.innerHTML = `<div class="n">${i + 1}</div><div>
-        <div class="t">${s.t}</div><div class="d">${s.d}</div>
+        <div class="t">${s.t}${s.optional ? ' <span class="opt">OPTIONAL · skip tonight</span>' : ''}</div>
+        <div class="d">${s.d}</div>
+        ${s.fix ? `<div class="fix"><b>Parts:</b> ${s.fix}</div>` : ''}
         ${s.warn ? `<div class="warn${s.hard ? ' hard' : ''}">${s.warn}</div>` : ''}</div>`;
-    d.onclick = () => { setPlaying(false); seek((i + 1) * PER - 0.01); };
+    d.onclick = () => { setPlaying(false); isolate = null; goStage(i); };
     el.appendChild(d);
   });
   const m = $('marks'); m.innerHTML = '';
@@ -481,7 +751,7 @@ function buildSteps() {
     const k = document.createElement('div');
     k.className = 'mk'; k.title = s.t;
     k.style.left = ((i + 1) * PER / tTotal() * 100) + '%';
-    k.onclick = () => { setPlaying(false); seek((i + 1) * PER - 0.01); };
+    k.onclick = () => { setPlaying(false); isolate = null; goStage(i); };
     m.appendChild(k);
   });
   if (tab === 'gimbal') {
@@ -498,18 +768,19 @@ function setPlaying(p) {
   $('play').textContent = p ? '❚❚ pause' : '▶ play';
   $('play').classList.toggle('on', p);
 }
-$('play').onclick = () => { if (t >= tTotal() - 0.01) t = 0; setPlaying(!playing); };
-$('next').onclick = () => { setPlaying(false); seek(Math.min(tTotal(), (Math.floor(t / PER) + 1) * PER - 0.01)); };
-$('prev').onclick = () => { setPlaying(false); seek(Math.max(0, (Math.ceil(t / PER) - 1) * PER - 0.01)); };
-$('run').onclick  = () => { seek(tAssemble() + SETTLE + 0.01); setPlaying(true); };
+$('play').onclick = () => { if (t >= tTotal() - 0.01) t = 0; isolate = null; setPlaying(!playing); };
+const curStage = () => Math.min(steps.length - 1, Math.floor(t / PER));
+$('next').onclick = () => { setPlaying(false); isolate = null; goStage(Math.min(steps.length - 1, curStage() + (t >= (curStage() + 1) * PER - 0.02 ? 1 : 0))); };
+$('prev').onclick = () => { setPlaying(false); isolate = null; goStage(Math.max(0, curStage() - 1)); };
+$('run').onclick  = () => { isolate = null; focus = null; if (!userMoved) fitView(); seek(tAssemble() + SETTLE + 0.01); setPlaying(true); };
 $('explode').onclick = e => { exploded = !exploded; e.target.classList.toggle('on', exploded); apply(); };
-$('reset').onclick = () => { userMoved = false; measureBounds(); fitView(); };
+$('reset').onclick = () => { userMoved = false; focus = null; measureBounds(); fitView(); };
 document.querySelectorAll('.speed button').forEach(b => b.onclick = () => {
   speed = parseFloat(b.dataset.s);
   document.querySelectorAll('.speed button').forEach(x => x.classList.remove('on'));
   b.classList.add('on');
 });
-$('scrub').oninput = e => { setPlaying(false); seek(e.target.value / 1000 * tTotal()); };
+$('scrub').oninput = e => { setPlaying(false); isolate = null; seek(e.target.value / 1000 * tTotal()); };
 addEventListener('keydown', e => {
   if (tab === 'result') return;
   if (e.code === 'Space') { e.preventDefault(); $('play').click(); }
@@ -517,6 +788,24 @@ addEventListener('keydown', e => {
   if (e.code === 'ArrowLeft')  $('prev').click();
 });
 function seek(v) { t = Math.max(0, Math.min(tTotal(), v)); apply(); }
+// Jump to the END of stage i (that part fitted) and frame it, labels and
+// all, so its dimensions are readable -- a whole-scene frame that also
+// holds the bench electronics makes a 3 mm nut a speck.
+let focus = null;
+function goStage(i) {
+  seek((i + 1) * PER - 0.01);
+  const p = parts[steps[i].id]; if (!p) return;
+  scene.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(p.root);
+  if (box.isEmpty()) return;
+  const c = box.getCenter(new THREE.Vector3());
+  const r = Math.max(box.getSize(new THREE.Vector3()).length() / 2, 75);
+  const vFov = THREE.MathUtils.degToRad(camera.fov);
+  const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+  const dist = r / Math.sin(Math.min(vFov, hFov) / 2) * 1.05;
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  focus = {target:c, pos:c.clone().addScaledVector(dir, dist)};
+}
 
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
 
@@ -538,7 +827,7 @@ function switchTab(name) {
     gTgt.visible = (name === 'targets');
     // Only the gimbal has a mechanism to run; the targets do not move.
     $('run').hidden = (name !== 'gimbal');
-    setPlaying(false); buildSteps(); seek(0);
+    isolate = null; setPlaying(false); buildSteps(); seek(0);
     userMoved = false; measureBounds(); fitView();
   } else {
     $('sideTitle').textContent = 'Tracking, simulated live';
@@ -554,39 +843,50 @@ const GHOST = 0.17;
 let pan = 0, tilt = 0;
 
 function apply() {
+  const rp = tab === 'gimbal' ? clamp01((t - tAssemble() - SETTLE) / RUN) : 0;
+  const running = rp > 0;
+  const idx = Math.min(steps.length - 1, Math.floor(t / PER));
   ALL.forEach(s => {
     const p = parts[s.id]; if (!p) return;
     const i = steps.indexOf(s);
-    if (i < 0) { p.mesh.visible = false; return; }
+    if (i < 0) { p.root.visible = false; return; }
     const a = clamp01((t - i * PER) / PER), k = ease(a);
     const f = Math.max(1 - k, (exploded ? 1 : 0) * 0.55);
-    p.mesh.position.set(s.from[0] * f, s.from[1] * f, s.from[2] * f);
+    p.root.position.set(s.from[0] * f, s.from[1] * f, s.from[2] * f);
     // Parts not yet fitted are GHOSTED at their staging positions rather
     // than hidden: an empty stage reads as a page that failed to load.
-    p.mesh.visible = true;
-    p.mat.opacity = p.base * (a > 0 ? Math.max(GHOST, k) : GHOST);
+    // Wiring is not ghosted ahead of time: faint wires looping over the
+    // rig read as clutter during the mechanical stages.
+    p.root.visible = !(s.wire && a === 0);
+    let op = a > 0 ? Math.max(GHOST, k) : GHOST;
+    if (isolate !== null && i !== isolate) op = Math.min(op, GHOST * 0.6);
+    // The wires are drawn at zero pan: while the mechanism runs they
+    // would pull away from the moving motor, so they fade back.
+    if (running && s.wire) op = Math.min(op, GHOST);
+    p.mats.forEach(m => { m.mat.opacity = m.base * op; m.mat.depthWrite = op > 0.5; });
+    if (p.labels) p.labels.visible = !running && i === idx;
   });
 
-  const rp = tab === 'gimbal' ? clamp01((t - tAssemble() - SETTLE) / RUN) : 0;
-  if (rp > 0) {
+  if (running) {
     const ph = rp * Math.PI * 2;
-    pan  = 55 * Math.sin(ph);                    // inside the ±120 limit
-    tilt = 14 * Math.sin(ph + Math.PI / 2) - 4;  // inside +20 / −40
+    pan  = 55 * Math.sin(ph);                    // inside the +-90 firmware soft limit
+    tilt = 14 * Math.sin(ph + Math.PI / 2) - 4;  // inside +-18
     beam.material.opacity = 0.3 * clamp01(rp * 6);
   } else { pan = tilt = 0; beam.material.opacity = 0; }
   gPan.rotation.z = THREE.MathUtils.degToRad(pan);
   gTilt.rotation.x = THREE.MathUtils.degToRad(tilt);
 
-  const idx = Math.min(steps.length - 1, Math.floor(t / PER));
-  const running = rp > 0, s = steps[idx];
+  const s = steps[idx];
   $('hudTitle').textContent = running ? 'Mechanism running' : s.t;
   $('hudSub').textContent = running ? 'assembled · pan and tilt inside their soft limits'
-                                    : `stage ${idx + 1} / ${steps.length}`;
+    : `stage ${idx + 1} / ${steps.length}` + (isolate !== null ? ' · isolated: click empty space to show all' : '');
   $('hudWhy').textContent = running
     ? 'The camera rides the gimbal, boresighted with the laser, so the loop closes on its own dot.'
     : s.d;
-  $('hudWarn').innerHTML = (!running && s.warn)
-    ? `<div class="warnflag${s.hard ? ' hard' : ''}">${s.warn}</div>` : '';
+  $('hudFix').innerHTML = (!running && s.fix) ? `<b>Parts:</b> ${s.fix}` : '';
+  $('hudWarn').innerHTML = running ? '' :
+    (s.optional ? '<div class="warnflag opt">OPTIONAL · skip tonight</div>' : '') +
+    (s.warn ? `<div class="warnflag${s.hard ? ' hard' : ''}">${s.warn}</div>` : '');
   $('poseRead').textContent = `pan ${pan.toFixed(1)}° · tilt ${tilt.toFixed(1)}°`;
   $('clock').textContent = `${t.toFixed(1)} s / ${tTotal().toFixed(1)} s`;
   $('fill').style.width = (t / tTotal() * 100) + '%';
@@ -595,6 +895,12 @@ function apply() {
     el.classList.toggle('done', t >= (i + 1) * PER);
     el.classList.toggle('on', !running && i === idx);
   });
+  const on = document.querySelector('.step.on');
+  if (on && on.dataset.shown !== '1') {
+    document.querySelectorAll('.step').forEach(el => { el.dataset.shown = ''; });
+    on.dataset.shown = '1';
+    on.scrollIntoView({block:'nearest'});
+  }
   document.querySelectorAll('.tl .mk:not(.run)').forEach((m, i) =>
     m.classList.toggle('on', t >= (i + 1) * PER));
   const rm = $('runMark'); if (rm) rm.classList.toggle('on', running);
@@ -608,13 +914,13 @@ function apply() {
 // viewport the first time.
 const fitBox = new THREE.Box3();
 let userMoved = false;
-controls.addEventListener('start', () => { userMoved = true; });
+controls.addEventListener('start', () => { userMoved = true; focus = null; });
 
 function measureBounds() {
   const box = new THREE.Box3(), keep = t;
   for (const t0 of [0, tTotal()]) {
     t = t0; apply(); scene.updateMatrixWorld(true);
-    steps.forEach(s => { const p = parts[s.id]; if (p) box.expandByObject(p.mesh); });
+    steps.forEach(s => { const p = parts[s.id]; if (p) box.expandByObject(p.root); });
   }
   t = keep; apply();
   fitBox.copy(box);
@@ -874,6 +1180,13 @@ renderer.setAnimationLoop(now => {
     if (t >= tTotal()) { t = tTotal(); setPlaying(false); }
     apply();
   } else if (exploded) apply();
+  if (focus) {
+    controls.target.lerp(focus.target, 0.12);
+    camera.position.lerp(focus.pos, 0.12);
+    camera.near = Math.max(0.5, camera.position.distanceTo(controls.target) / 500);
+    camera.updateProjectionMatrix();
+    if (camera.position.distanceTo(focus.pos) < 0.5) focus = null;
+  }
   controls.update();
   renderer.render(scene, camera);
 });

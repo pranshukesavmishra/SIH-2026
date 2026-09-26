@@ -7,7 +7,8 @@ trust.
 
 | File | What it is |
 |---|---|
-| `geometry.scad` | The numbers the mechanism imposes, shared by the still model and the animation with `include` |
+| `geometry.scad` | The numbers the mechanism imposes: the **picture-guide build** (no coupler, discs glued on with M-Seal, magnet on the shaft tip, M3 x 40 stilts under the bracket, head flat and centred on the small disc) |
+| `geometry_legacy.scad` | Frozen copy of the earlier coupler + 14 mm riser + brass standoff layout, used only by `animate.scad`. The video and the PNG stills in `renders/` still show that earlier layout and have not been regenerated |
 | `parts_lib.scad` | One module per BOM item, drawn at its real catalogue size |
 | `zerodrift_full_assembly.scad` | Places those parts: rig, bench electronics, beacon, decoy |
 | `animate.scad` | `$t` timeline: parts fly together, then the mechanism runs |
@@ -187,8 +188,8 @@ is what made the riser worth four M3 standoffs from the assortment.
 
 ## The interactive page
 
-`docs/assembly.html` is the model as a build guide you can scrub: twelve
-parts fly into place in build order, each with the reason it goes there
+`docs/assembly.html` is the model as a build guide you can scrub: the
+picture guide's build, stage by stage (mechanics, then the wiring), each with the reason it goes there
 and the mistake that part invites, then the mechanism runs and you can
 orbit it freely.
 
@@ -199,10 +200,11 @@ zero tilt**, so the page articulates the two axes itself rather than
 showing a frozen pose.
 
 ```sh
-for p in base pan_motor platform pan_encoder riser bracket \
-         tilt_motor tilt_encoder tilt_magnet standoff head vibration; do
-  xvfb-run -a openscad -D "part=\"$p\"" -D 'LOWPOLY=true' \
-      -D 'PAN_DEG=0' -D 'TILT_DEG=0' -o /tmp/$p.stl zerodrift_full_assembly.scad
+for p in base base_legs pan_motor pan_motor_screws platform platform_glue \
+         pan_magnet_n pan_magnet_s pan_post pan_strip pan_sensor stilts bracket \
+         tilt_motor tilt_motor_screws tilt_disc tilt_glue head_box head_camera \
+         head_laser vibration; do
+  xvfb-run -a openscad -D "part=\"$p\"" -D 'LOWPOLY=true' -o /tmp/$p.stl zerodrift_full_assembly.scad
   python3 ../../tools/cad/stl_to_binary.py /tmp/$p.stl web/$p.stl
 done
 ```

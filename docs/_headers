@@ -21,3 +21,9 @@
   X-Robots-Tag: noindex, nofollow
 /submission/ZeroDrift_MK2_Belt_Upgrade.pdf
   X-Robots-Tag: noindex, nofollow
+/submission/ZeroDrift_MK2_Picture_Guide.pdf
+  X-Robots-Tag: noindex, nofollow
+/submission/picture_guide_source.html
+  X-Robots-Tag: noindex, nofollow
+/submission/picture_guide/*
+  X-Robots-Tag: noindex, nofollow

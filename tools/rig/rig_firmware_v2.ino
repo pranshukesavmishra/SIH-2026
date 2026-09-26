@@ -133,7 +133,8 @@ bool          laserPhaseOn     = false;
 unsigned long laserHalfPeriodUs = 0;
 unsigned long laserLastToggleUs = 0;
 
-bool  encodersPresent = false;
+bool  encodersPresent = false;             // at least one AS5600 answered
+bool  panEnc = false, tiltEnc = false;      // each axis on its own: tilt is optional
 long  panTurns = 0,  tiltTurns = 0;        // wrap accumulator, in whole turns
 int   panLastRaw = 0, tiltLastRaw = 0;
 float panZeroDeg = 0.0, tiltZeroDeg = 0.0; // datum: set at boot and by Z
@@ -213,7 +214,12 @@ void setup() {
   // open-loop and says so in every status reply, rather than pretending.
   panLastRaw  = readRaw(PAN_CHANNEL);
   tiltLastRaw = readRaw(TILT_CHANNEL);
-  encodersPresent = (panLastRaw >= 0 && tiltLastRaw >= 0);
+  // Each axis stands alone, so a rig built with only the pan sensor (the
+  // tilt one is optional) still reports measured pan instead of dropping
+  // both axes to commanded positions.
+  panEnc  = panLastRaw  >= 0;
+  tiltEnc = tiltLastRaw >= 0;
+  encodersPresent = panEnc || tiltEnc;
   if (panLastRaw  < 0) panLastRaw  = 0;
   if (tiltLastRaw < 0) tiltLastRaw = 0;
   // Datum: the steppers boot calling wherever they are 0, so the encoders
@@ -223,7 +229,7 @@ void setup() {
   tiltZeroDeg = tiltLastRaw * (360.0 / 4096.0);
 
   Serial.print(F("# ZeroDrift Mk2 ready, encoders="));
-  Serial.println(encodersPresent ? F("yes") : F("no"));
+  Serial.println(panEnc && tiltEnc ? F("yes") : panEnc ? F("pan") : tiltEnc ? F("tilt") : F("no"));
 }
 
 void loop() {
@@ -331,11 +337,14 @@ void handleLine(char *line) {
 void zeroHere() {
   panStepper.setCurrentPosition(0);
   tiltStepper.setCurrentPosition(0);
-  if (encodersPresent) {
-    panTurns = tiltTurns = 0;
-    panLastRaw  = max(0, readRaw(PAN_CHANNEL));
+  if (panEnc) {
+    panTurns = 0;
+    panLastRaw = max(0, readRaw(PAN_CHANNEL));
+    panZeroDeg = panLastRaw * (360.0 / 4096.0);
+  }
+  if (tiltEnc) {
+    tiltTurns = 0;
     tiltLastRaw = max(0, readRaw(TILT_CHANNEL));
-    panZeroDeg  = panLastRaw  * (360.0 / 4096.0);
     tiltZeroDeg = tiltLastRaw * (360.0 / 4096.0);
   }
   Serial.println(F("# zeroed"));
@@ -345,16 +354,16 @@ void reportStatus() {
   float pan, tilt;
   char src;
 
-  if (encodersPresent && !moving()) {
-    float p = readAngleDeg(PAN_CHANNEL,  panLastRaw,  panTurns)  - panZeroDeg;
-    float t = readAngleDeg(TILT_CHANNEL, tiltLastRaw, tiltTurns) - tiltZeroDeg;
-    if (isnan(p) || isnan(t)) { src = 'C'; pan = commandedPan(); tilt = commandedTilt(); }
-    else                      { src = 'E'; pan = p;              tilt = t; }
-  } else {
-    src = 'C';
-    pan = commandedPan();
-    tilt = commandedTilt();
+  // Measured where a sensor exists and the axis is at rest; commanded
+  // otherwise. src is E when at least one axis is a measurement.
+  float p = NAN, t = NAN;
+  if (!moving()) {
+    if (panEnc)  p = readAngleDeg(PAN_CHANNEL,  panLastRaw,  panTurns)  - panZeroDeg;
+    if (tiltEnc) t = readAngleDeg(TILT_CHANNEL, tiltLastRaw, tiltTurns) - tiltZeroDeg;
   }
+  src  = (!isnan(p) || !isnan(t)) ? 'E' : 'C';
+  pan  = isnan(p) ? commandedPan()  : p;
+  tilt = isnan(t) ? commandedTilt() : t;
 
   // Reported in STEPS, same unit as the wire, so the host never has to
   // hold two scales in its head. The encoder measures degrees physically;
@@ -396,12 +405,12 @@ void selftest() {
   panStepper.moveTo(clampStepsPan(before + lround(10.0 * STEPS_PER_DEG * PAN_GEAR_RATIO)));
   while (panStepper.distanceToGo()) panStepper.run();
   delay(200);
-  if (encodersPresent) {
+  if (panEnc) {
     float m = readAngleDeg(PAN_CHANNEL, panLastRaw, panTurns) - panZeroDeg;
     Serial.print(F("# encoder reads ")); Serial.print(m, 2);
     Serial.println(F(" deg (expect ~10.00 from the datum)"));
   } else {
-    Serial.println(F("# no encoders: cannot verify the move happened"));
+    Serial.println(F("# no pan encoder: cannot verify the move happened"));
   }
   panStepper.moveTo(before);
   while (panStepper.distanceToGo()) panStepper.run();

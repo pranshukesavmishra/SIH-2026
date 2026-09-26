@@ -1,7 +1,7 @@
-# The site is four pages: Home, Console, Live Demo, About Us.
-# The 3D assembly, the old console copy and the rig console stay in the
-# repo for local use but are not published. "!" forces the redirect even
+# The site is four pages: Home, Console, Live Demo, About Us, plus the MK2
+# build guide (build.html) and its 3D assembly, reached from the home page's
+# MK2 section rather than the nav. The old console copy and the rig console
+# stay in the repo for local use but are not published. "!" forces the redirect even
 # though the file exists (Netlify otherwise serves the file).
-/assembly.html   /              301!
 /demo.html       /console.html  301!
 /rig.html        /live.html     301!

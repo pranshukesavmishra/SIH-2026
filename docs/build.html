@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZeroDrift MK2 Build Guide</title>
+<link rel="icon" href="brand/zerodrift_mark.png">
+<style>
+:root{
+  --bg:#02050E; --panel:#0A1224; --edge:#15263F; --ink:#EAF4FD; --ink2:#8EA4C4; --mute:#536988;
+  --cyan:#4FC7EA; --green:#3BD68C; --amber:#FFC24D; --red:#FF5C5C;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--sans)}
+a{color:var(--cyan)}
+.top{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--edge);position:sticky;top:0;background:rgba(2,5,14,.94);backdrop-filter:blur(6px);z-index:5}
+.top img{height:30px}
+.top b{font:700 14px var(--mono);letter-spacing:.5px}
+.top nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.top nav a{font:600 11px var(--mono);letter-spacing:.6px;text-decoration:none;color:var(--ink2);border:1px solid var(--edge);border-radius:6px;padding:7px 10px}
+.top nav a.hi{color:#04121c;background:var(--cyan);border-color:var(--cyan)}
+main{max-width:980px;margin:0 auto;padding:18px 16px 60px}
+h1{font-size:30px;line-height:1.2;margin:18px 0 6px}
+h2{font-size:22px;margin:44px 0 10px;padding-top:10px;border-top:1px solid var(--edge)}
+h2 .n{font:700 13px var(--mono);color:var(--cyan);margin-right:10px;vertical-align:3px}
+h3{font-size:16px;margin:24px 0 6px;color:var(--cyan)}
+p{margin:8px 0}
+.lead{color:var(--ink2);font-size:16px;max-width:760px}
+.toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px;margin:16px 0}
+.toc a{display:block;text-decoration:none;color:var(--ink);background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:8px 11px;font-size:13px}
+.toc a span{font:700 11px var(--mono);color:var(--cyan);margin-right:6px}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.stats div{background:var(--panel);border:1px solid var(--edge);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--ink2)}
+.stats b{display:block;font:700 17px var(--mono);color:var(--ink)}
+.tw{overflow-x:auto;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--edge);vertical-align:top}
+th{font:600 11px var(--mono);letter-spacing:.6px;color:var(--ink2);text-transform:uppercase;background:var(--panel)}
+td.c{width:26px;text-align:center}
+td code,p code,li code{font:13px var(--mono);background:#0d1a30;border:1px solid var(--edge);border-radius:4px;padding:0 5px;white-space:nowrap}
+.tag{display:inline-block;font:700 10px var(--mono);letter-spacing:.5px;border-radius:4px;padding:1px 6px;border:1px solid}
+.tag.have{color:var(--green);border-color:rgba(59,214,140,.5)}
+.tag.come{color:var(--cyan);border-color:rgba(79,199,234,.5)}
+.tag.buy{color:var(--amber);border-color:rgba(255,194,77,.55)}
+.warn,.ok,.info{border-radius:8px;padding:10px 13px;margin:12px 0;font-size:14px}
+.warn{background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.45)}
+.warn b:first-child{color:var(--red)}
+.ok{background:rgba(59,214,140,.07);border:1px solid rgba(59,214,140,.4)}
+.ok b:first-child{color:var(--green)}
+.info{background:rgba(79,199,234,.07);border:1px solid rgba(79,199,234,.35)}
+ol.steps{padding-left:0;list-style:none;counter-reset:s;margin:10px 0}
+ol.steps>li{counter-increment:s;position:relative;padding:10px 12px 10px 48px;margin:8px 0;background:var(--panel);border:1px solid var(--edge);border-radius:8px}
+ol.steps>li::before{content:counter(s);position:absolute;left:12px;top:10px;width:24px;height:24px;border-radius:50%;background:var(--cyan);color:#04121c;font:700 12px/24px var(--mono);text-align:center}
+ol.steps>li .chk{display:block;margin-top:6px;color:var(--green);font-size:13.5px}
+ol.steps>li .chk::before{content:"CHECK  ";font:700 11px var(--mono)}
+figure{margin:14px 0;background:#fff;border-radius:10px;padding:10px;color:#0b1320}
+figure img,figure svg{display:block;width:100%;height:auto}
+figcaption{font-size:12.5px;color:#46566b;padding:6px 4px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+pre{background:#050c1a;border:1px solid var(--edge);border-radius:8px;padding:10px 12px;overflow-x:auto;font:13px/1.5 var(--mono);color:#cfe3f7;margin:8px 0}
+pre .y{color:var(--green)} pre .m{color:var(--mute)}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.btn{display:inline-block;text-decoration:none;font:700 12px var(--mono);letter-spacing:.6px;border-radius:8px;padding:11px 16px;border:1px solid var(--cyan);color:var(--cyan)}
+.btn.p{background:var(--cyan);color:#04121c}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
+.foot{color:var(--mute);font-size:12px;margin-top:40px}
+.pgb{break-before:page}
+@media screen and (max-width:700px){ .two{grid-template-columns:1fr} h1{font-size:25px} .top nav a{padding:6px 7px} }
+
+/* ---------- PDF / print ---------- */
+@page{size:A4;margin:14mm 13mm 15mm}
+@media print{
+  :root{--bg:#fff;--panel:#f3f6fa;--edge:#d5dde8;--ink:#0b1320;--ink2:#3c4d63;--mute:#6b7a8f;--cyan:#0a6e8f;--green:#137a47;--amber:#9a6200;--red:#b3261e}
+  body{font-size:10.5pt;line-height:1.45}
+  .top,.btnrow,.noprint{display:none!important}
+  main{max-width:none;padding:0}
+  h1{font-size:22pt;margin-top:0}
+  h2{font-size:15pt;margin-top:18pt;break-after:avoid}
+  h3{break-after:avoid}
+  td code,p code,li code{background:#eef2f7;border-color:#d5dde8}
+  pre{white-space:pre-wrap;background:#f3f6fa;color:#0b1320;border-color:#d5dde8} pre .y{color:#137a47}
+  ol.steps>li::before{color:#fff}
+  ol.steps>li,figure,.warn,.ok,.info,tr,pre{break-inside:avoid}
+  figure{border:1px solid #d5dde8;padding:6px}
+  figure img{max-height:88mm;object-fit:contain}
+  .two{grid-template-columns:1fr 1fr}
+  table{font-size:9pt} th,td{padding:4px 6px}
+  ol.steps>li{padding:7px 10px 7px 40px;margin:6px 0}
+  .tw{overflow:visible}
+  a{color:inherit;text-decoration:none}
+  .toc a{padding:4px 8px}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <a href="index.html"><img src="brand/zerodrift_logo.png" alt="ZeroDrift"></a>
+  <b>MK2 BUILD GUIDE</b>
+  <nav>
+    <a href="assembly.html">3D ASSEMBLY</a>
+    <a href="submission/ZeroDrift_MK2_Build_Guide.pdf" class="hi">PDF</a>
+    <a href="live.html">LIVE DEMO</a>
+  </nav>
+</div>
+
+<main>
+<h1>ZeroDrift MK2: the complete build</h1>
+<p class="lead">Every part, every wire, every command, from an empty table to the rig locking onto the beacon on the website. Follow the sections in order. Every step ends with a <b>CHECK</b>. Don't go on until the check passes.</p>
+
+<div class="stats">
+  <div><b>≈ 7 h</b>mechanics 3 h · wiring 2 h · bring-up 2 h</div>
+  <div><b>0.11° / step</b>1/16 microstep, direct drive</div>
+  <div><b>0.088°</b>AS5600 encoder reading</div>
+  <div><b>±90° / ±18°</b>pan / tilt travel limit</div>
+</div>
+
+<div class="btnrow">
+  <a class="btn p" href="submission/ZeroDrift_MK2_Build_Guide.pdf">DOWNLOAD PDF</a>
+  <a class="btn" href="assembly.html">OPEN THE 3D STEP-BY-STEP ASSEMBLY</a>
+</div>
+
+<figure><img src="cad/renders/01_full_scene.png" alt="The MK2 rig with the beacon and the decoy"><figcaption>What you are building: the MK2 gimbal (camera and laser in one head) tracking the 4 Hz red beacon, while ignoring the brighter white decoy that never blinks.</figcaption></figure>
+
+<div class="toc">
+  <a href="#s1"><span>01</span>Parts: have / arriving / buy</a>
+  <a href="#s2"><span>02</span>Tools and software</a>
+  <a href="#s3"><span>03</span>Five safety rules</a>
+  <a href="#s4"><span>04</span>Mechanical build</a>
+  <a href="#s5"><span>05</span>Wiring: diagrams</a>
+  <a href="#s6"><span>06</span>Wiring: wire-by-wire list</a>
+  <a href="#s7"><span>07</span>Arduino: flash the firmware</a>
+  <a href="#s8"><span>08</span>First power-on and tests</a>
+  <a href="#s9"><span>09</span>Beacon and decoy</a>
+  <a href="#s10"><span>10</span>Connect to the website</a>
+  <a href="#s11"><span>11</span>Calibrate</a>
+  <a href="#s12"><span>12</span>Troubleshooting</a>
+</div>
+
+<!-- ================================================================ 1 -->
+<h2 id="s1"><span class="n">01</span>Parts</h2>
+<p><span class="tag have">HAVE</span> in hand &nbsp; <span class="tag come">ARRIVING</span> ordered &nbsp; <span class="tag buy">BUY</span> get it today (Amar Robotics / hardware shop)</p>
+<div class="tw"><table>
+<tr><th></th><th>Part</th><th>Qty</th><th>Status</th><th>Check before you use it</th></tr>
+<tr><td class="c"><input type="checkbox"></td><td>NEMA17 stepper, 1.8°/step</td><td>2</td><td><span class="tag have">HAVE</span></td><td>4 wires each</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>A4988 driver module</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Small resistors near the chip say <code>R100</code>, <code>R050</code> or <code>R200</code>. Note it (for Vref, step 8.2)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>NEMA17 L-bracket</td><td>1–2</td><td><span class="tag have">HAVE</span></td><td>Only the tilt motor needs one</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>100 µF 25 V capacitor</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Striped leg is −</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>AS5600 magnetic encoder</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Solder the header pins if loose</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Diametric magnet 6 × 2.5 mm</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Usually comes with the AS5600. Must be <b>diametric</b> (test in step 4.4)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>TCA9548A I²C multiplexer</td><td>1</td><td><span class="tag come">ARRIVING</span></td><td>Solder the header pins</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>USB webcam (UVC)</td><td>1</td><td><span class="tag come">ARRIVING</span></td><td>Plug into the laptop and open it on the Live page before you strip the housing</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>KY-008 laser module</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Pins marked <code>S</code>, middle, <code>−</code></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Red filter (gel / red acrylic / sunglasses lens)</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Hold it over a phone camera: the room goes dim, a red LED stays bright</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>ABS project box (head)</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Arduino Nano (rig) + Arduino Nano (beacon)</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Look at each USB port (Mini-USB or USB-C) and have the right cable</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>12 V 3S Li-ion pack + barrel-to-screw-terminal adapter</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Charged: 11.1–12.6 V on the multimeter</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>SPST toggle switch (motor kill switch)</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>830-point breadboard + Dupont jumpers (M-M, M-F, F-F)</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>3 mm acrylic, 6″ × 6″ (2 sheets)</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Sheet 1 = base. Sheet 2 = platform disc, tilt disc, encoder arms</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>M3 screws, nuts, standoffs assortment</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Need: 4 standoffs ≈ 14–15 mm, and one <b>brass</b> standoff ≈ 40 mm (or two 20 mm joined)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>5 mm rigid flange coupling</b> (shaft to plate)</td><td>2</td><td><span class="tag buy">BUY</span></td><td>Bore <b>5 mm</b> with grub screws. Holds the platform and the tilt disc on the shafts with no play. ≈ ₹100–150 each</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>3S (12.6 V) balance charger</b></td><td>1</td><td><span class="tag buy">BUY</span> if not bought</td><td>Never charge a 3S pack on a single-cell charger (fire risk)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>USB-C to USB-A hub / adapter</b></td><td>1</td><td><span class="tag buy">BUY</span> if laptop is USB-C only</td><td>The laptop needs 2 ports at once: Nano + webcam</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Beacon: 10 mm red LED, 220 Ω, switch, ping-pong ball, box, USB power bank</td><td>1 set</td><td><span class="tag have">HAVE</span></td><td>Section 9</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Decoy: white LED, 68 Ω, 3×AA holder + cells, switch</td><td>1 set</td><td><span class="tag have">HAVE</span></td><td>Section 9</td></tr>
+</table></div>
+<div class="info"><b>Optional:</b> a 100 mm lazy-Susan turntable bearing under the platform, only if the platform wobbles (step 4.3). A GT2 20T→60T belt (3:1) gives 3× finer steps but costs a day of fitting. Skip it for Monday. The software already supports it (section 10, MK2 DRIVE).</div>
+
+<!-- ================================================================ 2 -->
+<h2 id="s2"><span class="n">02</span>Tools and software</h2>
+<div class="two">
+<div>
+<h3>Tools</h3>
+<table>
+<tr><td class="c"><input type="checkbox"></td><td><b>Multimeter</b>: Vref, battery voltage, finding motor coil pairs. You can't build this without one.</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>Soldering iron</b> + solder: header pins on the TCA9548A and AS5600s</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Small screwdriver (plastic/ceramic ideal) for the A4988 pot; Phillips for M3</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Drill + 3 mm and 5–6 mm bits (a step bit if you have one); masking tape for acrylic</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Hacksaw / acrylic cutter, file or sandpaper</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Allen key for the flange-coupling grub screws</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Superglue (magnets), hot glue (camera, laser), double-sided foam tape, zip ties, insulation tape</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Wire stripper; ruler; marker; a printed protractor or phone level app</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Two old credit cards: stacked, they make a 1.5 mm gap gauge for the encoders</td></tr>
+</table>
+</div>
+<div>
+<h3>Software</h3>
+<table>
+<tr><td class="c"><input type="checkbox"></td><td><b>Arduino IDE 2</b> (arduino.cc/en/software)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Library <b>AccelStepper</b> by Mike McCauley (Library Manager). <code>Wire</code> is built in.</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Firmware from the repo: <code>tools/rig/rig_firmware_v2.ino</code> (rig) and <code>tools/rig/beacon_firmware.ino</code> (beacon)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>Chrome or Edge</b> (the website talks to the Nano over Web Serial; Safari/Firefox can't)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Clone Nano (CH340 chip) not showing a port: install the CH340 driver</td></tr>
+</table>
+</div>
+</div>
+
+<!-- ================================================================ 3 -->
+<h2 id="s3"><span class="n">03</span>Five safety rules (each one kills a part)</h2>
+<ol class="steps">
+<li><b>Never plug or unplug a motor while the 12 V switch is on.</b> The A4988 dies instantly and silently.</li>
+<li><b>Capacitor on every VMOT</b>, 100 µF, right at the driver pins, correct way round (stripe to GND). Without it the first power-on spike can kill the driver.</li>
+<li><b>One common ground.</b> Battery −, both drivers, the Nano and everything else share GND. Missing ground = motors buzz or do nothing.</li>
+<li><b>Laser:</b> never look into it and never point it at people. Test on a wall.</li>
+<li><b>12 V never goes to the Nano, the 5 V rail, VDD, the TCA or the AS5600s.</b> 12 V only touches VMOT. Check the rails with the multimeter before plugging boards in.</li>
+</ol>
+
+<!-- ================================================================ 4 -->
+<h2 id="s4" class="pgb"><span class="n">04</span>Mechanical build</h2>
+<p>The <a href="assembly.html">3D step-by-step assembly</a> shows every part below arriving in its place: click a stage, orbit, explode. Keep it open next to you.</p>
+<div class="two">
+<figure><img src="cad/renders/04_exploded_labelled.png" alt="Exploded view, parts 1 to 9"><figcaption>Bottom to top: 1 pan motor · 2 base · 3 platform + magnet · 4 pan AS5600 · 5 risers · 6 L-bracket · 7 tilt motor · 8 brass standoff · 9 head.</figcaption></figure>
+<div>
+<figure><img src="cad/renders/05_encoder_detail.png" alt="Encoder detail"><figcaption>The AS5600 chip sits exactly on the axis, 1.5 mm from a diametric magnet on the part that turns. The arm holding the chip must NOT turn.</figcaption></figure>
+<figure><img src="cad/renders/03_head_detail.png" alt="Head detail"><figcaption>Head: camera behind the red filter, laser beside it, both looking the same way.</figcaption></figure>
+</div>
+</div>
+
+<ol class="steps">
+<li><b>4.1 Base plate (acrylic sheet 1).</b> Keep the protective film on, and put masking tape where you'll drill. Mark the centre. Hold the pan motor under the sheet, face up, and mark through its 4 screw holes (a 31 mm square). Drill the 4 holes at 3 mm and the centre at 6 mm. Drill slowly, no pressure, or acrylic cracks.
+<span class="chk">The motor shaft passes through the centre hole without touching the edge.</span></li>
+<li><b>4.2 Pan motor.</b> Bolt the motor <b>under</b> the base, shaft pointing up, with 4 M3×10 screws. Put 2 nuts on each screw between the motor and the plate as spacers: the motor's round boss (22 mm, 2 mm tall) must not press on the acrylic. Stand the base on 4 legs ≥ 55 mm tall (long standoffs, wood blocks or two books) so the motor hangs free. Put the motor cable out to the side you'll wire from.
+<span class="chk">The base sits flat and doesn't rock; the motor doesn't touch the table.</span></li>
+<li><b>4.3 Pan platform + magnet.</b> Cut a 60 mm disc from sheet 2. Draw 2 lines through its centre (a cross). Bolt it on top of a <b>5 mm flange coupling</b>, centred. Slide the coupling onto the pan shaft and leave a 2 mm gap to the base (the credit cards make a good spacer). Tighten the grub screw onto the flat of the shaft. Superglue a <b>diametric</b> magnet exactly on the centre of the cross.
+<span class="chk">Turn the motor shaft by hand: the disc spins flat, with no wobble and no rubbing. The magnet stays on the centre and doesn't draw a circle. If the disc wobbles, re-seat the coupling; last resort is the lazy-Susan bearing.</span></li>
+<li><b>4.4 Magnet test (2 minutes, saves hours).</b> Hold the second magnet near the glued one. A <b>diametric</b> magnet has its N and S on the <i>sides</i>: rolling one around the other flips attract/repel as you go round the edge. An axial magnet has N/S on the flat faces; it will read a constant and the encoder is dead with no error.
+<span class="chk">Both magnets are diametric.</span></li>
+<li><b>4.5 Pan encoder arm (does NOT turn).</b> Put an M3 post (stacked standoffs) on the base about 38 mm from the centre. Screw a strip of acrylic (≈ 12 × 50 mm) on top so it reaches over the centre. Fix the pan AS5600 under the arm, <b>chip face-down, chip exactly over the magnet</b>. Set the height with the 2 credit cards between chip and magnet (1.5 mm; 0.5–3 mm works). Use washers/nuts on the post to adjust.
+<span class="chk">Looking straight down, the chip is centred on the magnet within 0.5 mm, and the arm stays still when the platform turns.</span></li>
+<li><b>4.6 Risers + L-bracket.</b> Four M3 standoffs (14–15 mm) on the platform, L-bracket on top of them. The risers lift the bracket over the encoder arm. Check this in the 3D view. Put the bracket slightly off-centre so the tilt shaft ends up near the pan axis.
+<span class="chk">Turn the platform ±90° by hand: the bracket and risers pass over and around the encoder arm and post without touching.</span></li>
+<li><b>4.7 Tilt motor.</b> Bolt it to the L-bracket upright, shaft <b>horizontal</b>, at right angles to the way the head looks, so tilt nods up and down.
+<span class="chk">The shaft is level (phone level app).</span></li>
+<li><b>4.8 Tilt disc + magnet + encoder.</b> A 40 mm acrylic disc on the second flange coupling, on the tilt shaft. Glue the second diametric magnet at the centre of the disc's outer face. Fix the tilt AS5600 on a small arm bolted to the L-bracket (the side that does NOT turn with tilt). The chip faces the magnet, centred on the shaft line, 1.5 mm away.
+<span class="chk">Nodding the disc by hand, the gap stays at 1.5 mm and nothing rubs.</span></li>
+<li><b>4.9 Brass standoff + head.</b> Bolt the <b>brass</b> M3 standoff (≈ 40 mm) to the tilt disc near its edge, and hang the head box from it. Never use a printed or plastic part here: it sags and shakes. Inside the box, take the webcam board out of its housing. Hot-glue it behind a hole in the front, with the <b>red filter</b> over the lens (filter over the camera only, not the laser). Hot-glue the KY-008 laser beside it, about 20 mm away, pointing the same way (parallel).
+<span class="chk">With the motors unpowered, move the head: it swings freely. Tilt ±18° clears the platform. Camera and laser point the same way (laser dot near the middle of the camera view on a wall 2 m away).</span></li>
+<li><b>4.10 Cables.</b> Run the camera USB, laser wires, tilt-motor cable and tilt-encoder wires down the bracket together (zip ties). Leave a loose <b>service loop</b> at the tilt joint and at the pan joint so full travel never pulls a wire. Keep the loop off the base plate.
+<span class="chk">Pan −90° → +90° and tilt −18° → +18° by hand: no cable goes tight or catches.</span></li>
+</ol>
+
+<!-- ================================================================ 5 -->
+<h2 id="s5" class="pgb"><span class="n">05</span>Wiring: diagrams</h2>
+<p>Wire colours used below: <b style="color:#e0312b">red = 12 V</b>, <b style="color:#e8890c">orange = 5 V</b>, <b>black = GND</b>, <b style="color:#1f6fd1">blue = SDA</b>, <b style="color:#18a058">green = SCL</b>, <b style="color:#8a4fd8">purple = signals</b>. Do all wiring with the battery <b>unplugged</b> and the Nano USB <b>unplugged</b>.</p>
+
+<figure>
+<svg viewBox="0 0 900 400" font-family="Helvetica,Arial,sans-serif" font-size="14">
+  <rect width="900" height="400" fill="#fff"/>
+  <text x="16" y="26" font-size="16" font-weight="700">A. Power: battery → switch → drivers; everything shares GND</text>
+  <!-- battery -->
+  <rect x="20" y="60" width="120" height="70" rx="6" fill="#f4f6f9" stroke="#333"/>
+  <text x="80" y="90" text-anchor="middle" font-weight="700">12 V 3S pack</text>
+  <text x="80" y="110" text-anchor="middle" font-size="12">(barrel adapter)</text>
+  <text x="130" y="76" font-weight="700" fill="#e0312b">+</text><text x="130" y="126" font-weight="700">−</text>
+  <!-- switch -->
+  <line x1="140" y1="72" x2="200" y2="72" stroke="#e0312b" stroke-width="4"/>
+  <circle cx="204" cy="72" r="4" fill="#333"/><line x1="204" y1="72" x2="236" y2="58" stroke="#333" stroke-width="3"/><circle cx="240" cy="72" r="4" fill="#333"/>
+  <text x="222" y="48" text-anchor="middle" font-size="12" font-weight="700">KILL SWITCH</text>
+  <!-- rails -->
+  <line x1="244" y1="72" x2="880" y2="72" stroke="#e0312b" stroke-width="4"/>
+  <text x="870" y="62" text-anchor="end" font-size="12" fill="#e0312b" font-weight="700">12 V RAIL (breadboard top +)</text>
+  <line x1="140" y1="122" x2="880" y2="122" stroke="#111" stroke-width="4"/>
+  <text x="870" y="140" text-anchor="end" font-size="12" font-weight="700">GND RAIL (top −)</text>
+  <!-- drivers -->
+  <g>
+    <rect x="330" y="190" width="170" height="90" rx="6" fill="#1d6b3a"/><text x="415" y="232" text-anchor="middle" fill="#fff" font-weight="700">A4988 · PAN</text><text x="415" y="252" text-anchor="middle" fill="#cfe" font-size="12">VMOT · GND</text>
+    <line x1="370" y1="72" x2="370" y2="190" stroke="#e0312b" stroke-width="4"/><circle cx="370" cy="72" r="5" fill="#e0312b"/>
+    <line x1="460" y1="122" x2="460" y2="190" stroke="#111" stroke-width="4"/><circle cx="460" cy="122" r="5" fill="#111"/>
+    <line x1="370" y1="160" x2="460" y2="160" stroke="#555" stroke-width="2"/>
+    <rect x="400" y="150" width="30" height="20" rx="3" fill="#2b4c9a"/><text x="415" y="164" text-anchor="middle" fill="#fff" font-size="10">100µF</text>
+    <text x="358" y="182" text-anchor="end" font-size="11">+</text><text x="472" y="182" font-size="11">−</text>
+  </g>
+  <g>
+    <rect x="620" y="190" width="170" height="90" rx="6" fill="#1d6b3a"/><text x="705" y="232" text-anchor="middle" fill="#fff" font-weight="700">A4988 · TILT</text><text x="705" y="252" text-anchor="middle" fill="#cfe" font-size="12">VMOT · GND</text>
+    <line x1="660" y1="72" x2="660" y2="190" stroke="#e0312b" stroke-width="4"/><circle cx="660" cy="72" r="5" fill="#e0312b"/>
+    <line x1="750" y1="122" x2="750" y2="190" stroke="#111" stroke-width="4"/><circle cx="750" cy="122" r="5" fill="#111"/>
+    <line x1="660" y1="160" x2="750" y2="160" stroke="#555" stroke-width="2"/>
+    <rect x="690" y="150" width="30" height="20" rx="3" fill="#2b4c9a"/><text x="705" y="164" text-anchor="middle" fill="#fff" font-size="10">100µF</text>
+  </g>
+  <!-- nano -->
+  <rect x="40" y="220" width="200" height="80" rx="6" fill="#1f5fa8"/><text x="140" y="256" text-anchor="middle" fill="#fff" font-weight="700">Arduino Nano (rig)</text><text x="140" y="276" text-anchor="middle" fill="#dbe8ff" font-size="12">GND pin</text>
+  <line x1="200" y1="122" x2="200" y2="220" stroke="#111" stroke-width="4"/><circle cx="200" cy="122" r="5" fill="#111"/>
+  <text x="208" y="176" font-size="12" font-weight="700">COMMON GND</text>
+  <!-- laptop -->
+  <rect x="40" y="340" width="200" height="44" rx="6" fill="#f4f6f9" stroke="#333"/><text x="140" y="367" text-anchor="middle" font-weight="700">Laptop (Chrome)</text>
+  <line x1="140" y1="300" x2="140" y2="340" stroke="#666" stroke-width="5"/><text x="150" y="325" font-size="12">USB (5 V + serial)</text>
+  <rect x="330" y="340" width="170" height="44" rx="6" fill="#f4f6f9" stroke="#333"/><text x="415" y="367" text-anchor="middle" font-weight="700">USB webcam (head)</text>
+  <line x1="240" y1="362" x2="330" y2="362" stroke="#666" stroke-width="5"/>
+  <text x="530" y="330" font-size="12.5">12 V touches <tspan font-weight="700">only</tspan> VMOT.</text>
+  <text x="530" y="350" font-size="12.5">Capacitor legs right at the driver pins,</text>
+  <text x="530" y="368" font-size="12.5">long leg (+) to VMOT, stripe (−) to GND.</text>
+</svg>
+<figcaption>The 12 V pack only powers the motors. The laptop USB powers the Nano, the drivers' logic, the encoders, the laser and the camera.</figcaption>
+</figure>
+
+<figure>
+<svg viewBox="0 0 900 470" font-family="Helvetica,Arial,sans-serif" font-size="14">
+  <rect width="900" height="470" fill="#fff"/>
+  <text x="16" y="26" font-size="16" font-weight="700">B. One A4988 driver, every pin (wire both the same way)</text>
+  <rect x="330" y="50" width="240" height="390" rx="8" fill="#1d6b3a"/>
+  <rect x="405" y="200" width="90" height="90" rx="4" fill="#111"/><text x="450" y="250" text-anchor="middle" fill="#bbb" font-size="12">A4988</text>
+  <circle cx="450" cy="120" r="14" fill="#c9c9c9" stroke="#777"/><text x="450" y="152" text-anchor="middle" fill="#dfe" font-size="11">Vref pot</text>
+  <!-- left pins -->
+  <g font-size="13" fill="#fff" font-weight="700">
+    <text x="345" y="79">EN</text><text x="345" y="124">MS1</text><text x="345" y="169">MS2</text><text x="345" y="214">MS3</text>
+    <text x="345" y="259">RST</text><text x="345" y="304">SLP</text><text x="345" y="349">STEP</text><text x="345" y="394">DIR</text>
+  </g>
+  <g font-size="13" fill="#fff" font-weight="700" text-anchor="end">
+    <text x="555" y="79">VMOT</text><text x="555" y="124">GND</text><text x="555" y="169">2B</text><text x="555" y="214">2A</text>
+    <text x="555" y="259">1A</text><text x="555" y="304">1B</text><text x="555" y="349">VDD</text><text x="555" y="394">GND</text>
+  </g>
+  <!-- left wiring -->
+  <line x1="200" y1="75" x2="330" y2="75" stroke="#111" stroke-width="3"/><text x="192" y="80" text-anchor="end">GND (enables the driver)</text>
+  <line x1="220" y1="120" x2="330" y2="120" stroke="#e8890c" stroke-width="3"/>
+  <line x1="220" y1="165" x2="330" y2="165" stroke="#e8890c" stroke-width="3"/>
+  <line x1="220" y1="210" x2="330" y2="210" stroke="#e8890c" stroke-width="3"/>
+  <line x1="220" y1="120" x2="220" y2="210" stroke="#e8890c" stroke-width="3"/>
+  <text x="212" y="160" text-anchor="end">5 V: MS1, MS2, MS3 all HIGH</text><text x="212" y="178" text-anchor="end" font-size="12">= 1/16 microstep (3200 steps/turn)</text>
+  <path d="M330 255 H300 V300 H330" fill="none" stroke="#8a4fd8" stroke-width="3"/>
+  <text x="292" y="275" text-anchor="end">RST ↔ SLP jumper</text><text x="292" y="292" text-anchor="end" font-size="12">(without it the motor never moves)</text>
+  <line x1="170" y1="345" x2="330" y2="345" stroke="#8a4fd8" stroke-width="3"/><text x="162" y="350" text-anchor="end">Nano <tspan font-weight="700">D2</tspan> pan · <tspan font-weight="700">D4</tspan> tilt</text>
+  <line x1="170" y1="390" x2="330" y2="390" stroke="#8a4fd8" stroke-width="3"/><text x="162" y="395" text-anchor="end">Nano <tspan font-weight="700">D3</tspan> pan · <tspan font-weight="700">D5</tspan> tilt</text>
+  <!-- right wiring -->
+  <line x1="570" y1="75" x2="690" y2="75" stroke="#e0312b" stroke-width="3"/><text x="698" y="80">12 V rail (after switch)</text>
+  <line x1="570" y1="120" x2="690" y2="120" stroke="#111" stroke-width="3"/><text x="698" y="125">GND rail</text>
+  <rect x="640" y="88" width="16" height="22" rx="2" fill="#2b4c9a"/><line x1="648" y1="75" x2="648" y2="88" stroke="#555" stroke-width="2"/><line x1="648" y1="110" x2="648" y2="120" stroke="#555" stroke-width="2"/>
+  <text x="698" y="104" font-size="12" fill="#2b4c9a" font-weight="700">100 µF across VMOT–GND</text>
+  <line x1="570" y1="165" x2="640" y2="165" stroke="#666" stroke-width="3"/><line x1="570" y1="210" x2="640" y2="210" stroke="#666" stroke-width="3"/>
+  <path d="M640 165 H660 V210 H640" fill="none" stroke="#666" stroke-width="3"/><text x="670" y="185">motor coil B</text><text x="670" y="202" font-size="12">(one pair of wires)</text>
+  <line x1="570" y1="255" x2="640" y2="255" stroke="#666" stroke-width="3"/><line x1="570" y1="300" x2="640" y2="300" stroke="#666" stroke-width="3"/>
+  <path d="M640 255 H660 V300 H640" fill="none" stroke="#666" stroke-width="3"/><text x="670" y="275">motor coil A</text><text x="670" y="292" font-size="12">(the other pair)</text>
+  <line x1="570" y1="345" x2="690" y2="345" stroke="#e8890c" stroke-width="3"/><text x="698" y="350">Nano 5 V (logic power)</text>
+  <line x1="570" y1="390" x2="690" y2="390" stroke="#111" stroke-width="3"/><text x="698" y="395">GND</text>
+  <text x="450" y="462" text-anchor="middle" font-size="12.5">Pin order is for the common green/red A4988 board. Read the labels printed on YOUR board and follow the labels.</text>
+</svg>
+<figcaption>Find the coil pairs with the multimeter on continuity/Ω: two wires that read ≈ 1–4 Ω are one coil. One pair goes to 1A/1B, the other to 2A/2B. If the motor turns the wrong way, the website can INVERT it later; don't rewire.</figcaption>
+</figure>
+
+<figure>
+<svg viewBox="0 0 900 430" font-family="Helvetica,Arial,sans-serif" font-size="14">
+  <rect width="900" height="430" fill="#fff"/>
+  <text x="16" y="26" font-size="16" font-weight="700">C. Encoders: Nano → TCA9548A → two AS5600 (both are address 0x36, so the mux is required)</text>
+  <!-- nano -->
+  <rect x="20" y="70" width="170" height="200" rx="6" fill="#1f5fa8"/>
+  <text x="105" y="96" text-anchor="middle" fill="#fff" font-weight="700">Nano (rig)</text>
+  <g fill="#fff" font-size="13" font-weight="700" text-anchor="end"><text x="180" y="134">A4</text><text x="180" y="174">A5</text><text x="180" y="214">5V</text><text x="180" y="254">GND</text></g>
+  <!-- tca -->
+  <rect x="330" y="70" width="190" height="330" rx="6" fill="#16325c"/>
+  <text x="425" y="96" text-anchor="middle" fill="#fff" font-weight="700">TCA9548A (0x70)</text>
+  <g fill="#fff" font-size="13" font-weight="700"><text x="342" y="134">SDA</text><text x="342" y="174">SCL</text><text x="342" y="214">VIN</text><text x="342" y="254">GND</text><text x="342" y="300">A0 A1 A2</text></g>
+  <g fill="#fff" font-size="13" font-weight="700" text-anchor="end"><text x="508" y="134">SD0</text><text x="508" y="174">SC0</text><text x="508" y="294">SD1</text><text x="508" y="334">SC1</text></g>
+  <line x1="190" y1="130" x2="330" y2="130" stroke="#1f6fd1" stroke-width="3"/>
+  <line x1="190" y1="170" x2="330" y2="170" stroke="#18a058" stroke-width="3"/>
+  <line x1="190" y1="210" x2="330" y2="210" stroke="#e8890c" stroke-width="3"/>
+  <line x1="190" y1="250" x2="330" y2="250" stroke="#111" stroke-width="3"/>
+  <path d="M330 296 H300 V250" fill="none" stroke="#111" stroke-width="3"/><text x="292" y="318" text-anchor="end" font-size="12">A0/A1/A2 → GND</text>
+  <!-- as5600 pan -->
+  <rect x="660" y="60" width="200" height="150" rx="6" fill="#6b2d8f"/>
+  <text x="760" y="84" text-anchor="middle" fill="#fff" font-weight="700">AS5600 · PAN</text>
+  <g fill="#fff" font-size="13" font-weight="700"><text x="672" y="114">SDA</text><text x="672" y="144">SCL</text><text x="672" y="172">VCC</text><text x="672" y="196">GND</text><text x="760" y="196">DIR</text></g>
+  <line x1="520" y1="130" x2="600" y2="130" stroke="#1f6fd1" stroke-width="3"/><path d="M600 130 V110 H660" fill="none" stroke="#1f6fd1" stroke-width="3"/>
+  <line x1="520" y1="170" x2="610" y2="170" stroke="#18a058" stroke-width="3"/><path d="M610 170 V140 H660" fill="none" stroke="#18a058" stroke-width="3"/>
+  <!-- as5600 tilt -->
+  <rect x="660" y="250" width="200" height="150" rx="6" fill="#6b2d8f"/>
+  <text x="760" y="274" text-anchor="middle" fill="#fff" font-weight="700">AS5600 · TILT</text>
+  <g fill="#fff" font-size="13" font-weight="700"><text x="672" y="304">SDA</text><text x="672" y="334">SCL</text><text x="672" y="362">VCC</text><text x="672" y="386">GND</text><text x="760" y="386">DIR</text></g>
+  <line x1="520" y1="290" x2="600" y2="290" stroke="#1f6fd1" stroke-width="3"/><path d="M600 290 V300 H660" fill="none" stroke="#1f6fd1" stroke-width="3"/>
+  <line x1="520" y1="330" x2="660" y2="330" stroke="#18a058" stroke-width="3"/>
+  <text x="760" y="232" text-anchor="middle" font-size="12" font-weight="700">Each AS5600: VCC→5V, GND→GND, DIR→GND</text>
+  <text x="450" y="424" text-anchor="middle" font-size="12.5">Channel 0 = PAN, channel 1 = TILT, fixed in the firmware. Swap them and the axes swap.</text>
+</svg>
+<figcaption>Tie DIR to GND (a floating DIR makes the reading jump). If an AS5600 board has a closed "3V3" solder jumper, power that board from the Nano's 3V3 pin instead of 5 V. On the rig, the tilt encoder's 5 wires ride the pan axis: give them a service loop.</figcaption>
+</figure>
+
+<figure>
+<svg viewBox="0 0 900 300" font-family="Helvetica,Arial,sans-serif" font-size="14">
+  <rect width="900" height="300" fill="#fff"/>
+  <text x="16" y="26" font-size="16" font-weight="700">D. Laser (on the rig) · beacon (second Nano) · decoy (no Nano)</text>
+  <!-- laser -->
+  <rect x="20" y="60" width="130" height="110" rx="6" fill="#1f5fa8"/><text x="85" y="88" text-anchor="middle" fill="#fff" font-weight="700">Nano (rig)</text>
+  <g fill="#fff" font-size="13" font-weight="700" text-anchor="end"><text x="140" y="124">D7</text><text x="140" y="154">GND</text></g>
+  <rect x="200" y="90" width="90" height="80" rx="6" fill="#333"/><text x="245" y="116" text-anchor="middle" fill="#fff" font-weight="700" font-size="13">KY-008</text>
+  <g fill="#fff" font-size="12"><text x="212" y="136">S</text><text x="212" y="158">−</text></g>
+  <line x1="150" y1="120" x2="200" y2="132" stroke="#8a4fd8" stroke-width="3"/><line x1="150" y1="150" x2="200" y2="154" stroke="#111" stroke-width="3"/>
+  <text x="20" y="200" font-size="12.5">Middle pin: leave unconnected.</text>
+  <text x="20" y="218" font-size="12.5">Firmware blinks it at 7 Hz so the camera</text>
+  <text x="20" y="236" font-size="12.5">can tell its dot from the 4 Hz beacon.</text>
+  <!-- beacon -->
+  <rect x="330" y="60" width="130" height="110" rx="6" fill="#1f5fa8"/><text x="395" y="88" text-anchor="middle" fill="#fff" font-weight="700">Nano (beacon)</text>
+  <g fill="#fff" font-size="13" font-weight="700" text-anchor="end"><text x="450" y="124">D9</text><text x="450" y="154">GND</text></g>
+  <line x1="460" y1="120" x2="490" y2="120" stroke="#8a4fd8" stroke-width="3"/>
+  <rect x="490" y="112" width="44" height="16" rx="3" fill="#c9a36b"/><text x="512" y="106" text-anchor="middle" font-size="12">220 Ω</text>
+  <line x1="534" y1="120" x2="570" y2="120" stroke="#8a4fd8" stroke-width="3"/>
+  <circle cx="584" cy="135" r="16" fill="#e0312b"/><text x="584" y="140" text-anchor="middle" fill="#fff" font-size="10" font-weight="700">LED</text>
+  <text x="604" y="118" font-size="12">long leg (+)</text>
+  <path d="M584 151 V150 M584 151 V170 H460 V150" fill="none" stroke="#111" stroke-width="3"/><text x="604" y="170" font-size="12">short leg (−) → GND</text>
+  <text x="330" y="200" font-size="12.5">10 mm red LED, half ping-pong ball over it.</text>
+  <text x="330" y="218" font-size="12.5">Power: USB power bank into the Nano.</text>
+  <text x="330" y="236" font-size="12.5">Firmware: 4.00 Hz on boot.</text>
+  <!-- decoy -->
+  <rect x="700" y="60" width="90" height="60" rx="6" fill="#f4f6f9" stroke="#333"/><text x="745" y="86" text-anchor="middle" font-weight="700" font-size="13">3 × AA</text><text x="745" y="104" text-anchor="middle" font-size="12">4.5 V</text>
+  <line x1="790" y1="75" x2="830" y2="75" stroke="#e0312b" stroke-width="3"/><text x="826" y="64" text-anchor="middle" font-size="12">switch</text>
+  <line x1="830" y1="75" x2="860" y2="75" stroke="#e0312b" stroke-width="3"/><line x1="860" y1="75" x2="860" y2="130" stroke="#e0312b" stroke-width="3"/>
+  <rect x="852" y="130" width="16" height="36" rx="3" fill="#c9a36b"/><text x="845" y="152" text-anchor="end" font-size="12">68 Ω</text>
+  <line x1="860" y1="166" x2="860" y2="186" stroke="#e0312b" stroke-width="3"/>
+  <circle cx="860" cy="202" r="16" fill="#f5f5f5" stroke="#999"/><text x="860" y="206" text-anchor="middle" font-size="9">WHITE</text>
+  <path d="M860 218 V250 H745 V120" fill="none" stroke="#111" stroke-width="3"/>
+  <text x="700" y="275" font-size="12.5">Decoy: steady, brighter, never blinks.</text>
+</svg>
+<figcaption>The beacon Nano can drive the LED straight from D9 through 220 Ω (≈ 14 mA). The 2N2222 in the kit is not needed.</figcaption>
+</figure>
+
+<!-- ================================================================ 6 -->
+<h2 id="s6" class="pgb"><span class="n">06</span>Wiring: wire-by-wire list (tick each one)</h2>
+<p>Breadboard layout: top rail pair = <b>12 V / GND</b>, bottom rail pair = <b>5 V / GND</b>. Nano in the middle, the two A4988s either side, TCA9548A at one end. Leave the 12 V rail's + side empty until step 8.3.</p>
+<div class="tw"><table>
+<tr><th></th><th>#</th><th>From</th><th>To</th><th>Note</th></tr>
+<tr><td colspan="5"><b>Power and ground</b></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>1</td><td>Battery + (barrel adapter)</td><td>Kill switch, pin 1</td><td>Red wire</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>2</td><td>Kill switch, pin 2</td><td>Top rail +, the <b>12 V rail</b></td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>3</td><td>Battery −</td><td>Top rail −, the <b>GND rail</b></td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>4</td><td>Top GND rail</td><td>Bottom GND rail</td><td><b>Common ground.</b> Don't skip it.</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>5</td><td>Nano GND</td><td>Bottom GND rail</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>6</td><td>Nano 5V</td><td>Bottom + rail, the <b>5 V rail</b></td><td>Never connect this to the 12 V rail</td></tr>
+<tr><td colspan="5"><b>PAN driver (A4988 #1)</b></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>7</td><td>12 V rail</td><td>PAN VMOT</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>8</td><td>GND rail</td><td>PAN GND (next to VMOT)</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>9</td><td>100 µF: long leg / stripe leg</td><td>PAN VMOT / PAN GND</td><td>Right at the pins</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>10</td><td>5 V rail</td><td>PAN VDD</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>11</td><td>GND rail</td><td>PAN GND (next to VDD)</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>12</td><td>5 V rail</td><td>PAN MS1, MS2, MS3</td><td>3 short jumpers → 1/16 step</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>13</td><td>PAN RST</td><td>PAN SLP</td><td>Short jumper between the two pins</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>14</td><td>PAN EN</td><td>GND rail</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>15</td><td>Nano <b>D2</b></td><td>PAN STEP</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>16</td><td>Nano <b>D3</b></td><td>PAN DIR</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>17</td><td>Pan motor coil A / coil B</td><td>PAN 1A-1B / 2A-2B</td><td>Pairs from the multimeter test</td></tr>
+<tr><td colspan="5"><b>TILT driver (A4988 #2): same as PAN, different Nano pins</b></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>18–25</td><td colspan="2">Repeat wires 7–14 on the TILT driver</td><td>VMOT, GND, cap, VDD, GND, MS1-3, RST-SLP, EN</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>26</td><td>Nano <b>D4</b></td><td>TILT STEP</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>27</td><td>Nano <b>D5</b></td><td>TILT DIR</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>28</td><td>Tilt motor coil A / coil B</td><td>TILT 1A-1B / 2A-2B</td><td></td></tr>
+<tr><td colspan="5"><b>Encoders</b></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>29</td><td>Nano <b>A4</b></td><td>TCA9548A SDA</td><td>Blue</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>30</td><td>Nano <b>A5</b></td><td>TCA9548A SCL</td><td>Green</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>31</td><td>5 V rail / GND rail</td><td>TCA9548A VIN / GND</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>32</td><td>GND rail</td><td>TCA9548A A0, A1, A2</td><td>Address 0x70</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>33</td><td>TCA <b>SD0 / SC0</b></td><td>PAN AS5600 SDA / SCL</td><td>Channel 0 = pan</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>34</td><td>5 V rail / GND rail / GND rail</td><td>PAN AS5600 VCC / GND / DIR</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>35</td><td>TCA <b>SD1 / SC1</b></td><td>TILT AS5600 SDA / SCL</td><td>Channel 1 = tilt</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>36</td><td>5 V rail / GND rail / GND rail</td><td>TILT AS5600 VCC / GND / DIR</td><td></td></tr>
+<tr><td colspan="5"><b>Laser and USB</b></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>37</td><td>Nano <b>D7</b></td><td>KY-008 S</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>38</td><td>GND rail</td><td>KY-008 −</td><td>Middle pin: nothing</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>39</td><td>Nano USB</td><td>Laptop</td><td>Serial + 5 V</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>40</td><td>Webcam USB</td><td>Laptop (hub if needed)</td><td></td></tr>
+</table></div>
+<div class="info"><b>Not used in this build:</b> D8 (vibration injector) and D9/D10 (old servo fine stage). Leave them empty.</div>
+
+<!-- ================================================================ 7 -->
+<h2 id="s7"><span class="n">07</span>Arduino: flash the firmware</h2>
+<ol class="steps">
+<li>Arduino IDE → <b>Tools → Manage Libraries</b> → search <code>AccelStepper</code> → install (Mike McCauley).</li>
+<li>Open <code>tools/rig/rig_firmware_v2.ino</code>. Direct drive needs no edits. (Belt 20T→60T only: set <code>PAN_GEAR_RATIO</code> / <code>TILT_GEAR_RATIO</code> to <code>3.0</code>.)</li>
+<li><b>Tools → Board → Arduino Nano</b>. <b>Processor → ATmega328P</b>. If upload fails with "not in sync", choose <b>ATmega328P (Old Bootloader)</b> (most clones).</li>
+<li><b>Tools → Port</b> → the Nano (appears when you plug it in; <code>usbserial</code>/<code>wchusbserial</code> on Mac, <code>COMx</code> on Windows). Click <b>Upload</b>.</li>
+<li><b>Tools → Serial Monitor</b>. Set <b>115200 baud</b> and line ending <b>Newline</b>.
+<span class="chk">It prints <code># ZeroDrift Mk2 ready, encoders=yes</code>. "encoders=no" → section 12.</span></li>
+</ol>
+
+<!-- ================================================================ 8 -->
+<h2 id="s8" class="pgb"><span class="n">08</span>First power-on and tests</h2>
+<ol class="steps">
+<li><b>8.1 Rails check (battery unplugged, Nano on USB).</b> Multimeter DC V: 5 V rail to GND ≈ 4.7–5.0 V. The 12 V rail reads 0.
+<span class="chk">5 V present; nothing is hot.</span></li>
+<li><b>8.2 Set Vref on both drivers (Nano USB only, battery OFF).</b> Black probe on GND, red probe touching the metal of the driver's little pot. Turn gently to read:
+<div class="tw"><table><tr><th>Resistor marking</th><th>R100 (most common)</th><th>R050</th><th>R200</th></tr>
+<tr><td>Vref (≈ 0.7 A per coil)</td><td><b>0.55 V</b></td><td><b>0.28 V</b></td><td><b>1.1 V</b></td></tr></table></div>
+<span class="chk">Both drivers set. (Vref = current × 8 × resistor. The motors hold firmly, and the drivers only get warm.)</span></li>
+<li><b>8.3 Motors on.</b> Motors plugged in. Flip the kill switch ON.
+<span class="chk">Both shafts become stiff (holding). No smell, no hot chip after 1 minute. If a driver gets too hot to touch, lower Vref 10 %.</span></li>
+<li><b>8.4 Serial tests.</b> Type each line into the Serial Monitor and press Enter:
+<pre><span class="m">you type          what should happen</span>
+?                 <span class="y">S 0 0 E 0</span>          <span class="m">E = encoder reading (C = no encoders)</span>
+P267 T0           pan turns 30°    <span class="m">(8.889 steps per degree)</span>
+?                 <span class="y">S 26x 0 E 0</span>        <span class="m">pan ≈ 267 ± 3 from the encoder</span>
+P0 T0             pan returns
+T89               tilt nods 10°
+T0                tilt returns
+L1                laser ON (steady)
+L7.0              laser blinks 7 Hz
+L0                laser OFF
+!                 <span class="y"># encoder reads 10.0x deg (expect ~10.00 ...)</span>
+Z                 <span class="y"># zeroed</span>   <span class="m">here = straight ahead</span></pre>
+<span class="chk">Pan and tilt both move, both come back, and the encoder numbers match the command within a few steps.</span></li>
+<li><b>8.5 Encoder direction.</b> After <code>P267 T0</code>, <code>?</code> must say about <b>+267</b>. If it says <b>−267</b>, move that AS5600's <b>DIR wire from GND to 5 V</b>. Do the same for tilt with <code>T89</code>.
+<span class="chk">Encoder sign equals the command sign on both axes.</span></li>
+<li><b>8.6 Close the Serial Monitor</b>, or the website can't open the port.</li>
+</ol>
+
+<!-- ================================================================ 9 -->
+<h2 id="s9"><span class="n">09</span>Beacon and decoy</h2>
+<ol class="steps">
+<li><b>Beacon.</b> Second Nano: D9 → 220 Ω → red LED long leg; short leg → GND. LED through a hole in the box lid, half a sanded ping-pong ball glued over it. Flash <code>tools/rig/beacon_firmware.ino</code>. Power from a USB power bank.
+<span class="chk">Serial Monitor (115200) shows <code>ZeroDrift beacon ready  F4.00 B255 M1</code>. The LED blinks 4 times a second. Commands: <code>F6.0</code> sets 6 Hz, <code>M0</code> steady, <code>M1</code> blink.</span></li>
+<li><b>Decoy.</b> 3×AA → switch → 68 Ω → white LED → back to the battery −. Steady, brighter than the beacon.
+<span class="chk">On the Live page the decoy never gets locked, even when it's the brightest thing in view.</span></li>
+</ol>
+
+<!-- ================================================================ 10 -->
+<h2 id="s10"><span class="n">10</span>Connect to the website</h2>
+<p>Open <b>zerodrift-fsoc-pat.netlify.app/live</b> in Chrome or Edge.</p>
+<ol class="steps">
+<li><b>START CAMERA</b>, then <b>MK2 CAMERA (USB)</b>. The view switches to the head's camera (HUD says <i>MK2 CAM</i>).
+<span class="chk">Wave in front of the head: you see it on screen.</span></li>
+<li><b>CONNECT RIG</b> → pick the Nano's port.
+<span class="chk">The RIG card says <b>MK2 · encoders</b>.</span></li>
+<li><b>MK2 DRIVE</b> = <b>Direct drive</b> (or 3:1 only if you fitted belts AND set the firmware ratio).</li>
+<li><b>TEST MOTION</b>: it should pan right, tilt up, then blink the laser.
+<span class="chk">Wrong direction → tick <b>INVERT PAN</b> / <b>INVERT TILT</b>. Wrong axis → <b>SWAP PAN / TILT</b>. Repeat until correct.</span></li>
+<li><b>BEACON RATE</b> = 4 Hz (the beacon's rate). Only that rate (±10 %) is locked; a 3 Hz or 5 Hz light is ignored.</li>
+<li>Beacon on, 1–3 m away.
+<span class="chk">It locks (green box). The head turns until the beacon is in the centre. The GIMBAL readout ends in <b>enc</b> (encoder confirmed).</span></li>
+<li>Bright room: the red filter over the camera is what makes this work. If the room is still too bright, add a second layer or dim the lights. The <b>EXPOSURE</b> slider helps where the browser supports it (Windows/Android).</li>
+</ol>
+
+<!-- ================================================================ 11 -->
+<h2 id="s11"><span class="n">11</span>Calibrate (15 minutes)</h2>
+<ol class="steps">
+<li><b>Straight ahead = zero.</b> Kill switch OFF, point the head straight ahead by hand, then press <b>CONNECT RIG</b>. Connecting restarts the Nano, and it takes the current position as zero. Then switch the motors ON. (In the Serial Monitor, <code>Z</code> does the same.)</li>
+<li><b>45° check</b> (Serial Monitor, before connecting the website). Send <code>P400 T0</code> (45°) and check it with a printed protractor under the platform.
+<span class="chk">45° ± 1°, and <code>?</code> reads ≈ 400. If it's off by exactly 2×, 4× or ½, the MS1-3 jumpers are wrong.</span></li>
+<li><b>SET AIM</b> (the important one). Put a sheet of white paper behind the beacon. When the beacon is locked, the laser switches on by itself (blinking at 7 Hz). Click <b>SET AIM</b>, then click exactly on the laser dot in the video.
+<span class="chk">From now on the rig puts the beacon on the laser dot, not the image centre. This cancels the camera–laser offset (parallax).</span></li>
+<li><b>Balance.</b> Motors off, leave the head at +15° and at −15°. If it drops, move the camera/laser/standoff until it stays. A balanced head doesn't sag or lose steps.</li>
+</ol>
+
+<!-- ================================================================ 12 -->
+<h2 id="s12"><span class="n">12</span>Troubleshooting</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Most likely cause</th><th>Fix</th></tr>
+<tr><td>Motor doesn't move, no holding</td><td>RST–SLP jumper missing; no 12 V; EN not to GND</td><td>Wires 13/14; switch on; meter VMOT ≈ 12 V</td></tr>
+<tr><td>Motor buzzes / shakes, doesn't turn</td><td>Coil pairs mixed (1A with 2A)</td><td>Re-find pairs with the meter; one pair on 1A/1B, the other on 2A/2B</td></tr>
+<tr><td>Moves but angle is 2×/4×/½ off</td><td>MS1-3 not all at 5 V</td><td>Wire 12 (all three HIGH = 1/16)</td></tr>
+<tr><td>Misses steps / loses position</td><td>Vref too low, unbalanced head, cable pulling</td><td>Vref +10 %, balance the head (11.4), free the service loop</td></tr>
+<tr><td>Driver very hot / shuts off</td><td>Vref too high</td><td>Lower Vref; stick a small heatsink on the chip</td></tr>
+<tr><td><code>encoders=no</code></td><td>SDA/SCL swapped; TCA not powered; A0-A2 floating; headers not soldered</td><td>A4→SDA, A5→SCL; 5 V on VIN; A0-A2 to GND; solder headers</td></tr>
+<tr><td><code>?</code> encoder number doesn't change</td><td>Axial magnet, or chip off-axis / gap too big</td><td>Magnet test (4.4); centre chip; gap 1–2 mm</td></tr>
+<tr><td>Encoder sign opposite to command</td><td>AS5600 DIR</td><td>Move DIR from GND to 5 V (8.5)</td></tr>
+<tr><td>Upload fails "not in sync"</td><td>Clone bootloader</td><td>Processor → ATmega328P (Old Bootloader)</td></tr>
+<tr><td>CONNECT RIG: port busy / nothing</td><td>Serial Monitor still open; Safari</td><td>Close Serial Monitor; use Chrome/Edge</td></tr>
+<tr><td>MK2 CAMERA shows the laptop camera</td><td>Webcam not plugged / needs permission</td><td>Plug it in, reload, allow camera, press MK2 CAMERA (USB) again</td></tr>
+<tr><td>Won't lock in a bright room</td><td>Camera over-exposed</td><td>Red filter over the lens (2 layers if needed), dim lights</td></tr>
+<tr><td>Locks, then turns away from the beacon</td><td>Axis direction</td><td>INVERT / SWAP in the RIG card, TEST MOTION again</td></tr>
+<tr><td>Beacon on the centre, not on the laser dot</td><td>Aim not set</td><td>SET AIM (11.3)</td></tr>
+<tr><td>Wrong rate shown / not locking</td><td>BEACON RATE ≠ beacon</td><td>Set BEACON RATE to the beacon's F value (4 Hz default)</td></tr>
+</table></div>
+
+<h3>Quick reference</h3>
+<div class="tw"><table>
+<tr><th>Nano pin</th><th>Goes to</th><th>Nano pin</th><th>Goes to</th></tr>
+<tr><td>D2 / D3</td><td>PAN STEP / DIR</td><td>A4 / A5</td><td>TCA9548A SDA / SCL</td></tr>
+<tr><td>D4 / D5</td><td>TILT STEP / DIR</td><td>5V</td><td>VDD ×2, MS1-3 ×2, TCA VIN, AS5600 VCC ×2</td></tr>
+<tr><td>D7</td><td>Laser S</td><td>GND</td><td>Common ground (battery −, drivers, TCA, AS5600, laser, EN, A0-A2, DIR)</td></tr>
+</table></div>
+<p class="foot">ZeroDrift · Team ZeroDrift, Jabalpur Engineering College · SIH 2026 PS26169. Firmware: tools/rig/rig_firmware_v2.ino. Geometry: docs/cad (same source as the 3D assembly).</p>
+</main>
+<script>
+// Ticks are remembered on this device only, so the page works as a checklist.
+(function () {
+  var boxes = document.querySelectorAll('input[type=checkbox]');
+  var saved = {};
+  try { saved = JSON.parse(localStorage.getItem('zd_build_ticks') || '{}'); } catch (e) {}
+  boxes.forEach(function (b, i) {
+    if (saved[i]) b.checked = true;
+    b.addEventListener('change', function () {
+      saved[i] = b.checked;
+      try { localStorage.setItem('zd_build_ticks', JSON.stringify(saved)); } catch (e) {}
+    });
+  });
+})();
+</script>
+</body>
+</html>

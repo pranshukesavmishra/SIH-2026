@@ -109,7 +109,14 @@ const SCEN = [
   { name: 'jerky_hand_2',    path: jerky(99),     dur: 14 },
   { name: 'across_the_lamp', path: traj.overLamp, dur: 12 },
   { name: 'phone_screen_dim',path: traj.circle,   dur: 10, screen: true },
-  { name: 'off_nominal_4.6Hz', path: traj.medium, dur: 10, hz: 4.6 },
+  { name: 'off_nominal_4.3Hz', path: traj.medium, dur: 10, hz: 4.3 },
+  // Only the SET rate locks: at a 4 Hz setting a light blinking at 3, 3.5
+  // or 5 Hz -- the same torch, the same hand -- must never be locked.
+  { name: 'reject_3Hz_at_4',  path: traj.medium,   dur: 12, hz: 3.0, reject: true },
+  { name: 'reject_3.5Hz_at_4',path: traj.medium,   dur: 12, hz: 3.5, reject: true },
+  { name: 'reject_5Hz_at_4',  path: traj.medium,   dur: 12, hz: 5.0, reject: true },
+  { name: 'set6_beacon6',     path: traj.medium,   dur: 12, hz: 6.0, target: 6 },
+  { name: 'reject_5Hz_at_6',  path: traj.medium,   dur: 12, hz: 5.0, target: 6, reject: true },
   { name: 'turning_torch',   path: traj.medium,   dur: 12, turning: true },
   // Stretch case, reported but not gating: at 20 fps the same hand speed
   // is 1.5x the pixels per frame and the beacon is dark for 2.5 frames.
@@ -151,7 +158,7 @@ function run(sc, verbose) {
   const wave = sc.real && !sc.path ? jerky(500 + (+process.env.SEED || 0)) : null;
   const img = new Float32Array(W * H);
   const rgba = new Uint8ClampedArray(W * H * 4);
-  const tk = new Tracker({ targetHz: 4 });
+  const tk = new Tracker({ targetHz: sc.target || 4 });
   const fps = sc.fps || 30, hz = sc.hz || 4, phase0 = r();
   let t = 0, agc = 1;
   const out = { litErrs: [], missHist: {}, acq: null, inAfter: 0, n: 0, inFrame: 0, good: 0, wrong: 0, errs: [], lockedFrames: 0, maxGap: 0 };
@@ -260,7 +267,7 @@ function run(sc, verbose) {
     }
     const inFrame = truth && truth[0] > 0 && truth[1] > 0 && truth[0] < W && truth[1] < H;
     if (tg) out.lockedFrames++;
-    if (!truth) { if (tg) out.wrong++; continue; }
+    if (!truth || sc.reject) { if (tg) out.wrong++; continue; }
     if (!inFrame) continue;
     out.inFrame++;
     const e = tg ? Math.hypot(tg.x - truth[0], tg.y - truth[1]) : Infinity;
@@ -297,7 +304,7 @@ console.log('scenario              acquire   held%   lit-err p50/p95   all p50/p
 for (const sc of SCEN) {
   if (only && only !== '-v' && sc.name !== only) continue;
   const o = run(sc, verbose);
-  if (!sc.path) {
+  if (!sc.path || sc.reject) {
     const ok = o.wrong === 0;   // any lock at all with no beacon is a failure
     if (!ok) fail++;
     console.log(`${sc.name.padEnd(20)}  ${'—'.padStart(6)}   ${'—'.padStart(5)}   ${'—'.padStart(5)}  ${'—'.padStart(4)}  ${String(o.wrong).padStart(5)}  ${ok ? 'PASS (never locked)' : 'FAIL: locked on a decoy'}`);

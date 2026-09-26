@@ -24,6 +24,7 @@
 
   const DEFAULTS = {
     targetHz: 4,
+    rateTol: 0.10,         // accepted blink rate: targetHz within ±10%
     minBright: 150,        // a blob must reach this luma to be seeded
     minDepth: 0.30,        // (on - off) / on along a track
     seedContrast: 38,      // luma above local background to seed a blob
@@ -255,6 +256,12 @@
              pass: 0, passing: false, lit: true };
   }
 
+  // The accepted band around the set rate: ±10%, never tighter than
+  // ±0.3 Hz (what a 30 fps camera can resolve over one identification).
+  Tracker.prototype._tol = function () {
+    return Math.max(0.3, this.o.rateTol * this.o.targetHz);
+  };
+
   Tracker.prototype._score = function (tr, now) {
     const o = this.o, H = tr.hist;
     const from = now - o.windowS;
@@ -271,9 +278,15 @@
     for (let i = i0; i < H.length; i++) { const d = H[i].c - mean; pow += d * d; }
     if (pow < 1e-6) return false;
 
-    let best = 0, bestF = 0, bestRe = 0, bestIm = 0;
+    // The blink rate is whatever rate dominates this light's brightness --
+    // searched well beyond the band, so a light blinking at 3 or 5 Hz is
+    // measured AS 3 or 5 Hz and refused at a 4 Hz setting, instead of
+    // leaking into the band edge and passing.
+    const tol = this._tol(), f0 = o.targetHz;
+    let best = 0, bestF = 0, bestRe = 0, bestIm = 0, dom = 0, domF = 0;
     const t0 = H[i0].t;
-    for (let f = o.targetHz - 1; f <= o.targetHz + 1.0001; f += 0.1) {
+    const nyq = 0.5 * (this.fps || 30);
+    for (let f = 0.75; f < nyq - 0.4; f += 0.05) {
       let re = 0, im = 0;
       const wv = 2 * Math.PI * f;
       for (let i = i0; i < H.length; i++) {
@@ -281,7 +294,10 @@
         re += d * Math.cos(th); im -= d * Math.sin(th);
       }
       const frac = (2 * (re * re + im * im) / n) / pow;
-      if (frac > best) { best = frac; bestF = f; bestRe = re; bestIm = im; }
+      // (Below 1.25 Hz is drift -- a hand moving the light across
+      // brighter and darker background -- not a blink rate.)
+      if (f >= 1.25 && frac > dom) { dom = frac; domF = f; }
+      if (Math.abs(f - f0) <= tol && frac > best) { best = frac; bestF = f; bestRe = re; bestIm = im; }
     }
     const s = []; for (let i = i0; i < H.length; i++) s.push(H[i].c);
     s.sort((a, b) => a - b);
@@ -289,30 +305,16 @@
     // Depth against the lit level including background: a beacon's off
     // phase in a lit room is not black, it is back down at the background.
     const depth = p90 > 0 ? (p90 - p10) / (p90 + (tr.bgLevel || 0)) : 0;
-    // Energy peaking at the band edge is the roll-off of something outside
-    // it (mains flicker aliasing in), not a beacon inside it.
-    const edge = bestF <= o.targetHz - 0.85 || bestF >= o.targetHz + 0.85;
-    // And the same test just outside the band: a light blinking at the wrong
-    // rate (a slow indicator, a strobe at twice the rate) is marked, so the
-    // lock can refuse it on sight rather than after following it a while.
-    let fout = 0;
-    const nyq = 0.5 * (this.fps || 30);
-    const outF = [];
-    for (let f = 0.75; f <= o.targetHz - 2; f += 0.25) outF.push(f);
-    for (let f = o.targetHz + 2; f < nyq - 0.5; f += 0.5) outF.push(f);
-    for (const f of outF) {
-      let re = 0, im = 0;
-      const wv = 2 * Math.PI * f;
-      for (let i = i0; i < H.length; i++) {
-        const th = wv * (H[i].t - t0), d = H[i].c - mean;
-        re += d * Math.cos(th); im -= d * Math.sin(th);
-      }
-      fout = Math.max(fout, (2 * (re * re + im * im) / n) / pow);
-    }
-    tr.wrongRate = depth >= o.minDepth && fout > 0.35 && fout > 1.6 * best;
-    tr.score = Math.min(1, best); tr.freq = bestF; tr.depth = depth;
+    // The dominant rate must BE the set rate (within the band): energy that
+    // peaks outside it -- a slower or faster blinker, mains flicker aliasing
+    // in -- is a different light, however much of it spills into the band.
+    const onRate = Math.abs(domF - f0) <= tol;
+    // A light clearly blinking, but at another rate, is marked so the lock
+    // can refuse it on sight rather than after following it a while.
+    tr.wrongRate = depth >= o.minDepth && dom > 0.35 && !onRate && dom > 1.6 * best;
+    tr.score = Math.min(1, best); tr.freq = domF; tr.depth = depth;
     tr.phase = Math.atan2(bestIm, bestRe); tr.t0 = t0;
-    return best >= o.minFrac && depth >= o.minDepth && p10 <= 0.6 * p90 && !edge && p90 >= 25 && !tr.wrongRate;
+    return best >= o.minFrac && onRate && depth >= o.minDepth && p10 <= 0.6 * p90 && p90 >= 25 && !tr.wrongRate;
   };
 
   Tracker.prototype._updateTracks = function (blobs, t) {
@@ -400,7 +402,7 @@
      FOLLOW: the beacon filter
      ================================================================ */
   Tracker.prototype._startLock = function (src, t, how) {
-    const period = 1 / (src.freq || this.o.targetHz);
+    const period = 1 / (src.freq && Math.abs(src.freq - this.o.targetHz) <= this._tol() ? src.freq : this.o.targetHz);
     // Phase from the identification's own Fourier coefficient: the
     // fundamental of a 50% square wave peaks mid-way through the lit half,
     // so switch-on is a quarter period before that peak.
@@ -446,7 +448,7 @@
     if (Math.abs(e) > 0.4) return;            // ambiguous: ignore
     L.tOn += 0.12 * e * L.period;
     L.perr = 0.9 * (L.perr || 0) + e;
-    const lo = 1 / (this.o.targetHz + 1.2), hi = 1 / Math.max(0.5, this.o.targetHz - 1.2);
+    const tol = this._tol(), lo = 1 / (this.o.targetHz + tol), hi = 1 / Math.max(0.5, this.o.targetHz - tol);
     L.period = Math.min(hi, Math.max(lo, L.period * (1 + 0.004 * L.perr)));
     L.freq = 1 / L.period;
   };
@@ -551,7 +553,14 @@
       // A lit run starts after any frame the beacon was not taken -- whether
       // or not the dark was seen (the prediction may have sat over a bright
       // wall). A steady light, taken every frame, never gets that reset.
-      if (!L.prevLit || nf > 1) { L.litSince = t; L.litX = L.mx; L.litY = L.my; L.litVx = L.vx; L.litVy = L.vy; }
+      if (!L.prevLit || nf > 1) {
+        L.litSince = t; L.litX = L.mx; L.litY = L.my; L.litVx = L.vx; L.litVy = L.vy;
+        // A genuine switch-on for the rate measurement: darkness actually
+        // seen at the beacon, then a sharp rise. A frame skipped mid-flash,
+        // or a stray light taken for a moment, is not one -- counting those
+        // read a 4 Hz beacon as 4.6-5.2 Hz.
+        if (!L.prevLit && L.darkSeen && best.rise >= 0.5 * L.onLevel && this._rateCheck(L, t)) return;
+      }
       // What we are following is lit when its own phase says dark. Once is
       // phase error; three times in quick succession is a different light.
       // (Counted only for a light we actually TOOK: coasting over a bright
@@ -561,7 +570,7 @@
         if (L.wrongLit >= 3) { this._reject(L, best, t, 'lit when it should be dark'); return; }
       } else L.wrongLit = Math.max(0, (L.wrongLit || 0) - 0.34);
       this._pll(L, t, 0.25);
-      L.lastSeen = t; L.lit = true; L.prevLit = true; L.seen++; L.misses = 0;
+      L.lastSeen = t; L.lit = true; L.prevLit = true; L.darkSeen = false; L.seen++; L.misses = 0;
       L.size = 0.8 * L.size + 0.2 * best.size;
       L.area = 0.8 * (L.area || best.area) + 0.2 * best.area;
       L.onLevel = 0.9 * L.onLevel + 0.1 * best.c;
@@ -570,7 +579,7 @@
       // Steady veto: a real beacon at the bottom of the band stays lit for
       // at most half a period. Following something lit for much longer means
       // we are on a steady light: remember it as such and let go.
-      const litMax = 1.7 * 0.5 / Math.max(1, o.targetHz - 1);
+      const litMax = 1.7 * 0.5 / Math.max(1, o.targetHz - this._tol());
       if (t - L.litSince > litMax) { this._reject(L, best, t, 'steady light'); return; }
     } else {
       L.misses = nf; L.lit = false;
@@ -580,7 +589,7 @@
       // Only a dark phase actually SEEN counts as one. Assuming it from a
       // skipped frame let a lamp the lock had slid onto look like it blinked.
       if (c < 0.45 * L.onLevel) {
-        L.prevLit = false; L.wrongLit = Math.max(0, (L.wrongLit || 0) - 0.5);
+        L.prevLit = false; L.darkSeen = true; L.wrongLit = Math.max(0, (L.wrongLit || 0) - 0.5);
         if (t - L.lastSeen < 0.6 * L.period) this._pll(L, t, 0.75);
       }
 
@@ -657,6 +666,34 @@
     if (t - L.lastSeen > this.o.coastS) this._loseLock(t, why);
   };
 
+  /* The blink rate, measured from the lock's own switch-ons: the median
+     spacing of the last few seconds' relights. This is the number shown,
+     and the lock is let go if it sits outside the set rate's band for a
+     second -- a 3 or 5 Hz light is never followed at a 4 Hz setting. */
+  Tracker.prototype._rateCheck = function (L, t) {
+    const f0 = this.o.targetHz, tol = this._tol();
+    (L.ons = L.ons || []).push(t);
+    while (L.ons.length && t - L.ons[0] > 3) L.ons.shift();
+    const iv = [];
+    for (let i = 1; i < L.ons.length; i++) {
+      const d = L.ons[i] - L.ons[i - 1];
+      if (d >= 0.55 / f0 && d <= 1.5 / f0) iv.push(d);      // skip missed flashes
+    }
+    if (iv.length < 6) return false;
+    // Trimmed mean, not median: frames arrive in 33 ms steps, so single
+    // intervals are quantised and a median of them cannot tell 3.5 Hz from
+    // 3.75; the mean of several can.
+    iv.sort((a, b) => a - b);
+    const cut = iv.length >= 6 ? 1 : 0;
+    let sum = 0; for (let i = cut; i < iv.length - cut; i++) sum += iv[i];
+    L.rate = (iv.length - 2 * cut) / sum;
+    if (Math.abs(L.rate - f0) > 1.2 * tol) {
+      if (L.rateBad === undefined) L.rateBad = t;
+      if (t - L.rateBad > 1.0) { this._loseLock(t, `blinks at ${L.rate.toFixed(1)} Hz, set to ${f0} Hz`); return true; }
+    } else L.rateBad = undefined;
+    return false;
+  };
+
   Tracker.prototype._loseLock = function (t, why) {
     const L = this.lock;
     this.lost = { x: L.x, y: L.y, vx: L.vx, vy: L.vy, t, onLevel: L.onLevel, size: L.size,
@@ -677,7 +714,7 @@
      lock was, since the beacon is already known. */
   Tracker.prototype._onsets = function (blobs, t) {
     const k = this._k(), o = this.o, R = this.lost;
-    const pLo = 1 / (o.targetHz + 1), pHi = 1 / Math.max(0.5, o.targetHz - 1);
+    const tol = this._tol(), pLo = 1 / (o.targetHz + tol), pHi = 1 / Math.max(0.5, o.targetHz - tol);
     this.events = (this.events || []).filter(e => t - e.t < 3 * pHi);
     // Watch each recent switch-on for its switch-off: the mean level AT the
     // light (not the brightest pixel near it -- in a lit room that is the
@@ -728,18 +765,26 @@
       }
       const ev = { t, fast, x: b.x, y: b.y, c: b.c, bg: b.bg, size: b.size, area: b.area, owner: b.owner,
                    r: Math.max(2 * k, 0.35 * b.size), m0: this._meanNear(b.x, b.y, Math.max(2 * k, 0.35 * b.size)),
-                   len: best ? best.len + 1 : 1, per: best ? (best.per ? 0.5 * (best.per + (t - best.t)) : t - best.t) : 0,
+                   // Period: the chain's true mean, first switch-on to this one.
+                   // A running average let one short gap drag a 5 Hz chain
+                   // into a 6 Hz band.
+                   t0: best ? best.t0 : t,
+                   len: best ? best.len + 1 : 1, per: best ? (t - best.t0) / best.len : 0,
                    from: best };
       this.events.push(ev);
       const near = R && Math.hypot(b.x - R.x, b.y - R.y) < (120 + 900 * (t - R.t)) * k;
-      const perOk = ev.per >= 0.93 * pLo && ev.per <= 1.07 * pHi;
+      // The chain's mean period must sit in the set rate's band (a little
+      // slack for frame timing): 3 or 5 Hz flashing at a 4 Hz setting is not
+      // the beacon, however regular it is.
+      const perOk = ev.per >= pLo && ev.per <= pHi;
       // Every earlier link must have switched OFF again after switching on.
       // A beacon does, within half a cycle; a shelf, a poster, a patch of
       // wall that a moving hand or head uncovers "switches on" too -- and
       // then stays on. Chains of those were the false locks in lit rooms.
-      // A lit room has far more things for a moving hand or head to cover
-      // and uncover: one more flash on schedule before believing it.
-      const need = this.sceneMean > 120 ? 4 : 3;
+      // Four switch-ons on schedule (three periods) before believing a
+      // chain: at 30 fps, two periods cannot tell 3.5 Hz from 3.7 Hz, and a
+      // lit room has more for a moving hand or head to cover and uncover.
+      const need = 4;
       // (The links that make up the required length; an older, partial
       // first flash at the head of a long chain is not held against it.)
       let offOk = true, depth = 0;

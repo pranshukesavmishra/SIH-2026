@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ZeroDrift Mk3 — Assembly</title>
+<title>ZeroDrift MK2 Assembly</title>
 <style>
 :root{
   --bg:#060b14; --panel:#0a1220; --panel-2:#0d1624; --edge:#16233a;
@@ -134,7 +134,7 @@ td.bad{color:var(--red)}
 
 <header>
   <div>
-    <div class="wm">Zero<b>Drift</b> Mk3</div>
+    <div class="wm">Zero<b>Drift</b> MK2 · 3D assembly</div>
     <div class="sub">Team ZeroDrift · Jabalpur Engineering College · SIH 2026 · PS26169 (ISRO)</div>
   </div>
   <div class="tabs">
@@ -144,8 +144,9 @@ td.bad{color:var(--red)}
   </div>
   <nav>
     <a href="index.html">overview</a>
-    <a href="submission/ZeroDrift_Mk3_Build_Guide.pdf">build PDF</a>
-    <a href="submission/ZeroDrift_StillToBuy.pdf">still to buy</a>
+    <a href="build.html">build guide</a>
+    <a href="submission/ZeroDrift_MK2_Build_Guide.pdf">build PDF</a>
+    <a href="live.html">live demo</a>
   </nav>
 </header>
 
@@ -239,8 +240,8 @@ td.bad{color:var(--red)}
 
     <div class="foot">
       <div class="row"><span>bill of materials</span><b>₹6,709</b></div>
-      <div class="row"><span>still to buy</span><b>₹1,747 · 4 lines</b></div>
-      <div class="row"><span>pan / tilt travel</span><b>±120° · +20/−40°</b></div>
+      <div class="row"><span>buy today</span><b>5 mm flange coupling ×2</b></div>
+      <div class="row"><span>pan / tilt travel</span><b>±90° · ±18° (soft limits)</b></div>
       <div style="margin-top:7px;color:var(--ink-dim)">
         Geometry comes from <b>zerodrift_full_assembly.scad</b>, the same source as
         the build PDF. Travel limits are measured by
@@ -278,7 +279,7 @@ const TILT_PIVOT = new THREE.Vector3(0, 6, 62);   // geometry.scad: TILT_Z
 
 const GIMBAL = [
   {id:'base', t:'Base plate', file:'base', group:'fixed', from:[0,0,-70],
-   d:'3 mm acrylic, 6 inch square. Shaft clearance hole in the middle, 31 mm bolt circle around it.'},
+   d:'3 mm acrylic, 6 inch square. Shaft hole in the middle, the motor's four M3 holes on a 31 mm square around it.'},
   {id:'pan_motor', t:'Pan motor', file:'pan_motor', group:'fixed', from:[0,0,-105],
    d:'NEMA17 bolts to the UNDERSIDE and hangs below. A face-mounted stepper’s shaft leaves through the same face that bolts down, so it cannot sit on top of a solid plate.'},
   {id:'platform', t:'Platform + diametric magnet', file:'platform', group:'pan', from:[0,0,75],

@@ -979,7 +979,7 @@ async function readLoop(port) {
         const line = buf.slice(0, i).replace('\r', '').trim(); buf = buf.slice(i + 1);
         if (!line) continue;
         if (line.startsWith('# ZeroDrift Mk2')) {
-          rig.enc = /encoders=yes/.test(line);
+          rig.enc = /encoders=(yes|pan|tilt)/.test(line);
           if (els.rigType.value === 'auto') setRigType('mk2', 'MK2 firmware detected');
         }
         if (line.startsWith('S ')) {

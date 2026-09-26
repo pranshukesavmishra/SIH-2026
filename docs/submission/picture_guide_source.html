@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>ZeroDrift MK2 Picture Guide</title>
+<style>
+@page { size: 1080px 1350px; margin: 0; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #E6ECF3; font-family: "DejaVu Sans", "Liberation Sans", Arial, sans-serif; color: #0F172A; }
+.card { width: 1080px; height: 1350px; background: #fff; margin: 0 auto 40px; position: relative; overflow: hidden;
+  display: flex; flex-direction: column; break-after: page; page-break-after: always; }
+@media print { body { background: #fff; } .card { margin: 0; } }
+.card header { display: flex; align-items: center; gap: 24px; padding: 36px 48px 20px; }
+.num { flex: none; width: 96px; height: 96px; border-radius: 26px; background: #0891B2; color: #fff;
+  font: 800 54px/96px "DejaVu Sans", sans-serif; text-align: center; box-shadow: 0 6px 16px rgba(8,145,178,.3); }
+.num.p2 { background: #7C3AED; box-shadow: 0 6px 16px rgba(124,58,237,.3); }
+.num.p3 { background: #EA580C; box-shadow: 0 6px 16px rgba(234,88,12,.3); }
+.num.p4 { background: #16A34A; box-shadow: 0 6px 16px rgba(22,163,74,.3); }
+.kicker { font: 700 20px "DejaVu Sans", sans-serif; letter-spacing: .14em; color: #0891B2; }
+.kicker.p2 { color: #7C3AED; } .kicker.p3 { color: #EA580C; } .kicker.p4 { color: #16A34A; }
+h2 { margin: 6px 0 0; font: 800 42px/1.12 "DejaVu Sans", sans-serif; letter-spacing: -.01em; }
+.art { margin: 0 36px; border-radius: 26px; background: #F3F7FB; border: 2px solid #E2E8F0; height: 700px; overflow: hidden; }
+.art svg { display: block; width: 1004px; height: 696px; }
+ol.do { margin: 24px 48px 0; padding: 0; list-style: none; counter-reset: s; }
+ol.do li { counter-increment: s; position: relative; padding-left: 60px; margin: 0 0 14px; font: 500 28px/1.32 "DejaVu Sans", sans-serif; }
+ol.do li::before { content: counter(s); position: absolute; left: 0; top: -1px; width: 44px; height: 44px; border-radius: 50%;
+  background: #E0F2FE; color: #0369A1; font: 800 24px/44px "DejaVu Sans", sans-serif; text-align: center; }
+ol.do li b { color: #0F172A; }
+.check { margin: auto 48px 0; padding: 18px 24px 18px 78px; border-radius: 20px; background: #DCFCE7; color: #14532D;
+  font: 600 26px/1.3 "DejaVu Sans", sans-serif; position: relative; }
+.check::before { content: "✓"; position: absolute; left: 22px; top: 50%; transform: translateY(-50%); width: 42px; height: 42px;
+  border-radius: 50%; background: #16A34A; color: #fff; font: 800 26px/42px "DejaVu Sans", sans-serif; text-align: center; }
+.check.warn { background: #FEE2E2; color: #7F1D1D; }
+.check.warn::before { content: "!"; background: #DC2626; }
+footer { padding: 14px 48px 24px; font: 600 18px "DejaVu Sans", sans-serif; color: #94A3B8; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+<div id="cards"></div>
+<script>
+/* ======================================================================
+   A tiny SVG drawing kit. Every card below is drawn from these pieces,
+   so a motor, a screw or a magnet looks the same on every page.
+   ====================================================================== */
+const C = {
+  ink: '#0F172A', mute: '#64748B', line: '#334155', faint: '#CBD5E1',
+  acr: '#D3F0FB', acrS: '#3FA7CF', acrHi: '#FFFFFF',
+  sheetW: '#F8FAFC', sheetWS: '#94A3B8',
+  motor: '#23272E', motorD: '#0B0D10', cap: '#B9C1CB', capS: '#6B7280',
+  shaft: '#C9CED6', shaftS: '#6B7280',
+  red: '#DC2626', mag: '#E23B3B', magB: '#2563EB',
+  sens: '#6D28D9', sensD: '#4C1D95', chip: '#111827',
+  screw: '#A1A8B3', screwS: '#4B5563', nut: '#8B939E',
+  putty: '#8E9170', puttyS: '#5A5C42', puttyHi: '#B7B995',
+  wood: '#D6B287', woodS: '#9C7A52',
+  green: '#16A34A', cyan: '#0891B2', amber: '#D97706', violet: '#7C3AED', orange: '#EA580C',
+  brass: '#C9A227', brassS: '#8A6D12', board: '#1F7A4A', boardB: '#1E5AA8',
+  w12: '#DC2626', w5: '#EA8A0C', wG: '#111827', wSDA: '#2563EB', wSCL: '#16A34A', wSig: '#7C3AED',
+};
+const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const FONT = 'DejaVu Sans, Arial, sans-serif';
+
+const DEFS = `<defs>
+  ${['ink', 'red', 'green', 'cyan', 'amber', 'violet', 'mute', 'orange'].map(k => `
+  <marker id="ah-${k}" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="${C[k] || C.ink}"/></marker>`).join('')}
+  <linearGradient id="gShV" x1="0" x2="1"><stop offset="0" stop-color="#EEF1F4"/><stop offset=".45" stop-color="#A9B0B9"/><stop offset="1" stop-color="#DDE1E6"/></linearGradient>
+  <linearGradient id="gShH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EEF1F4"/><stop offset=".45" stop-color="#A9B0B9"/><stop offset="1" stop-color="#DDE1E6"/></linearGradient>
+  <linearGradient id="gAcr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E7F8FE"/><stop offset="1" stop-color="#BFE7F7"/></linearGradient>
+  <linearGradient id="gMot" x1="0" x2="1"><stop offset="0" stop-color="#15181C"/><stop offset=".5" stop-color="#2E333A"/><stop offset="1" stop-color="#15181C"/></linearGradient>
+  <linearGradient id="gMotH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#15181C"/><stop offset=".5" stop-color="#2E333A"/><stop offset="1" stop-color="#15181C"/></linearGradient>
+  <linearGradient id="gWood" x1="0" x2="1"><stop offset="0" stop-color="#E2C39C"/><stop offset="1" stop-color="#C79E6E"/></linearGradient>
+  <linearGradient id="gPutty" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A6A984"/><stop offset="1" stop-color="#7A7D5C"/></linearGradient>
+  <pattern id="thr" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(-20)"><rect width="5" height="5" fill="#B8BEC7"/><line x1="0" y1="0" x2="5" y2="0" stroke="#6B7280" stroke-width="1.6"/></pattern>
+  <pattern id="thrH" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(70)"><rect width="5" height="5" fill="#B8BEC7"/><line x1="0" y1="0" x2="5" y2="0" stroke="#6B7280" stroke-width="1.6"/></pattern>
+  <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0F172A" flood-opacity=".16"/></filter>
+  <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>`;
+const svg = inner => `<svg viewBox="0 0 1004 696" xmlns="http://www.w3.org/2000/svg">${DEFS}${inner}</svg>`;
+
+// --- primitives -----------------------------------------------------------
+const R = (x, y, w, h, f, s = 'none', sw = 0, rx = 0, ex = '') =>
+  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="${f}" stroke="${s}" stroke-width="${sw}" ${ex}/>`;
+const Ci = (x, y, r, f, s = 'none', sw = 0, ex = '') => `<circle cx="${x}" cy="${y}" r="${r}" fill="${f}" stroke="${s}" stroke-width="${sw}" ${ex}/>`;
+const Ln = (x1, y1, x2, y2, c = C.line, w = 2, ex = '') => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" ${ex}/>`;
+const P = (d, f = 'none', s = C.line, w = 2, ex = '') => `<path d="${d}" fill="${f}" stroke="${s}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" ${ex}/>`;
+// Text; "\n" makes new lines. o: s size, w weight, c colour, a anchor, bg pill colour.
+function T(x, y, t, o = {}) {
+  const s = o.s || 22, w = o.w || 600, c = o.c || C.ink, a = o.a || 'start', lh = o.lh || 1.2;
+  const lines = String(t).split('\n');
+  let out = '';
+  if (o.bg) {
+    const tw = Math.max(...lines.map(l => l.length)) * s * 0.6 + 26, th = lines.length * s * lh + s * 0.5;
+    const bx = a === 'middle' ? x - tw / 2 : a === 'end' ? x - tw + 13 : x - 13;
+    out += R(bx, y - s * 1.02, tw, th, o.bg, o.bs || 'none', o.bs ? 2 : 0, Math.min(16, s * 0.55), o.shadow ? 'filter="url(#sh)"' : '');
+  }
+  out += `<text x="${x}" y="${y}" font-size="${s}" font-weight="${w}" fill="${c}" text-anchor="${a}" font-family="${FONT}">` +
+    lines.map((l, i) => `<tspan x="${x}" dy="${i ? s * lh : 0}">${esc(l)}</tspan>`).join('') + `</text>`;
+  return out;
+}
+const A = (x1, y1, x2, y2, c = 'ink', w = 3.5, both = false) =>
+  `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${C[c] || c}" stroke-width="${w}" stroke-linecap="round" marker-end="url(#ah-${c})" ${both ? `marker-start="url(#ah-${c})"` : ''}/>`;
+const AP = (d, c = 'ink', w = 3.5) => `<path d="${d}" fill="none" stroke="${C[c]}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#ah-${c})"/>`;
+// Leader from a label to a part: line with a dot on the part.
+const Lead = (x1, y1, x2, y2, c = C.line) => Ln(x1, y1, x2, y2, c, 2) + Ci(x2, y2, 5, c);
+// Numbered badge.
+const B = (x, y, n, col = C.cyan, r = 20) => Ci(x, y, r, col, '#fff', 3, 'filter="url(#sh)"') +
+  `<text x="${x}" y="${y + r * 0.36}" font-size="${r * 1.05}" font-weight="800" fill="#fff" text-anchor="middle" font-family="${FONT}">${n}</text>`;
+// Tick / cross marks.
+const OK = (x, y, r = 22) => Ci(x, y, r, C.green) + P(`M${x - r * .45},${y} L${x - r * .1},${y + r * .38} L${x + r * .5},${y - r * .38}`, 'none', '#fff', r * .22);
+const NO = (x, y, r = 22) => Ci(x, y, r, C.red) + Ln(x - r * .4, y - r * .4, x + r * .4, y + r * .4, '#fff', r * .22) + Ln(x + r * .4, y - r * .4, x - r * .4, y + r * .4, '#fff', r * .22);
+// Dimension line with end ticks and a label.
+function Dim(x1, y1, x2, y2, t, o = {}) {
+  const c = o.c || C.cyan, horiz = Math.abs(y2 - y1) < Math.abs(x2 - x1);
+  let s = Ln(x1, y1, x2, y2, c, 2.2, `marker-start="url(#ah-cyan)" marker-end="url(#ah-cyan)"`);
+  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+  s += horiz ? T(mx, my - 10, t, { s: o.s || 20, c, a: 'middle', w: 700, bg: '#fff' })
+             : T(mx + 12, my + 7, t, { s: o.s || 20, c, w: 700, bg: '#fff' });
+  return s;
+}
+
+// --- parts ----------------------------------------------------------------
+// NEMA17 seen from the side, shaft pointing UP. top = y of the motor face.
+function motorUp(cx, top, k, o = {}) {
+  const w = 42 * k, h = 40 * k, x = cx - w / 2;
+  let s = `<g ${o.shadow === false ? '' : 'filter="url(#sh)"'}>`;
+  s += R(x, top, w, h, 'url(#gMot)', C.motorD, 2, 3);
+  s += R(x, top, w, h * 0.13, C.cap, C.capS, 1.5, 2);
+  for (let i = 0; i < 8; i++) s += Ln(x + 4, top + h * (0.28 + i * 0.065), x + w - 4, top + h * (0.28 + i * 0.065), '#454C55', 1.6);
+  s += R(x, top + h * 0.86, w, h * 0.14, '#2A2F36', C.motorD, 1.5, 2);
+  if (o.conn !== false) s += R(x + w - 1, top + h * 0.66, 9, h * 0.18, '#F5F5F4', '#A8A29E', 1.5, 2);
+  s += R(cx - 11 * k, top - 2 * k, 22 * k, 2 * k, '#CDD2D8', C.capS, 1.2, 1);
+  const L = (o.shaft ?? 24) * k;
+  s += R(cx - 2.5 * k, top - 2 * k - L, 5 * k, L, 'url(#gShV)', C.shaftS, 1.4, 1.5);
+  s += '</g>';
+  return s;
+}
+// NEMA17 lying down, shaft pointing RIGHT. right = x of the motor face.
+function motorRight(right, cy, k, o = {}) {
+  const w = 40 * k, h = 42 * k, x = right - w, y = cy - h / 2;
+  let s = `<g filter="url(#sh)">`;
+  s += R(x, y, w, h, 'url(#gMotH)', C.motorD, 2, 3);
+  s += R(right - w * 0.13, y, w * 0.13, h, C.cap, C.capS, 1.5, 2);
+  for (let i = 0; i < 8; i++) s += Ln(x + w * (0.2 + i * 0.07), y + 4, x + w * (0.2 + i * 0.07), y + h - 4, '#454C55', 1.6);
+  s += R(x, y, w * 0.14, h, '#2A2F36', C.motorD, 1.5, 2);
+  if (o.conn !== false) s += R(x + w * 0.3, y + h - 1, w * 0.2, 9, '#F5F5F4', '#A8A29E', 1.5, 2);
+  s += R(right, cy - 11 * k, 2 * k, 22 * k, '#CDD2D8', C.capS, 1.2, 1);
+  const L = (o.shaft ?? 24) * k;
+  s += R(right + 2 * k, cy - 2.5 * k, L, 5 * k, 'url(#gShH)', C.shaftS, 1.4, 1.5);
+  s += '</g>';
+  return s;
+}
+// Clear acrylic piece seen edge-on or face-on.
+const acr = (x, y, w, h, rx = 3) => `<g>${R(x, y, w, h, 'url(#gAcr)', C.acrS, 2.2, rx)}${Ln(x + 4, y + 3, x + w - 4, y + 3, '#fff', 2)}</g>`;
+// Screw standing up: head at yHead, length len (px). Head on top.
+function screwV(x, yHead, len, k, o = {}) {
+  const hw = 5.5 * k, hh = 2.6 * k, sw = 3 * k;
+  let s = R(x - sw / 2, yHead + hh, sw, len, 'url(#thr)', C.screwS, 1.2, 1);
+  s += R(x - hw / 2, yHead, hw, hh, C.screw, C.screwS, 1.5, 2) + Ln(x - hw * 0.25, yHead + hh / 2, x + hw * 0.25, yHead + hh / 2, C.screwS, 1.5);
+  return s;
+}
+// Screw pointing up with head at the BOTTOM (inserted from below).
+function screwUp(x, yHeadBottom, len, k) {
+  const hw = 5.5 * k, hh = 2.6 * k, sw = 3 * k;
+  return R(x - sw / 2, yHeadBottom - hh - len, sw, len, 'url(#thr)', C.screwS, 1.2, 1) +
+         R(x - hw / 2, yHeadBottom - hh, hw, hh, C.screw, C.screwS, 1.5, 2);
+}
+const nut = (x, y, k) => R(x - 3.2 * k, y, 6.4 * k, 2.4 * k, C.nut, C.screwS, 1.4, 1.2) + Ln(x - 1.6 * k, y + 1.2 * k, x + 1.6 * k, y + 1.2 * k, '#5B636E', 1.2);
+// Diametric magnet side view: north half red, south half blue (poles across the diameter).
+const magnetSide = (cx, y, w, h) => R(cx - w / 2, y, w / 2, h, C.mag, '#7F1D1D', 1.5, 1) + R(cx, y, w / 2, h, C.magB, '#1E3A8A', 1.5, 1);
+const magnetTop = (cx, cy, r) => `<path d="M${cx},${cy - r} A${r},${r} 0 0 0 ${cx},${cy + r} Z" fill="${C.mag}" stroke="#7F1D1D" stroke-width="1.5"/>` +
+  `<path d="M${cx},${cy - r} A${r},${r} 0 0 1 ${cx},${cy + r} Z" fill="${C.magB}" stroke="#1E3A8A" stroke-width="1.5"/>` +
+  T(cx - r * 0.5, cy + r * 0.3, 'N', { s: r * 0.8, c: '#fff', a: 'middle', w: 800 }) + T(cx + r * 0.5, cy + r * 0.3, 'S', { s: r * 0.8, c: '#fff', a: 'middle', w: 800 });
+// AS5600 board side view (chip below).
+const sensorSide = (cx, y, w, h, chipDown = true) =>
+  R(cx - w / 2, y, w, h, C.sens, C.sensD, 1.5, 2) + (chipDown ? R(cx - w * 0.14, y + h, w * 0.28, h * 0.7, C.chip, '#000', 1, 1) : R(cx - w * 0.14, y - h * 0.7, w * 0.28, h * 0.7, C.chip, '#000', 1, 1));
+const putty = (x, y, w, h) => R(x, y, w, h, 'url(#gPutty)', C.puttyS, 2, Math.min(w, h) * 0.45) +
+  Ci(x + w * 0.3, y + h * 0.4, 2, C.puttyHi) + Ci(x + w * 0.7, y + h * 0.6, 1.6, C.puttyHi);
+const wood = (x, y, w, h) => R(x, y, w, h, 'url(#gWood)', C.woodS, 2, 4) + Ln(x + w * 0.3, y + 8, x + w * 0.3, y + h - 8, '#B98E5C', 1.4) + Ln(x + w * 0.65, y + 14, x + w * 0.65, y + h - 14, '#B98E5C', 1.4);
+// Small green driver board (top view).
+function driverTop(x, y, w, h) {
+  let s = R(x, y, w, h, C.board, '#0F3D24', 2, 6, 'filter="url(#sh)"') + R(x + w * 0.33, y + h * 0.38, w * 0.34, h * 0.28, '#111', '#000', 1, 3);
+  s += Ci(x + w * 0.5, y + h * 0.18, h * 0.07, '#D4D4D8', '#71717A', 1.5);
+  return s;
+}
+// Blue Arduino Nano (top view).
+function nanoTop(x, y, w, h, label = 'Arduino Nano') {
+  let s = R(x, y, w, h, C.boardB, '#0B2E5C', 2, 6, 'filter="url(#sh)"');
+  s += R(x - 14, y + h * 0.3, 18, h * 0.4, '#C7CCD3', '#6B7280', 1.5, 2);
+  s += R(x + w * 0.4, y + h * 0.33, w * 0.2, h * 0.34, '#111', '#000', 1, 3);
+  s += T(x + w * 0.5, y + h * 0.2, label, { s: 17, c: '#fff', a: 'middle', w: 700 });
+  return s;
+}
+// Red LED side view: dome + legs (long + short).
+function ledSide(cx, top, k = 1, col = C.red) {
+  return P(`M${cx - 10 * k},${top + 24 * k} L${cx - 10 * k},${top + 10 * k} A${10 * k},${10 * k} 0 0 1 ${cx + 10 * k},${top + 10 * k} L${cx + 10 * k},${top + 24 * k} Z`, col, '#7F1D1D', 1.6) +
+    R(cx - 12 * k, top + 24 * k, 24 * k, 4 * k, col, '#7F1D1D', 1.4, 1) +
+    Ln(cx - 4 * k, top + 28 * k, cx - 4 * k, top + 70 * k, '#9CA3AF', 2.4) + Ln(cx + 4 * k, top + 28 * k, cx + 4 * k, top + 56 * k, '#9CA3AF', 2.4);
+}
+// Resistor (horizontal) with colour bands.
+function resistor(x, y, w, bands) {
+  let s = Ln(x - 22, y, x, y, '#9CA3AF', 2.6) + Ln(x + w, y, x + w + 22, y, '#9CA3AF', 2.6);
+  s += R(x, y - 11, w, 22, '#E7CFA3', '#9C7A52', 1.6, 10);
+  bands.forEach((b, i) => { s += R(x + w * (0.2 + i * 0.16), y - 11, w * 0.08, 22, b, 'none'); });
+  return s;
+}
+// Credit card (gap gauge), side view.
+const cards2 = (x, y, w) => R(x, y, w, 6, '#F59E0B', '#B45309', 1.2, 1.5) + R(x, y + 7, w, 6, '#3B82F6', '#1D4ED8', 1.2, 1.5);
+
+/* ======================================================================
+   Card builder
+   ====================================================================== */
+const PARTS = [
+  ['PART 1 · THE SPINNING BASE', ''],
+  ['PART 2 · THE TOP AND THE HEAD', 'p2'],
+  ['PART 3 · WIRES AND CODE', 'p3'],
+  ['PART 4 · TARGETS AND GO LIVE', 'p4'],
+];
+const CARDS = [];
+function card(o) { CARDS.push(o); }
+function render() {
+  const total = CARDS.length;
+  document.getElementById('cards').innerHTML = CARDS.map((c, i) => {
+    const [kick, cls] = PARTS[c.part];
+    return `<section class="card" id="card-${i}">
+      <header><div class="num ${cls}">${c.n}</div><div><div class="kicker ${cls}">${kick}</div><h2>${c.title}</h2></div></header>
+      <div class="art">${svg(c.art)}</div>
+      <ol class="do">${c.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+      <div class="check ${c.warn ? 'warn' : ''}">${c.check}</div>
+      <footer><span>ZeroDrift MK2 · build it with what you have</span><span>${i + 1} / ${total}</span></footer>
+    </section>`;
+  }).join('');
+}
+
+/* ----------------------------------------------------------------------
+   0 · What you are building
+   ---------------------------------------------------------------------- */
+{
+  const k = 3.4;
+  let s = '';
+  // table
+  s += R(0, 640, 1004, 56, '#E2E8F0') + Ln(0, 640, 1004, 640, '#94A3B8', 2);
+  // legs
+  s += wood(262, 430, 40, 210) + wood(706, 430, 40, 210);
+  // pan motor under base, spacer nuts
+  s += motorUp(504, 447, k);
+  s += nut(438, 430, k) + nut(570, 430, k);
+  // base plate
+  s += acr(249, 420, 510, 10);
+  s += screwV(438, 411, 30, k * 0.9) + screwV(570, 411, 30, k * 0.9);
+  // pan disc + putty
+  s += putty(484, 377, 40, 26);
+  s += acr(351, 365, 306, 10);
+  // magnet on shaft tip
+  s += magnetSide(504, 349, 22, 9);
+  // pan sensor arm + post
+  s += screwV(690, 300, 138, k * 0.8);
+  s += nut(690, 410, k * 0.9) + nut(690, 432, k * 0.9);
+  s += nut(690, 314, k * 0.9) + nut(690, 336, k * 0.9);
+  s += acr(478, 324, 230, 10);
+  s += sensorSide(504, 334, 54, 7);
+  // stilts
+  s += screwUp(372, 385, 84, k * 0.8) + nut(372, 356, k * 0.9) + nut(372, 305, k * 0.9);
+  s += screwUp(452, 385, 84, k * 0.8) + nut(452, 356, k * 0.9) + nut(452, 305, k * 0.9);
+  // L-bracket (base leg under the motor, standing leg at x 470)
+  s += R(330, 293, 150, 10, '#9AA3AE', '#4B5563', 2, 2) + R(470, 150, 10, 153, '#9AA3AE', '#4B5563', 2, 2);
+  // tilt motor on the bracket, shaft to the right
+  s += motorRight(470, 222, k, { shaft: 24 });
+  // tilt disc + putty
+  s += putty(522, 208, 24, 28);
+  s += `<g>${R(546, 154, 10, 136, 'url(#gAcr)', C.acrS, 2.2, 3)}</g>`;
+  // head box bolted on the tilt disc, centred on the tilt axis
+  s += R(556, 162, 116, 120, '#F1F5F9', '#475569', 2.5, 10, 'filter="url(#sh)"');
+  s += Ci(598, 206, 24, '#1F2937', '#0F172A', 2) + Ci(598, 206, 13, '#7F1D1D') + Ci(592, 200, 4, '#fff', 'none', 0, 'opacity=".7"');
+  s += Ci(640, 250, 9, '#374151', '#111', 2) + Ci(640, 250, 4, C.red);
+  // laser beam hint
+  s += Ln(640, 250, 700, 262, C.red, 2, 'stroke-dasharray="6 6" opacity=".7"');
+  // callout badges + leaders
+  const cal = [
+    [1, 230, 400, 300, 425], [2, 222, 560, 262, 560], [3, 380, 600, 432, 590], [4, 300, 352, 360, 370],
+    [5, 596, 350, 514, 353], [6, 740, 300, 700, 329], [7, 330, 340, 372, 340], [8, 280, 170, 330, 190],
+    [9, 700, 170, 668, 190],
+  ];
+  cal.forEach(([n, bx, by, px, py]) => { s += Ln(bx, by, px, py, C.cyan, 2) + Ci(px, py, 4.5, C.cyan) + B(bx, by, n, C.cyan, 17); });
+  // legend
+  const leg = ['Base plate (acrylic)', 'Legs (wood blocks)', 'Bottom motor (pan)', 'Big disc (M-Seal)', 'Magnet on shaft tip',
+    'Sensor arm + AS5600', 'Stilts (long screws)', 'Bracket + top motor', 'Small disc + head'];
+  s += R(738, 40, 252, 400, '#fff', '#E2E8F0', 2, 16, 'filter="url(#sh)"');
+  leg.forEach((t, i) => { s += B(762, 74 + i * 42, i + 1, C.cyan, 13) + T(782, 80 + i * 42, t, { s: 15.5, w: 600 }); });
+  s += T(40, 60, 'Side view of the finished MK2', { s: 26, w: 800 });
+  s += T(40, 92, 'bottom motor turns left–right · top motor nods up–down', { s: 19, c: C.mute, w: 600 });
+  card({ n: '★', part: 0, title: 'This is what you are building', art: s,
+    steps: [
+      'Two motors. The <b>bottom</b> one turns left–right. The <b>top</b> one nods up–down.',
+      'The camera and the laser sit together in the <b>head</b>, so the camera sees its own laser dot.',
+      'Flat acrylic, screws and M-Seal only. <b>No 3D printing, no coupler.</b>',
+    ],
+    check: '<b>Tonight\'s goal:</b> build this, wire it, and watch it lock onto the blinking beacon on the website.' });
+}
+
+/* ----------------------------------------------------------------------
+   1 · What you need
+   ---------------------------------------------------------------------- */
+{
+  let s = '';
+  const tiles = [
+    ['2 motors\n(NEMA17)', 'motor'], ['2 motor\ndrivers', 'driver'], ['2 Arduino\nNano', 'nano'], ['2 sensors\n+ magnets', 'sensor'],
+    ['Multiplexer\nboard', 'mux'], ['Laser\n(KY-008)', 'laser'], ['USB webcam\n(arriving)', 'cam'], ['LEDs\n+ resistors', 'led'],
+    ['Acrylic\nsheets', 'acr'], ['Screws\n+ nuts', 'screw'], ['12 V adapter\n+ DC socket', 'adapter'], ['Breadboard\n+ wires', 'bb'],
+    ['Ping-pong ball\n+ AA holder', 'ball'], ['Glue gun\n+ solder', 'glue'], ['Multimeter', 'meter'], ['Cable ties', 'tie'],
+  ];
+  const icon = (kind, cx, cy) => {
+    switch (kind) {
+      case 'motor': return R(cx - 26, cy - 22, 52, 46, 'url(#gMot)', '#000', 1.5, 4) + R(cx - 26, cy - 22, 52, 7, C.cap) + R(cx - 3, cy - 40, 6, 18, 'url(#gShV)', C.shaftS, 1);
+      case 'driver': return R(cx - 28, cy - 22, 56, 44, C.board, '#0F3D24', 1.5, 4) + R(cx - 10, cy - 8, 20, 16, '#111') + Ci(cx, cy - 15, 4, '#D4D4D8');
+      case 'nano': return R(cx - 36, cy - 14, 72, 28, C.boardB, '#0B2E5C', 1.5, 4) + R(cx - 46, cy - 6, 12, 12, '#C7CCD3') + R(cx - 6, cy - 7, 14, 14, '#111');
+      case 'sensor': return R(cx - 30, cy - 18, 36, 36, C.sens, C.sensD, 1.5, 3) + R(cx - 19, cy - 7, 14, 14, '#111') + magnetTop(cx + 24, cy, 14);
+      case 'mux': return R(cx - 32, cy - 20, 64, 40, '#1E3A5F', '#0B1B2E', 1.5, 3) + R(cx - 8, cy - 8, 16, 16, '#111');
+      case 'laser': return R(cx - 34, cy - 10, 48, 20, '#374151', '#111', 1.5, 8) + Ci(cx + 18, cy, 6, C.red) + Ln(cx + 26, cy, cx + 44, cy, C.red, 2.5);
+      case 'cam': return R(cx - 30, cy - 18, 60, 36, '#1F2937', '#000', 1.5, 8) + Ci(cx, cy, 12, '#0F172A', '#64748B', 3) + Ci(cx - 3, cy - 3, 3, '#fff', 'none', 0, 'opacity=".6"');
+      case 'led': return ledSide(cx - 18, cy - 34, 0.7) + resistor(cx + 6, cy + 4, 30, ['#7A3B10', '#111', '#7A3B10']);
+      case 'acr': return `<g transform="rotate(-8 ${cx} ${cy})">${R(cx - 34, cy - 22, 60, 40, 'url(#gAcr)', C.acrS, 2, 3)}${R(cx - 24, cy - 14, 60, 40, 'url(#gAcr)', C.acrS, 2, 3)}</g>`;
+      case 'screw': return screwV(cx - 14, cy - 24, 42, 3.4) + nut(cx + 16, cy - 4, 3.4) + nut(cx + 16, cy + 10, 3.4);
+      case 'adapter': return R(cx - 34, cy - 18, 32, 36, '#111827', '#000', 1.5, 5) + P(`M${cx - 2},${cy} C${cx + 14},${cy} ${cx + 10},${cy + 18} ${cx + 22},${cy + 18}`, 'none', '#111', 3) + R(cx + 20, cy + 8, 18, 18, '#111', '#000', 1, 3);
+      case 'bb': return R(cx - 36, cy - 20, 72, 40, '#F5F5F4', '#A8A29E', 1.5, 3) + Ln(cx - 30, cy - 13, cx + 30, cy - 13, C.red, 2) + Ln(cx - 30, cy + 13, cx + 30, cy + 13, '#2563EB', 2) + P(`M${cx - 16},${cy - 4} C${cx - 6},${cy - 26} ${cx + 8},${cy - 26} ${cx + 18},${cy - 2}`, 'none', C.amber, 3);
+      case 'ball': return `<path d="M${cx - 30},${cy} A18,18 0 0 1 ${cx + 6},${cy} Z" fill="#fff" stroke="#94A3B8" stroke-width="2"/>` + R(cx + 10, cy - 18, 26, 38, '#1F2937', '#000', 1.5, 4) + R(cx + 14, cy - 12, 18, 8, C.amber) + R(cx + 14, cy, 18, 8, C.amber);
+      case 'glue': return P(`M${cx - 30},${cy - 10} L${cx + 14},${cy - 10} L${cx + 26},${cy - 2} L${cx + 14},${cy + 6} L${cx - 10},${cy + 6} L${cx - 14},${cy + 24} L${cx - 26},${cy + 24} Z`, '#F97316', '#9A3412', 2);
+      case 'meter': return R(cx - 22, cy - 26, 44, 52, '#FACC15', '#A16207', 2, 6) + R(cx - 15, cy - 19, 30, 14, '#D1FAE5', '#475569', 1.2) + Ci(cx, cy + 10, 8, '#374151');
+      case 'tie': return P(`M${cx - 32},${cy + 10} C${cx - 10},${cy - 22} ${cx + 16},${cy - 22} ${cx + 32},${cy - 4}`, 'none', '#111', 6) + R(cx - 36, cy + 4, 12, 12, '#111', '#000', 1, 2);
+      case 'putty': return R(cx - 32, cy - 12, 30, 24, '#8E9170', '#5A5C42', 1.5, 10) + R(cx + 2, cy - 12, 30, 24, '#E5E7EB', '#9CA3AF', 1.5, 10);
+      case 'aa': return [0, 1, 2].map(i => R(cx - 30 + i * 21, cy - 22, 17, 44, '#111827', '#000', 1.2, 4) + R(cx - 30 + i * 21, cy - 22, 17, 12, '#F59E0B')).join('');
+      case 'sglue': return R(cx - 10, cy - 26, 20, 46, '#FDE68A', '#B45309', 2, 6) + R(cx - 5, cy - 36, 10, 12, '#DC2626', '#991B1B', 1.5, 2);
+    }
+    return '';
+  };
+  tiles.forEach(([name, kind], i) => {
+    const col = i % 4, row = Math.floor(i / 4), x = 22 + col * 245, y = 18 + row * 128;
+    s += R(x, y, 230, 116, '#fff', '#E2E8F0', 2, 16, 'filter="url(#sh)"');
+    s += icon(kind, x + 58, y + 58);
+    s += T(x + 110, y + 50, name, { s: 16, w: 700, lh: 1.15 });
+    s += OK(x + 206, y + 22, 13);
+  });
+  s += R(22, 540, 960, 140, '#FFF7ED', '#FDBA74', 2.5, 18);
+  s += T(46, 578, 'GET FROM ANY HARDWARE / GENERAL SHOP (if not at home)', { s: 19, w: 800, c: '#9A3412' });
+  [['M-Seal or Araldite', '₹50–100 · glues the discs', 'putty'], ['3 AA cells', '₹30 · the decoy', 'aa'], ['Fevikwik', '₹10–20 · the magnet', 'sglue']].forEach(([n, d, kind], i) => {
+    const x = 46 + i * 312;
+    s += icon(kind, x + 42, 634) + T(x + 92, 626, n, { s: 21, w: 800 }) + T(x + 92, 654, d, { s: 16, c: '#9A3412', w: 600 });
+  });
+  card({ n: '0', part: 0, title: 'What you have, and the only 3 things to get', art: s,
+    steps: [
+      'Everything with a green tick you <b>already have</b>. The webcam can come later — use the laptop camera till then.',
+      'The orange box: any hardware, paint or general store has these. <b>M-Seal is the one thing you can\'t skip.</b>',
+      'No coupler, no red acrylic, no belt. Keep the yellow part as a spare; we don\'t need it.',
+    ],
+    check: 'Nothing else to buy. Everything in this guide uses only these parts.' });
+}
+
+/* ----------------------------------------------------------------------
+   2 · Cut the pieces
+   ---------------------------------------------------------------------- */
+{
+  let s = '';
+  // sheet 1: base
+  s += T(40, 52, 'SHEET 1', { s: 20, w: 800, c: C.mute });
+  s += R(40, 66, 300, 300, '#EAF6FB', '#94A3B8', 2, 8, 'filter="url(#sh)"');
+  s += R(60, 86, 260, 260, 'rgba(8,145,178,.08)', C.cyan, 3, 4, 'stroke-dasharray="12 8"');
+  s += T(190, 200, 'A', { s: 56, w: 800, c: C.cyan, a: 'middle' }) + T(190, 236, 'BASE', { s: 22, w: 800, c: C.cyan, a: 'middle' });
+  s += Dim(60, 360, 320, 360, '15 cm');
+  // sheet 2: discs + strips
+  s += T(380, 52, 'SHEET 2', { s: 20, w: 800, c: C.mute });
+  s += R(380, 66, 300, 300, '#EAF6FB', '#94A3B8', 2, 8, 'filter="url(#sh)"');
+  s += Ci(470, 160, 78, 'rgba(8,145,178,.08)', C.cyan, 3, 'stroke-dasharray="12 8"');
+  s += T(470, 160, 'B', { s: 44, w: 800, c: C.cyan, a: 'middle' }) + T(470, 188, 'big disc', { s: 17, w: 700, c: C.cyan, a: 'middle' });
+  s += Dim(392, 250, 548, 250, '9 cm', { s: 17 });
+  s += Ci(612, 128, 38, 'rgba(8,145,178,.08)', C.violet, 3, 'stroke-dasharray="10 7"');
+  s += T(612, 126, 'C', { s: 30, w: 800, c: C.violet, a: 'middle' }) + T(612, 148, '4 cm', { s: 15, w: 700, c: C.violet, a: 'middle' });
+  s += R(400, 286, 262, 32, 'rgba(8,145,178,.08)', C.orange, 3, 3, 'stroke-dasharray="10 7"') + T(531, 309, 'D  strip  1.5 × 6 cm', { s: 16, w: 800, c: C.orange, a: 'middle' });
+  s += R(400, 326, 262, 32, 'rgba(8,145,178,.08)', C.orange, 3, 3, 'stroke-dasharray="10 7"') + T(531, 349, 'D  spare strip', { s: 16, w: 800, c: C.orange, a: 'middle' });
+  
+  // how-to cut
+  s += R(718, 30, 270, 640, '#fff', '#E2E8F0', 2, 18, 'filter="url(#sh)"');
+  s += T(738, 70, 'HOW TO CUT', { s: 21, w: 800 });
+  // 1 score
+  s += B(748, 116, 1, C.orange, 16);
+  s += R(770, 118, 190, 14, '#E5E7EB', '#9CA3AF', 1.5, 2) + T(865, 129, 'steel ruler', { s: 11, c: C.mute, a: 'middle' });
+  s += P('M780,142 L950,142', 'none', C.acrS, 2, 'stroke-dasharray="4 4"');
+  s += P('M900,98 l32,30 l-8,8 l-32,-30 z', '#FDBA74', '#9A3412', 2) + P('M924,128 l14,14', 'none', '#6B7280', 3);
+  s += T(770, 172, 'Scratch the line\n8–10 times with a\ncutter, along a ruler', { s: 16, w: 600, lh: 1.2 });
+  // 2 snap
+  s += B(748, 274, 2, C.orange, 16);
+  s += R(770, 300, 110, 60, '#CBD5E1', '#64748B', 2, 3) + T(825, 336, 'table', { s: 14, c: C.mute, a: 'middle' });
+  s += `<g transform="rotate(-12 880 296)">${acr(770, 286, 180, 12)}</g>` + A(930, 238, 932, 270, 'orange', 3);
+  s += T(770, 390, 'Line on the table\nedge. Press down\nhard: it snaps clean.', { s: 16, w: 600, lh: 1.2 });
+  // 3 circle
+  s += B(748, 486, 3, C.orange, 16);
+  s += R(772, 506, 64, 64, 'url(#gAcr)', C.acrS, 2) + A(842, 538, 862, 538, 'ink', 2.5);
+  s += `<polygon points="886,506 922,506 942,526 942,550 922,570 886,570 866,550 866,526" fill="url(#gAcr)" stroke="${C.acrS}" stroke-width="2"/>` + A(946, 538, 958, 538, 'ink', 2.5);
+  s += Ci(975, 538, 12, 'url(#gAcr)', C.acrS, 2);
+  s += T(770, 604, 'Square → cut corners\n→ sand it round.', { s: 16, w: 600, lh: 1.2 });
+  // film tip
+  s += R(40, 410, 640, 260, '#fff', '#E2E8F0', 2, 18, 'filter="url(#sh)"');
+  s += T(64, 450, 'YOU NEED', { s: 21, w: 800 });
+  const need = [['A', 'Base', '15 × 15 cm square', C.cyan], ['B', 'Big disc', '9 cm circle', C.cyan], ['C', 'Small disc', '4 cm circle', C.violet], ['D', 'Sensor strip', '1.5 × 6 cm', C.orange]];
+  need.forEach(([l, n, d, col], i) => {
+    const y = 494 + i * 42;
+    s += Ci(80, y - 7, 15, col) + T(80, y, l, { s: 17, w: 800, c: '#fff', a: 'middle' }) + T(108, y, n, { s: 20, w: 800 }) + T(290, y, d, { s: 20, w: 600, c: C.mute });
+  });
+  s += T(64, 660, 'Keep the paper film on while cutting — no scratches.', { s: 17, w: 600, c: C.cyan });
+  card({ n: '1', part: 0, title: 'Cut 4 pieces from the acrylic', art: s,
+    steps: [
+      '<b>Straight cuts:</b> scratch the line 8–10 times with a cutter along a steel ruler, then snap it on the table edge.',
+      '<b>Circles:</b> draw round a cup or lid. Cut a square, cut off the corners, then sand it round. It does not need to be perfect.',
+      'Peel the paper film off only at the very end.',
+    ],
+    check: '4 pieces ready: base, big disc, small disc, one sensor strip (plus a spare).' });
+}
+
+/* ----------------------------------------------------------------------
+   3 · Make the holes
+   ---------------------------------------------------------------------- */
+{
+  let s = '';
+  // left: marking with the motor as a stencil
+  s += T(40, 52, 'MARK THEM', { s: 21, w: 800 });
+  s += R(40, 70, 300, 300, 'url(#gAcr)', C.acrS, 2.5, 6, 'filter="url(#sh)"');
+  s += R(126, 156, 128, 128, 'rgba(15,23,42,.08)', '#475569', 2, 8, 'stroke-dasharray="8 6"');
+  [[142, 172], [238, 172], [142, 268], [238, 268]].forEach(([x, y]) => { s += Ci(x, y, 7, '#fff', C.red, 3); });
+  s += Ci(190, 220, 13, '#fff', C.red, 3.5);
+  s += T(190, 330, 'motor outline', { s: 16, c: C.mute, a: 'middle', w: 700 });
+  s += T(40, 398, 'Motor face-down in the\nmiddle. Dot through its 4\nholes, and the middle.', { s: 16, w: 600, lh: 1.22 });
+  // middle: drill
+  s += R(372, 30, 290, 400, '#fff', '#E2E8F0', 2, 18, 'filter="url(#sh)"');
+  s += T(394, 70, 'WITH A DRILL', { s: 21, w: 800 });
+  s += P('M430,150 L560,150 L580,175 L580,200 L430,200 Z', '#2563EB', '#1E3A8A', 2.5) + R(580, 170, 44, 12, '#9CA3AF', '#4B5563', 1.5, 2) + R(620, 173, 34, 6, '#6B7280') + R(470, 200, 40, 80, '#1D4ED8', '#1E3A8A', 2.5, 6);
+  s += T(394, 330, 'Small tape on the spot so\nthe bit does not slide.\nGo SLOW, no pressure.', { s: 17, w: 600, lh: 1.25 });
+  // right: hot nail
+  s += R(684, 30, 300, 400, '#FFF7ED', '#FDBA74', 2.5, 18, 'filter="url(#sh)"');
+  s += T(706, 70, 'NO DRILL? HOT NAIL', { s: 21, w: 800, c: '#9A3412' });
+  s += P('M720,190 L820,150 L830,162 L732,204 Z', '#475569', '#1F2937', 2) + P('M720,204 L820,238 L826,224 L728,188 Z', '#475569', '#1F2937', 2);
+  s += Ln(822, 188, 930, 188, '#9CA3AF', 7) + Ln(930, 188, 950, 188, '#EA580C', 7);
+  s += `<g>${Ci(944, 188, 22, '#F97316', 'none', 0, 'filter="url(#glow)" opacity=".7"')}</g>` + P('M926,246 C918,226 934,214 930,196 C944,210 950,222 946,246 Z', '#60A5FA', '#2563EB', 2) + P('M932,246 C928,234 936,226 934,214 C942,224 944,234 940,246 Z', '#DBEAFE', 'none', 0) + R(900, 246, 76, 10, '#6B7280', '#374151', 1.5, 3) + T(938, 276, 'gas', { s: 14, w: 700, c: C.mute, a: 'middle' });
+  s += T(706, 300, 'Hold a nail with pliers.\nHeat the tip on the gas\n20 seconds. Push it\nthrough the dot.', { s: 17, w: 600, lh: 1.25 });
+  s += T(706, 404, 'Never touch the tip!', { s: 17, w: 800, c: C.red });
+  // bottom: hole list
+  s += R(40, 470, 944, 200, '#fff', '#E2E8F0', 2, 18, 'filter="url(#sh)"');
+  s += T(64, 508, 'WHICH HOLES', { s: 21, w: 800 });
+  const holes = [
+    ['A  Base', '4 small (screws) + 1 big middle hole (8 mm, the shaft must NOT touch)', C.cyan],
+    ['B  Big disc', '1 middle hole = exactly the shaft size (tight) + 3 small holes on ONE side', C.cyan],
+    ['C  Small disc', '1 middle hole = exactly the shaft size (tight) + 2 small holes', C.violet],
+    ['D  Strip', '1 small hole at one end', C.orange],
+  ];
+  holes.forEach(([n, d, col], i) => { const y = 548 + i * 34; s += T(64, y, n, { s: 18, w: 800, c: col }) + T(210, y, d, { s: 17, w: 600 }); });
+  card({ n: '2', part: 0, title: 'Make the holes', art: s,
+    steps: [
+      'Use the motor itself as the stencil — then the holes always match.',
+      'Middle holes of the <b>discs</b> must be <b>tight</b> on the motor shaft. Start small, widen slowly by twisting a screwdriver in it.',
+      'The <b>base</b> middle hole is big on purpose: the shaft spins inside it without touching.',
+    ],
+    check: 'Push a disc on the motor shaft: it goes on snug, not loose and not forced.' });
+}
+
+/* ----------------------------------------------------------------------
+   4 · Base, legs and the bottom motor
+   ---------------------------------------------------------------------- */
+{
+  const k = 4.2;
+  let s = '';
+  s += R(0, 640, 1004, 56, '#E2E8F0') + Ln(0, 640, 1004, 640, '#94A3B8', 2);
+  s += wood(150, 300, 60, 340) + wood(660, 300, 60, 340);
+  s += motorUp(435, 340, k);
+  s += nut(347, 316, k) + nut(523, 316, k);
+  s += acr(120, 290, 630, 14);
+  s += screwV(347, 279, 46, k * 0.9) + screwV(523, 279, 46, k * 0.9);
+  // callouts
+  s += T(780, 110, 'Shaft sticks up\nthrough the BIG\nmiddle hole', { s: 20, w: 700, lh: 1.2 }) + Lead(778, 116, 436, 238, C.cyan);
+  s += T(780, 260, '2 nuts on each\nscrew = spacer', { s: 20, w: 700, lh: 1.2 }) + Lead(778, 268, 540, 322, C.cyan);
+  s += T(780, 400, 'Motor hangs in\nthe air (not on\nthe table)', { s: 20, w: 700, lh: 1.2 }) + Lead(778, 408, 530, 470, C.cyan);
+  s += T(780, 560, 'Legs taller than\nthe motor: wood\nblocks, books or\nlong bolts', { s: 20, w: 700, lh: 1.2 }) + Lead(778, 568, 720, 560, C.cyan);
+  s += Dim(80, 304, 80, 640, 'legs ≥ 6 cm');
+  s += OK(560, 610, 20) + T(590, 618, 'gap', { s: 18, w: 800, c: C.green });
+  s += T(40, 60, 'Side view', { s: 24, w: 800 }) + T(40, 90, 'the bottom motor = PAN (turns left–right)', { s: 19, c: C.mute, w: 600 });
+  card({ n: '3', part: 0, title: 'Base, legs and the bottom motor', art: s,
+    steps: [
+      'Motor goes <b>under</b> the base, shaft pointing <b>up</b> through the big middle hole.',
+      '4 screws from the top. Put <b>2 nuts on each screw</b> between the base and the motor, so the round bump on the motor does not press on the acrylic.',
+      'Stand the base on 4 legs <b>taller than the motor</b>, so the motor hangs free.',
+    ],
+    check: 'The base sits flat and does not rock. The motor does not touch the table.' });
+}
+
+/* ----------------------------------------------------------------------
+   5 · Glue the big disc on the shaft (M-Seal)
+   ---------------------------------------------------------------------- */
+{
+  const k = 7;
+  let s = '';
+  // close-up: motor face at the bottom, base above it, disc near the shaft tip
+  s += motorUp(300, 646, k, { shadow: false, conn: false });
+  s += nut(250, 612, 5.5) + nut(350, 612, 5.5);
+  s += acr(40, 584, 520, 21) + T(56, 632, 'base', { s: 18, c: C.mute, w: 700 });
+  s += putty(254, 493, 92, 44);
+  s += acr(80, 472, 440, 21);
+  s += T(98, 512, 'BIG DISC', { s: 18, w: 800, c: C.acrS });
+  // labels
+  s += T(600, 150, 'Shaft tip sticks out\nabout 2 mm — keep it\nCLEAN (magnet goes\nhere next)', { s: 20, w: 800, lh: 1.2 }) + Lead(598, 158, 300, 462, C.cyan);
+  s += T(600, 360, 'Fat M-Seal ring\nUNDER the disc,\nall round the shaft', { s: 20, w: 700, lh: 1.2 }) + Lead(598, 368, 346, 512, C.cyan);
+  s += T(40, 548, 'The shaft spins free\nin the big base hole', { s: 16, w: 700, lh: 1.2, c: C.mute });
+  // keep-flat inset
+  s += R(40, 120, 420, 150, '#fff', '#E2E8F0', 2, 18, 'filter="url(#sh)"');
+  s += T(62, 156, 'KEEP IT FLAT', { s: 20, w: 800 });
+  s += R(62, 184, 160, 56, '#0F172A', '#334155', 2, 10) + R(78, 202, 128, 20, '#DCFCE7', '#16A34A', 2, 10) + Ci(142, 212, 8, '#16A34A');
+  s += T(240, 200, 'Phone level app on\nthe disc: bubble in\nthe middle = flat.', { s: 15, w: 600, lh: 1.2 });
+  // mix inset
+  s += R(600, 470, 384, 200, '#fff', '#E2E8F0', 2, 18, 'filter="url(#sh)"');
+  s += T(620, 506, 'MIX M-SEAL', { s: 20, w: 800 });
+  s += R(626, 530, 52, 36, '#8E9170', '#5A5C42', 2, 14) + T(696, 556, '+', { s: 30, w: 800, c: C.mute, a: 'middle' }) + R(714, 530, 52, 36, '#E5E7EB', '#9CA3AF', 2, 14);
+  s += A(780, 548, 820, 548, 'ink', 3) + Ci(870, 548, 30, 'url(#gPutty)', C.puttyS, 2);
+  s += T(620, 610, 'Equal bits of both colours.\nRoll till it is ONE colour.', { s: 16, w: 600, lh: 1.25 });
+  s += T(620, 654, 'Hard in about 1 hour.', { s: 16, w: 800, c: C.orange });
+  s += T(40, 60, 'Close-up, side view', { s: 24, w: 800 }) + T(40, 90, 'the disc is glued straight onto the metal shaft', { s: 19, c: C.mute, w: 600 });
+  card({ n: '4', part: 0, title: 'Glue the big disc onto the shaft', art: s,
+    steps: [
+      'Push the big disc onto the shaft until only about <b>2 mm</b> of shaft sticks out on top.',
+      'Press a fat ring of mixed M-Seal <b>under</b> the disc, all round the shaft. Keep the <b>top of the shaft clean</b>: the magnet goes there.',
+      'Keep the disc flat (phone level app). <b>Don\'t turn it for 1 hour</b> while it hardens.',
+    ],
+    check: 'After 1 hour: spin it by hand. It turns flat, no wobble, and the disc never slips on the shaft.' });
+}
+
+/* ----------------------------------------------------------------------
+   6 · Magnet + the sensor arm (the watcher)
+   ---------------------------------------------------------------------- */
+{
+  const k = 8;
+  let s = '';
+  s += acr(40, 600, 640, 16) + T(56, 648, 'base', { s: 18, c: C.mute, w: 700 });
+  s += acr(80, 460, 400, 26);
+  s += R(228, 486, 40, 114, 'url(#gShV)', C.shaftS, 1.4, 2);
+  s += R(228, 448, 40, 12, 'url(#gShV)', C.shaftS, 1.4, 2);
+  s += magnetSide(248, 432, 48, 16);
+  s += sensorSide(248, 380, 130, 14);
+  s += acr(160, 354, 470, 26);
+  // post
+  s += R(592, 300, 24, 300, 'url(#thr)', C.screwS, 1.2, 2);
+  s += nut(604, 380, 5.5) + nut(604, 340, 5.5) + nut(604, 586, 5.5) + nut(604, 616, 5.5);
+  s += R(582, 288, 44, 14, C.screw, C.screwS, 1.5, 3);
+  // gap gauge
+  s += `<g transform="translate(236 419)">${cards2(0, 0, 150)}</g>` + T(300, 530, '2 credit cards fill the gap —\nslide them out after', { s: 16, w: 700, lh: 1.2, c: C.amber }) + Lead(380, 512, 340, 434, C.amber);
+  // labels
+  s += T(40, 200, 'Magnet glued on\nthe TIP of the shaft\n(Fevikwik)', { s: 19, w: 700, lh: 1.2 }) + Lead(130, 262, 228, 440, C.cyan);
+  s += T(700, 250, 'Sensor chip faces\nDOWN, exactly over\nthe magnet', { s: 19, w: 700, lh: 1.2 }) + Lead(698, 258, 310, 386, C.cyan);
+  s += T(700, 380, 'Long screw = post.\nIt stands on the base\nand NEVER turns.', { s: 19, w: 700, lh: 1.2 }) + Lead(698, 388, 616, 440, C.cyan);
+  s += T(700, 520, 'Nuts above and\nbelow the strip set\nthe height', { s: 19, w: 700, lh: 1.2 }) + Lead(698, 528, 624, 356, C.cyan);
+  // diametric test inset
+  s += R(40, 40, 400, 110, '#fff', '#E2E8F0', 2, 16, 'filter="url(#sh)"');
+  s += magnetTop(90, 95, 26) + magnetTop(160, 95, 26);
+  s += T(206, 82, 'Magnet test: N and S', { s: 16, w: 800 }) + T(206, 106, 'on the SIDES (half red,', { s: 15, w: 600 }) + T(206, 128, 'half blue) = correct', { s: 15, w: 600 });
+  s += T(700, 60, 'Close-up, side view', { s: 24, w: 800 });
+  card({ n: '5', part: 0, title: 'Magnet and the sensor arm', art: s,
+    steps: [
+      'Put one drop of Fevikwik on the <b>very tip of the shaft</b> and stick the small round magnet there.',
+      'Stand a long screw on the base, 4–5 cm from the middle, locked with nuts. The acrylic strip sits on it and reaches over the magnet.',
+      'Stick the sensor (AS5600) under the strip\'s end, <b>chip facing down</b> onto the magnet. Gap = 2 credit cards.',
+    ],
+    check: 'Spin the disc: the strip and the sensor never move and never touch anything.' });
+}
+
+/* ----------------------------------------------------------------------
+   7 · Stilts, bracket and the top motor
+   ---------------------------------------------------------------------- */
+{
+  const k = 4.2;
+  let s = '';
+  s += acr(40, 620, 640, 14);
+  s += R(470, 520, 30, 100, 'url(#gShV)', C.shaftS, 1.4, 2);
+  s += acr(160, 500, 440, 18);
+  s += magnetSide(485, 486, 26, 12) + sensorSide(485, 462, 70, 8) + acr(450, 440, 230, 14);
+  s += R(640, 400, 18, 220, 'url(#thr)', C.screwS, 1.2, 2) + R(632, 390, 34, 12, C.screw, C.screwS, 1.5, 3);
+  s += nut(649, 454, 4.4) + nut(649, 426, 4.4);
+  // stilts on the LEFT half
+  [210, 300, 390].forEach(x => { s += screwUp(x, 535, 150, k * 0.8) + nut(x, 480, k) + nut(x, 380, k) + nut(x, 346, k); });
+  // bracket base on stilts, standing leg on the right, motor over the base leg
+  s += R(170, 356, 260, 14, '#9AA3AE', '#4B5563', 2, 3) + R(416, 150, 14, 220, '#9AA3AE', '#4B5563', 2, 3);
+  s += motorRight(416, 262, k, { shaft: 24 });
+  s += A(560, 262, 640, 262, 'violet', 4) + T(650, 270, 'shaft points\nSIDEWAYS', { s: 19, w: 800, c: C.violet, lh: 1.2 });
+  s += T(40, 60, 'Side view of the top half', { s: 24, w: 800 });
+  s += T(700, 130, 'L-bracket', { s: 20, w: 800 }) + Lead(698, 136, 430, 170, C.cyan);
+  s += T(40, 120, 'Top motor = TILT\n(nods up–down)', { s: 20, w: 800, lh: 1.2 }) + Lead(200, 146, 270, 200, C.cyan);
+  s += T(40, 250, '3 long screws =\nstilts, on the side\nAWAY from the\nsensor arm', { s: 19, w: 700, lh: 1.2 }) + Lead(120, 330, 210, 430, C.cyan);
+  s += R(700, 520, 290, 150, '#FFF7ED', '#FDBA74', 2.5, 16);
+  s += T(716, 556, 'The bracket must pass', { s: 18, w: 800, c: '#9A3412' }) + T(716, 582, 'OVER the sensor arm with', { s: 18, w: 800, c: '#9A3412' }) + T(716, 608, 'a gap. Turn the nuts on', { s: 18, w: 800, c: '#9A3412' }) + T(716, 634, 'the stilts to raise it.', { s: 18, w: 800, c: '#9A3412' });
+  s += Dim(560, 370, 560, 440, 'gap', { s: 17 });
+  card({ n: '6', part: 1, title: 'Stilts, bracket and the top motor', art: s,
+    steps: [
+      'Push 3 long screws up through the big disc\'s small holes — the side <b>away from</b> the sensor arm. Lock each with a nut.',
+      'Screw the L-bracket\'s flat part onto the stilts, with nuts above and below it.',
+      'Bolt the second motor to the bracket\'s standing part with 4 screws, <b>shaft pointing sideways</b>.',
+    ],
+    check: 'Turn the big disc a quarter turn left and right by hand: the bracket never hits the sensor arm or its screw.' });
+}
+
+/* ----------------------------------------------------------------------
+   8 · Small disc + the head (camera + laser)
+   ---------------------------------------------------------------------- */
+{
+  const k = 4.6;
+  let s = '';
+  s += R(214, 120, 14, 300, '#9AA3AE', '#4B5563', 2, 3);
+  s += motorRight(214, 262, k, { shaft: 24 });
+  s += putty(292, 242, 30, 40);
+  s += R(322, 170, 14, 184, 'url(#gAcr)', C.acrS, 2.2, 4);
+  s += R(336, 180, 170, 164, '#F1F5F9', '#334155', 3, 12, 'filter="url(#sh)"');
+  s += screwV(360, 196, 0, 3.2) + screwV(360, 318, 0, 3.2);
+  s += Ci(400, 238, 28, '#1F2937', '#0F172A', 2.5) + Ci(400, 238, 15, '#0F172A') + Ci(393, 231, 5, '#fff', 'none', 0, 'opacity=".6"');
+  s += Ci(456, 296, 11, '#374151', '#111', 2) + Ci(456, 296, 5, C.red);
+  s += T(40, 60, 'Side view of the head', { s: 24, w: 800 });
+  s += T(40, 480, 'Small disc glued\non the top shaft\n(same M-Seal\ntrick)', { s: 18, w: 700, lh: 1.2 }) + Lead(170, 456, 328, 340, C.cyan);
+  s += T(300, 480, 'Head box screwed\nFLAT on the small\ndisc, centred →\nit balances', { s: 18, w: 700, lh: 1.2 }) + Lead(360, 460, 420, 344, C.cyan);
+  // front view inset
+  s += R(560, 30, 424, 400, '#fff', '#E2E8F0', 2, 18, 'filter="url(#sh)"');
+  s += T(584, 70, 'FRONT OF THE HEAD', { s: 20, w: 800 });
+  s += R(620, 100, 300, 220, '#F1F5F9', '#334155', 3, 16);
+  s += R(650, 140, 120, 120, 'url(#gAcr)', C.acrS, 2.5, 8) + Ci(710, 200, 40, '#1F2937', '#0F172A', 3) + Ci(710, 200, 22, '#0F172A') + Ci(700, 190, 7, '#fff', 'none', 0, 'opacity=".6"');
+  s += Ci(850, 200, 18, '#374151', '#111', 3) + Ci(850, 200, 7, C.red);
+  s += Dim(710, 290, 850, 290, '2 cm', { s: 17 });
+  s += T(710, 350, 'camera\nbehind clear\nwindow', { s: 16, w: 700, a: 'middle', lh: 1.15 }) + T(850, 350, 'laser', { s: 16, w: 700, a: 'middle' });
+  s += T(584, 418, 'Both look the SAME way. Hot-glue them.', { s: 16, w: 700, c: C.violet });
+  // optional note
+  s += R(560, 460, 424, 210, '#F5F3FF', '#C4B5FD', 2.5, 18);
+  s += T(584, 500, 'The 2nd sensor is OPTIONAL', { s: 19, w: 800, c: C.violet });
+  s += T(584, 534, 'The top motor works without it.', { s: 17, w: 600 });
+  s += T(584, 562, 'Skip it tonight. The code now', { s: 17, w: 600 });
+  s += T(584, 590, 'works with just the bottom sensor.', { s: 17, w: 600 });
+  s += T(584, 634, 'Leave the cables loose, tie them', { s: 17, w: 700, c: C.cyan });
+  s += T(584, 660, 'with cable ties: slack at every joint.', { s: 17, w: 700, c: C.cyan });
+  card({ n: '7', part: 1, title: 'Small disc and the head', art: s,
+    steps: [
+      'Glue the small disc on the top motor\'s shaft the same way: M-Seal, 2 mm sticking out, wait 1 hour.',
+      'Screw the head box <b>flat onto the small disc</b>, centred. Centred = balanced, so the motor does not strain.',
+      'Inside: webcam behind the clear window, laser beside it (2 cm), both looking the same way. Hot-glue both.',
+    ],
+    check: 'On a wall 2 m away the laser dot lands near the middle of the camera picture.' });
+}
+
+/* ----------------------------------------------------------------------
+   9 · Power
+   ---------------------------------------------------------------------- */
+{
+  let s = '';
+  // adapter + socket
+  s += R(40, 90, 110, 80, '#111827', '#000', 2, 10, 'filter="url(#sh)"') + T(95, 138, '12 V', { s: 22, w: 800, c: '#fff', a: 'middle' });
+  s += P('M150,130 C200,130 190,200 240,200', 'none', '#111', 5);
+  s += R(240, 172, 66, 56, '#1F2937', '#000', 2, 6, 'filter="url(#sh)"') + Ci(273, 200, 14, '#0F172A', '#64748B', 2) + Ci(273, 200, 4, '#CBD5E1');
+  s += T(273, 262, 'DC socket', { s: 17, w: 700, a: 'middle' });
+  // switch
+  s += Ln(306, 188, 380, 188, C.w12, 5) + Ci(384, 188, 6, '#111') + Ln(384, 188, 420, 168, '#111', 4) + Ci(424, 188, 6, '#111') + T(404, 150, 'switch', { s: 16, w: 700, a: 'middle' });
+  s += Ln(306, 214, 360, 214, C.wG, 5) + Ln(360, 214, 360, 332, C.wG, 5);
+  // breadboard rails
+  s += R(420, 150, 560, 210, '#F5F5F4', '#A8A29E', 2, 10);
+  s += Ln(430, 188, 970, 188, C.w12, 6) + T(960, 178, '+12 V rail', { s: 16, w: 800, c: C.w12, a: 'end' });
+  s += Ln(424, 188, 430, 188, C.w12, 5);
+  s += Ln(230, 332, 970, 332, C.wG, 6) + T(960, 352, 'GND rail', { s: 16, w: 800, c: C.wG, a: 'end' });
+  // drivers
+  [[520, 'BOTTOM'], [770, 'TOP']].forEach(([x, n]) => {
+    s += driverTop(x, 220, 130, 90) + T(x + 65, 296, n, { s: 14, w: 800, c: '#fff', a: 'middle' });
+    s += Ln(x + 20, 188, x + 20, 220, C.w12, 5) + Ln(x + 110, 310, x + 110, 332, C.wG, 5);
+    s += R(x + 42, 196, 44, 18, '#2563EB', '#1E3A8A', 1.5, 8) + T(x + 64, 209, '100µF', { s: 11, w: 700, c: '#fff', a: 'middle' });
+    s += T(x + 20, 244, 'VMOT', { s: 12, w: 800, c: '#fff', a: 'middle' });
+  });
+  // nano + laptop + common ground
+  s += nanoTop(120, 420, 220, 70);
+  s += R(420, 420, 200, 120, '#E2E8F0', '#64748B', 2, 10) + R(436, 434, 168, 80, '#0F172A') + T(520, 480, 'laptop', { s: 17, w: 700, c: '#fff', a: 'middle' });
+  s += P('M340,455 C380,455 380,470 420,470', 'none', '#6B7280', 6) + T(376, 432, 'USB', { s: 15, w: 800, c: C.mute, a: 'middle' });
+  s += Ln(230, 420, 230, 332, C.wG, 5) + T(240, 390, 'Arduino GND →\nGND rail', { s: 15, w: 800, lh: 1.1 });
+  // rules
+  const rules = [['12 V goes ONLY to the motor drivers (VMOT)', C.red], ['Never pull a motor wire while the switch is ON', C.red], ['Capacitor: long leg to +12 V, stripe to GND', C.amber], ['Arduino GND to the GND rail — one shared ground', C.cyan]];
+  s += R(430, 536, 556, 140, '#fff', '#E2E8F0', 2, 14, 'filter="url(#sh)"');
+  rules.forEach(([t, c], i) => { const y = 572 + i * 30; s += Ci(452, y - 6, 8, c) + T(470, y, t, { s: 16, w: 700 }); });
+  s += T(40, 52, 'Two powers, ONE ground', { s: 24, w: 800 });
+  s += T(40, 572, 'Find + on the socket:\nadapter in, multimeter\non DC V. The 2 pins\nthat read 12 V: red\nprobe = +. Mark it.', { s: 16, w: 600, lh: 1.22 });
+  card({ n: '8', part: 2, title: 'Power: 12 V for the motors only', art: s,
+    steps: [
+      '<b>12 V adapter</b> → DC socket → switch → the <b>red</b> rail. Socket − → the <b>blue</b> (GND) rail.',
+      'Each driver: VMOT to red, GND to blue, and a 100 µF capacitor across them (stripe to GND).',
+      'The <b>laptop USB</b> powers the Arduino. One wire joins the Arduino GND to the GND rail.',
+    ],
+    check: 'Switch ON (nothing else plugged in yet): the red rail reads about 12 V on the multimeter.', warn: false });
+}
+
+/* ----------------------------------------------------------------------
+   10 · One motor driver (do it twice)
+   ---------------------------------------------------------------------- */
+{
+  let s = '';
+  // driver big
+  const X = 360, Y = 110, W = 250, H = 420;
+  s += R(X, Y, W, H, C.board, '#0F3D24', 3, 12, 'filter="url(#sh)"');
+  s += R(X + 80, Y + 190, 90, 90, '#111', '#000', 1, 6) + T(X + 125, Y + 240, 'A4988', { s: 14, w: 800, c: '#9CA3AF', a: 'middle' });
+  s += Ci(X + 125, Y + 100, 18, '#D4D4D8', '#71717A', 2) + Ln(X + 115, Y + 100, X + 135, Y + 100, '#52525B', 3) + T(X + 125, Y + 144, 'Vref screw', { s: 13, w: 700, c: '#D1FAE5', a: 'middle' });
+  const Lp = ['EN', 'MS1', 'MS2', 'MS3', 'RST', 'SLP', 'STEP', 'DIR'], Rp = ['VMOT', 'GND', '2B', '2A', '1A', '1B', 'VDD', 'GND'];
+  Lp.forEach((p, i) => { const y = Y + 36 + i * 50; s += Ci(X + 18, y, 7, '#FACC15', '#A16207', 1.5) + T(X + 34, y + 6, p, { s: 16, w: 800, c: '#fff' }); });
+  Rp.forEach((p, i) => { const y = Y + 36 + i * 50; s += Ci(X + W - 18, y, 7, '#FACC15', '#A16207', 1.5) + T(X + W - 34, y + 6, p, { s: 16, w: 800, c: '#fff', a: 'end' }); });
+  const ly = i => Y + 36 + i * 50;
+  // left side wires
+  s += Ln(X + 18, ly(0), 250, ly(0), C.wG, 5) + T(240, ly(0) + 6, 'GND', { s: 17, w: 800, a: 'end' });
+  [1, 2, 3].forEach(i => { s += Ln(X + 18, ly(i), 270, ly(i), C.w5, 5); });
+  s += Ln(270, ly(1), 270, ly(3), C.w5, 5) + T(260, ly(2) + 6, '5 V (all 3)', { s: 17, w: 800, a: 'end' });
+  s += P(`M${X + 18},${ly(4)} C${X - 30},${ly(4)} ${X - 30},${ly(5)} ${X + 18},${ly(5)}`, 'none', C.wSig, 5) + T(300, ly(4) + 30, 'join these 2', { s: 17, w: 800, a: 'end', c: C.wSig });
+  s += Ln(X + 18, ly(6), 180, ly(6), C.wSig, 5) + T(170, ly(6) + 6, 'D2 (bottom)\nD4 (top)', { s: 16, w: 800, a: 'end', lh: 1.1 });
+  s += Ln(X + 18, ly(7), 180, ly(7), '#DB2777', 5) + T(170, ly(7) + 6, 'D3 (bottom)\nD5 (top)', { s: 16, w: 800, a: 'end', lh: 1.1 });
+  // right side
+  s += Ln(X + W - 18, ly(0), 740, ly(0), C.w12, 5) + T(750, ly(0) + 6, '+12 V rail', { s: 17, w: 800, c: C.w12 });
+  s += Ln(X + W - 18, ly(1), 740, ly(1), C.wG, 5) + T(750, ly(1) + 6, 'GND rail', { s: 17, w: 800 });
+  s += Ln(X + W - 18, ly(2), 700, ly(2), '#10B981', 5) + Ln(X + W - 18, ly(3), 700, ly(3), '#111', 5);
+  s += P(`M700,${ly(2)} L720,${ly(2)} L720,${ly(3)} L700,${ly(3)}`, 'none', '#94A3B8', 2) + T(732, ly(2) + 30, 'motor pair 2', { s: 16, w: 800 });
+  s += Ln(X + W - 18, ly(4), 700, ly(4), C.red, 5) + Ln(X + W - 18, ly(5), 700, ly(5), '#2563EB', 5);
+  s += P(`M700,${ly(4)} L720,${ly(4)} L720,${ly(5)} L700,${ly(5)}`, 'none', '#94A3B8', 2) + T(732, ly(4) + 30, 'motor pair 1', { s: 16, w: 800 });
+  s += Ln(X + W - 18, ly(6), 740, ly(6), C.w5, 5) + T(750, ly(6) + 6, '5 V', { s: 17, w: 800 });
+  s += Ln(X + W - 18, ly(7), 740, ly(7), C.wG, 5) + T(750, ly(7) + 6, 'GND', { s: 17, w: 800 });
+  // coil pair inset
+  s += R(40, 560, 470, 118, '#fff', '#E2E8F0', 2, 16, 'filter="url(#sh)"');
+  s += T(60, 594, 'Find the 2 pairs', { s: 18, w: 800 }) + T(60, 622, 'Multimeter on Ω: the 2 wires that read', { s: 15, w: 600 }) + T(60, 646, '1–4 Ω = one pair. Usually black+green', { s: 15, w: 600 }) + T(60, 670, 'and red+blue. Never mix the pairs.', { s: 15, w: 600 });
+  s += R(530, 560, 456, 118, '#FFF7ED', '#FDBA74', 2, 16);
+  s += T(550, 594, 'Vref (USB only, 12 V OFF)', { s: 18, w: 800, c: '#9A3412' }) + T(550, 622, 'Black probe GND, red probe on the', { s: 15, w: 600 }) + T(550, 646, 'little screw. Turn gently to 0.55 V.', { s: 15, w: 600 }) + T(550, 670, 'Do both drivers.', { s: 15, w: 700 });
+  s += T(40, 52, 'One driver · wire it the same way twice', { s: 24, w: 800 });
+  card({ n: '9', part: 2, title: 'Wire a motor driver (do it twice)', art: s,
+    steps: [
+      'Small jumpers: <b>RST↔SLP</b> together, <b>MS1 MS2 MS3</b> to 5 V, <b>EN</b> to GND.',
+      '<b>STEP / DIR</b> to the Arduino: bottom motor <b>D2 / D3</b>, top motor <b>D4 / D5</b>.',
+      'Motor: one pair on <b>1A–1B</b>, the other pair on <b>2A–2B</b>. Set Vref to 0.55 V.',
+    ],
+    check: 'Switch ON: both motor shafts go stiff (hard to turn by hand). The drivers get only warm.' });
+}
+
+/* ----------------------------------------------------------------------
+   11 · Sensor + laser wires
+   ---------------------------------------------------------------------- */
+{
+  let s = '';
+  s += nanoTop(40, 170, 250, 250, 'Arduino Nano (rig)');
+  const np = [['A4', 230], ['A5', 270], ['5V', 310], ['GND', 350], ['D7', 390]];
+  np.forEach(([p, y]) => { s += T(280, y + 6, p, { s: 17, w: 800, c: '#fff', a: 'end' }); });
+  // mux
+  s += R(410, 170, 190, 230, '#1E3A5F', '#0B1B2E', 3, 10, 'filter="url(#sh)"') + T(505, 200, 'MULTIPLEXER', { s: 16, w: 800, c: '#fff', a: 'middle' }) + T(505, 222, '(TCA9548A)', { s: 13, w: 700, c: '#CBD5E1', a: 'middle' });
+  [['SDA', 230], ['SCL', 270], ['VIN', 310], ['GND', 350]].forEach(([p, y]) => { s += T(422, y + 6, p, { s: 16, w: 800, c: '#fff' }); });
+  [['SD0', 250], ['SC0', 290]].forEach(([p, y]) => { s += T(588, y + 6, p, { s: 16, w: 800, c: '#fff', a: 'end' }); });
+  s += T(422, 386, 'A0 A1 A2 → GND', { s: 13, w: 700, c: '#FDE68A' });
+  s += Ln(290, 230, 410, 230, C.wSDA, 5) + Ln(290, 270, 410, 270, C.wSCL, 5) + Ln(290, 310, 410, 310, C.w5, 5) + Ln(290, 350, 410, 350, C.wG, 5);
+  // sensor
+  s += R(720, 190, 220, 200, C.sens, C.sensD, 3, 10, 'filter="url(#sh)"') + R(800, 250, 60, 60, '#111', '#000', 1, 4) + T(830, 222, 'SENSOR', { s: 16, w: 800, c: '#fff', a: 'middle' }) + T(830, 360, '(bottom motor)', { s: 13, w: 700, c: '#DDD6FE', a: 'middle' });
+  [['SDA', 250], ['SCL', 290]].forEach(([p, y]) => { s += T(734, y + 6, p, { s: 15, w: 800, c: '#fff' }); });
+  s += Ln(600, 250, 720, 250, C.wSDA, 5) + Ln(600, 290, 720, 290, C.wSCL, 5);
+  s += T(940, 420, 'VCC → 5 V · GND → GND · DIR → GND', { s: 16, w: 800, a: 'end' });
+  // laser
+  s += R(460, 500, 190, 80, '#374151', '#111', 3, 10, 'filter="url(#sh)"') + Ci(632, 540, 11, C.red) + T(540, 534, 'LASER', { s: 18, w: 800, c: '#fff', a: 'middle' });
+  [[490, 'S'], [540, 'mid'], [590, '−']].forEach(([x, t]) => { s += Ln(x, 580, x, 600, '#9CA3AF', 4) + T(x, 568, t, { s: 14, w: 800, c: '#FDE68A', a: 'middle' }); });
+  s += P('M290,390 L340,390 L340,640 L490,640 L490,600', 'none', C.wSig, 5) + T(352, 470, 'D7 → S', { s: 18, w: 800, c: C.wSig });
+  s += P('M590,600 L590,640 L700,640', 'none', C.wG, 5) + T(710, 646, 'GND', { s: 16, w: 800 });
+  s += T(540, 676, 'middle pin: nothing', { s: 15, w: 700, c: C.mute, a: 'middle' });
+  s += T(40, 52, 'Sensor through the multiplexer, laser straight in', { s: 24, w: 800 });
+  s += T(40, 88, 'blue = SDA · green = SCL · orange = 5 V · black = GND', { s: 17, w: 700, c: C.mute });
+  card({ n: '10', part: 2, title: 'Sensor and laser wires', art: s,
+    steps: [
+      'Arduino <b>A4→SDA, A5→SCL</b>, 5 V→VIN, GND→GND on the multiplexer. Its A0 A1 A2 → GND.',
+      'Sensor on channel <b>0</b> (SD0, SC0). Sensor VCC→5 V, GND→GND, DIR→GND.',
+      'Laser: <b>S→D7</b>, −→GND. Leave the middle pin empty.',
+    ],
+    check: 'After uploading the code (card 13) the Arduino says encoders=pan. That means the sensor works.' });
+}
+
+/* ----------------------------------------------------------------------
+   12 · The beacon
+   ---------------------------------------------------------------------- */
+{
+  let s = '';
+  // cross-section box
+  s += R(60, 330, 460, 250, 'none', '#475569', 4, 12);
+  s += R(60, 316, 460, 18, 'url(#gAcr)', C.acrS, 2.5, 4);
+  s += `<path d="M210,316 A80,80 0 0 1 370,316 Z" fill="#FFF1EE" stroke="#FCA5A5" stroke-width="3"/>`;
+  s += Ci(290, 280, 36, '#EF4444', 'none', 0, 'filter="url(#glow)" opacity=".55"');
+  s += ledSide(290, 262, 1.1);
+  s += nanoTop(110, 480, 200, 60, 'Nano');
+  s += P('M288,340 C288,420 250,440 240,480', 'none', C.wSig, 4) + P('M296,330 C320,420 290,450 270,480', 'none', C.wG, 4);
+  s += P('M110,510 L40,510', 'none', '#6B7280', 7) + T(40, 620, 'USB cable out of a side hole →\nphone charger or power bank', { s: 16, w: 700, lh: 1.2 });
+  s += T(290, 180, 'half ping-pong ball', { s: 19, w: 800, a: 'middle' }) + Lead(290, 190, 290, 240, C.cyan);
+  // circuit
+  s += R(560, 60, 424, 360, '#fff', '#E2E8F0', 2, 18, 'filter="url(#sh)"');
+  s += T(584, 100, 'THE CIRCUIT', { s: 20, w: 800 });
+  s += R(584, 130, 120, 220, C.boardB, '#0B2E5C', 2, 8) + T(644, 160, 'Nano', { s: 17, w: 800, c: '#fff', a: 'middle' });
+  s += T(690, 206, 'D9', { s: 17, w: 800, c: '#fff', a: 'end' }) + T(690, 316, 'GND', { s: 17, w: 800, c: '#fff', a: 'end' });
+  s += Ln(704, 200, 740, 200, C.wSig, 4) + resistor(760, 200, 60, ['#DC2626', '#DC2626', '#7A3B10']) + T(790, 178, '220 Ω', { s: 17, w: 800, a: 'middle' });
+  s += ledSide(914, 150, 0.9);
+  s += P('M842,200 L870,200 L870,222 L910.4,222 L910.4,213', 'none', C.wSig, 4);
+  s += P('M917.6,200 L917.6,210 L950,210 L950,310 L704,310', 'none', C.wG, 4);
+  s += T(862, 250, 'long leg +', { s: 14, w: 800, a: 'end' }) + T(958, 250, 'short\nleg −', { s: 14, w: 800, lh: 1.05 });
+  s += T(820, 336, 'short leg − → GND', { s: 15, w: 800, a: 'middle' });
+  s += T(584, 396, 'red-red-brown = 220 Ω', { s: 15, w: 700, c: C.mute });
+  // blink
+  s += R(560, 450, 424, 220, '#F0FDF4', '#86EFAC', 2.5, 18);
+  s += T(584, 490, 'BLINKS 4 TIMES A SECOND', { s: 19, w: 800, c: '#166534' });
+  [0, 1, 2, 3, 4, 5, 6, 7].forEach(i => { s += Ci(610 + i * 48, 540, 16, i % 2 ? '#FECACA' : C.red, i % 2 ? '#FCA5A5' : '#7F1D1D', 2); });
+  s += T(584, 600, 'Upload tools/rig/beacon_firmware.ino', { s: 15, w: 700 }) + T(584, 626, 'to the SECOND Nano.', { s: 15, w: 700 });
+  s += T(584, 656, 'Slow-motion video: count 4 flashes / s.', { s: 15, w: 700, c: '#166534' });
+  s += T(40, 52, 'Cut through the middle', { s: 24, w: 800 });
+  card({ n: '11', part: 3, title: 'The beacon (the blinking target)', art: s,
+    steps: [
+      'LED <b>long leg</b> → 220 Ω → Nano <b>D9</b>. LED <b>short leg</b> → Nano <b>GND</b>.',
+      'Upload <b>beacon_firmware.ino</b> to the second Nano. The LED blinks 4 times a second.',
+      'LED through a hole in the lid, half a ping-pong ball glued over it. Power from a phone charger or power bank.',
+    ],
+    check: 'LED blinks steadily. No light? The LED is the wrong way round — swap its two wires.' });
+}
+
+/* ----------------------------------------------------------------------
+   13 · The decoy
+   ---------------------------------------------------------------------- */
+{
+  let s = '';
+  // circuit loop
+  s += R(40, 130, 180, 110, '#111827', '#000', 2, 12, 'filter="url(#sh)"');
+  [0, 1, 2].forEach(i => { s += R(56 + i * 54, 150, 44, 70, '#374151', '#000', 1.5, 6) + R(56 + i * 54, 150, 44, 18, '#F59E0B'); });
+  s += T(130, 272, '3 × AA', { s: 19, w: 800, a: 'middle' });
+  s += Ln(220, 160, 330, 160, C.w12, 5) + T(260, 146, '+ red', { s: 15, w: 800, c: C.w12 });
+  s += Ci(336, 160, 7, '#111') + Ln(336, 160, 380, 132, '#111', 5) + Ci(386, 160, 7, '#111') + T(360, 112, 'switch', { s: 16, w: 800, a: 'middle' });
+  s += Ln(392, 160, 450, 160, C.w12, 5) + resistor(470, 160, 70, ['#7A3B10', '#111', '#7A3B10']) + T(505, 136, '100 Ω', { s: 18, w: 800, a: 'middle' });
+  s += ledSide(680, 96, 1);
+  s += P('M562,160 L620,160 L620,196 L676,196 L676,166', 'none', C.w12, 5);
+  s += P('M684,152 L684,164 L740,164 L740,260 L220,260 L220,220', 'none', C.wG, 5);
+  s += T(630, 234, 'long leg +', { s: 15, w: 800 }) + T(752, 150, 'short leg −', { s: 15, w: 800 });
+  s += T(440, 290, 'short leg − → battery − (black)', { s: 16, w: 800, a: 'middle' });
+  s += T(505, 214, 'brown-black-brown', { s: 14, w: 700, c: C.mute, a: 'middle' });
+  // two boxes side by side
+  s += R(40, 350, 944, 320, '#fff', '#E2E8F0', 2, 18, 'filter="url(#sh)"');
+  s += T(64, 390, 'MAKE THEM LOOK THE SAME', { s: 20, w: 800 });
+  [[180, 'BEACON', true], [620, 'DECOY', false]].forEach(([x, n, blink]) => {
+    s += R(x, 500, 220, 120, '#F1F5F9', '#475569', 3, 12);
+    s += `<path d="M${x + 70},500 A40,40 0 0 1 ${x + 150},500 Z" fill="#FFF1EE" stroke="#FCA5A5" stroke-width="3"/>`;
+    s += Ci(x + 110, 478, 30, '#EF4444', 'none', 0, 'filter="url(#glow)" opacity=".6"') + Ci(x + 110, 482, 12, C.red);
+    s += T(x + 110, 650, n, { s: 18, w: 800, a: 'middle' });
+    s += T(x + 110, 430, blink ? 'blinks 4× / s' : 'always ON', { s: 17, w: 800, a: 'middle', c: blink ? '#166534' : '#9A3412', bg: blink ? '#DCFCE7' : '#FFEDD5' });
+  });
+  s += T(502, 574, 'vs', { s: 26, w: 800, a: 'middle', c: C.mute });
+  s += T(40, 52, 'The decoy: no Arduino, no code', { s: 24, w: 800 });
+  s += T(40, 88, 'Same red LED, same box, the other half of the ping-pong ball', { s: 17, w: 700, c: C.mute });
+  card({ n: '12', part: 3, title: 'The decoy (the trick light)', art: s,
+    steps: [
+      'Battery + → switch → <b>100 Ω</b> → LED long leg. LED short leg → battery −.',
+      'Same kind of box and the other half of the ping-pong ball, so it looks exactly like the beacon.',
+      'It stays ON and <b>never blinks</b>. The rig must ignore it and keep watching the beacon.',
+    ],
+    check: 'Switch on: a steady red light. No light? Flip the LED round.' });
+}
+
+/* ----------------------------------------------------------------------
+   14 · Put the code in the Arduino
+   ---------------------------------------------------------------------- */
+{
+  let s = '';
+  s += R(40, 30, 944, 470, '#1E293B', '#0F172A', 3, 18, 'filter="url(#sh)"');
+  s += R(40, 30, 944, 44, '#334155', 'none', 0, 18) + R(40, 56, 944, 18, '#334155');
+  [70, 94, 118].forEach((x, i) => { s += Ci(x, 52, 8, ['#F87171', '#FBBF24', '#34D399'][i]); });
+  s += T(512, 60, 'Arduino IDE', { s: 17, w: 700, c: '#E2E8F0', a: 'middle' });
+  const st = [
+    ['Tools → Manage Libraries → search AccelStepper → Install', '#93C5FD'],
+    ['File → Open → tools/rig/rig_firmware_v2.ino', '#93C5FD'],
+    ['Tools → Board: Arduino Nano · Processor: ATmega328P (Old Bootloader)', '#93C5FD'],
+    ['Tools → Port: the Nano → press UPLOAD (→)', '#93C5FD'],
+    ['Tools → Serial Monitor · 115200 baud · Newline', '#93C5FD'],
+  ];
+  st.forEach(([t, c], i) => { const y = 124 + i * 58; s += B(84, y - 7, i + 1, C.orange, 17) + T(116, y, t, { s: 19, w: 700, c: '#E2E8F0' }); });
+  s += R(70, 420, 884, 60, '#0B1220', '#334155', 2, 10) + T(92, 458, '# ZeroDrift Mk2 ready, encoders=pan', { s: 21, w: 700, c: '#34D399' });
+  // test commands
+  s += R(40, 520, 944, 156, '#fff', '#E2E8F0', 2, 18, 'filter="url(#sh)"');
+  s += T(64, 556, 'TYPE THESE TO TEST (press Enter after each)', { s: 18, w: 800 });
+  const cmds = [['P267 T0', 'bottom motor turns 30°'], ['P0 T0', 'back to the start'], ['T89', 'top motor nods 10°'], ['L1  ·  L0', 'laser on · off']];
+  cmds.forEach(([c, d], i) => { const x = 64 + (i % 2) * 470, y = 598 + Math.floor(i / 2) * 44; s += R(x, y - 26, 150, 36, '#0F172A', 'none', 0, 8) + T(x + 75, y, c, { s: 18, w: 800, c: '#34D399', a: 'middle' }) + T(x + 166, y, d, { s: 17, w: 700 }); });
+  card({ n: '13', part: 2, title: 'Put the code in the Arduino', art: s,
+    steps: [
+      'Plug the rig Arduino into the laptop. Do steps 1–5 on the screen above.',
+      'If upload fails, choose the other Processor option and try again.',
+      'Type the test lines. Then <b>close the Serial Monitor</b> — the website can\'t connect while it is open.',
+    ],
+    check: 'You see "ZeroDrift Mk2 ready" and the motors move when you type P267 T0.' });
+}
+
+/* ----------------------------------------------------------------------
+   15 · Go live on the website
+   ---------------------------------------------------------------------- */
+{
+  let s = '';
+  s += R(40, 24, 944, 646, '#0B1220', '#1E293B', 3, 18, 'filter="url(#sh)"');
+  s += R(40, 24, 944, 40, '#1E293B', 'none', 0, 18) + R(40, 46, 944, 18, '#1E293B');
+  s += R(200, 32, 600, 24, '#0F172A', '#334155', 1.5, 12) + T(500, 50, 'zerodrift-fsoc-pat.netlify.app/live', { s: 15, w: 700, c: '#94A3B8', a: 'middle' });
+  // camera view
+  s += R(64, 84, 590, 400, '#020617', '#1E293B', 2, 12);
+  s += Ci(420, 250, 16, '#EF4444') + Ci(420, 250, 40, '#EF4444', 'none', 0, 'filter="url(#glow)" opacity=".5"');
+  s += R(384, 214, 72, 72, 'none', '#22C55E', 4, 6) + T(420, 206, 'LOCKED 4.0 Hz', { s: 15, w: 800, c: '#22C55E', a: 'middle' });
+  s += Ci(210, 330, 12, '#F87171') + T(210, 368, 'decoy · ignored', { s: 14, w: 700, c: '#94A3B8', a: 'middle' });
+  s += Ci(430, 262, 5, '#FCA5A5');
+  // buttons
+  const btn = [['START CAMERA', 1], ['MK2 CAMERA (USB)', 2], ['CONNECT RIG', 3], ['TEST MOTION', 4]];
+  btn.forEach(([t, n], i) => { const y = 92 + i * 64; s += R(680, y, 280, 48, '#0F2537', '#22D3EE', 2, 10) + T(820, y + 31, t, { s: 16, w: 800, c: '#67E8F9', a: 'middle' }) + B(682, y + 2, n, C.orange, 16); });
+  s += R(680, 358, 280, 120, '#111827', '#334155', 2, 10) + T(696, 386, 'SETTINGS', { s: 13, w: 800, c: '#94A3B8' });
+  s += R(696, 400, 248, 28, '#0F172A', '#334155', 1.5, 6) + T(708, 420, 'BEACON RATE  4 Hz', { s: 14, w: 700, c: '#E2E8F0' }) + B(960, 414, 5, C.orange, 15);
+  s += R(698, 442, 18, 18, '#22D3EE', 'none', 0, 3) + P('M701,451 l5,5 l8,-10', 'none', '#0B1220', 3) + T(724, 458, 'RED BEACON FILTER', { s: 14, w: 800, c: '#E2E8F0' }) + B(960, 452, 6, C.orange, 15);
+  // aim
+  s += R(64, 500, 590, 150, '#111827', '#334155', 2, 12);
+  s += T(84, 536, 'MK2 DRIVE: Direct drive (1:1)', { s: 17, w: 800, c: '#E2E8F0' }) + B(640, 530, 7, C.orange, 15);
+  s += T(84, 574, 'SET AIM → click the laser dot in the video', { s: 17, w: 800, c: '#E2E8F0' }) + B(640, 568, 8, C.orange, 15);
+  s += T(84, 612, 'Wrong way? tick INVERT PAN / INVERT TILT', { s: 17, w: 700, c: '#FDE68A' });
+  s += R(680, 500, 280, 150, '#052E16', '#166534', 2, 12) + T(820, 548, 'RECORD', { s: 22, w: 800, c: '#86EFAC', a: 'middle' }) + T(820, 580, 'lock → decoy on →', { s: 15, w: 700, c: '#BBF7D0', a: 'middle' }) + T(820, 604, 'move the beacon →', { s: 15, w: 700, c: '#BBF7D0', a: 'middle' }) + T(820, 628, 'cover and uncover', { s: 15, w: 700, c: '#BBF7D0', a: 'middle' });
+  card({ n: '14', part: 3, title: 'Go live on the website', art: s,
+    steps: [
+      'Chrome → the <b>/live</b> page → <b>START CAMERA</b> → <b>MK2 CAMERA (USB)</b>. No webcam yet? The laptop camera works for testing.',
+      '<b>CONNECT RIG</b> → pick the Arduino → <b>TEST MOTION</b>. Wrong way? Tick INVERT.',
+      'Beacon ON. Red beacon in a bright room: tick <b>RED BEACON FILTER</b>. Then SET AIM on the laser dot.',
+    ],
+    check: 'It locks in about a second and turns to face the beacon. Now record the demo!' });
+}
+
+render();
+</script>
+</body>
+</html>

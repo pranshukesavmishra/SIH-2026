@@ -36,6 +36,7 @@ td.b{width:26px;text-align:center}
 
 <div class="say"><b>For the shopkeeper:</b> we are building a small pan-tilt camera turret with two <b>NEMA17 stepper motors (5 mm shaft)</b> and <b>A4988 drivers</b>, run by an Arduino Nano. We need the items below.</div>
 
+<div class="warn"><b>Remember:</b> the B3 charger never connects to the rig; it only charges batteries. The 5 V 1 A adapter can't run the motors (it's for the beacon). The motors run on 12 V: item 2, or charged 18650s (3.7–4.2 V each).</div>
 <h2>A · Motors, power and electronics</h2><table>
 <tr><th></th><th>No.</th><th>Item (ask for)</th><th>Qty</th><th>Description for the shopkeeper · what it is for</th><th>≈ ₹</th></tr>
 <tr><td class="b"><span class="box"></span></td><td class="n">1</td><td class="i"><b>5 mm rigid flange coupling</b></td><td class="q">2</td><td>Metal flange coupling with a <b>5 mm bore</b>, to fit a NEMA17 stepper motor shaft. <b>Rigid (solid)</b> type, not flexible or spring. Grub screw, and a flange with 4 screw holes. Holds the pan platform and the tilt disc on the two motor shafts.</td><td class="r">160–300</td></tr>
@@ -52,30 +53,33 @@ td.b{width:26px;text-align:center}
 <tr><td class="b"><span class="box"></span></td><td class="n">9</td><td class="i"><b>M3 × 40 mm screw + nuts</b></td><td class="q">4</td><td><b>4 screws, 12 nuts.</b> Standing posts for the two encoder arms (the yellow parts). The nuts set the height.</td><td class="r">20–40</td></tr>
 <tr><td class="b"><span class="box"></span></td><td class="n">10</td><td class="i"><b>M3 standoff, 15 mm (brass or nylon)</b></td><td class="q">4</td><td>Raise the tilt motor's L-bracket above the pan encoder arm.</td><td class="r">30–60</td></tr>
 <tr><td class="b"><span class="box"></span></td><td class="n">11</td><td class="i"><b>M3 brass standoff, 20 mm (male–female)</b></td><td class="q">4</td><td>Screwed together in pairs = 40 mm. This is the post the camera head hangs from. <b>Brass, not plastic.</b></td><td class="r">40–80</td></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">12</td><td class="i"><b>M3 × 10 mm screws + nuts + washers</b></td><td class="q">1</td><td><b>20 screws, 30 nuts, 20 washers.</b> For bolting the motors (NEMA17 = M3 only), the couplings to the discs and the L-bracket.</td><td class="r">60–100</td></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">13</td><td class="i"><b>M4 × 60 mm bolt + nuts (base legs)</b></td><td class="q">4</td><td><b>4 bolts, 12 nuts.</b> Legs at the 4 corners of the base plate, so the pan motor hangs free under it. The nuts make them level.</td><td class="r">30–60</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">12</td><td class="i"><b>M3 screws + nuts + washers</b></td><td class="q">1 set</td><td><b>M3 × 16 mm × 8</b> (pan motor through the base, with spacer nuts), <b>M3 × 10 mm × 20</b> (tilt motor, couplings to discs, L-bracket), <b>30 nuts, 20 washers.</b> NEMA17 motors take M3 only.</td><td class="r">60–100</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">13</td><td class="i"><b>M4 × 80 mm bolt + nuts (base legs)</b></td><td class="q">4</td><td><b>4 bolts, 12 nuts.</b> Legs at the 4 corners of the base plate, so the pan motor hangs free under it. The nuts make them level.</td><td class="r">30–60</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">14</td><td class="i"><b>Allen key set, small (1.5–3 mm)</b></td><td class="q">1</td><td>For the grub screws in the flange couplings (skip if the couplings come with a key).</td><td class="r">60–120</td></tr>
 </table>
 <h2>C · Boxes, filter and diffuser <span style="font-weight:400;font-size:10pt">(beacon, decoy, camera)</span></h2><table>
 <tr><th></th><th>No.</th><th>Item (ask for)</th><th>Qty</th><th>Description for the shopkeeper · what it is for</th><th>≈ ₹</th></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">14</td><td class="i"><b>ABS plastic project box, ≈ 100 × 60 × 25 mm</b></td><td class="q">2</td><td>Small plastic enclosure with a lid. One for the <b>beacon</b> (Nano + LED), one for the <b>decoy</b> (3×AA holder + LED + switch).</td><td class="r">160–300</td></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">15</td><td class="i"><b>ABS plastic project box, ≈ 70 × 50 × 30 mm</b></td><td class="q">1</td><td>Small box for the <b>camera head</b>: the webcam board and the laser go inside, looking out through two holes in the front.</td><td class="r">60–120</td></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">16</td><td class="i"><b>Red transparent acrylic, 2 mm, small piece (≈ 5 × 5 cm)</b></td><td class="q">1</td><td>Or red cellophane / red gel sheet. Goes over the camera lens so bright rooms don't blind it. Check: through it the room looks dim red.</td><td class="r">20–80</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">15</td><td class="i"><b>ABS plastic project box, ≈ 100 × 60 × 25 mm</b></td><td class="q">2</td><td>Small plastic enclosure with a lid. One for the <b>beacon</b> (Nano + LED), one for the <b>decoy</b> (3×AA holder + LED + switch).</td><td class="r">160–300</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">16</td><td class="i"><b>ABS plastic project box, ≈ 70 × 50 × 30 mm</b></td><td class="q">1</td><td>Small box for the <b>camera head</b>: the webcam board and the laser go inside, looking out through two holes in the front.</td><td class="r">60–120</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">17</td><td class="i"><b>Red transparent acrylic, 2 mm, small piece (≈ 5 × 5 cm)</b></td><td class="q">1</td><td>Or red cellophane / red gel sheet. Goes over the camera lens so bright rooms don't blind it. Check: through it the room looks dim red.</td><td class="r">20–80</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">18</td><td class="i"><b>AA batteries (1.5 V)</b></td><td class="q">6</td><td>3 in the decoy holder, 3 spare. Alkaline (not "heavy duty") so the decoy stays bright all night.</td><td class="r">60–120</td></tr>
 </table>
 <h2>D · Glue, tape and small consumables</h2><table>
 <tr><th></th><th>No.</th><th>Item (ask for)</th><th>Qty</th><th>Description for the shopkeeper · what it is for</th><th>≈ ₹</th></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">17</td><td class="i"><b>Fevikwik (superglue)</b></td><td class="q">2</td><td>Glues the two magnets exactly on the disc centres.</td><td class="r">20–40</td></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">18</td><td class="i"><b>Hot glue sticks (small)</b></td><td class="q">5</td><td>For the glue gun: LEDs in the lids, camera and laser in the head, switches.</td><td class="r">20–40</td></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">19</td><td class="i"><b>Double-sided foam tape</b></td><td class="q">1</td><td>Sticks down the breadboard, the battery holder and the AS5600 boards.</td><td class="r">40–80</td></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">20</td><td class="i"><b>Insulation tape (black + red)</b></td><td class="q">2</td><td>Covers the soldered LED and resistor joints; red marks the + wires.</td><td class="r">20–40</td></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">21</td><td class="i"><b>Zip ties, 100 mm</b></td><td class="q">1</td><td><b>1 packet.</b> Ties the cables with a loose loop so the rig can turn.</td><td class="r">30–50</td></tr>
-<tr class="tot"><td></td><td></td><td colspan="3">Total for A + B + C + D</td><td class="r">≈ ₹1,150–2,100</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">19</td><td class="i"><b>Fevikwik (superglue)</b></td><td class="q">2</td><td>Glues the two magnets exactly on the disc centres.</td><td class="r">20–40</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">20</td><td class="i"><b>Hot glue sticks (small)</b></td><td class="q">5</td><td>For the glue gun: LEDs in the lids, camera and laser in the head, switches.</td><td class="r">20–40</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">21</td><td class="i"><b>Double-sided foam tape</b></td><td class="q">1</td><td>Sticks down the breadboard, the battery holder and the AS5600 boards.</td><td class="r">40–80</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">22</td><td class="i"><b>Insulation tape (black + red)</b></td><td class="q">2</td><td>Covers the soldered LED and resistor joints; red marks the + wires.</td><td class="r">20–40</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">23</td><td class="i"><b>Zip ties, 100 mm</b></td><td class="q">1</td><td><b>1 packet.</b> Ties the cables with a loose loop so the rig can turn.</td><td class="r">30–50</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">24</td><td class="i"><b>Solder wire, small reel</b> (skip if you have)</td><td class="q">1</td><td>For the header pins on the TCA9548A and AS5600 boards and the LED + resistor joints.</td><td class="r">40–80</td></tr>
+<tr class="tot"><td></td><td></td><td colspan="3">Total for A + B + C + D</td><td class="r">≈ ₹1,300–2,400</td></tr>
 </table>
 <h2 class="opt">E · Only if needed</h2>
 <table>
 <tr><th></th><th>No.</th><th>Item (ask for)</th><th>Qty</th><th>Buy it only when…</th><th>≈ ₹</th></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">22</td><td class="i"><b>TP4056 charging module</b></td><td class="q">1</td><td><b>Only if the shop has no 12 V adapter</b> (item 2): then we charge our 18650 cells one at a time with it and run the motors from them.</td><td class="r">30–60</td></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">23</td><td class="i"><b>USB cable for Arduino Nano</b></td><td class="q">1</td><td><b>Only if</b> we don't have one matching the second Nano's port (Mini-USB or USB-C).</td><td class="r">60–120</td></tr>
-<tr><td class="b"><span class="box"></span></td><td class="n">24</td><td class="i"><b>USB-C hub (USB-C to 2× USB-A)</b></td><td class="q">1</td><td><b>Only if</b> the laptop has USB-C ports only: the Nano and the webcam must be plugged in together.</td><td class="r">300–800</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">25</td><td class="i"><b>TP4056 charging module</b></td><td class="q">1</td><td><b>Only if the shop has no 12 V adapter</b> (item 2): then we charge our 18650 cells one at a time with it and run the motors from them.</td><td class="r">30–60</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">26</td><td class="i"><b>USB cable for Arduino Nano</b></td><td class="q">1</td><td><b>Only if</b> we don't have one matching the second Nano's port (Mini-USB or USB-C).</td><td class="r">60–120</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">27</td><td class="i"><b>USB-C hub (USB-C to 2× USB-A)</b></td><td class="q">1</td><td><b>Only if</b> the laptop has USB-C ports only: the Nano and the webcam must be plugged in together.</td><td class="r">300–800</td></tr>
 </table>
 
 <h2 class="have">Already have: don't buy</h2>
@@ -95,9 +99,10 @@ td.b{width:26px;text-align:center}
 <h2 class="have" style="background:#0a5d7a">From home</h2>
 <div class="grid home">
 <div>Ruler, marker, scissors</div><div>Glue gun, soldering iron, multimeter</div>
+<div>Phone USB charger or power bank: powers the beacon Nano</div><div>Tiny screwdriver for the A4988 Vref pot</div>
 <div>Two old credit cards (a 1.5 mm gap gauge for the encoders)</div><div>A drill, or someone who has one (about 12 holes)</div>
 </div>
 
-<div class="warn"><b>Remember:</b> the B3 charger never connects to the rig; it only charges batteries. The 5 V 1 A adapter can't run the motors (it's for the beacon). The motors run on 12 V: item 2, or charged 18650s (3.7–4.2 V each).</div>
+
 </body>
 </html>

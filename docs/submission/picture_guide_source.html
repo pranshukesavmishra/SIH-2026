@@ -11,29 +11,32 @@ body { margin: 0; background: #E6ECF3; font-family: "DejaVu Sans", "Liberation S
 .card { width: 1080px; height: 1350px; background: #fff; margin: 0 auto 40px; position: relative; overflow: hidden;
   display: flex; flex-direction: column; break-after: page; page-break-after: always; }
 @media print { body { background: #fff; } .card { margin: 0; } }
-.card header { display: flex; align-items: center; gap: 24px; padding: 36px 48px 20px; }
-.num { flex: none; width: 96px; height: 96px; border-radius: 26px; background: #0891B2; color: #fff;
-  font: 800 54px/96px "DejaVu Sans", sans-serif; text-align: center; box-shadow: 0 6px 16px rgba(8,145,178,.3); }
+.card header { display: flex; align-items: center; gap: 20px; padding: 24px 48px 10px; flex: none; }
+.num { flex: none; width: 80px; height: 80px; border-radius: 22px; background: #0891B2; color: #fff;
+  font: 800 44px/80px "DejaVu Sans", sans-serif; text-align: center; box-shadow: 0 6px 16px rgba(8,145,178,.3); }
 .num.p2 { background: #7C3AED; box-shadow: 0 6px 16px rgba(124,58,237,.3); }
 .num.p3 { background: #EA580C; box-shadow: 0 6px 16px rgba(234,88,12,.3); }
 .num.p4 { background: #16A34A; box-shadow: 0 6px 16px rgba(22,163,74,.3); }
-.kicker { font: 700 20px "DejaVu Sans", sans-serif; letter-spacing: .14em; color: #0891B2; }
+.kicker { font: 700 17px "DejaVu Sans", sans-serif; letter-spacing: .13em; color: #0891B2; }
 .kicker.p2 { color: #7C3AED; } .kicker.p3 { color: #EA580C; } .kicker.p4 { color: #16A34A; }
-h2 { margin: 6px 0 0; font: 800 42px/1.12 "DejaVu Sans", sans-serif; letter-spacing: -.01em; }
-.art { margin: 0 36px; border-radius: 26px; background: #F3F7FB; border: 2px solid #E2E8F0; height: 700px; overflow: hidden; }
+h2 { margin: 4px 0 0; font: 800 34px/1.14 "DejaVu Sans", sans-serif; letter-spacing: -.01em; }
+.art { flex: none; margin: 0 36px; border-radius: 26px; background: #F3F7FB; border: 2px solid #E2E8F0; height: 700px; overflow: hidden; }
 .art svg { display: block; width: 1004px; height: 696px; }
-ol.do { margin: 24px 48px 0; padding: 0; list-style: none; counter-reset: s; }
-ol.do li { counter-increment: s; position: relative; padding-left: 60px; margin: 0 0 14px; font: 500 28px/1.32 "DejaVu Sans", sans-serif; }
-ol.do li::before { content: counter(s); position: absolute; left: 0; top: -1px; width: 44px; height: 44px; border-radius: 50%;
-  background: #E0F2FE; color: #0369A1; font: 800 24px/44px "DejaVu Sans", sans-serif; text-align: center; }
+.tools { flex: none; margin: 12px 48px 0; padding: 7px 18px; border-radius: 12px; background: #F1F5F9; border: 1.5px solid #E2E8F0;
+  font: 600 16px/1.28 "DejaVu Sans", sans-serif; color: #334155; }
+.tools b { color: #0F172A; }
+ol.do { flex: none; margin: 10px 48px 0; padding: 0; list-style: none; counter-reset: s; }
+ol.do li { counter-increment: s; position: relative; padding-left: 46px; margin: 0 0 6px; font: 500 20px/1.2 "DejaVu Sans", sans-serif; }
+ol.do li::before { content: counter(s); position: absolute; left: 0; top: -1px; width: 32px; height: 32px; border-radius: 50%;
+  background: #E0F2FE; color: #0369A1; font: 800 17px/32px "DejaVu Sans", sans-serif; text-align: center; }
 ol.do li b { color: #0F172A; }
-.check { margin: auto 48px 0; padding: 18px 24px 18px 78px; border-radius: 20px; background: #DCFCE7; color: #14532D;
-  font: 600 26px/1.3 "DejaVu Sans", sans-serif; position: relative; }
-.check::before { content: "✓"; position: absolute; left: 22px; top: 50%; transform: translateY(-50%); width: 42px; height: 42px;
-  border-radius: 50%; background: #16A34A; color: #fff; font: 800 26px/42px "DejaVu Sans", sans-serif; text-align: center; }
+.check { flex: none; margin: auto 48px 0; padding: 10px 20px 10px 56px; border-radius: 16px; background: #DCFCE7; color: #14532D;
+  font: 600 18px/1.24 "DejaVu Sans", sans-serif; position: relative; }
+.check::before { content: "✓"; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 30px; height: 30px;
+  border-radius: 50%; background: #16A34A; color: #fff; font: 800 18px/30px "DejaVu Sans", sans-serif; text-align: center; }
 .check.warn { background: #FEE2E2; color: #7F1D1D; }
 .check.warn::before { content: "!"; background: #DC2626; }
-footer { padding: 14px 48px 24px; font: 600 18px "DejaVu Sans", sans-serif; color: #94A3B8; display: flex; justify-content: space-between; }
+footer { flex: none; padding: 8px 48px 14px; font: 600 15px "DejaVu Sans", sans-serif; color: #94A3B8; display: flex; justify-content: space-between; }
 </style>
 </head>
 <body>
@@ -226,6 +229,7 @@ function render() {
     return `<section class="card" id="card-${i}">
       <header><div class="num ${cls}">${c.n}</div><div><div class="kicker ${cls}">${kick}</div><h2>${c.title}</h2></div></header>
       <div class="art">${svg(c.art)}</div>
+      ${c.tools ? `<div class="tools">🔧 <b>Tools / parts for this page:</b> ${c.tools}</div>` : ''}
       <ol class="do">${c.steps.map(s => `<li>${s}</li>`).join('')}</ol>
       <div class="check ${c.warn ? 'warn' : ''}">${c.check}</div>
       <footer><span>ZeroDrift MK2 · build it with what you have</span><span>${i + 1} / ${total}</span></footer>
@@ -292,9 +296,11 @@ function render() {
   s += T(40, 92, 'bottom motor turns left–right · top motor nods up–down', { s: 19, c: C.mute, w: 600 });
   card({ n: '★', part: 0, title: 'This is what you are building', art: s,
     steps: [
-      'Two motors. The <b>bottom</b> one turns left–right. The <b>top</b> one nods up–down.',
-      'The camera and the laser sit together in the <b>head</b>, so the camera sees its own laser dot.',
-      'Flat acrylic, screws and M-Seal only. <b>No 3D printing, no coupler.</b>',
+      'Two motors, stacked. The <b>bottom</b> one turns the whole thing left–right (pan).',
+      'The <b>top</b> one, mounted sideways on a bracket, nods the head up–down (tilt).',
+      'The camera and the laser sit together in the <b>head</b>, so the camera always sees its own laser dot.',
+      'Everything is flat acrylic pieces, screws and M-Seal. <b>No 3D printing, no coupler, no belt.</b>',
+      'Two more parts sit apart from the rig: the blinking <b>beacon</b> (the target) and the steady <b>decoy</b> (the trick light).',
     ],
     check: '<b>Tonight\'s goal:</b> build this, wire it, and watch it lock onto the blinking beacon on the website.' });
 }
@@ -349,9 +355,12 @@ function render() {
   });
   card({ n: '0', part: 0, title: 'What you have, and the only 3 things to get', art: s,
     steps: [
-      'Everything with a green tick you <b>already have</b>. The webcam can come later — use the laptop camera till then.',
-      'The orange box: any hardware, paint or general store has these. <b>M-Seal is the one thing you can\'t skip.</b>',
-      'No coupler, no red acrylic, no belt. Keep the yellow part as a spare; we don\'t need it.',
+      'Everything with a green tick you <b>already have</b>. Count each item out onto the table before you start.',
+      'No webcam yet? Use the laptop\'s own camera for every step tonight — swap it in later, nothing else changes.',
+      'The orange box lists the only 3 things to buy, and any hardware, paint or general store has them.',
+      '<b>M-Seal (or Araldite) is the one thing you can\'t skip</b> — it is what glues both discs onto the shafts.',
+      'No coupler, no red acrylic, no belt, no 3D-printed part is used anywhere in this guide.',
+      'Keep the yellow bellows coupling you bought as a spare — this build does not need it.',
     ],
     check: 'Nothing else to buy. Everything in this guide uses only these parts.' });
 }
@@ -408,10 +417,14 @@ function render() {
   });
   s += T(64, 660, 'Keep the paper film on while cutting — no scratches.', { s: 17, w: 600, c: C.cyan });
   card({ n: '1', part: 0, title: 'Cut 4 pieces from the acrylic', art: s,
+    tools: 'Acrylic sheets, steel ruler, cutter/blade, marker pen, a round cup or lid, sandpaper.',
     steps: [
-      '<b>Straight cuts:</b> scratch the line 8–10 times with a cutter along a steel ruler, then snap it on the table edge.',
-      '<b>Circles:</b> draw round a cup or lid. Cut a square, cut off the corners, then sand it round. It does not need to be perfect.',
-      'Peel the paper film off only at the very end.',
+      'Keep the protective paper film ON. Mark all 4 shapes on the sheets first, with the ruler and marker.',
+      '<b>Straight edges</b> (base, strip): scratch the line 8–10 times with a cutter along the steel ruler.',
+      'Line the scratch up with the edge of a table, then press down hard — it snaps clean along the line.',
+      '<b>Circles</b> (both discs): cut a rough square around the circle, then snip off the 4 corners.',
+      'Sand the disc\'s corners round with sandpaper. It does not need to be a perfect circle.',
+      'Peel the paper film off only at the very end, after every piece is cut.',
     ],
     check: '4 pieces ready: base, big disc, small disc, one sensor strip (plus a spare).' });
 }
@@ -453,10 +466,14 @@ function render() {
   ];
   holes.forEach(([n, d, col], i) => { const y = 548 + i * 34; s += T(64, y, n, { s: 18, w: 800, c: col }) + T(210, y, d, { s: 17, w: 600 }); });
   card({ n: '2', part: 0, title: 'Make the holes', art: s,
+    tools: 'The motor itself (as a stencil), marker pen, drill with a small bit OR a nail + pliers + gas stove, screwdriver, sandpaper.',
     steps: [
-      'Use the motor itself as the stencil — then the holes always match.',
-      'Middle holes of the <b>discs</b> must be <b>tight</b> on the motor shaft. Start small, widen slowly by twisting a screwdriver in it.',
-      'The <b>base</b> middle hole is big on purpose: the shaft spins inside it without touching.',
+      'Lay the motor face-down on each piece and dot through its 4 screw holes and the middle — this makes every piece match.',
+      '<b>With a drill:</b> put a small piece of tape on the dot so the bit doesn\'t slide. Drill slowly, with no pressure.',
+      '<b>No drill:</b> hold a nail with pliers, heat the tip on the gas for 20 seconds, then push it straight through the dot. Never touch the tip.',
+      'On the <b>base</b>: make the middle hole big (about 8 mm) — the shaft must spin freely inside it, touching nothing.',
+      'On both <b>discs</b>: start the middle hole small, then widen it slowly by twisting a screwdriver in it, until it is tight.',
+      'Test-fit: push a disc onto the motor shaft. It should go on snug — not loose, not forced.',
     ],
     check: 'Push a disc on the motor shaft: it goes on snug, not loose and not forced.' });
 }
@@ -482,10 +499,13 @@ function render() {
   s += OK(560, 610, 20) + T(590, 618, 'gap', { s: 18, w: 800, c: C.green });
   s += T(40, 60, 'Side view', { s: 24, w: 800 }) + T(40, 90, 'the bottom motor = PAN (turns left–right)', { s: 19, c: C.mute, w: 600 });
   card({ n: '3', part: 0, title: 'Base, legs and the bottom motor', art: s,
+    tools: 'Bottom NEMA17 motor, base plate, 4× M3×12–16mm screws, 8+ M3 nuts, screwdriver, 4 legs (wood blocks, books or long bolts, ≥6 cm).',
     steps: [
-      'Motor goes <b>under</b> the base, shaft pointing <b>up</b> through the big middle hole.',
-      '4 screws from the top. Put <b>2 nuts on each screw</b> between the base and the motor, so the round bump on the motor does not press on the acrylic.',
-      'Stand the base on 4 legs <b>taller than the motor</b>, so the motor hangs free.',
+      'Hold the motor under the base, and push its shaft <b>up</b> through the big middle hole.',
+      'Thread <b>2 nuts onto each of the 4 screws</b> first — these act as spacers between the base and the motor.',
+      'Push the 4 screws down from the top, through the base, into the motor\'s 4 corner holes, and tighten by hand.',
+      'Stand the base on 4 legs, one at each corner — the legs must be <b>taller than the motor</b> so it hangs free.',
+      'Check the base sits flat on the table with no wobble.',
     ],
     check: 'The base sits flat and does not rock. The motor does not touch the table.' });
 }
@@ -521,10 +541,14 @@ function render() {
   s += T(620, 654, 'Hard in about 1 hour.', { s: 16, w: 800, c: C.orange });
   s += T(40, 60, 'Close-up, side view', { s: 24, w: 800 }) + T(40, 90, 'the disc is glued straight onto the metal shaft', { s: 19, c: C.mute, w: 600 });
   card({ n: '4', part: 0, title: 'Glue the big disc onto the shaft', art: s,
+    tools: 'M-Seal or Araldite, the big disc, phone with a level app.',
     steps: [
-      'Push the big disc onto the shaft until only about <b>2 mm</b> of shaft sticks out on top.',
-      'Press a fat ring of mixed M-Seal <b>under</b> the disc, all round the shaft. Keep the <b>top of the shaft clean</b>: the magnet goes there.',
-      'Keep the disc flat (phone level app). <b>Don\'t turn it for 1 hour</b> while it hardens.',
+      'Break off equal-sized bits of the M-Seal\'s two colours and roll them together until it is <b>one solid colour</b> (about a minute).',
+      'Push the big disc onto the motor shaft until only about <b>2 mm</b> of the shaft tip sticks out on top.',
+      'Press a fat ring of the mixed M-Seal <b>under</b> the disc, all the way round the shaft.',
+      'Keep the very <b>top of the shaft clean and dry</b> — no putty up there, the magnet goes on that spot next.',
+      'Rest a phone with a level app on the disc — the bubble should sit in the middle, meaning it is flat.',
+      '<b>Don\'t touch or turn it for 1 hour</b> while the M-Seal hardens.',
     ],
     check: 'After 1 hour: spin it by hand. It turns flat, no wobble, and the disc never slips on the shaft.' });
 }
@@ -559,10 +583,15 @@ function render() {
   s += T(206, 82, 'Magnet test: N and S', { s: 16, w: 800 }) + T(206, 106, 'on the SIDES (half red,', { s: 15, w: 600 }) + T(206, 128, 'half blue) = correct', { s: 15, w: 600 });
   s += T(700, 60, 'Close-up, side view', { s: 24, w: 800 });
   card({ n: '5', part: 0, title: 'Magnet and the sensor arm', art: s,
+    tools: 'Diametric magnet, Fevikwik (superglue), AS5600 sensor, acrylic strip (D), M3×40mm screw + nuts, 2 credit cards.',
     steps: [
-      'Put one drop of Fevikwik on the <b>very tip of the shaft</b> and stick the small round magnet there.',
-      'Stand a long screw on the base, 4–5 cm from the middle, locked with nuts. The acrylic strip sits on it and reaches over the magnet.',
-      'Stick the sensor (AS5600) under the strip\'s end, <b>chip facing down</b> onto the magnet. Gap = 2 credit cards.',
+      'Test the magnet first: held flat, it should show <b>red on one side, blue on the other</b> — that is the correct diametric type.',
+      'Put one drop of Fevikwik on the very tip of the (now hardened) shaft, and press the magnet on flat.',
+      'Stand the M3×40 mm screw upright on the base, 4–5 cm off-centre, and lock it in place with a nut.',
+      'Slide the acrylic strip onto the screw so its far end reaches out over the magnet.',
+      'Slip 2 credit cards between the magnet and the strip, as a spacer, then set 2 more nuts to hold the strip at that height.',
+      'Stick the AS5600 sensor onto the strip\'s end, <b>chip facing down</b>, resting against the 2 cards.',
+      'Slide the 2 cards back out — the sensor now hovers about 1.5 mm above the magnet, touching nothing.',
     ],
     check: 'Spin the disc: the strip and the sensor never move and never touch anything.' });
 }
@@ -593,10 +622,13 @@ function render() {
   s += T(716, 556, 'The bracket must pass', { s: 18, w: 800, c: '#9A3412' }) + T(716, 582, 'OVER the sensor arm with', { s: 18, w: 800, c: '#9A3412' }) + T(716, 608, 'a gap. Turn the nuts on', { s: 18, w: 800, c: '#9A3412' }) + T(716, 634, 'the stilts to raise it.', { s: 18, w: 800, c: '#9A3412' });
   s += Dim(560, 370, 560, 440, 'gap', { s: 17 });
   card({ n: '6', part: 1, title: 'Stilts, bracket and the top motor', art: s,
+    tools: 'L-bracket, top NEMA17 motor, 3× M3×40mm screws (stilts), M3 nuts, 4× M3×6mm screws, screwdriver.',
     steps: [
-      'Push 3 long screws up through the big disc\'s small holes — the side <b>away from</b> the sensor arm. Lock each with a nut.',
-      'Screw the L-bracket\'s flat part onto the stilts, with nuts above and below it.',
-      'Bolt the second motor to the bracket\'s standing part with 4 screws, <b>shaft pointing sideways</b>.',
+      'Push 3 long screws up through the big disc\'s small holes, on the side <b>away from</b> the sensor arm.',
+      'Lock each stilt screw from below with a nut, close to the disc.',
+      'Rest the L-bracket\'s flat foot on top of the 3 stilts, and add a nut above and below it to hold its height.',
+      'Turn the disc a quarter turn left and right by hand — the bracket must clear the sensor arm. Raise the stilt nuts if it doesn\'t.',
+      'Bolt the top motor to the bracket\'s standing part with 4 screws, <b>shaft pointing sideways</b>.',
     ],
     check: 'Turn the big disc a quarter turn left and right by hand: the bracket never hits the sensor arm or its screw.' });
 }
@@ -636,10 +668,15 @@ function render() {
   s += T(584, 634, 'Leave the cables loose, tie them', { s: 17, w: 700, c: C.cyan });
   s += T(584, 660, 'with cable ties: slack at every joint.', { s: 17, w: 700, c: C.cyan });
   card({ n: '7', part: 1, title: 'Small disc and the head', art: s,
+    tools: 'M-Seal, small disc, head box, screws, hot glue gun, webcam, laser module.',
     steps: [
-      'Glue the small disc on the top motor\'s shaft the same way: M-Seal, 2 mm sticking out, wait 1 hour.',
-      'Screw the head box <b>flat onto the small disc</b>, centred. Centred = balanced, so the motor does not strain.',
-      'Inside: webcam behind the clear window, laser beside it (2 cm), both looking the same way. Hot-glue both.',
+      'Glue the small disc onto the top motor\'s shaft the same way as before: M-Seal ring under it, 2 mm sticking out.',
+      'Wait 1 hour, untouched, for this M-Seal to harden too.',
+      'Screw the head box <b>flat onto the small disc</b>, centred — centred means balanced, so the motor doesn\'t strain.',
+      'Hot-glue the webcam inside, facing forward, right behind the clear window.',
+      'Hot-glue the laser 2 cm beside the camera, pointing the exact same way.',
+      'Leave the camera and laser cables loose with slack at every joint, so they don\'t pull when the head turns.',
+      'Skip the 2nd sensor tonight — it is optional, and the code works fine with just the bottom sensor.',
     ],
     check: 'On a wall 2 m away the laser dot lands near the middle of the camera picture.' });
 }
@@ -681,10 +718,15 @@ function render() {
   s += T(40, 52, 'Two powers, ONE ground', { s: 24, w: 800 });
   s += T(40, 572, 'Find + on the socket:\nadapter in, multimeter\non DC V. The 2 pins\nthat read 12 V: red\nprobe = +. Mark it.', { s: 16, w: 600, lh: 1.22 });
   card({ n: '8', part: 2, title: 'Power: 12 V for the motors only', art: s,
+    tools: '12 V adapter, DC socket, switch, breadboard, 2× 100 µF capacitors, multimeter, jumper wires.',
     steps: [
-      '<b>12 V adapter</b> → DC socket → switch → the <b>red</b> rail. Socket − → the <b>blue</b> (GND) rail.',
-      'Each driver: VMOT to red, GND to blue, and a 100 µF capacitor across them (stripe to GND).',
-      'The <b>laptop USB</b> powers the Arduino. One wire joins the Arduino GND to the GND rail.',
+      'Find the socket\'s + pin: plug in the adapter, set the multimeter to DC V, touch its 2 pins — the <b>red probe reading positive</b> is +. Mark it.',
+      'Wire: <b>12 V adapter</b> → DC socket → switch → the <b>red (+12V)</b> rail on the breadboard.',
+      'Wire the socket\'s − pin straight to the <b>blue (GND)</b> rail.',
+      'On each driver: VMOT → red rail, GND → blue rail, with a 100 µF capacitor across them (long leg to +, stripe to GND).',
+      'Power the Arduino separately, from the <b>laptop\'s USB</b> — never from the 12 V rail.',
+      'Join one wire from the Arduino\'s GND pin to the GND rail — this is the single shared ground for everything.',
+      'Switch on with nothing else connected yet: the multimeter should read about 12 V on the red rail.',
     ],
     check: 'Switch ON (nothing else plugged in yet): the red rail reads about 12 V on the multimeter.', warn: false });
 }
@@ -726,10 +768,14 @@ function render() {
   s += T(550, 594, 'Vref (USB only, 12 V OFF)', { s: 18, w: 800, c: '#9A3412' }) + T(550, 622, 'Black probe GND, red probe on the', { s: 15, w: 600 }) + T(550, 646, 'little screw. Turn gently to 0.55 V.', { s: 15, w: 600 }) + T(550, 670, 'Do both drivers.', { s: 15, w: 700 });
   s += T(40, 52, 'One driver · wire it the same way twice', { s: 24, w: 800 });
   card({ n: '9', part: 2, title: 'Wire a motor driver (do it twice)', art: s,
+    tools: '2× A4988 driver, multimeter, small screwdriver (for Vref), jumper wires.',
     steps: [
-      'Small jumpers: <b>RST↔SLP</b> together, <b>MS1 MS2 MS3</b> to 5 V, <b>EN</b> to GND.',
-      '<b>STEP / DIR</b> to the Arduino: bottom motor <b>D2 / D3</b>, top motor <b>D4 / D5</b>.',
-      'Motor: one pair on <b>1A–1B</b>, the other pair on <b>2A–2B</b>. Set Vref to 0.55 V.',
+      'Find the motor\'s 2 coil pairs first: multimeter on Ω, the 2 wires that read <b>1–4 Ω</b> are one pair. Never mix the pairs.',
+      'Small jumpers on the driver: join <b>RST↔SLP</b> together, <b>MS1 MS2 MS3</b> to 5 V, and <b>EN</b> to GND.',
+      'Wire <b>STEP / DIR</b> to the Arduino: bottom motor to <b>D2 / D3</b>, top motor to <b>D4 / D5</b>.',
+      'Wire one coil pair to <b>1A–1B</b>, and the other pair to <b>2A–2B</b>.',
+      'With USB power only and the 12 V switch OFF, turn the small screw gently until <b>Vref reads 0.55 V</b>. Do this on both drivers.',
+      'Switch the 12 V on: both motor shafts should go stiff (hard to turn by hand); the drivers should only get warm.',
     ],
     check: 'Switch ON: both motor shafts go stiff (hard to turn by hand). The drivers get only warm.' });
 }
@@ -762,10 +808,14 @@ function render() {
   s += T(40, 52, 'Sensor through the multiplexer, laser straight in', { s: 24, w: 800 });
   s += T(40, 88, 'blue = SDA · green = SCL · orange = 5 V · black = GND', { s: 17, w: 700, c: C.mute });
   card({ n: '10', part: 2, title: 'Sensor and laser wires', art: s,
+    tools: 'Multiplexer (TCA9548A), AS5600 sensor, laser module (KY-008), jumper wires.',
     steps: [
-      'Arduino <b>A4→SDA, A5→SCL</b>, 5 V→VIN, GND→GND on the multiplexer. Its A0 A1 A2 → GND.',
-      'Sensor on channel <b>0</b> (SD0, SC0). Sensor VCC→5 V, GND→GND, DIR→GND.',
-      'Laser: <b>S→D7</b>, −→GND. Leave the middle pin empty.',
+      'Wire the Arduino to the multiplexer: <b>A4→SDA, A5→SCL</b>, 5 V→VIN, GND→GND.',
+      'Join the multiplexer\'s <b>A0, A1, A2</b> pins to GND — this fixes its address at 0x70.',
+      'Plug the sensor into the multiplexer\'s <b>channel 0</b> pins (SD0, SC0).',
+      'Wire the sensor itself: VCC→5 V, GND→GND, DIR→GND.',
+      'Wire the laser: <b>S (signal) → D7</b>, −→GND. Leave its middle pin empty, nothing connects there.',
+      'After uploading the code (card 13), check the Arduino reports <b>encoders=pan</b>.',
     ],
     check: 'After uploading the code (card 13) the Arduino says encoders=pan. That means the sensor works.' });
 }
@@ -805,10 +855,14 @@ function render() {
   s += T(584, 656, 'Slow-motion video: count 4 flashes / s.', { s: 15, w: 700, c: '#166534' });
   s += T(40, 52, 'Cut through the middle', { s: 24, w: 800 });
   card({ n: '11', part: 3, title: 'The beacon (the blinking target)', art: s,
+    tools: 'Second Arduino Nano, red LED, 220 Ω resistor, ping-pong ball, hot glue, phone charger or power bank.',
     steps: [
-      'LED <b>long leg</b> → 220 Ω → Nano <b>D9</b>. LED <b>short leg</b> → Nano <b>GND</b>.',
-      'Upload <b>beacon_firmware.ino</b> to the second Nano. The LED blinks 4 times a second.',
-      'LED through a hole in the lid, half a ping-pong ball glued over it. Power from a phone charger or power bank.',
+      'Wire the LED\'s <b>long leg</b> → 220 Ω resistor → the Nano\'s <b>D9</b> pin.',
+      'Wire the LED\'s <b>short leg</b> straight to the Nano\'s <b>GND</b> pin.',
+      'Upload <b>beacon_firmware.ino</b> (a separate, simpler sketch) to this second Nano.',
+      'Cut a ping-pong ball in half. Poke the LED through a hole in the box lid, and glue one half over it as a diffuser.',
+      'Power this Nano from a phone charger or power bank — a separate supply from the rig.',
+      'Check the LED blinks steadily, 4 times a second. No light? Swap the LED\'s 2 legs around.',
     ],
     check: 'LED blinks steadily. No light? The LED is the wrong way round — swap its two wires.' });
 }
@@ -845,10 +899,13 @@ function render() {
   s += T(40, 52, 'The decoy: no Arduino, no code', { s: 24, w: 800 });
   s += T(40, 88, 'Same red LED, same box, the other half of the ping-pong ball', { s: 17, w: 700, c: C.mute });
   card({ n: '12', part: 3, title: 'The decoy (the trick light)', art: s,
+    tools: '3× AA battery holder, switch, red LED, 100 Ω resistor, same style box + the other ping-pong ball half.',
     steps: [
-      'Battery + → switch → <b>100 Ω</b> → LED long leg. LED short leg → battery −.',
-      'Same kind of box and the other half of the ping-pong ball, so it looks exactly like the beacon.',
-      'It stays ON and <b>never blinks</b>. The rig must ignore it and keep watching the beacon.',
+      'Wire: battery + → switch → <b>100 Ω</b> resistor → LED\'s <b>long leg</b>.',
+      'Wire: LED\'s <b>short leg</b> → battery − (black wire) directly. No Arduino and no code here at all.',
+      'Build the same kind of box, with the <b>other half</b> of the ping-pong ball, so it looks exactly like the beacon.',
+      'Flip the switch on — it should glow steady and <b>never blink</b>.',
+      'No light? The LED is in backwards — swap its 2 legs around.',
     ],
     check: 'Switch on: a steady red light. No light? Flip the LED round.' });
 }
@@ -877,10 +934,15 @@ function render() {
   const cmds = [['P267 T0', 'bottom motor turns 30°'], ['P0 T0', 'back to the start'], ['T89', 'top motor nods 10°'], ['L1  ·  L0', 'laser on · off']];
   cmds.forEach(([c, d], i) => { const x = 64 + (i % 2) * 470, y = 598 + Math.floor(i / 2) * 44; s += R(x, y - 26, 150, 36, '#0F172A', 'none', 0, 8) + T(x + 75, y, c, { s: 18, w: 800, c: '#34D399', a: 'middle' }) + T(x + 166, y, d, { s: 17, w: 700 }); });
   card({ n: '13', part: 2, title: 'Put the code in the Arduino', art: s,
+    tools: 'Laptop, USB cable, Arduino IDE installed.',
     steps: [
-      'Plug the rig Arduino into the laptop. Do steps 1–5 on the screen above.',
-      'If upload fails, choose the other Processor option and try again.',
-      'Type the test lines. Then <b>close the Serial Monitor</b> — the website can\'t connect while it is open.',
+      'Plug the rig\'s Arduino into the laptop with its USB cable.',
+      'Install the library: Tools → Manage Libraries → search <b>AccelStepper</b> → Install.',
+      'Open <b>tools/rig/rig_firmware_v2.ino</b> in the IDE, then set the Board to Arduino Nano.',
+      'Set Processor to <b>ATmega328P (Old Bootloader)</b> — try the other option if upload fails.',
+      'Set the Port to the Nano, then click <b>Upload</b> (→) and wait for "Done uploading".',
+      'Open the Serial Monitor at 115200 baud, type <b>P267 T0</b> and press Enter — the bottom motor should turn.',
+      '<b>Close the Serial Monitor</b> afterwards — the website can\'t connect while it stays open.',
     ],
     check: 'You see "ZeroDrift Mk2 ready" and the motors move when you type P267 T0.' });
 }
@@ -912,10 +974,14 @@ function render() {
   s += T(84, 612, 'Wrong way? tick INVERT PAN / INVERT TILT', { s: 17, w: 700, c: '#FDE68A' });
   s += R(680, 500, 280, 150, '#052E16', '#166534', 2, 12) + T(820, 548, 'RECORD', { s: 22, w: 800, c: '#86EFAC', a: 'middle' }) + T(820, 580, 'lock → decoy on →', { s: 15, w: 700, c: '#BBF7D0', a: 'middle' }) + T(820, 604, 'move the beacon →', { s: 15, w: 700, c: '#BBF7D0', a: 'middle' }) + T(820, 628, 'cover and uncover', { s: 15, w: 700, c: '#BBF7D0', a: 'middle' });
   card({ n: '14', part: 3, title: 'Go live on the website', art: s,
+    tools: 'Laptop with Chrome, webcam or laptop camera, the rig\'s Arduino connected by USB.',
     steps: [
-      'Chrome → the <b>/live</b> page → <b>START CAMERA</b> → <b>MK2 CAMERA (USB)</b>. No webcam yet? The laptop camera works for testing.',
-      '<b>CONNECT RIG</b> → pick the Arduino → <b>TEST MOTION</b>. Wrong way? Tick INVERT.',
-      'Beacon ON. Red beacon in a bright room: tick <b>RED BEACON FILTER</b>. Then SET AIM on the laser dot.',
+      'Open Chrome and go to the <b>/live</b> page on the website.',
+      'Click <b>START CAMERA</b>, then pick <b>MK2 CAMERA (USB)</b> — or the laptop camera if the webcam hasn\'t arrived.',
+      'Click <b>CONNECT RIG</b>, choose the Arduino\'s port, then click <b>TEST MOTION</b> to confirm it moves.',
+      'Motor moving the wrong way? Tick <b>INVERT PAN</b> or <b>INVERT TILT</b>.',
+      'Turn the beacon on. In a bright room, tick <b>RED BEACON FILTER</b>.',
+      'Click <b>SET AIM</b>, then click the laser dot inside the video — this tells the software where it is aiming right now.',
     ],
     check: 'It locks in about a second and turns to face the beacon. Now record the demo!' });
 }

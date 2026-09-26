@@ -622,13 +622,14 @@ function render() {
   s += T(716, 556, 'The bracket must pass', { s: 18, w: 800, c: '#9A3412' }) + T(716, 582, 'OVER the sensor arm with', { s: 18, w: 800, c: '#9A3412' }) + T(716, 608, 'a gap. Turn the nuts on', { s: 18, w: 800, c: '#9A3412' }) + T(716, 634, 'the stilts to raise it.', { s: 18, w: 800, c: '#9A3412' });
   s += Dim(560, 370, 560, 440, 'gap', { s: 17 });
   card({ n: '6', part: 1, title: 'Stilts, bracket and the top motor', art: s,
-    tools: 'L-bracket, top NEMA17 motor, 3× M3×40mm screws (stilts), M3 nuts, 4× M3×6mm screws, screwdriver.',
+    tools: 'L-bracket (already has its own holes), top NEMA17 motor, 3× M3×40mm screws (stilts), M3 nuts, 4× M3×6mm screws, screwdriver.',
     steps: [
-      'Push 3 long screws up through the big disc\'s small holes, on the side <b>away from</b> the sensor arm.',
-      'Lock each stilt screw from below with a nut, close to the disc.',
-      'Rest the L-bracket\'s flat foot on top of the 3 stilts, and add a nut above and below it to hold its height.',
-      'Turn the disc a quarter turn left and right by hand — the bracket must clear the sensor arm. Raise the stilt nuts if it doesn\'t.',
-      'Bolt the top motor to the bracket\'s standing part with 4 screws, <b>shaft pointing sideways</b>.',
+      'Hold the L-bracket\'s <b>flat foot</b> where you want it on the big disc, away from the sensor arm, and mark through <b>the bracket\'s own holes</b> onto the disc — the bracket\'s holes decide where the stilts go, not the other way round.',
+      'Drill (or hot-nail) those marked spots on the disc, the same way as card 2.',
+      'Push a long M3×40mm screw up through each marked hole, from underneath the disc.',
+      'Lock each stilt with a nut just above the disc, then slide the bracket\'s foot down onto the 3 stilts and add one more nut on top of each to hold its height.',
+      'Turn the disc a quarter turn left and right by hand — the bracket must clear the sensor arm. Raise the top nuts if it doesn\'t.',
+      'Bolt the top motor to the bracket\'s standing leg with 4 screws, <b>shaft pointing sideways</b>. These screw <b>straight into the motor\'s own threaded holes — no nuts here</b>, just like the motor itself is threaded, not the base.',
     ],
     check: 'Turn the big disc a quarter turn left and right by hand: the bracket never hits the sensor arm or its screw.' });
 }

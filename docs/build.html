@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>ZeroDrift MK2 Build Guide</title>
 <link rel="icon" href="brand/zerodrift_mark.png">
 <style>
@@ -162,14 +163,20 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
 <tr><td class="c"><input type="checkbox"></td><td>TCA9548A I²C multiplexer</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Solder the header pins</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>USB webcam (UVC)</td><td>1</td><td><span class="tag come">ARRIVING</span></td><td>Plug into the laptop and open it on the Live page <b>before</b> you strip the housing</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>KY-008 laser module</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Pins marked <code>S</code>, middle, <code>−</code></td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>Red filter: red cellophane, red gel or an old sunglasses lens</td><td>1</td><td><span class="tag have">HAVE</span> / home</td><td>Hold it over a phone camera: the room goes dim, a red LED stays bright</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>ABS project box ≈ 70 × 50 × 30 mm</b> (camera head)</td><td>1</td><td><span class="tag buy">BUY</span></td><td>Webcam board and laser inside, two holes in the front</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Red filter: red transparent acrylic 2 mm, red cellophane or an old sunglasses lens</td><td>1</td><td><span class="tag buy">BUY</span></td><td>Hold it over a phone camera: the room goes dim, a red LED stays bright</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>Arduino Nano (rig)</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Have the right USB cable (Mini-USB or USB-C)</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td><b>12 V motor supply</b>: 3×18650 pack in its holder <b>or</b> a 12 V 2 A adapter</td><td>1</td><td><span class="tag have">HAVE</span> / <span class="tag buy">BUY</span></td><td>Section 5 (Power). Each 18650 must read 3.7–4.2 V.</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td><b>DC jack with screw terminals</b> (if you use the 12 V adapter)</td><td>1</td><td><span class="tag buy">BUY</span></td><td>Matches the adapter plug (5.5 × 2.1 mm)</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>SPST toggle switch (motor kill switch)</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>830-point breadboard + Dupont jumpers (M-M, M-F, F-F)</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>White sheet (base) + stiff pieces for the discs (sheet, old CD or tiffin lid)</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Base ≈ 150 × 150 mm. The two small discs must not bend.</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>M3 screws, nuts, standoffs</td><td>1</td><td><span class="tag have">HAVE</span></td><td>4 standoffs ≈ 14–15 mm (risers). <b>Brass</b> standoffs screwed together to ≈ 40 mm (head)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>White sheet (base plate, ≈ 150 × 150 mm)</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>Clear acrylic 3 mm, A4</b> + acrylic cutter (hook blade)</td><td>1</td><td><span class="tag buy">BUY</span></td><td>Pan disc 60 mm, tilt disc 40 mm, 2 encoder arms 15 × 60 mm, head plate. Score 5–6 times along a ruler, then snap.</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>M3 × 10 screws, nuts, washers</b></td><td>20 / 30 / 20</td><td><span class="tag buy">BUY</span></td><td>Motors (M3 only), couplings to discs, L-bracket</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>M3 × 40 screws + nuts</b></td><td>4 + 12</td><td><span class="tag buy">BUY</span></td><td>Posts for the two encoder arms</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>M3 standoff 15 mm</b></td><td>4</td><td><span class="tag buy">BUY</span></td><td>Risers under the L-bracket</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>M3 brass standoff 20 mm</b></td><td>4</td><td><span class="tag buy">BUY</span></td><td>Two screwed together = 40 mm head post. Brass, not plastic.</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>M4 × 60 bolts + nuts</b></td><td>4 + 12</td><td><span class="tag buy">BUY</span></td><td>Base legs, so the pan motor hangs free</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td><b>5 mm rigid flange coupling</b></td><td>2</td><td><span class="tag buy">BUY</span></td><td>Bore <b>5 mm</b>, rigid metal, grub screw. Holds the pan disc and the tilt disc on the shafts with no play.</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>USB-C hub</td><td>1</td><td><span class="tag buy">BUY</span> only if needed</td><td>Only if the laptop has USB-C ports only: the Nano and the webcam must be plugged in together</td></tr>
 </table></div>
@@ -180,7 +187,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
 <tr><td class="c"><input type="checkbox"></td><td><b>220 Ω resistor</b> (red-red-brown)</td><td>1</td><td><span class="tag buy">BUY</span></td><td>150–330 Ω also works</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>Ping-pong ball (half of it)</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Diffuser: makes the LED visible from the side</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>Power: USB power bank, or your 5 V 1 A adapter</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Section 9A.6</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>Small box or container (tiffin / soap box)</td><td>1</td><td>home</td><td>LED goes through the lid</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>ABS project box ≈ 100 × 60 × 25 mm</b></td><td>1</td><td><span class="tag buy">BUY</span></td><td>LED goes through the lid</td></tr>
 </table></div>
 <h3>The decoy (section 9B)</h3><div class="tw"><table>
 <tr><th></th><th>Part</th><th>Qty</th><th>Status</th><th>Check</th></tr>
@@ -188,8 +195,9 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
 <tr><td class="c"><input type="checkbox"></td><td><b>Red LED</b>, same kind as the beacon</td><td>1</td><td><span class="tag buy">BUY</span></td><td>The decoy must look as bright as the beacon <b>through the red filter</b>. A white LED looks dim there.</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td><b>100 Ω resistor</b> (brown-black-brown)</td><td>1</td><td><span class="tag buy">BUY</span></td><td>82–150 Ω also works; two 220 Ω side by side = 110 Ω</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>Toggle switch</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Glue and tape: Fevikwik, hot glue sticks, foam tape, insulation tape, zip ties</td><td>1</td><td><span class="tag buy">BUY</span></td><td>Shopping list items 17–21</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>Other half of the ping-pong ball</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Same diffuser as the beacon: the only difference left is the blink</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>Small box or container</td><td>1</td><td>home</td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>ABS project box ≈ 100 × 60 × 25 mm</b></td><td>1</td><td><span class="tag buy">BUY</span></td><td></td></tr>
 </table></div>
 
 
@@ -244,23 +252,23 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
 </div>
 
 <ol class="steps">
-<li><b>4.1 Base plate (acrylic sheet 1).</b> Keep the protective film on, and put masking tape where you'll drill. Mark the centre. Hold the pan motor under the sheet, face up, and mark through its 4 screw holes (a 31 mm square). Drill the 4 holes at 3 mm and the centre at 6 mm. Drill slowly, no pressure, or acrylic cracks.
+<li><b>4.1 Base plate (white sheet).</b> Keep the protective film on, and put masking tape where you'll drill. Mark the centre. Hold the pan motor under the sheet, face up, and mark through its 4 screw holes (a 31 mm square). Drill the 4 holes at 3 mm and the centre at 6 mm. Drill slowly, no pressure, or acrylic cracks.
 <span class="chk">The motor shaft passes through the centre hole without touching the edge.</span></li>
-<li><b>4.2 Pan motor.</b> Bolt the motor <b>under</b> the base, shaft pointing up, with 4 M3×10 screws. Put 2 nuts on each screw between the motor and the plate as spacers: the motor's round boss (22 mm, 2 mm tall) must not press on the acrylic. Stand the base on 4 legs ≥ 55 mm tall (long standoffs, wood blocks or two books) so the motor hangs free. Put the motor cable out to the side you'll wire from.
+<li><b>4.2 Pan motor.</b> Bolt the motor <b>under</b> the base, shaft pointing up, with 4 M3×10 screws. Put 2 nuts on each screw between the motor and the plate as spacers: the motor's round boss (22 mm, 2 mm tall) must not press on the acrylic. Put an <b>M4 × 60 bolt</b> through each corner as a leg (a nut above and below the plate, and a nut at the bottom to level it), so the motor hangs free. Put the motor cable out to the side you'll wire from.
 <span class="chk">The base sits flat and doesn't rock; the motor doesn't touch the table.</span></li>
-<li><b>4.3 Pan platform + magnet.</b> Cut a 60 mm disc from sheet 2. Draw 2 lines through its centre (a cross). Bolt it on top of a <b>5 mm flange coupling</b>, centred. Slide the coupling onto the pan shaft and leave a 2 mm gap to the base (the credit cards make a good spacer). Tighten the grub screw onto the flat of the shaft. Superglue a <b>diametric</b> magnet exactly on the centre of the cross.
+<li><b>4.3 Pan platform + magnet.</b> Cut a 60 mm disc from the clear acrylic (score around a drawn circle, or cut a hexagon and file the corners). Draw 2 lines through its centre (a cross). Bolt it on top of a <b>5 mm flange coupling</b>, centred. Slide the coupling onto the pan shaft and leave a 2 mm gap to the base (the credit cards make a good spacer). Tighten the grub screw onto the flat of the shaft. Superglue a <b>diametric</b> magnet exactly on the centre of the cross.
 <span class="chk">Turn the motor shaft by hand: the disc spins flat, with no wobble and no rubbing. The magnet stays on the centre and doesn't draw a circle. If the disc wobbles, re-seat the coupling; last resort is the lazy-Susan bearing.</span></li>
 <li><b>4.4 Magnet test (2 minutes, saves hours).</b> Hold the second magnet near the glued one. A <b>diametric</b> magnet has its N and S on the <i>sides</i>: rolling one around the other flips attract/repel as you go round the edge. An axial magnet has N/S on the flat faces; it will read a constant and the encoder is dead with no error.
 <span class="chk">Both magnets are diametric.</span></li>
-<li><b>4.5 Pan encoder arm (does NOT turn).</b> Put an M3 post (stacked standoffs) on the base about 38 mm from the centre. Screw a strip of acrylic (≈ 12 × 50 mm) on top so it reaches over the centre. Fix the pan AS5600 under the arm, <b>chip face-down, chip exactly over the magnet</b>. Set the height with the 2 credit cards between chip and magnet (1.5 mm; 0.5–3 mm works). Use washers/nuts on the post to adjust.
+<li><b>4.5 Pan encoder arm (does NOT turn).</b> Stand an <b>M3 × 40 screw</b> up through the base about 38 mm from the centre (nut underneath, nut on top). Cut a clear acrylic strip ≈ 15 × 60 mm, drill a 3 mm hole at one end, and fix it on top of the screw between two nuts so it reaches over the centre. Fix the pan AS5600 under the arm, <b>chip face-down, chip exactly over the magnet</b>. Set the height with the 2 credit cards between chip and magnet (1.5 mm; 0.5–3 mm works). Use washers/nuts on the post to adjust.
 <span class="chk">Looking straight down, the chip is centred on the magnet within 0.5 mm, and the arm stays still when the platform turns.</span></li>
-<li><b>4.6 Risers + L-bracket.</b> Four M3 standoffs (14–15 mm) on the platform, L-bracket on top of them. The risers lift the bracket over the encoder arm. Check this in the 3D view. Put the bracket slightly off-centre so the tilt shaft ends up near the pan axis.
+<li><b>4.6 Risers + L-bracket.</b> Four <b>15 mm M3 standoffs</b> on the platform, L-bracket on top of them. The risers lift the bracket over the encoder arm. Check this in the 3D view. Put the bracket slightly off-centre so the tilt shaft ends up near the pan axis.
 <span class="chk">Turn the platform ±90° by hand: the bracket and risers pass over and around the encoder arm and post without touching.</span></li>
 <li><b>4.7 Tilt motor.</b> Bolt it to the L-bracket upright, shaft <b>horizontal</b>, at right angles to the way the head looks, so tilt nods up and down.
 <span class="chk">The shaft is level (phone level app).</span></li>
-<li><b>4.8 Tilt disc + magnet + encoder.</b> A 40 mm acrylic disc on the second flange coupling, on the tilt shaft. Glue the second diametric magnet at the centre of the disc's outer face. Fix the tilt AS5600 on a small arm bolted to the L-bracket (the side that does NOT turn with tilt). The chip faces the magnet, centred on the shaft line, 1.5 mm away.
+<li><b>4.8 Tilt disc + magnet + encoder.</b> A 40 mm acrylic disc on the second flange coupling, on the tilt shaft. Glue the second diametric magnet at the centre of the disc's outer face. Fix the tilt AS5600 on a second clear acrylic strip (with an M3 × 40 post if needed) bolted to the L-bracket (the side that does NOT turn with tilt). The chip faces the magnet, centred on the shaft line, 1.5 mm away.
 <span class="chk">Nodding the disc by hand, the gap stays at 1.5 mm and nothing rubs.</span></li>
-<li><b>4.9 Brass standoff + head.</b> Screw your short <b>brass</b> M3 standoffs together until they are ≈ 40 mm long. Bolt this to the tilt disc near its edge and hang the head from it (a small box, or a plate cut from the white sheet). Never use a printed or plastic part here: it sags and shakes. Inside the box, take the webcam board out of its housing. Hot-glue it behind a hole in the front, with the <b>red filter</b> over the lens (filter over the camera only, not the laser). Hot-glue the KY-008 laser beside it, about 20 mm away, pointing the same way (parallel).
+<li><b>4.9 Brass standoff + head.</b> Screw two <b>20 mm brass</b> M3 standoffs together (≈ 40 mm). Bolt this to the tilt disc near its edge and hang the head box (the 70 × 50 × 30 mm ABS box) from it. Never use a printed or plastic part here: it sags and shakes. Inside the box, take the webcam board out of its housing. Hot-glue it behind a hole in the front, with the <b>red filter</b> over the lens (filter over the camera only, not the laser). Hot-glue the KY-008 laser beside it, about 20 mm away, pointing the same way (parallel).
 <span class="chk">With the motors unpowered, move the head: it swings freely. Tilt ±18° clears the platform. Camera and laser point the same way (laser dot near the middle of the camera view on a wall 2 m away).</span></li>
 <li><b>4.10 Cables.</b> Run the camera USB, laser wires, tilt-motor cable and tilt-encoder wires down the bracket together (zip ties). Leave a loose <b>service loop</b> at the tilt joint and at the pan joint so full travel never pulls a wire. Keep the loop off the base plate.
 <span class="chk">Pan −90° → +90° and tilt −18° → +18° by hand: no cable goes tight or catches.</span></li>

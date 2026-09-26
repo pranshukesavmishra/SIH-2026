@@ -157,8 +157,11 @@ function run(sc, verbose) {
   const head = sc.real ? jerky(900 + (+process.env.SEED || 0)) : null;
   const wave = sc.real && !sc.path ? jerky(500 + (+process.env.SEED || 0)) : null;
   const img = new Float32Array(W * H);
+  // COLOR=1: the beacon is a red LED over a warm-lit room. Its light goes to
+  // its own buffer and lands mostly in R; the room keeps a slight warm tint.
+  const COLOR = !!process.env.COLOR, bimg = COLOR ? new Float32Array(W * H) : null;
   const rgba = new Uint8ClampedArray(W * H * 4);
-  const tk = new Tracker({ targetHz: sc.target || 4 });
+  const tk = new Tracker({ targetHz: sc.target || 4, redBoost: !!process.env.RED });
   const fps = sc.fps || 30, hz = sc.hz || 4, phase0 = r();
   let t = 0, agc = 1;
   const out = { litErrs: [], missHist: {}, acq: null, inAfter: 0, n: 0, inFrame: 0, good: 0, wrong: 0, errs: [], lockedFrames: 0, maxGap: 0 };
@@ -167,6 +170,7 @@ function run(sc, verbose) {
     // timing jitter and the odd dropped frame, like a real browser camera
     t += 1 / fps + (r() - 0.5) * 0.012 + (r() < 0.02 ? 1 / fps : 0);
     img.set(room);
+    if (bimg) bimg.fill(0);
     // ceiling lamp: steady, saturated, with bloom
     disc(img, 520, 90, 11, 255, 6);
     // monitor: content changes every half second
@@ -227,10 +231,11 @@ function run(sc, verbose) {
         let amp = 1;
         if (sc.turning) amp = 0.35 + 0.65 * (0.5 + 0.5 * Math.cos(2 * Math.PI * 0.4 * ts));
         // A phone screen at full white reads ~220 on a webcam across a room.
-        if (sc.screen) box(img, bx, by, 18, 30, 190 * amp / sub);
-        else if (sc.glare) { disc(img, bx, by, 9, 500 * amp / sub, 0); disc(img, bx, by, 12, 220 * amp / sub, 16); }
-        else if (sc.real) { disc(img, bx, by, 7, 450 * amp / sub, 0); disc(img, bx, by, 8, 160 * amp / sub, 12); }
-        else { disc(img, bx, by, 6, 400 * amp / sub, 0); disc(img, bx, by, 6, 110 * amp / sub, 9); }
+        const L = bimg || img;
+        if (sc.screen) box(L, bx, by, 18, 30, 190 * amp / sub);
+        else if (sc.glare) { disc(L, bx, by, 9, 500 * amp / sub, 0); disc(L, bx, by, 12, 220 * amp / sub, 16); }
+        else if (sc.real) { disc(L, bx, by, 7, 450 * amp / sub, 0); disc(L, bx, by, 8, 160 * amp / sub, 12); }
+        else { disc(L, bx, by, 6, 400 * amp / sub, 0); disc(L, bx, by, 6, 110 * amp / sub, 9); }
       }
       truth = sc.path(t - exp / 2);
       const lit = ((t * hz + phase0) % 1) < 0.5;
@@ -239,8 +244,11 @@ function run(sc, verbose) {
     let flick = 1 + 0.02 * Math.sin(2 * Math.PI * 10 * t);   // mains alias
     if (!sc.real) {
       for (let i = 0, q = 0; i < W * H; i++, q += 4) {
-        const v = Math.min(255, Math.max(0, img[i] * agc * flick + 4 * gauss(r)));
-        rgba[q] = rgba[q + 1] = rgba[q + 2] = v; rgba[q + 3] = 255;
+        const n0 = 4 * gauss(r);
+        if (bimg) { const g0 = img[i] * agc * flick, b0 = bimg[i] * agc * flick;
+          rgba[q] = g0 * 1.05 + b0 + n0; rgba[q + 1] = g0 + 0.3 * b0 + n0; rgba[q + 2] = g0 * 0.92 + 0.25 * b0 + n0; }
+        else { const v = Math.min(255, Math.max(0, img[i] * agc * flick + n0)); rgba[q] = rgba[q + 1] = rgba[q + 2] = v; }
+        rgba[q + 3] = 255;
       }
     } else {
       // A laptop webcam: more sensor noise, exposure that jitters frame to
@@ -249,8 +257,11 @@ function run(sc, verbose) {
       const bo = new Float32Array((W / 8) * (H / 8));
       for (let i = 0; i < bo.length; i++) bo[i] = 3 * gauss(r);
       for (let y = 0, i = 0, q = 0; y < H; y++) for (let x = 0; x < W; x++, i++, q += 4) {
-        const v = Math.min(255, Math.max(0, img[i] * agc * flick + 6 * gauss(r) + bo[(y >> 3) * (W / 8) + (x >> 3)]));
-        rgba[q] = rgba[q + 1] = rgba[q + 2] = v; rgba[q + 3] = 255;
+        const n0 = 6 * gauss(r) + bo[(y >> 3) * (W / 8) + (x >> 3)];
+        if (bimg) { const g0 = img[i] * agc * flick, b0 = bimg[i] * agc * flick;
+          rgba[q] = g0 * 1.05 + b0 + n0; rgba[q + 1] = g0 + 0.3 * b0 + n0; rgba[q + 2] = g0 * 0.92 + 0.25 * b0 + n0; }
+        else { const v = Math.min(255, Math.max(0, img[i] * agc * flick + n0)); rgba[q] = rgba[q + 1] = rgba[q + 2] = v; }
+        rgba[q + 3] = 255;
       }
     }
     tk.process(rgba, W, H, t, false);

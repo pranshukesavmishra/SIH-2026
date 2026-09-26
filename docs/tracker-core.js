@@ -26,6 +26,7 @@
     targetHz: 4,
     rateTol: 0.10,         // accepted blink rate: targetHz within ±10%
     minBright: 150,        // a blob must reach this luma to be seeded
+    redBoost: false,       // RED BEACON FILTER: score pixels by redness too (bright rooms)
     minDepth: 0.30,        // (on - off) / on along a track
     seedContrast: 38,      // luma above local background to seed a blob
     block: 32,             // background block size, px
@@ -89,8 +90,23 @@
 
   Tracker.prototype._luma = function (rgba) {
     const Y = this.Y, n = this.w * this.h;
+    if (!this.o.redBoost) {
+      for (let i = 0, q = 0; i < n; i++, q += 4) {
+        Y[i] = (rgba[q] * 77 + rgba[q + 1] * 150 + rgba[q + 2] * 29) >> 8;
+      }
+      return;
+    }
+    // RED BEACON FILTER, a software red filter for lit rooms. Each pixel
+    // scores the larger of its redness (2R - G - B) and its luma less 60.
+    // A red LED keeps a high score, while a white wall, window or lamp --
+    // no redness -- loses 60 and falls under the seed threshold. A
+    // saturated white LED core still scores luma - 60, so the beacon
+    // stays visible when it clips.
     for (let i = 0, q = 0; i < n; i++, q += 4) {
-      Y[i] = (rgba[q] * 77 + rgba[q + 1] * 150 + rgba[q + 2] * 29) >> 8;
+      const r = rgba[q], g = rgba[q + 1], b = rgba[q + 2];
+      const y = (r * 77 + g * 150 + b * 29) >> 8;
+      const v = Math.max(2 * r - g - b, y - 60);
+      Y[i] = v < 0 ? 0 : v > 255 ? 255 : v;
     }
   };
 

@@ -7,7 +7,9 @@
 // showing what the tracker locked, so every miss on a real camera in a real
 // room can be seen and fixed.
 //
-//   node tools/sim/replay_clip.mjs clip.webm [--hz 4] [--out dir] [--no-video]
+//   node tools/sim/replay_clip.mjs clip.webm [--hz 4] [--red] [--out dir] [--no-video]
+//
+// --red replays with the RED BEACON FILTER on (colour frames, redness score).
 //
 // Needs ffmpeg and ffprobe on the PATH.
 import { createRequire } from 'node:module';
@@ -25,6 +27,7 @@ const hzFromName = (/_(\d+(?:\.\d+)?)hz_/.exec(path.basename(clip)) || [])[1];
 const hz = parseFloat(opt('--hz', hzFromName || '4'));
 const outDir = opt('--out', path.join(path.dirname(clip), path.basename(clip).replace(/\.[^.]+$/, '') + '_replay'));
 const wantVideo = !args.includes('--no-video');
+const red = args.includes('--red');
 fs.mkdirSync(outDir, { recursive: true });
 
 // Geometry and per-frame timestamps.
@@ -36,11 +39,12 @@ const ts = spawnSync('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show
   '-of', 'csv=p=0', clip], { encoding: 'utf8', maxBuffer: 1 << 26 }).stdout.trim().split('\n').map(Number).filter(Number.isFinite);
 
 const dec = spawnSync('ffmpeg', ['-v', 'error', '-i', clip, '-fps_mode', 'passthrough', '-vf', `scale=${W}:${H}`,
-  '-pix_fmt', 'gray', '-f', 'rawvideo', '-'], { maxBuffer: 2 ** 31 });
-const Y = dec.stdout, nFrames = Math.floor(Y.length / (W * H));
+  '-pix_fmt', red ? 'rgb24' : 'gray', '-f', 'rawvideo', '-'], { maxBuffer: 2 ** 31 });
+const C = red ? 3 : 1;
+const Y = dec.stdout, nFrames = Math.floor(Y.length / (W * H * C));
 console.log(`${path.basename(clip)}: ${sw}x${sh} -> ${W}x${H}, ${nFrames} frames, ${ts.length} timestamps, beacon ${hz} Hz`);
 
-const tk = new Tracker({ targetHz: hz });
+const tk = new Tracker({ targetHz: hz, redBoost: red });
 const rgba = new Uint8ClampedArray(W * H * 4);
 let enc = null;
 if (wantVideo) enc = spawn('ffmpeg', ['-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', `${W}x${H}`, '-r', '30', '-i', '-',
@@ -59,8 +63,9 @@ function box(x, y, r, col) {
 
 for (let f = 0; f < nFrames; f++) {
   const t = ts[f] !== undefined ? ts[f] : f / 30;
-  const off = f * W * H;
-  for (let i = 0, q = 0; i < W * H; i++, q += 4) { const v = Y[off + i]; rgba[q] = rgba[q + 1] = rgba[q + 2] = v; rgba[q + 3] = 255; }
+  const off = f * W * H * C;
+  if (red) for (let i = 0, q = 0, o = off; i < W * H; i++, q += 4, o += 3) { rgba[q] = Y[o]; rgba[q + 1] = Y[o + 1]; rgba[q + 2] = Y[o + 2]; rgba[q + 3] = 255; }
+  else for (let i = 0, q = 0; i < W * H; i++, q += 4) { const v = Y[off + i]; rgba[q] = rgba[q + 1] = rgba[q + 2] = v; rgba[q + 3] = 255; }
   tk.process(rgba, W, H, t, false);
   const L = tk.target;
   count[tk.state] = (count[tk.state] || 0) + 1;
@@ -71,7 +76,8 @@ for (let f = 0; f < nFrames; f++) {
   log.push([t.toFixed(3), tk.state, L ? L.x.toFixed(1) : '', L ? L.y.toFixed(1) : '', L ? +L.lit : '',
             L ? L.freq.toFixed(2) : '', L ? L.score.toFixed(2) : '', tk.tracks.length, JSON.stringify(drop)].join(','));
   if (enc) {
-    for (let i = 0; i < W * H; i++) { const v = Y[off + i]; rgb[3 * i] = rgb[3 * i + 1] = rgb[3 * i + 2] = v; }
+    if (red) Y.copy(rgb, 0, off, off + W * H * 3);
+    else for (let i = 0; i < W * H; i++) { const v = Y[off + i]; rgb[3 * i] = rgb[3 * i + 1] = rgb[3 * i + 2] = v; }
     for (const tr of tk.tracks) if (tr.hits >= 6 && tr.lit) box(tr.x, tr.y, Math.max(5, tr.size * 0.6), tr.pass > 0 ? [80, 200, 235] : [110, 110, 110]);
     if (L) box(L.x, L.y, Math.max(8, L.size * 0.8), L.lit ? [60, 220, 140] : [255, 190, 70]);
     enc.stdin.write(Buffer.from(rgb));

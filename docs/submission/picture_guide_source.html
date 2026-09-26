@@ -986,6 +986,44 @@ function render() {
     check: 'It locks in about a second and turns to face the beacon. Now record the demo!' });
 }
 
+/* ----------------------------------------------------------------------
+   16 · Bonus: the 3D assembly resource
+   ---------------------------------------------------------------------- */
+{
+  let s = '';
+  // laptop mock
+  s += R(180, 90, 644, 420, '#E2E8F0', '#64748B', 3, 16, 'filter="url(#sh)"');
+  s += R(204, 114, 596, 372, '#0B1220', '#1E293B', 2, 8);
+  s += R(96, 510, 812, 26, '#CBD5E1', '#94A3B8', 2, 6);
+  // "screen" content: a wireframe rig, rotate arrows, cursor
+  const cx = 502, cy = 300;
+  s += Ci(cx, cy, 150, 'none', '#334155', 2, 'stroke-dasharray="6 8"');
+  s += motorUp(cx, cy + 40, 2.6, { shadow: false });
+  s += acr(cx - 90, cy - 6, 180, 12);
+  s += Ci(cx + 10, cy - 30, 9, C.mag, '#7F1D1D', 1.5);
+  s += R(cx + 60, cy - 110, 90, 90, '#1F2937', '#0F172A', 2, 10);
+  s += Ci(cx + 90, cy - 78, 18, '#111', '#374151', 2) + Ci(cx + 90, cy - 78, 8, C.red);
+  // rotate arrows around the model
+  s += AP(`M${cx - 130},${cy - 40} A150,150 0 0 1 ${cx - 60},${cy - 132}`, 'cyan', 4);
+  s += AP(`M${cx + 130},${cy + 40} A150,150 0 0 1 ${cx + 60},${cy + 132}`, 'cyan', 4);
+  s += T(cx, cy + 176, 'drag to rotate · click a part to see just that piece', { s: 16, w: 700, c: '#94A3B8', a: 'middle' });
+  // cursor
+  s += P(`M${cx + 150},${cy - 40} l0,26 l7,-6 l8,15 l7,-4 l-8,-15 l10,-3 z`, '#fff', '#0F172A', 1.5);
+  // url bar above the "screen"
+  s += R(228, 130, 548, 30, '#0F172A', '#334155', 1.5, 8) + T(502, 150, 'zerodrift-fsoc-pat.netlify.app/build → 3D ASSEMBLY', { s: 14, w: 700, c: '#94A3B8', a: 'middle' });
+  s += T(40, 60, 'A bonus, not a requirement', { s: 24, w: 800 });
+  card({ n: 'R', part: 3, title: 'Bonus: see it turning in 3D', art: s,
+    tools: 'A laptop with a browser. Nothing to build here — this page is optional.',
+    steps: [
+      'On your laptop, open the ZeroDrift site and go to the hidden <b>build</b> page, then click <b>3D ASSEMBLY</b>.',
+      'Drag with the mouse to spin the model around; scroll to zoom in on any part.',
+      'Click any part in the model or its name in the list to isolate just that piece and read its note.',
+      'Use this to double-check a confusing step in this guide — the drawing here and the 3D model show the same build.',
+      'This page is only reachable from that hidden link — it is not on the public site menu, and skipping it entirely is fine.',
+    ],
+    check: 'Optional only: nothing here needs to be built. It is just another way to see the same rig.' });
+}
+
 render();
 </script>
 </body>

@@ -287,16 +287,16 @@ function buildMk2(v, onLoaded) {
   const bGlow = glowSprite(0xff3030, 90); bGlow.position.set(0, 45, 0); beacon.add(bGlow);
   const bLight = new THREE.PointLight(0xff3030, 0, 380); bLight.position.set(0, 60, 0); beacon.add(bLight);
 
-  // ---- the decoy: brighter, white, steady -- and ignored ----
+  // ---- the decoy: same red light, steady (never blinks) -- and ignored ----
   const decoy = loadUnit(loader, [
     ['decoy_case', std(0xc9cdd2, 0.05, 0.7, { transparent: true, opacity: 0.6 })],
-    ['decoy_led', new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1 })],
+    ['decoy_led', new THREE.MeshStandardMaterial({ color: 0xff5a48, emissive: 0xff4a38, emissiveIntensity: 1 })],
     ['decoy_cells', std(0x6b7f94, 0.5, 0.5)],
     ['decoy_switch', std(0x8892a0, 0.8, 0.35)],
   ], [35, 27, 14]);
   decoy.scale.setScalar(K); decoy.position.set(-300, -660, 150); scene.add(decoy);
-  const dGlow = glowSprite(0xffffff, 110); dGlow.position.set(0, 26, 0); decoy.add(dGlow);
-  const dLight = new THREE.PointLight(0xffffff, 3.5e4, 420); dLight.position.set(0, 60, 0); decoy.add(dLight);
+  const dGlow = glowSprite(0xff5a48, 110); dGlow.position.set(0, 26, 0); decoy.add(dGlow);
+  const dLight = new THREE.PointLight(0xff5a48, 3.5e4, 420); dLight.position.set(0, 60, 0); decoy.add(dLight);
   const post = (x, y, z, h) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, h, 12), std(0x2a3446, 0.6, 0.4));
     m.rotation.x = Math.PI / 2; m.position.set(x, y, h / 2); m.castShadow = true; scene.add(m); };
   post(-300, -660, 150 - 30);

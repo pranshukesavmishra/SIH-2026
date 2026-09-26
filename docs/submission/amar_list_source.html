@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ZeroDrift MK2 Shopping List</title>
+<style>
+@page{size:A4;margin:12mm 12mm 14mm}
+*{box-sizing:border-box}
+body{margin:0;font:10pt/1.42 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#0b1320;background:#fff}
+h1{font-size:20pt;margin:0 0 2px}
+h2{font-size:13.5pt;margin:16px 0 6px;padding:5px 9px;background:#0b2a45;color:#fff;border-radius:5px;break-after:avoid}
+h2 small{font-weight:400;font-size:9.5pt;color:#b9d4ea}
+h3{font-size:11pt;margin:12px 0 4px;color:#0a5d7a;break-after:avoid}
+p{margin:5px 0}
+.sub{color:#46566b;font-size:10.5pt}
+.say{background:#fff7e0;border:1px solid #e7c46a;border-radius:6px;padding:8px 11px;margin:10px 0;font-size:10pt}
+table{width:100%;border-collapse:collapse;margin:4px 0 8px}
+th{background:#eef3f8;text-align:left;font-size:8.5pt;letter-spacing:.3px;text-transform:uppercase;color:#3c4d63;padding:5px 6px;border-bottom:1.5px solid #b9c6d6}
+td{padding:5px 6px;border-bottom:1px solid #dbe2eb;vertical-align:top}
+tr{break-inside:avoid}
+th{break-after:avoid}
+h2+table tr:first-child+tr{break-before:avoid}
+td.n{width:22px;color:#6b7a8f;font-weight:700}
+td.q{width:34px;text-align:center;font-weight:700}
+td.r{width:62px;white-space:nowrap}
+td.b{width:22px}
+.box{display:inline-block;width:13px;height:13px;border:1.5px solid #333;border-radius:2px}
+td b{color:#000}
+.say2{font-size:9pt;color:#46566b}
+.tag{display:inline-block;font-size:7.5pt;font-weight:700;border-radius:3px;padding:0 5px;border:1px solid;margin-left:4px;vertical-align:1px}
+.must{color:#b3261e;border-color:#e3a19b}
+.opt{color:#0a5d7a;border-color:#9cc6d6}
+.tot{font-weight:700;background:#f3f6fa}
+.have{columns:2;column-gap:20px;font-size:9.5pt;margin:4px 0}
+.have div{break-inside:avoid;padding:2px 0}
+.have div::before{content:"✓ ";color:#137a47;font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:6px 0}
+.two figure{margin:0;border:1px solid #d5dde8;border-radius:6px;padding:5px}
+.two img{width:100%;height:180px;object-fit:cover;object-position:center 40%;border-radius:4px;display:block}
+figcaption{font-size:8.5pt;color:#46566b;margin-top:4px;line-height:1.35}
+.warn{background:#fdecea;border:1px solid #f1b0aa;border-radius:6px;padding:7px 10px;margin:8px 0}
+.ok{background:#e9f7ef;border:1px solid #a9dcbf;border-radius:6px;padding:7px 10px;margin:8px 0}
+.pgb{break-before:page}
+ol{margin:4px 0 6px 18px;padding:0} li{margin:3px 0}
+svg text{font-family:Helvetica,Arial,sans-serif}
+code{font:9pt ui-monospace,Menlo,Consolas,monospace;background:#eef2f7;border-radius:3px;padding:0 4px}
+</style>
+</head>
+<body>
+
+<h1>ZeroDrift MK2: shopping list for Amar Robotics</h1>
+<p class="sub">Team ZeroDrift · SIH 2026 PS26169 · everything still missing for the MK2 build, with the exact name to say at the counter and what to check before paying.</p>
+
+<div class="say"><b>Hi, we are building a 2-motor pan-tilt camera turret with NEMA17 stepper motors (5 mm shaft) and A4988 drivers.</b> We need the parts below. Items marked <span class="tag must">MUST</span> are needed for the basic build. <span class="tag opt">BELT</span> items are for a GT2 timing-belt gear-down on the tilt motor.</div>
+
+<h2>A · Must buy: basic build <small>without these the rig cannot be assembled</small></h2>
+<table>
+<tr><th></th><th>#</th><th>Ask for</th><th>Exact spec / check at the counter</th><th>Qty</th><th>≈ ₹</th></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">1</td><td><b>5 mm rigid flange coupling</b><br><span class="say2">also called "5 mm shaft flange coupler / wheel hub for 5 mm shaft"</span></td><td>Bore <b>5 mm</b> (a NEMA17 shaft must slide in snugly). <b>Rigid</b> metal, not the flexible/spring type. Has a grub screw. Flange has 4 holes (M3).</td><td class="q">2</td><td class="r">160–300</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">2</td><td><b>M3 brass standoff, 40 mm</b><br><span class="say2">or 20 mm ×4 (male–female, they screw together)</span></td><td>Brass (gold), M3 thread. Carries the camera head. <b>Not plastic/nylon.</b></td><td class="q">2</td><td class="r">40–80</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">3</td><td><b>M3 standoff, 15 mm</b> (brass or nylon)</td><td>Raises the tilt L-bracket above the pan encoder</td><td class="q">4</td><td class="r">30–60</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">4</td><td><b>M3 screws + nuts + washers pack</b></td><td>Lengths <b>8, 10, 16, 20 mm</b>, about 10 of each; 30 nuts; 20 washers</td><td class="q">1 set</td><td class="r">60–120</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">5</td><td><b>Resistor 100 Ω, ¼ W</b><br><span class="say2">brown-black-brown-gold</span></td><td>Decoy LED. Buy 5 (they cost ₹1 each).</td><td class="q">5</td><td class="r">5–10</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">6</td><td><b>Resistor 220 Ω, ¼ W</b><br><span class="say2">red-red-brown-gold</span></td><td>Beacon LED. Buy 5.</td><td class="q">5</td><td class="r">5–10</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">7</td><td><b>Red LED, high-brightness, 10 mm</b> (5 mm OK)</td><td>A second red LED for the <b>decoy</b>. Through the camera's red filter a white LED looks dim, so a steady red decoy is the fair test. Buy 2.</td><td class="q">2</td><td class="r">10–20</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">8</td><td><b>Electrolytic capacitor 100 µF, 25 V</b> (or 35 V)</td><td>One across each A4988 motor supply. Buy 3 (1 spare). <b>Skip if you already have 2.</b></td><td class="q">3</td><td class="r">15–30</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">9</td><td><b>Clear acrylic sheet 3 mm, A4 size</b></td><td>For the pan disc, tilt disc, encoder arms and head plate. Your white sheet is fine for the <b>base</b>; the small parts must be stiff.</td><td class="q">1</td><td class="r">120–200</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">10</td><td><b>Red transparent acrylic 2 mm (small piece)</b><br><span class="say2">or red cellophane / red gel sheet</span></td><td>Filter over the camera lens so bright rooms don't blind it. Hold it over your phone camera: the room should look dim red.</td><td class="q">1</td><td class="r">20–80</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">11</td><td><b>Allen key set</b> (1.5–4 mm)</td><td>For the grub screws on the couplings and pulleys</td><td class="q">1</td><td class="r">60–120</td></tr>
+</table>
+
+<h2>B · Power and charging <small>your B3 charger needs a balance plug the 18650 holder does not have</small></h2>
+<table>
+<tr><th></th><th>#</th><th>Ask for</th><th>Exact spec / check at the counter</th><th>Qty</th><th>≈ ₹</th></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">12</td><td><b>12 V 2 A DC adapter</b> (SMPS, wall plug)<span class="tag must">MUST</span></td><td>Output <b>12 V, 2 A</b>, 5.5 × 2.1 mm barrel plug. Powers the motors on the bench and at the demo table, so the 18650s are only a backup.</td><td class="q">1</td><td class="r">200–350</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">13</td><td><b>DC female barrel jack to screw terminal</b></td><td>5.5 × 2.1 mm, matches the adapter. Screw terminals marked + and −.</td><td class="q">2</td><td class="r">30–60</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">14</td><td><b>TP4056 18650 charging module with protection</b> (USB-C or micro-USB)</td><td>Charges <b>one</b> 18650 at a time, out of the holder. Needed because the B3 charger only charges through a balance plug.</td><td class="q">1</td><td class="r">30–60</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">15</td><td><b>Hook-up wire 22 AWG</b>, red + black</td><td>1 m each, for the 12 V motor supply (jumper wires are too thin for this)</td><td class="q">2 m</td><td class="r">30–60</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">16</td><td><b>USB cable for the 2nd Nano</b></td><td><b>Check the Nano's port first:</b> Mini-USB or USB-C. Skip if you have one.</td><td class="q">1</td><td class="r">60–120</td></tr>
+</table>
+
+<h2>C · Belt gear-down on tilt <span class="tag opt" style="background:#fff">BELT</span> <small>same idea as both turrets in your zip</small></h2>
+<p>Gives tilt <b>3× finer steps and 3× more holding torque</b>. The small pulley goes on the tilt motor and the big pulley on a separate 8 mm axle that carries the head. Buy these now so you don't need a second trip. Build the direct-drive rig first and add the belt once it works (page 4).</p>
+<table>
+<tr><th></th><th>#</th><th>Ask for</th><th>Exact spec / check at the counter</th><th>Qty</th><th>≈ ₹</th></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">17</td><td><b>GT2 timing pulley, 20 teeth, 5 mm bore</b></td><td>For <b>6 mm</b> wide belt. Bore <b>5 mm</b> (fits the NEMA17 shaft). Aluminium with 2 grub screws.</td><td class="q">1</td><td class="r">80–150</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">18</td><td><b>GT2 timing pulley, 60 teeth, 8 mm bore</b></td><td>For <b>6 mm</b> belt. Bore <b>8 mm</b> (for the 8 mm axle). If they only have 60T with 5 mm bore: take it, and buy a 5 mm rod and <b>KFL005</b> bearings instead of 8 mm ones (same shape).</td><td class="q">1</td><td class="r">200–400</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">19</td><td><b>GT2 closed-loop timing belt, 6 mm wide</b><br><span class="say2">the "rubber" (a ring, no joint)</span></td><td>Length <b>232 mm</b> (first choice). Also OK: <b>280 mm</b> or 200 mm. If cheap, buy two different lengths. <b>Must be GT2</b> (2 mm tooth pitch), same as the pulleys.</td><td class="q">1–2</td><td class="r">80–150 each</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">20</td><td><b>KFL08 flange bearing</b> (2-bolt, 8 mm bore)</td><td>Zinc flange with a bearing inside. <b>8 mm</b> bore, spins smoothly with no grinding. Bolts onto a flat plate.</td><td class="q">2</td><td class="r">120–250</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">21</td><td><b>8 mm steel rod, 100 mm</b><br><span class="say2">smooth rod / linear shaft; or an M8 × 100 bolt with a smooth shank</span></td><td>The tilt axle. Straight, smooth, fits the KFL08 and the 60T pulley.</td><td class="q">1</td><td class="r">60–150</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">22</td><td><b>8 mm rigid flange coupling</b></td><td>Bore <b>8 mm</b>. Bolts the head plate to the tilt axle.</td><td class="q">1</td><td class="r">100–180</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">23</td><td><b>8 mm shaft collar</b> (lock collar with grub screw)</td><td>Stops the axle sliding sideways</td><td class="q">2</td><td class="r">40–80</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">24</td><td><b>M4 × 20 screws + nuts</b></td><td>For the KFL08 flanges and the motor-to-plate mounting</td><td class="q">8</td><td class="r">20–40</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">25</td><td><b>Aluminium flat plate 3 mm, about 70 × 160 mm</b> <span class="say2">(or 5 mm acrylic)</span></td><td>The upright that holds the tilt motor (bottom) and the axle bearings (top). A hardware shop can cut it.</td><td class="q">1</td><td class="r">60–150</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">26</td><td><b>Small aluminium angle / L-bracket</b> (≈ 30 × 30 mm)</td><td>Bolts the upright to the pan platform</td><td class="q">2</td><td class="r">20–60</td></tr>
+</table>
+
+<h2>D · Holders and boxes <small>you said you have no boxes</small></h2>
+<table>
+<tr><th></th><th>#</th><th>Ask for</th><th>Exact spec / check at the counter</th><th>Qty</th><th>≈ ₹</th></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">27</td><td><b>ABS plastic project box / enclosure</b>, ≈ 100 × 60 × 25 mm</td><td>One for the <b>beacon</b> (Nano + LED + switch), one for the <b>decoy</b> (3×AA holder + LED + switch). Any small plastic box with a lid works; a tiffin box is fine.</td><td class="q">2</td><td class="r">80–150 each</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">28</td><td><b>Laser module holder / clip</b> <span class="say2">or a 6–12 mm cable P-clip</span></td><td>Holds the laser on the head plate so it points exactly where the camera looks. Hot glue works too.</td><td class="q">1</td><td class="r">20–60</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">29</td><td><b>Double-sided foam tape</b> (thin, strong)</td><td>Mounts the breadboard and camera board. Skip if you have some (the red roll in your photo is fine).</td><td class="q">—</td><td class="r">—</td></tr>
+</table>
+<p style="font-size:9pt;color:#46566b">No box is needed for the <b>head</b>. Both turrets in your zip use an open <b>plate</b>, with the camera board and laser screwed straight onto it. It's lighter and easier to balance. Cut it from the 3 mm acrylic (#9).</p>
+
+<h2>E · Small consumables</h2>
+<table>
+<tr><th></th><th>#</th><th>Ask for</th><th>Spec</th><th>Qty</th><th>≈ ₹</th></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">30</td><td><b>Superglue</b> (Fevikwik) or 5-minute epoxy (Araldite)</td><td>Glues the magnets on the axis centres</td><td class="q">1</td><td class="r">20–120</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">31</td><td><b>Zip ties</b>, small (100 mm)</td><td>Cable service loops</td><td class="q">1 pk</td><td class="r">30</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">32</td><td><b>Heat-shrink tube</b> assortment (or insulation tape)</td><td>Covers the soldered LED and resistor legs</td><td class="q">1</td><td class="r">30–60</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">33</td><td><b>Solder wire</b> (if you have none)</td><td>For the TCA9548A and AS5600 header pins</td><td class="q">1</td><td class="r">40–80</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">34</td><td><b>USB-C to USB-A hub</b> <span class="say2">only if the laptop has USB-C ports only</span></td><td>The Nano and the webcam must be plugged in at the same time</td><td class="q">1</td><td class="r">300–800</td></tr>
+<tr class="tot"><td></td><td></td><td colspan="3">Estimated total, A + B + D + E (without the hub): ≈ ₹1,100–2,000 · with the belt parts (C): add ≈ ₹1,000–1,800</td><td></td></tr>
+</table>
+<div class="warn"><b>You also need a drill</b> (about 10 holes: 3 mm, 4 mm, 5–6 mm, 8–10 mm). If nobody at home has one, ask Amar or any hardware shop to drill the marked holes. Mark them first with the motor and bearings as templates.</div>
+
+<h2 class="pgb">F · Already have: don't buy again</h2>
+<div class="have">
+<div>2× NEMA17 stepper motors</div><div>2× A4988 drivers (with heatsinks)</div><div>2× NEMA17 L-brackets</div>
+<div>TCA9548A I²C multiplexer</div><div>2× AS5600 encoders + diametric magnets</div><div>2× Arduino Nano (rig + beacon)</div>
+<div>KY-008 laser</div><div>Red LED + white LED</div><div>3×AA battery holder</div>
+<div>Ping-pong ball (beacon diffuser)</div><div>3× 18650 cells + 3-cell holder</div><div>iMAX B3 Pro balance charger</div>
+<div>Toggle switches</div><div>Short brass standoffs, M3 screws/nuts</div><div>Breadboard + jumper wires</div>
+<div>Multimeter, soldering iron, glue gun</div><div>White sheet (base plate)</div><div>USB webcam (arriving)</div>
+</div>
+<div class="warn"><b>Charging the 18650s:</b> the B3 charges only through a white 4-pin balance plug, which your holder doesn't have. Take the cells out and charge them <b>one at a time</b> on the TP4056 (#14). Before putting them back, measure each: <b>4.1–4.2 V, all within 0.1 V</b>. Or run the motors from the 12 V adapter (#12) and skip the battery.</div>
+
+<h3>What the turrets in your zip do (analysed)</h3>
+<div class="two">
+<figure><img src="assets/ref_turret_a.jpg" alt="Black turret"><figcaption><b>Turret 1 (AI Laser Turret v1.3, black).</b> Pan: NEMA17 standing in a base, <b>direct drive</b>. Tilt: motor low on the arm, <b>GT2 belt</b> from a small pulley up to a big pulley (≈ 3–4:1). Camera and laser on one open frame.</figcaption></figure>
+<figure><img src="assets/ref_turret_b.jpg" alt="Grey turret, tilt belt"><figcaption><b>Turret 2 (grey, green laser), tilt.</b> Same as turret 1: small pulley on the tilt motor, big pulley on the head axle, GT2 belt, ≈ 4–5:1. Camera board and laser on one flat plate.</figcaption></figure>
+<figure><img src="assets/ref_turret_b_pan.jpg" alt="Grey turret, pan belt"><figcaption><b>Turret 2, pan.</b> The black band under the upper motor is a <b>belt around a large turntable pulley</b>: pan is geared down too. It needs a printed turntable and a large bearing, so we skip it for Monday.</figcaption></figure>
+</div>
+<p><b>Verdict:</b> both are our MK2 with belts added. We copy three things: <b>(1) the tilt belt 3:1</b>, <b>(2) the camera and laser on one open plate</b>, <b>(3) the head's weight centred on the tilt axle</b> (balanced, so the motor doesn't strain). Pan stays <b>direct drive</b>: our pan already has an encoder that measures it, and a pan belt needs a big printed turntable we can't make by Monday.</p>
+
+<h2 class="pgb">G · Changes to our MK2 model</h2>
+<svg viewBox="0 0 720 400" width="100%">
+  <rect width="720" height="400" fill="#fbfcfe" stroke="#d5dde8"/>
+  <text x="14" y="22" font-size="13" font-weight="700">Belted tilt, seen from the front (the beacon's view). Pan below is unchanged.</text>
+  <!-- platform -->
+  <rect x="120" y="330" width="440" height="12" fill="#b8c7d6" stroke="#6b7a8f"/><text x="568" y="340" font-size="11">pan platform (acrylic disc)</text>
+  <rect x="318" y="342" width="44" height="12" fill="#9aa7b4"/><text x="370" y="352" font-size="10.5">5 mm flange coupling</text>
+  <rect x="300" y="354" width="80" height="42" fill="#222"/><text x="340" y="380" font-size="11" fill="#fff" text-anchor="middle">PAN NEMA17</text>
+  <!-- upright -->
+  <rect x="330" y="96" width="12" height="234" fill="#9aa7b4" stroke="#555"/>
+  <path d="M342 318 h34 v12 h-34z" fill="#9aa7b4" stroke="#555"/>
+  <text x="236" y="90" font-size="11" font-weight="700">upright plate (3 mm aluminium)</text>
+  <!-- tilt motor on right face, low -->
+  <rect x="342" y="236" width="76" height="70" rx="3" fill="#222"/><text x="380" y="266" font-size="11" fill="#fff" text-anchor="middle">TILT</text><text x="380" y="281" font-size="11" fill="#fff" text-anchor="middle">NEMA17</text>
+  <text x="426" y="266" font-size="10.5">bolted to the plate,</text><text x="426" y="280" font-size="10.5">slotted holes = belt tension</text>
+  <!-- small pulley -->
+  <line x1="300" y1="271" x2="330" y2="271" stroke="#777" stroke-width="4"/>
+  <rect x="288" y="259" width="16" height="24" fill="#c0c0c0" stroke="#555"/>
+  <text x="170" y="275" font-size="11" font-weight="700">20T pulley</text><text x="170" y="289" font-size="10">on the motor shaft</text>
+  <!-- axle -->
+  <line x1="230" y1="146" x2="470" y2="146" stroke="#555" stroke-width="7"/>
+  <text x="400" y="138" font-size="10.5">8 mm axle</text>
+  <rect x="318" y="118" width="12" height="56" fill="#c9a36b" stroke="#6b4b1d"/><rect x="342" y="118" width="12" height="56" fill="#c9a36b" stroke="#6b4b1d"/>
+  <text x="358" y="222" font-size="10.5">2× KFL08 bearings (one each side of the plate)</text>
+  <!-- big pulley -->
+  <rect x="286" y="116" width="20" height="60" fill="#c0c0c0" stroke="#555"/>
+  <text x="150" y="126" font-size="11" font-weight="700">60T pulley</text><text x="150" y="140" font-size="10">on the axle</text>
+  <!-- belt -->
+  <path d="M284 114 L286 285 L306 285 L308 114 Z" fill="none" stroke="#111" stroke-width="3"/>
+  <text x="120" y="210" font-size="11" font-weight="700">GT2 belt, 6 mm</text><text x="120" y="224" font-size="10">closed loop, 232 mm</text>
+  <!-- dimension -->
+  <line x1="268" y1="146" x2="268" y2="271" stroke="#b3261e" stroke-dasharray="4 3"/><text x="262" y="245" font-size="10.5" fill="#b3261e" transform="rotate(-90 262 245)">75 mm</text>
+  <!-- magnet + encoder -->
+  <rect x="222" y="139" width="8" height="14" fill="#e0312b"/><rect x="204" y="124" width="8" height="44" fill="#6b2d8f"/>
+  <path d="M208 124 V104 H330" fill="none" stroke="#6b7a8f" stroke-width="3"/>
+  <text x="18" y="160" font-size="10.5" font-weight="700">AS5600, 1.5 mm from the</text><text x="18" y="174" font-size="10.5">magnet on the axle end</text>
+  <!-- head -->
+  <rect x="470" y="130" width="12" height="32" fill="#9aa7b4" stroke="#555"/><text x="470" y="200" font-size="10">8 mm flange coupling</text>
+  <rect x="482" y="72" width="130" height="110" rx="4" fill="#e7ecf2" stroke="#333"/>
+  <circle cx="520" cy="112" r="17" fill="#8b1d1d" stroke="#333"/><circle cx="520" cy="112" r="8" fill="#222"/>
+  <circle cx="575" cy="112" r="7" fill="#444"/>
+  <text x="547" y="152" font-size="10.5" text-anchor="middle">webcam + red filter · laser</text><text x="547" y="166" font-size="10" text-anchor="middle">on one open plate</text>
+  <text x="620" y="110" font-size="10.5">head centred</text><text x="620" y="124" font-size="10.5">on the axle</text><text x="620" y="138" font-size="10.5">(balanced)</text>
+</svg>
+
+<h3>What changes, and what stays</h3>
+<table>
+<tr><th>Part</th><th>Before (direct drive)</th><th>Now (belted tilt)</th></tr>
+<tr><td>Tilt drive</td><td>Head on the tilt motor shaft</td><td>Motor low on an upright plate. <b>20T → 60T GT2 belt</b>, 3:1. Head on a separate <b>8 mm axle in 2× KFL08 bearings</b></td></tr>
+<tr><td>Tilt step size</td><td>0.11° per step</td><td><b>0.0375° per step</b> (3× finer), 3× the holding torque</td></tr>
+<tr><td>Tilt encoder</td><td>Magnet on a disc on the motor shaft</td><td>Magnet glued on the <b>end of the 8 mm axle</b>. It reads the head itself, so any belt slip is caught</td></tr>
+<tr><td>Head</td><td>Box on a brass standoff</td><td><b>Open plate</b> on an 8 mm flange coupling, weight centred on the axle</td></tr>
+<tr><td>Pan</td><td colspan="2">Unchanged: direct drive on a 5 mm flange coupling, AS5600 under the platform</td></tr>
+<tr><td>Firmware</td><td><code>TILT_GEAR_RATIO 1.0</code></td><td>Set <code>TILT_GEAR_RATIO = 3.0</code> (keep <code>PAN_GEAR_RATIO = 1.0</code>) and reflash. Travel limits scale automatically (tilt stays ±18°).</td></tr>
+<tr><td>Website</td><td>MK2 DRIVE: Direct drive</td><td><b>Already added:</b> MK2 DRIVE → <b>"Pan direct · tilt belt 20T→60T (3:1)"</b></td></tr>
+</table>
+
+<h3>Belt length → distance between motor shaft and axle (20T → 60T)</h3>
+<table style="width:auto">
+<tr><th>Belt (closed loop)</th><th>200 mm</th><th>232 mm</th><th>280 mm</th><th>300 mm</th></tr>
+<tr><td>Shaft-to-axle centre distance</td><td>59 mm</td><td><b>75 mm</b></td><td>99 mm</td><td>109 mm</td></tr>
+</table>
+<p style="font-size:9pt">Drill the motor holes as <b>slots</b> (2–3 mm long, pointing towards the axle) so you can slide the motor down to tension the belt. Press the belt in the middle: it should give about 2–3 mm. Too loose skips teeth; too tight makes the motor buzz.</p>
+
+<div class="ok"><b>Plan for Monday:</b> (1) build the direct-drive rig from the build guide and get it tracking. (2) Then swap in the belted tilt: about 2 hours with the parts from section C. The software already supports both, so the demo is safe even if the belt isn't finished.</div>
+</body>
+</html>

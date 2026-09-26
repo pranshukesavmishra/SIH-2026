@@ -270,10 +270,12 @@ details[open] summary::before { content: '− '; }
         <div class="field" id="ratioField">
           <div class="lbl"><span>MK2 DRIVE</span></div>
           <select id="ratioSel" style="margin-top:6px" title="Must match PAN/TILT_GEAR_RATIO in rig_firmware_v2.ino">
-            <option value="1">Direct drive (1:1)</option>
-            <option value="3">GT2 belt 20T→60T (3:1)</option>
-            <option value="4">GT2 belt 20T→80T (4:1)</option>
-            <option value="5">GT2 belt 16T→80T (5:1)</option>
+            <option value="1:1">Direct drive (1:1)</option>
+            <option value="1:3">Pan direct · tilt belt 20T→60T (3:1)</option>
+            <option value="1:4">Pan direct · tilt belt 20T→80T (4:1)</option>
+            <option value="3:3">Both belts 20T→60T (3:1)</option>
+            <option value="4:4">Both belts 20T→80T (4:1)</option>
+            <option value="5:5">Both belts 16T→80T (5:1)</option>
           </select>
         </div>
         <div class="btn-row" style="margin-top:10px">
@@ -880,7 +882,7 @@ function readouts() {
   els.ms.textContent = procMs.toFixed(1) + ' ms';
   if (rig.type === 'mk2') {
     const fp = rig.fbPan ?? rig.panSteps, ft = rig.fbTilt ?? rig.tiltSteps;
-    els.gim.textContent = fmtSigned(fp / STEPS_PER_DEG) + '° / ' + fmtSigned(ft / STEPS_PER_DEG) + '°' +
+    els.gim.textContent = fmtSigned(fp / SPD_PAN) + '° / ' + fmtSigned(ft / SPD_TILT) + '°' +
       (rig.fbSrc === 'E' ? ' enc' : rig.fbSrc === 'C' ? ' cmd' : '');
     els.gim.className = rig.fbSrc === 'E' ? 'good' : '';
   } else if (rig.type === 'mk1') {
@@ -900,19 +902,23 @@ function readouts() {
    The rig type is read from the firmware's own start-up line. */
 // Motor steps per OUTPUT degree: 1/16 microstepping (3200 steps/rev) times
 // the belt reduction, which must match *_GEAR_RATIO in the MK2 firmware.
-let STEPS_PER_DEG = 3200 / 360;
-function setRatio(r) {
-  r = [1, 3, 4, 5].includes(+r) ? +r : 1;
-  STEPS_PER_DEG = 3200 / 360 * r;
-  MK2_LIM.panMin = -90 * STEPS_PER_DEG; MK2_LIM.panMax = 90 * STEPS_PER_DEG;
-  MK2_LIM.tiltMin = -18 * STEPS_PER_DEG; MK2_LIM.tiltMax = 18 * STEPS_PER_DEG;
-  store.set('zd_ratio', r); els.ratioSel.value = String(r);
+// Pan and tilt carry their own ratio: the usual belted build reduces tilt
+// only (PAN_GEAR_RATIO 1.0, TILT_GEAR_RATIO 3.0).
+let SPD_PAN = 3200 / 360, SPD_TILT = 3200 / 360;
+function setRatio(v) {
+  v = String(v);
+  if (!v.includes(':')) v = v + ':' + v;                // old single-ratio setting
+  if (![...els.ratioSel.options].some(o => o.value === v)) v = '1:1';
+  const [rp, rt] = v.split(':').map(Number);
+  SPD_PAN = 3200 / 360 * rp; SPD_TILT = 3200 / 360 * rt;
+  MK2_LIM.panMin = -90 * SPD_PAN; MK2_LIM.panMax = 90 * SPD_PAN;
+  MK2_LIM.tiltMin = -18 * SPD_TILT; MK2_LIM.tiltMax = 18 * SPD_TILT;
+  store.set('zd_ratio', v); els.ratioSel.value = v;
 }
-// Host-side travel limits, tighter than the firmware's backstop: the build
-// guide's stage-5 check is +/-90 deg pan and -30/+45 deg tilt with no cable
-// tension, so that is all the loop is ever allowed to ask for.
-const MK2_LIM = { panMin: -90 * STEPS_PER_DEG, panMax: 90 * STEPS_PER_DEG,
-                  tiltMin: -18 * STEPS_PER_DEG, tiltMax: 18 * STEPS_PER_DEG };
+// Host-side travel limits, the same as the firmware's: pan +/-90 deg (cable
+// loom), tilt +/-18 deg (the head reaches the pan platform at +21 deg).
+const MK2_LIM = { panMin: -90 * SPD_PAN, panMax: 90 * SPD_PAN,
+                  tiltMin: -18 * SPD_TILT, tiltMax: 18 * SPD_TILT };
 setRatio(store.get('zd_ratio', 1));
 els.ratioSel.onchange = () => setRatio(els.ratioSel.value);
 const rig = { port: null, writer: null, type: null, laser: '', panSteps: 0, tiltSteps: 0,
@@ -1030,10 +1036,10 @@ async function testRig() {
   els.testRig.disabled = true;
   note('Watch it: <b>pan right</b>, then <b>tilt up</b>, then the laser blinks.');
   if (rig.type === 'mk2') {
-    const d = Math.round(15 * STEPS_PER_DEG);
+    const dp = Math.round(15 * SPD_PAN), dt = Math.round(15 * SPD_TILT);
     const sp = cal.invPan ? -1 : 1, st = cal.invTilt ? -1 : 1;
-    mk2Go(sp * d, 0); await wait(1200); mk2Go(0, 0); await wait(900);
-    mk2Go(0, st * d); await wait(1200); mk2Go(0, 0); await wait(900);
+    mk2Go(sp * dp, 0); await wait(1200); mk2Go(0, 0); await wait(900);
+    mk2Go(0, st * dt); await wait(1200); mk2Go(0, 0); await wait(900);
     rigSend('L7.0'); await wait(1500); rigSend('L0'); rig.laser = 'L0';
   } else {
     const sp = cal.invPan ? 1 : -1, st = cal.invTilt ? 1 : -1;
@@ -1104,10 +1110,10 @@ function steer() {
   const dx = Math.max(-cap, Math.min(cap, g * ex)), dy = Math.max(-cap, Math.min(cap, g * ey));
   const sp = cal.invPan ? -1 : 1, st = cal.invTilt ? -1 : 1;
   const beforeP = rig.panSteps, beforeT = rig.tiltSteps;
-  mk2Go(rig.panSteps + sp * dx * STEPS_PER_DEG, rig.tiltSteps + st * dy * STEPS_PER_DEG);
+  mk2Go(rig.panSteps + sp * dx * SPD_PAN, rig.tiltSteps + st * dy * SPD_TILT);
   // The camera turns with the gimbal, so the whole image is about to slide.
   // Tell the tracker, so it does not read its own motion as the world's.
-  const turnedPan = (rig.panSteps - beforeP) / STEPS_PER_DEG * sp, turnedTilt = (rig.tiltSteps - beforeT) / STEPS_PER_DEG * st;
+  const turnedPan = (rig.panSteps - beforeP) / SPD_PAN * sp, turnedTilt = (rig.tiltSteps - beforeT) / SPD_TILT * st;
   let px = -turnedPan * work.width / cal.fovH, py = turnedTilt * work.height / cal.fovV;
   if (cal.swap) { const t = px; px = py; py = t; }
   egoPending.x += px; egoPending.y += py;
@@ -1123,7 +1129,7 @@ function mk2Scan(now) {
   const k = rig.scanIdx++ % (cols.length * rows.length);
   const r = Math.floor(k / cols.length), c = k % cols.length;
   const col = r % 2 ? cols[cols.length - 1 - c] : cols[c];
-  mk2Go(col * stepH * STEPS_PER_DEG, rows[r] * stepV * STEPS_PER_DEG);
+  mk2Go(col * stepH * SPD_PAN, rows[r] * stepV * SPD_TILT);
   tracker.reset();
   rig.scanUntil = now + 2200;                           // slew + ~1.5 s look
 }

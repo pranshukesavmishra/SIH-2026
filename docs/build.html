@@ -118,12 +118,20 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
   <div><b>±90° / ±18°</b>pan / tilt travel limit</div>
 </div>
 
+<div class="ok"><b>Tonight's order (direct drive, no belt).</b>
+<b>1.</b> Shop: <a href="submission/ZeroDrift_MK2_Amar_Shopping_List.pdf">shopping list</a> (≈ 30 min). &nbsp;
+<b>2.</b> Beacon + decoy, section 9 (≈ 1 h). Test the beacon on the Live page with the laptop camera right away. &nbsp;
+<b>3.</b> Rig mechanics, section 4 (≈ 2–3 h). &nbsp;
+<b>4.</b> Wiring, sections 5–6 (≈ 1.5 h). &nbsp;
+<b>5.</b> Firmware and first power-on, sections 7–8 (≈ 45 min). &nbsp;
+<b>6.</b> Website, calibration and demo, sections 10–11 (≈ 45 min). &nbsp;
+<b>7.</b> Record the demo script in 10.9. Also record the screen, so the Live page and the rig are both in the video.</div>
 <div class="btnrow">
   <a class="btn p" href="submission/ZeroDrift_MK2_Build_Guide.pdf">DOWNLOAD PDF</a>
   <a class="btn" href="assembly.html">OPEN THE 3D STEP-BY-STEP ASSEMBLY</a>
 </div>
 
-<figure><img src="cad/renders/01_full_scene.png" alt="The MK2 rig with the beacon and the decoy"><figcaption>What you are building: the MK2 gimbal (camera and laser in one head) tracking the 4 Hz red beacon, while ignoring the brighter white decoy that never blinks.</figcaption></figure>
+<figure><img src="cad/renders/01_full_scene.png" alt="The MK2 rig with the beacon and the decoy"><figcaption>What you are building: the MK2 gimbal (camera and laser in one head) tracking the 4 Hz red beacon, while ignoring the decoy: a red light just as bright that never blinks.</figcaption></figure>
 
 <div class="toc">
   <a href="#s1"><span>01</span>Parts: have / arriving / buy</a>
@@ -134,7 +142,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
   <a href="#s6"><span>06</span>Wiring: wire-by-wire list</a>
   <a href="#s7"><span>07</span>Arduino: flash the firmware</a>
   <a href="#s8"><span>08</span>First power-on and tests</a>
-  <a href="#s9"><span>09</span>Beacon and decoy</a>
+  <a href="#s9"><span>09</span>Beacon (9A) and decoy (9B)</a>
   <a href="#s10"><span>10</span>Connect to the website</a>
   <a href="#s11"><span>11</span>Calibrate</a>
   <a href="#s12"><span>12</span>Troubleshooting</a>
@@ -142,33 +150,48 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
 
 <!-- ================================================================ 1 -->
 <h2 id="s1"><span class="n">01</span>Parts</h2>
-<p><span class="tag have">HAVE</span> in hand &nbsp; <span class="tag come">ARRIVING</span> ordered &nbsp; <span class="tag buy">BUY</span> get it today (Amar Robotics / hardware shop)</p>
-<div class="tw"><table>
+<p><span class="tag have">HAVE</span> in hand &nbsp; <span class="tag come">ARRIVING</span> ordered &nbsp; <span class="tag buy">BUY</span> get it at Amar Robotics (see the <a href="submission/ZeroDrift_MK2_Amar_Shopping_List.pdf">shopping list PDF</a>)</p>
+<h3>The rig</h3><div class="tw"><table>
 <tr><th></th><th>Part</th><th>Qty</th><th>Status</th><th>Check before you use it</th></tr>
 <tr><td class="c"><input type="checkbox"></td><td>NEMA17 stepper, 1.8°/step</td><td>2</td><td><span class="tag have">HAVE</span></td><td>4 wires each</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>A4988 driver module</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Small resistors near the chip say <code>R100</code>, <code>R050</code> or <code>R200</code>. Note it (for Vref, step 8.2)</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>NEMA17 L-bracket</td><td>1–2</td><td><span class="tag have">HAVE</span></td><td>Only the tilt motor needs one</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>A4988 driver module (+ heatsinks)</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Small resistors near the chip say <code>R100</code>, <code>R050</code> or <code>R200</code>. Note it (for Vref, step 8.2). Stick the heatsink on the chip.</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>NEMA17 L-bracket</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Only the tilt motor needs one; the second is a spare</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>100 µF 25 V capacitor</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Striped leg is −</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>AS5600 magnetic encoder</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Solder the header pins if loose</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>Diametric magnet 6 × 2.5 mm</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Usually comes with the AS5600. Must be <b>diametric</b> (test in step 4.4)</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>TCA9548A I²C multiplexer</td><td>1</td><td><span class="tag come">ARRIVING</span></td><td>Solder the header pins</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>USB webcam (UVC)</td><td>1</td><td><span class="tag come">ARRIVING</span></td><td>Plug into the laptop and open it on the Live page before you strip the housing</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Diametric magnet 6 × 2.5 mm</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Must be <b>diametric</b> (test in step 4.4)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>TCA9548A I²C multiplexer</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Solder the header pins</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>USB webcam (UVC)</td><td>1</td><td><span class="tag come">ARRIVING</span></td><td>Plug into the laptop and open it on the Live page <b>before</b> you strip the housing</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>KY-008 laser module</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Pins marked <code>S</code>, middle, <code>−</code></td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>Red filter (gel / red acrylic / sunglasses lens)</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Hold it over a phone camera: the room goes dim, a red LED stays bright</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>ABS project box (head)</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>Arduino Nano (rig) + Arduino Nano (beacon)</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Look at each USB port (Mini-USB or USB-C) and have the right cable</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>12 V 3S Li-ion pack + barrel-to-screw-terminal adapter</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Charged: 11.1–12.6 V on the multimeter</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Red filter: red cellophane, red gel or an old sunglasses lens</td><td>1</td><td><span class="tag have">HAVE</span> / home</td><td>Hold it over a phone camera: the room goes dim, a red LED stays bright</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Arduino Nano (rig)</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Have the right USB cable (Mini-USB or USB-C)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>12 V motor supply</b>: 3×18650 pack in its holder <b>or</b> a 12 V 2 A adapter</td><td>1</td><td><span class="tag have">HAVE</span> / <span class="tag buy">BUY</span></td><td>Section 5 (Power). Each 18650 must read 3.7–4.2 V.</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>DC jack with screw terminals</b> (if you use the 12 V adapter)</td><td>1</td><td><span class="tag buy">BUY</span></td><td>Matches the adapter plug (5.5 × 2.1 mm)</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>SPST toggle switch (motor kill switch)</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>830-point breadboard + Dupont jumpers (M-M, M-F, F-F)</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>3 mm acrylic, 6″ × 6″ (2 sheets)</td><td>2</td><td><span class="tag have">HAVE</span></td><td>Sheet 1 = base. Sheet 2 = platform disc, tilt disc, encoder arms</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>M3 screws, nuts, standoffs assortment</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Need: 4 standoffs ≈ 14–15 mm, and one <b>brass</b> standoff ≈ 40 mm (or two 20 mm joined)</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td><b>5 mm rigid flange coupling</b> (shaft to plate)</td><td>2</td><td><span class="tag buy">BUY</span></td><td>Bore <b>5 mm</b> with grub screws. Holds the platform and the tilt disc on the shafts with no play. ≈ ₹100–150 each</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td><b>3S (12.6 V) balance charger</b></td><td>1</td><td><span class="tag buy">BUY</span> if not bought</td><td>Never charge a 3S pack on a single-cell charger (fire risk)</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td><b>USB-C to USB-A hub / adapter</b></td><td>1</td><td><span class="tag buy">BUY</span> if laptop is USB-C only</td><td>The laptop needs 2 ports at once: Nano + webcam</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>Beacon: 10 mm red LED, 220 Ω, switch, ping-pong ball, box, USB power bank</td><td>1 set</td><td><span class="tag have">HAVE</span></td><td>Section 9</td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>Decoy: white LED, 68 Ω, 3×AA holder + cells, switch</td><td>1 set</td><td><span class="tag have">HAVE</span></td><td>Section 9</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>White sheet (base) + stiff pieces for the discs (sheet, old CD or tiffin lid)</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Base ≈ 150 × 150 mm. The two small discs must not bend.</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>M3 screws, nuts, standoffs</td><td>1</td><td><span class="tag have">HAVE</span></td><td>4 standoffs ≈ 14–15 mm (risers). <b>Brass</b> standoffs screwed together to ≈ 40 mm (head)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>5 mm rigid flange coupling</b></td><td>2</td><td><span class="tag buy">BUY</span></td><td>Bore <b>5 mm</b>, rigid metal, grub screw. Holds the pan disc and the tilt disc on the shafts with no play.</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>USB-C hub</td><td>1</td><td><span class="tag buy">BUY</span> only if needed</td><td>Only if the laptop has USB-C ports only: the Nano and the webcam must be plugged in together</td></tr>
 </table></div>
-<div class="info"><b>Optional:</b> a 100 mm lazy-Susan turntable bearing under the platform, only if the platform wobbles (step 4.3). Tilt belt upgrade (GT2 20T→60T, 3:1, like the turrets you found): 3× finer tilt steps and 3× the holding torque. Build direct drive first, then add it. Parts and drawing: <a href="submission/ZeroDrift_MK2_Amar_Shopping_List.pdf">shopping list PDF</a>, section G. The software already supports it (section 10, MK2 DRIVE).</div>
+<h3>The beacon (section 9A)</h3><div class="tw"><table>
+<tr><th></th><th>Part</th><th>Qty</th><th>Status</th><th>Check</th></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Arduino Nano (second one) + USB cable</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Red LED, bright, 10 mm (5 mm works)</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Long leg = + (anode)</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>220 Ω resistor</b> (red-red-brown)</td><td>1</td><td><span class="tag buy">BUY</span></td><td>150–330 Ω also works</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Ping-pong ball (half of it)</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Diffuser: makes the LED visible from the side</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Power: USB power bank, or your 5 V 1 A adapter</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Section 9A.6</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Small box or container (tiffin / soap box)</td><td>1</td><td>home</td><td>LED goes through the lid</td></tr>
+</table></div>
+<h3>The decoy (section 9B)</h3><div class="tw"><table>
+<tr><th></th><th>Part</th><th>Qty</th><th>Status</th><th>Check</th></tr>
+<tr><td class="c"><input type="checkbox"></td><td>3×AA battery holder + 3 AA cells</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Fresh cells: ≈ 4.5–4.8 V together</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>Red LED</b>, same kind as the beacon</td><td>1</td><td><span class="tag buy">BUY</span></td><td>The decoy must look as bright as the beacon <b>through the red filter</b>. A white LED looks dim there.</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td><b>100 Ω resistor</b> (brown-black-brown)</td><td>1</td><td><span class="tag buy">BUY</span></td><td>82–150 Ω also works; two 220 Ω side by side = 110 Ω</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Toggle switch</td><td>1</td><td><span class="tag have">HAVE</span></td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Other half of the ping-pong ball</td><td>1</td><td><span class="tag have">HAVE</span></td><td>Same diffuser as the beacon: the only difference left is the blink</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>Small box or container</td><td>1</td><td>home</td><td></td></tr>
+</table></div>
+
 
 <!-- ================================================================ 2 -->
 <h2 id="s2"><span class="n">02</span>Tools and software</h2>
@@ -237,7 +260,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
 <span class="chk">The shaft is level (phone level app).</span></li>
 <li><b>4.8 Tilt disc + magnet + encoder.</b> A 40 mm acrylic disc on the second flange coupling, on the tilt shaft. Glue the second diametric magnet at the centre of the disc's outer face. Fix the tilt AS5600 on a small arm bolted to the L-bracket (the side that does NOT turn with tilt). The chip faces the magnet, centred on the shaft line, 1.5 mm away.
 <span class="chk">Nodding the disc by hand, the gap stays at 1.5 mm and nothing rubs.</span></li>
-<li><b>4.9 Brass standoff + head.</b> Bolt the <b>brass</b> M3 standoff (≈ 40 mm) to the tilt disc near its edge, and hang the head box from it. Never use a printed or plastic part here: it sags and shakes. Inside the box, take the webcam board out of its housing. Hot-glue it behind a hole in the front, with the <b>red filter</b> over the lens (filter over the camera only, not the laser). Hot-glue the KY-008 laser beside it, about 20 mm away, pointing the same way (parallel).
+<li><b>4.9 Brass standoff + head.</b> Screw your short <b>brass</b> M3 standoffs together until they are ≈ 40 mm long. Bolt this to the tilt disc near its edge and hang the head from it (a small box, or a plate cut from the white sheet). Never use a printed or plastic part here: it sags and shakes. Inside the box, take the webcam board out of its housing. Hot-glue it behind a hole in the front, with the <b>red filter</b> over the lens (filter over the camera only, not the laser). Hot-glue the KY-008 laser beside it, about 20 mm away, pointing the same way (parallel).
 <span class="chk">With the motors unpowered, move the head: it swings freely. Tilt ±18° clears the platform. Camera and laser point the same way (laser dot near the middle of the camera view on a wall 2 m away).</span></li>
 <li><b>4.10 Cables.</b> Run the camera USB, laser wires, tilt-motor cable and tilt-encoder wires down the bracket together (zip ties). Leave a loose <b>service loop</b> at the tilt joint and at the pan joint so full travel never pulls a wire. Keep the loop off the base plate.
 <span class="chk">Pan −90° → +90° and tilt −18° → +18° by hand: no cable goes tight or catches.</span></li>
@@ -253,8 +276,8 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
   <text x="16" y="26" font-size="16" font-weight="700">A. Power: battery → switch → drivers; everything shares GND</text>
   <!-- battery -->
   <rect x="20" y="60" width="120" height="70" rx="6" fill="#f4f6f9" stroke="#333"/>
-  <text x="80" y="90" text-anchor="middle" font-weight="700">12 V 3S pack</text>
-  <text x="80" y="110" text-anchor="middle" font-size="12">(barrel adapter)</text>
+  <text x="80" y="90" text-anchor="middle" font-weight="700">12 V source</text>
+  <text x="80" y="110" text-anchor="middle" font-size="11">3×18650 or 12 V adapter</text>
   <text x="130" y="76" font-weight="700" fill="#e0312b">+</text><text x="130" y="126" font-weight="700">−</text>
   <!-- switch -->
   <line x1="140" y1="72" x2="200" y2="72" stroke="#e0312b" stroke-width="4"/>
@@ -294,8 +317,26 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
   <text x="530" y="350" font-size="12.5">Capacitor legs right at the driver pins,</text>
   <text x="530" y="368" font-size="12.5">long leg (+) to VMOT, stripe (−) to GND.</text>
 </svg>
-<figcaption>The 12 V pack only powers the motors. The laptop USB powers the Nano, the drivers' logic, the encoders, the laser and the camera.</figcaption>
+<figcaption>The 12 V source only powers the motors. The laptop USB powers the Nano, the drivers' logic, the encoders, the laser and the camera.</figcaption>
 </figure>
+
+<h3>5.0 Power: what connects to what</h3>
+<p>The rig has <b>two separate power sources</b>, joined by one ground wire:</p>
+<div class="tw"><table>
+<tr><th>Source</th><th>Powers</th><th>How</th></tr>
+<tr><td><b>Laptop USB</b> (stays connected the whole time)</td><td>Nano, A4988 logic (VDD), TCA9548A, both AS5600s, laser, webcam</td><td>USB cable into the Nano; webcam USB into the laptop</td></tr>
+<tr><td><b>12 V source</b>: 3×18650 pack in its holder <b>or</b> a 12 V 2 A adapter</td><td>Only the two motors, through the A4988 <b>VMOT</b> pins</td><td>Through the kill switch to the 12 V rail (wires 1–3)</td></tr>
+<tr><td><b>One ground wire</b></td><td>Joins both sources</td><td>12 V source − ↔ Nano GND (wires 4–5). Without it nothing moves.</td></tr>
+</table></div>
+<div class="warn"><b>Never connected to the rig:</b> the <b>B3 balance charger</b> (it only charges batteries, from the wall, with nothing else attached), and your <b>5 V 1 A adapter</b> (too weak for the motors; the A4988 needs at least 8 V). The 5 V adapter can power the <b>beacon</b> instead (section 9A).</div>
+<ol class="steps">
+<li><b>Using the 18650 pack?</b> Before putting the cells in the holder, set the multimeter to DC V and measure each cell.
+<span class="chk">Each reads 3.7–4.2 V, and all three are within 0.1 V of each other. In the holder, the pack reads 11.1–12.6 V.</span></li>
+<li><b>Cells below 3.5 V, or too far apart?</b> Charge them <b>one at a time, out of the holder</b>, on a TP4056 module (the B3 can't: it needs a balance plug the holder doesn't have). Never charge the three in series. Or skip the battery and use a 12 V 2 A adapter with a DC jack.</li>
+<li><b>Polarity.</b> Holder: red = +, black = −. DC jack: the terminals are marked + and −. Mark the + wire with red tape before connecting anything.
+<span class="chk">Multimeter on the 12 V rail (switch ON, nothing else connected yet): +11 to +12.6 V. A minus sign means + and − are swapped.</span></li>
+</ol>
+
 
 <figure>
 <svg viewBox="0 0 900 470" font-family="Helvetica,Arial,sans-serif" font-size="14">
@@ -405,11 +446,11 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
   <rect x="700" y="60" width="90" height="60" rx="6" fill="#f4f6f9" stroke="#333"/><text x="745" y="86" text-anchor="middle" font-weight="700" font-size="13">3 × AA</text><text x="745" y="104" text-anchor="middle" font-size="12">4.5 V</text>
   <line x1="790" y1="75" x2="830" y2="75" stroke="#e0312b" stroke-width="3"/><text x="826" y="64" text-anchor="middle" font-size="12">switch</text>
   <line x1="830" y1="75" x2="860" y2="75" stroke="#e0312b" stroke-width="3"/><line x1="860" y1="75" x2="860" y2="130" stroke="#e0312b" stroke-width="3"/>
-  <rect x="852" y="130" width="16" height="36" rx="3" fill="#c9a36b"/><text x="845" y="152" text-anchor="end" font-size="12">68 Ω</text>
+  <rect x="852" y="130" width="16" height="36" rx="3" fill="#c9a36b"/><text x="845" y="152" text-anchor="end" font-size="12">100 Ω</text>
   <line x1="860" y1="166" x2="860" y2="186" stroke="#e0312b" stroke-width="3"/>
-  <circle cx="860" cy="202" r="16" fill="#f5f5f5" stroke="#999"/><text x="860" y="206" text-anchor="middle" font-size="9">WHITE</text>
+  <circle cx="860" cy="202" r="16" fill="#e0312b"/><text x="860" y="206" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">RED</text>
   <path d="M860 218 V250 H745 V120" fill="none" stroke="#111" stroke-width="3"/>
-  <text x="700" y="275" font-size="12.5">Decoy: steady, brighter, never blinks.</text>
+  <text x="700" y="275" font-size="12.5">Decoy: steady, never blinks.</text>
 </svg>
 <figcaption>The beacon Nano can drive the LED straight from D9 through 220 Ω (≈ 14 mA). The 2N2222 in the kit is not needed.</figcaption>
 </figure>
@@ -420,9 +461,9 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
 <div class="tw"><table>
 <tr><th></th><th>#</th><th>From</th><th>To</th><th>Note</th></tr>
 <tr><td colspan="5"><b>Power and ground</b></td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>1</td><td>Battery + (barrel adapter)</td><td>Kill switch, pin 1</td><td>Red wire</td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>1</td><td>12 V source + (battery holder red / DC jack +)</td><td>Kill switch, pin 1</td><td>Red wire</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>2</td><td>Kill switch, pin 2</td><td>Top rail +, the <b>12 V rail</b></td><td></td></tr>
-<tr><td class="c"><input type="checkbox"></td><td>3</td><td>Battery −</td><td>Top rail −, the <b>GND rail</b></td><td></td></tr>
+<tr><td class="c"><input type="checkbox"></td><td>3</td><td>12 V source − (battery holder black / DC jack −)</td><td>Top rail −, the <b>GND rail</b></td><td></td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>4</td><td>Top GND rail</td><td>Bottom GND rail</td><td><b>Common ground.</b> Don't skip it.</td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>5</td><td>Nano GND</td><td>Bottom GND rail</td><td></td></tr>
 <tr><td class="c"><input type="checkbox"></td><td>6</td><td>Nano 5V</td><td>Bottom + rail, the <b>5 V rail</b></td><td>Never connect this to the 12 V rail</td></tr>
@@ -464,7 +505,7 @@ input[type=checkbox]{width:16px;height:16px;accent-color:var(--green)}
 <h2 id="s7"><span class="n">07</span>Arduino: flash the firmware</h2>
 <ol class="steps">
 <li>Arduino IDE → <b>Tools → Manage Libraries</b> → search <code>AccelStepper</code> → install (Mike McCauley).</li>
-<li>Open <code>tools/rig/rig_firmware_v2.ino</code>. Direct drive needs no edits. Tilt belt 20T→60T: set <code>TILT_GEAR_RATIO</code> to <code>3.0</code> and keep <code>PAN_GEAR_RATIO</code> at <code>1.0</code>.</li>
+<li>Open <code>tools/rig/rig_firmware_v2.ino</code>. No edits needed: upload it as it is.</li>
 <li><b>Tools → Board → Arduino Nano</b>. <b>Processor → ATmega328P</b>. If upload fails with "not in sync", choose <b>ATmega328P (Old Bootloader)</b> (most clones).</li>
 <li><b>Tools → Port</b> → the Nano (appears when you plug it in; <code>usbserial</code>/<code>wchusbserial</code> on Mac, <code>COMx</code> on Windows). Click <b>Upload</b>.</li>
 <li><b>Tools → Serial Monitor</b>. Set <b>115200 baud</b> and line ending <b>Newline</b>.
@@ -502,13 +543,170 @@ Z                 <span class="y"># zeroed</span>   <span class="m">here = strai
 </ol>
 
 <!-- ================================================================ 9 -->
-<h2 id="s9"><span class="n">09</span>Beacon and decoy</h2>
+<h2 id="s9" class="pgb"><span class="n">09</span>Beacon (9A) and decoy (9B)</h2>
+<p>These are the two targets. The <b>beacon</b> is the thing the rig must find and follow: a red LED blinking at exactly <b>4 Hz</b>. The <b>decoy</b> is the test: a red LED of the same colour, size and brightness that <b>never blinks</b>. A tracker that goes by brightness would lock onto the decoy. Ours only locks the 4 Hz blink. Build them to look the same, so the blink is the only difference.</p>
+
+<h3>9A · The beacon</h3>
+<figure>
+<svg viewBox="0 0 900 380" font-family="Helvetica,Arial,sans-serif" font-size="14">
+  <rect width="900" height="380" fill="#fff"/>
+  <text x="16" y="26" font-size="16" font-weight="700">9A-1. Beacon circuit</text>
+  <!-- nano -->
+  <rect x="40" y="60" width="210" height="200" rx="8" fill="#1f5fa8"/>
+  <rect x="22" y="130" width="26" height="40" rx="3" fill="#bbb" stroke="#555"/><text x="35" y="190" text-anchor="middle" font-size="11">USB</text>
+  <text x="145" y="92" text-anchor="middle" fill="#fff" font-weight="700">Arduino Nano (beacon)</text>
+  <g fill="#fff" font-size="13" font-weight="700" text-anchor="end"><text x="240" y="134">D9</text><text x="240" y="194">GND</text><text x="240" y="234">5V</text></g>
+  <circle cx="250" cy="130" r="4" fill="#fff"/><circle cx="250" cy="190" r="4" fill="#fff"/><circle cx="250" cy="230" r="4" fill="#fff"/>
+  <!-- resistor -->
+  <line x1="250" y1="130" x2="360" y2="130" stroke="#8a4fd8" stroke-width="3"/>
+  <rect x="360" y="118" width="80" height="24" rx="5" fill="#d8b98a" stroke="#6b4b1d"/>
+  <rect x="376" y="118" width="6" height="24" fill="#d22"/><rect x="390" y="118" width="6" height="24" fill="#d22"/><rect x="404" y="118" width="6" height="24" fill="#7a3b10"/><rect x="424" y="118" width="5" height="24" fill="#c9a227"/>
+  <text x="400" y="108" text-anchor="middle" font-weight="700">220 Ω</text><text x="400" y="162" text-anchor="middle" font-size="11.5">red-red-brown-gold</text>
+  <line x1="440" y1="130" x2="560" y2="130" stroke="#8a4fd8" stroke-width="3"/>
+  <!-- LED -->
+  <line x1="560" y1="130" x2="560" y2="150" stroke="#555" stroke-width="3"/>
+  <polygon points="545,150 575,150 560,172" fill="#e0312b"/><line x1="543" y1="173" x2="577" y2="173" stroke="#111" stroke-width="3"/>
+  <line x1="560" y1="173" x2="560" y2="190" stroke="#555" stroke-width="3"/>
+  <path d="M582 150 l14 -12 M588 160 l14 -12" stroke="#e0312b" stroke-width="2"/>
+  <text x="600" y="130" font-size="12.5"><tspan font-weight="700">LONG leg (+)</tspan> to the resistor</text>
+  <text x="600" y="192" font-size="12.5"><tspan font-weight="700">SHORT leg (−)</tspan>, flat edge on the rim</text>
+  <text x="600" y="164" font-size="12.5" fill="#e0312b" font-weight="700">RED LED, 10 mm</text>
+  <line x1="250" y1="190" x2="560" y2="190" stroke="#111" stroke-width="3"/>
+  <!-- power options -->
+  <rect x="40" y="290" width="400" height="76" rx="6" fill="#f4f6f9" stroke="#999"/>
+  <text x="54" y="312" font-weight="700" font-size="13">POWER option 1 (easiest)</text>
+  <text x="54" y="332" font-size="12.5">USB power bank → USB cable → Nano USB port.</text>
+  <text x="54" y="352" font-size="12.5">Or plug it into the laptop.</text>
+  <rect x="460" y="290" width="420" height="76" rx="6" fill="#f4f6f9" stroke="#999"/>
+  <text x="474" y="312" font-weight="700" font-size="13">POWER option 2: your 5 V 1 A adapter</text>
+  <text x="474" y="332" font-size="12.5">+ → switch → Nano <tspan font-weight="700">5V</tspan> pin · − → Nano GND.</text>
+  <text x="474" y="352" font-size="12.5" fill="#b3261e" font-weight="700">Never VIN, never 12 V on the 5V pin.</text>
+  <line x1="250" y1="230" x2="300" y2="230" stroke="#e8890c" stroke-width="3" stroke-dasharray="6 4"/><line x1="300" y1="230" x2="300" y2="276" stroke="#e8890c" stroke-width="3" stroke-dasharray="6 4"/><line x1="300" y1="276" x2="600" y2="276" stroke="#e8890c" stroke-width="3" stroke-dasharray="6 4"/><line x1="600" y1="276" x2="600" y2="290" stroke="#e8890c" stroke-width="3" stroke-dasharray="6 4"/>
+</svg>
+<figcaption>Only three connections: D9 → 220 Ω → LED long leg; LED short leg → GND. The Nano blinks it at exactly 4.00 Hz. (150–330 Ω also works; 1 kΩ is too dim.)</figcaption>
+</figure>
+
+<figure>
+<svg viewBox="0 0 900 300" font-family="Helvetica,Arial,sans-serif" font-size="14">
+  <rect width="900" height="300" fill="#fff"/>
+  <text x="16" y="26" font-size="16" font-weight="700">9A-2. Beacon assembly (cut through the middle)</text>
+  <!-- dome -->
+  <path d="M390 150 A60 60 0 0 1 510 150" fill="#fff4f2" stroke="#e39a90" stroke-width="3"/>
+  <circle cx="450" cy="136" r="9" fill="#e0312b"/><rect x="441" y="136" width="18" height="16" fill="#e0312b"/>
+  <!-- lid and box -->
+  <rect x="250" y="150" width="400" height="10" fill="#9aa7b4"/>
+  <rect x="250" y="160" width="400" height="110" fill="none" stroke="#555" stroke-width="3"/>
+  <!-- legs -->
+  <line x1="446" y1="160" x2="446" y2="200" stroke="#555" stroke-width="2"/><line x1="454" y1="160" x2="454" y2="190" stroke="#555" stroke-width="2"/>
+  <rect x="444" y="200" width="6" height="18" fill="#d8b98a"/>
+  <path d="M447 218 C447 236 400 236 380 240" fill="none" stroke="#8a4fd8" stroke-width="2.5"/>
+  <path d="M454 190 C470 212 420 250 380 248" fill="none" stroke="#111" stroke-width="2.5"/>
+  <rect x="280" y="236" width="100" height="22" rx="3" fill="#1f5fa8"/><text x="330" y="252" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Nano</text>
+  <line x1="280" y1="247" x2="200" y2="247" stroke="#666" stroke-width="5"/><text x="80" y="252" font-size="12">USB cable out</text><text x="80" y="268" font-size="12">through a side hole</text>
+  <!-- labels -->
+  <line x1="505" y1="118" x2="600" y2="80" stroke="#999"/><text x="605" y="76" font-size="12.5"><tspan font-weight="700">Half ping-pong ball</tspan> (diffuser)</text><text x="605" y="92" font-size="12">hot glue around the rim</text>
+  <line x1="460" y1="140" x2="600" y2="120" stroke="#999"/><text x="605" y="124" font-size="12.5">LED pushed up through a hole in the lid</text>
+  <line x1="650" y1="155" x2="700" y2="160" stroke="#999"/><text x="705" y="164" font-size="12.5">lid</text>
+  <line x1="450" y1="210" x2="600" y2="210" stroke="#999"/><text x="605" y="214" font-size="12.5">220 Ω on the long leg, taped / heat-shrunk</text>
+  <text x="660" y="262" font-size="12.5">any small box or container</text>
+</svg>
+<figcaption>The LED sits in the centre of the dome. The ping-pong ball spreads its light, so the camera sees a bright ball from any angle, not just a dot when it faces the LED head-on.</figcaption>
+</figure>
+
 <ol class="steps">
-<li><b>Beacon.</b> Second Nano: D9 → 220 Ω → red LED long leg; short leg → GND. LED through a hole in the box lid, half a sanded ping-pong ball glued over it. Flash <code>tools/rig/beacon_firmware.ino</code>. Power from a USB power bank.
-<span class="chk">Serial Monitor (115200) shows <code>ZeroDrift beacon ready  F4.00 B255 M1</code>. The LED blinks 4 times a second. Commands: <code>F6.0</code> sets 6 Hz, <code>M0</code> steady, <code>M1</code> blink.</span></li>
-<li><b>Decoy.</b> 3×AA → switch → 68 Ω → white LED → back to the battery −. Steady, brighter than the beacon.
-<span class="chk">On the Live page the decoy never gets locked, even when it's the brightest thing in view.</span></li>
+<li><b>9A.1 Flash the beacon firmware.</b> Plug the second Nano into the laptop. Arduino IDE → open <code>tools/rig/beacon_firmware.ino</code> → Board: Arduino Nano → Processor: ATmega328P (or Old Bootloader) → Port → <b>Upload</b>. Open the Serial Monitor at <b>115200</b>, line ending <b>Newline</b>.
+<span class="chk">It prints <code>ZeroDrift beacon ready  F4.00 B255 M1</code> (4 Hz, full brightness, blinking).</span></li>
+<li><b>9A.2 Prepare the LED.</b> Find the <b>long leg (+)</b>. The short leg (−) is on the side with a flat edge on the LED's rim. Twist one end of the <b>220 Ω</b> tightly around the long leg and solder it (or twist and tape). Cover the joint with heat-shrink or tape so it can't touch the other leg.
+<span class="chk">The two legs can't touch each other.</span></li>
+<li><b>9A.3 Connect and test on the table.</b> A female–female jumper from the resistor's free end to Nano <b>D9</b>. Another from the LED's <b>short leg</b> to Nano <b>GND</b>.
+<span class="chk">The LED blinks steadily: on-off 4 times per second. No light at all = LED backwards; swap the two jumpers on the LED.</span></li>
+<li><b>9A.4 Test the commands</b> (Serial Monitor), one per line:
+<pre>F6.0      <span class="y">OK F6.00</span>     <span class="m">blinks 6 times a second</span>
+F4.0      <span class="y">OK F4.00</span>     <span class="m">back to 4 Hz: the demo rate</span>
+B128      <span class="y">OK B128</span>      <span class="m">half brightness (B255 = full)</span>
+M0        <span class="y">OK M0</span>        <span class="m">steady on (no blink)</span>
+M1        <span class="y">OK M1</span>        <span class="m">blinking again</span></pre>
+<span class="chk">Every command answers OK and the LED changes. After power-off it always starts again at 4 Hz, full brightness.</span></li>
+<li><b>9A.5 Box and diffuser.</b> Make a hole in the centre of the lid the size of the LED (10 mm or 5 mm): a drill, or a heated screwdriver tip on a plastic lid. Push the LED up through it from inside and hot-glue it underneath. Cut the ping-pong ball in half along its seam (cutter or small scissors). Keep the second half for the decoy. Hot-glue one half over the LED like a dome, LED in the centre. Put the Nano inside and run the USB cable out through a side hole.
+<span class="chk">Lid closed, the whole dome glows red on each blink.</span></li>
+<li><b>9A.6 Power.</b> <b>Option 1:</b> USB power bank into the Nano. Some power banks switch themselves off after about 30 s because the beacon draws so little. If yours does, use the laptop, a different power bank, or option 2. <b>Option 2:</b> your <b>5 V 1 A adapter</b>. If it has a USB socket or cable, plug it into the Nano. If it has bare wires or a barrel plug: + → toggle switch → Nano <b>5V</b> pin, − → Nano <b>GND</b>. Never use the VIN pin (it needs 7–12 V), and never put 12 V on the 5V pin. Unplug the adapter while the Nano is on the laptop's USB.
+<span class="chk">Left alone for 5 minutes, it is still blinking.</span></li>
+<li><b>9A.7 Rate check.</b> Film the beacon with your phone in slow motion for 2 seconds and count the flashes, or open the Live page on the laptop camera.
+<span class="chk">4 flashes per second. The Live page locks it and shows about 4.0 Hz.</span></li>
 </ol>
+
+<h3 class="pgb">9B · The decoy</h3>
+<figure>
+<svg viewBox="0 0 900 330" font-family="Helvetica,Arial,sans-serif" font-size="14">
+  <rect width="900" height="330" fill="#fff"/>
+  <text x="16" y="26" font-size="16" font-weight="700">9B-1. Decoy circuit: no Arduino, no code</text>
+  <!-- holder -->
+  <rect x="40" y="70" width="200" height="90" rx="6" fill="#222"/>
+  <g fill="#c9a227"><rect x="52" y="88" width="56" height="22" rx="4"/><rect x="112" y="88" width="56" height="22" rx="4"/><rect x="172" y="88" width="56" height="22" rx="4"/></g>
+  <text x="140" y="135" text-anchor="middle" fill="#fff" font-weight="700">3 × AA holder</text><text x="140" y="152" text-anchor="middle" fill="#ccc" font-size="12">4.5 V</text>
+  <line x1="240" y1="90" x2="330" y2="90" stroke="#e0312b" stroke-width="4"/><text x="250" y="82" font-size="12" fill="#e0312b" font-weight="700">red (+)</text>
+  <line x1="240" y1="145" x2="300" y2="145" stroke="#111" stroke-width="4"/><text x="250" y="170" font-size="12" font-weight="700">black (−)</text>
+  <!-- switch -->
+  <circle cx="334" cy="90" r="5" fill="#333"/><line x1="334" y1="90" x2="372" y2="72" stroke="#333" stroke-width="3"/><circle cx="376" cy="90" r="5" fill="#333"/>
+  <text x="355" y="60" text-anchor="middle" font-size="12" font-weight="700">SWITCH</text>
+  <line x1="380" y1="90" x2="440" y2="90" stroke="#e0312b" stroke-width="4"/>
+  <!-- resistor -->
+  <rect x="440" y="78" width="80" height="24" rx="5" fill="#d8b98a" stroke="#6b4b1d"/>
+  <rect x="456" y="78" width="6" height="24" fill="#7a3b10"/><rect x="470" y="78" width="6" height="24" fill="#111"/><rect x="484" y="78" width="6" height="24" fill="#7a3b10"/><rect x="504" y="78" width="5" height="24" fill="#c9a227"/>
+  <text x="480" y="68" text-anchor="middle" font-weight="700">100 Ω</text><text x="480" y="122" text-anchor="middle" font-size="11.5">brown-black-brown-gold</text>
+  <line x1="520" y1="90" x2="640" y2="90" stroke="#e0312b" stroke-width="4"/>
+  <!-- LED -->
+  <line x1="640" y1="90" x2="640" y2="112" stroke="#555" stroke-width="3"/>
+  <polygon points="625,112 655,112 640,134" fill="#e0312b"/><line x1="623" y1="135" x2="657" y2="135" stroke="#111" stroke-width="3"/>
+  <path d="M662 112 l14 -12 M668 122 l14 -12" stroke="#e0312b" stroke-width="2"/>
+  <text x="690" y="96" font-size="12.5"><tspan font-weight="700">LONG leg (+)</tspan></text>
+  <text x="690" y="126" font-size="12.5" fill="#e0312b" font-weight="700">RED LED (same as beacon)</text>
+  <text x="690" y="160" font-size="12.5"><tspan font-weight="700">SHORT leg (−)</tspan></text>
+  <line x1="640" y1="135" x2="640" y2="200" stroke="#555" stroke-width="3"/>
+  <line x1="640" y1="200" x2="300" y2="200" stroke="#111" stroke-width="4"/><line x1="300" y1="200" x2="300" y2="145" stroke="#111" stroke-width="4"/>
+  <rect x="40" y="230" width="840" height="84" rx="6" fill="#f4f6f9" stroke="#999"/>
+  <text x="54" y="254" font-size="13" font-weight="700">Why 100 Ω:</text>
+  <text x="54" y="274" font-size="12.5">4.5 V from the cells − about 2 V across a red LED = 2.5 V across the resistor → 2.5 ÷ 100 = 25 mA (bright, safe).</text>
+  <text x="54" y="294" font-size="12.5">No 100 Ω? Two 220 Ω side by side (legs twisted together at both ends) = 110 Ω. Anything from 82 Ω to 150 Ω works. Never zero.</text>
+</svg>
+<figcaption>One loop: battery + → switch → 100 Ω → LED long leg → LED short leg → battery −. It is on and steady whenever the switch is on.</figcaption>
+</figure>
+
+<figure>
+<svg viewBox="0 0 900 270" font-family="Helvetica,Arial,sans-serif" font-size="14">
+  <rect width="900" height="270" fill="#fff"/>
+  <text x="16" y="26" font-size="16" font-weight="700">9B-2. Decoy assembly (cut through the middle)</text>
+  <path d="M390 130 A60 60 0 0 1 510 130" fill="#fff4f2" stroke="#e39a90" stroke-width="3"/>
+  <circle cx="450" cy="116" r="9" fill="#e0312b"/><rect x="441" y="116" width="18" height="16" fill="#e0312b"/>
+  <rect x="250" y="130" width="400" height="10" fill="#9aa7b4"/>
+  <rect x="250" y="140" width="400" height="110" fill="none" stroke="#555" stroke-width="3"/>
+  <rect x="280" y="200" width="150" height="40" rx="4" fill="#222"/><text x="355" y="225" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">3×AA holder</text>
+  <rect x="650" y="170" width="16" height="30" fill="#333"/><line x1="666" y1="185" x2="690" y2="172" stroke="#333" stroke-width="4"/>
+  <path d="M430 208 C520 208 600 190 650 185" fill="none" stroke="#e0312b" stroke-width="2.5"/>
+  <path d="M650 192 C600 160 470 170 450 140" fill="none" stroke="#e0312b" stroke-width="2.5"/>
+  <path d="M430 230 C480 230 470 160 458 140" fill="none" stroke="#111" stroke-width="2.5"/>
+  <line x1="505" y1="98" x2="600" y2="64" stroke="#999"/><text x="605" y="60" font-size="12.5"><tspan font-weight="700">Other half of the ping-pong ball</tspan></text><text x="605" y="76" font-size="12">so it looks exactly like the beacon</text>
+  <text x="700" y="178" font-size="12.5">switch through a</text><text x="700" y="194" font-size="12.5">side hole, hot-glued</text>
+  <text x="80" y="176" font-size="12.5">holder stuck to the</text><text x="80" y="192" font-size="12.5">bottom (foam tape), so</text><text x="80" y="208" font-size="12.5">you can change cells</text>
+</svg>
+<figcaption>Same box, same LED and same dome as the beacon. The only difference the camera can see is that the decoy never blinks.</figcaption>
+</figure>
+
+<ol class="steps">
+<li><b>9B.1 LED + resistor.</b> Twist and solder the <b>100 Ω</b> onto the red LED's <b>long leg</b>. Heat-shrink or tape the joint.
+<span class="chk">The legs can't touch each other.</span></li>
+<li><b>9B.2 Switch.</b> Holder <b>red</b> wire → the switch's <b>middle</b> pin. One <b>outer</b> pin → the resistor's free end. Solder, or twist and tape.</li>
+<li><b>9B.3 Close the loop.</b> The LED's <b>short leg</b> → the holder's <b>black</b> wire.</li>
+<li><b>9B.4 Test.</b> Put 3 AA cells in (match the + and − marks in the holder) and flip the switch.
+<span class="chk">Steady red light, no blinking. No light: the LED is backwards (swap its legs), or the switch uses the other outer pin (flip it the other way).</span></li>
+<li><b>9B.5 Box.</b> A hole in the lid for the LED, the same as the beacon: LED through it, hot glue underneath, the <b>other half of the ping-pong ball</b> glued over it. A side hole for the switch, hot-glued. Stick the holder to the bottom with foam tape.
+<span class="chk">Next to the beacon, the two look the same, except that one blinks.</span></li>
+<li><b>9B.6 Brightness match</b> (on the Live page, with the MK2 camera and its red filter).
+<span class="chk">The decoy looks <b>as bright or brighter</b> than the beacon on screen. If it's clearly dimmer, use a smaller resistor (82 Ω or 68 Ω; never below 56 Ω) or new cells.</span></li>
+<li><b>9B.7 The real test.</b> Beacon and decoy side by side, both on.
+<span class="chk">The rig locks the beacon every time and never the decoy, even with the decoy switched on after the lock.</span></li>
+</ol>
+<div class="info"><b>Optional second decoy:</b> a white LED with its own 100 Ω in the same box, wired in parallel with the red one (its own resistor, same switch). It looks bright to people in the room, but through the red filter it's weak. Show it only after the red decoy has passed.</div>
 
 <!-- ================================================================ 10 -->
 <h2 id="s10"><span class="n">10</span>Connect to the website</h2>
@@ -518,13 +716,41 @@ Z                 <span class="y"># zeroed</span>   <span class="m">here = strai
 <span class="chk">Wave in front of the head: you see it on screen.</span></li>
 <li><b>CONNECT RIG</b> → pick the Nano's port.
 <span class="chk">The RIG card says <b>MK2 · encoders</b>.</span></li>
-<li><b>MK2 DRIVE</b> = <b>Direct drive</b>. If you fitted the tilt belt, pick <b>Pan direct · tilt belt 20T→60T (3:1)</b>. It must match the firmware ratio.</li>
+<li><b>MK2 DRIVE</b> = <b>Direct drive (1:1)</b>.</li>
 <li><b>TEST MOTION</b>: it should pan right, tilt up, then blink the laser.
 <span class="chk">Wrong direction → tick <b>INVERT PAN</b> / <b>INVERT TILT</b>. Wrong axis → <b>SWAP PAN / TILT</b>. Repeat until correct.</span></li>
 <li><b>BEACON RATE</b> = 4 Hz (the beacon's rate). Only that rate (±10 %) is locked; a 3 Hz or 5 Hz light is ignored.</li>
 <li>Beacon on, 1–3 m away.
 <span class="chk">It locks (green box). The head turns until the beacon is in the centre. The GIMBAL readout ends in <b>enc</b> (encoder confirmed).</span></li>
 <li>Bright room: the red filter over the camera is what makes this work. If the room is still too bright, add a second layer or dim the lights. The <b>EXPOSURE</b> slider helps where the browser supports it (Windows/Android).</li>
+</ol>
+
+<h3>10.8 Demo layout</h3>
+<figure>
+<svg viewBox="0 0 900 300" font-family="Helvetica,Arial,sans-serif" font-size="14">
+  <rect width="900" height="300" fill="#fff"/>
+  <text x="16" y="26" font-size="16" font-weight="700">Top view of the demo table</text>
+  <rect x="30" y="70" width="250" height="190" rx="8" fill="#f4f6f9" stroke="#999"/><text x="155" y="92" text-anchor="middle" font-size="12" font-weight="700">TABLE 1</text>
+  <rect x="50" y="170" width="110" height="70" rx="4" fill="#dfe6ee" stroke="#555"/><text x="105" y="210" text-anchor="middle" font-size="12.5" font-weight="700">Laptop</text>
+  <rect x="180" y="120" width="80" height="80" rx="4" fill="#9aa7b4" stroke="#333"/><text x="220" y="158" text-anchor="middle" font-size="12.5" font-weight="700">MK2 rig</text><text x="220" y="175" text-anchor="middle" font-size="11">head faces →</text>
+  <line x1="160" y1="200" x2="185" y2="190" stroke="#666" stroke-width="3"/>
+  <line x1="265" y1="160" x2="620" y2="140" stroke="#e0312b" stroke-dasharray="6 5" stroke-width="2"/><line x1="265" y1="160" x2="620" y2="195" stroke="#999" stroke-dasharray="6 5" stroke-width="2"/>
+  <text x="440" y="130" text-anchor="middle" font-weight="700">1.5 – 3 m</text>
+  <rect x="610" y="90" width="250" height="150" rx="8" fill="#f4f6f9" stroke="#999"/><text x="735" y="112" text-anchor="middle" font-size="12" font-weight="700">TABLE 2 / box, at the rig's height</text>
+  <rect x="820" y="120" width="10" height="100" fill="#fff" stroke="#999"/><text x="850" y="265" text-anchor="middle" font-size="11">white paper behind</text>
+  <circle cx="660" cy="140" r="16" fill="#e0312b"/><text x="690" y="145" font-size="12.5" font-weight="700">BEACON (4 Hz)</text>
+  <circle cx="660" cy="195" r="16" fill="#e0312b" opacity=".75"/><text x="690" y="200" font-size="12.5" font-weight="700">DECOY (steady)</text>
+  <line x1="640" y1="140" x2="640" y2="195" stroke="#333"/><text x="632" y="172" text-anchor="end" font-size="11">20–30 cm</text>
+</svg>
+<figcaption>Same distance and same height for both targets, 20–30 cm apart, both inside the camera view. A sheet of white paper behind them makes the laser dot easy to see.</figcaption>
+</figure>
+<h3>10.9 Demo script (2 minutes)</h3>
+<ol class="steps">
+<li><b>Lock.</b> Beacon on. The rig finds it, turns until it's centred, and the laser dot lands on it (after SET AIM). The page shows LOCKED and about 4.0 Hz.</li>
+<li><b>Decoy.</b> Switch the decoy on: same colour, same size, just as bright. The lock stays on the beacon. <i>"Brightness is not identity. The blink is."</i></li>
+<li><b>Follow.</b> Pick the beacon up and move it slowly left, right, up and down. The rig follows; the decoy is ignored.</li>
+<li><b>Wrong rate.</b> On the page, set BEACON RATE to <b>6 Hz</b>. The rig drops the 4 Hz beacon, because it only locks the rate it was told to. Set it back to 4 Hz and it locks again.</li>
+<li><b>Lost and found.</b> Cover the beacon with your hand for 3 seconds. The rig holds, then searches. Uncover it and it locks again.</li>
 </ol>
 
 <!-- ================================================================ 11 -->
@@ -556,16 +782,19 @@ Z                 <span class="y"># zeroed</span>   <span class="m">here = strai
 <tr><td>Won't lock in a bright room</td><td>Camera over-exposed</td><td>Red filter over the lens (2 layers if needed), dim lights</td></tr>
 <tr><td>Locks, then turns away from the beacon</td><td>Axis direction</td><td>INVERT / SWAP in the RIG card, TEST MOTION again</td></tr>
 <tr><td>Beacon on the centre, not on the laser dot</td><td>Aim not set</td><td>SET AIM (11.3)</td></tr>
+<tr><td>Beacon stops after ~30 s</td><td>Power bank switches off at low current</td><td>Use the laptop USB, another power bank, or the 5 V adapter (9A.6)</td></tr>
+<tr><td>Decoy sometimes gets locked</td><td>A loose wire makes it flicker, which looks like a blink</td><td>Solder or retape the decoy joints; fresh cells</td></tr>
+<tr><td>Beacon LED never lights</td><td>LED backwards, or wired to a pin other than D9</td><td>Swap the LED legs; check D9 and GND (9A.3)</td></tr>
 <tr><td>Wrong rate shown / not locking</td><td>BEACON RATE ≠ beacon</td><td>Set BEACON RATE to the beacon's F value (4 Hz default)</td></tr>
 </table></div>
 
-<h3>Quick reference</h3>
+<div style="break-inside:avoid"><h3>Quick reference</h3>
 <div class="tw"><table>
 <tr><th>Nano pin</th><th>Goes to</th><th>Nano pin</th><th>Goes to</th></tr>
 <tr><td>D2 / D3</td><td>PAN STEP / DIR</td><td>A4 / A5</td><td>TCA9548A SDA / SCL</td></tr>
 <tr><td>D4 / D5</td><td>TILT STEP / DIR</td><td>5V</td><td>VDD ×2, MS1-3 ×2, TCA VIN, AS5600 VCC ×2</td></tr>
 <tr><td>D7</td><td>Laser S</td><td>GND</td><td>Common ground (battery −, drivers, TCA, AS5600, laser, EN, A0-A2, DIR)</td></tr>
-</table></div>
+</table></div></div>
 <p class="foot">ZeroDrift · Team ZeroDrift, Jabalpur Engineering College · SIH 2026 PS26169. Firmware: tools/rig/rig_firmware_v2.ino. Geometry: docs/cad (same source as the 3D assembly).</p>
 </main>
 <script>

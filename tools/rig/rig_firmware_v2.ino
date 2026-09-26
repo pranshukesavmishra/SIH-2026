@@ -39,7 +39,7 @@
  *   the dot-to-beacon pixel error and cancel parallax outright, instead
  *   of modelling it. See docs/TERMINAL_MK3.md section 0.
  *   V0 | V1          vibration injector off / on
- *   C                centre both stages and re-zero the encoder datum
+ *   C                drive both stages back to 0,0 (the power-on / Z datum)
  *   Z                zero: call the current position 0,0
  *   ?                status query -> "S <panSteps> <tiltSteps> <src> <moving>"
  *   !                self-test (see selftest(), for bring-up)
@@ -93,13 +93,19 @@ const float STEPS_PER_DEG = (STEPS_PER_REV * MICROSTEPS) / 360.0;   // 8.889
 const float PAN_GEAR_RATIO  = 1.0;
 const float TILT_GEAR_RATIO = 1.0;
 
-// ---- Soft limits. These protect the wiring loom, not the motor. ---------
-// Expressed in steps because the wire is steps. mk2.py clamps to
-// coarse_limit_steps (1600, 1200) as well -- this is the backstop for when
-// something other than mk2.py is talking, which during bring-up is usually
-// a person in a serial terminal.
-const long PAN_MIN_STEPS  = -1600, PAN_MAX_STEPS  = 1600;   // +/- 90 deg @ 1/16
-const long TILT_MIN_STEPS = -1200, TILT_MAX_STEPS = 1200;
+// ---- Soft limits. These protect the wiring loom and the head. -----------
+// Pan +/-90 deg keeps the loom from winding up. Tilt +/-18 deg: the CAD
+// clearance check (docs/cad/README.md) has the head touching the pan
+// platform at +21 deg, and which way is "+" depends on how the motor was
+// wired, so the limit is symmetric. Held in output degrees and converted to
+// motor steps here, so a belt reduction does not silently widen the travel.
+// The live page and mk2.py clamp to the same numbers; this is the backstop
+// for when a person in a serial terminal is talking.
+const float PAN_LIMIT_DEG  = 90.0;
+const float TILT_LIMIT_DEG = 18.0;
+const long PAN_MAX_STEPS  = (long)(PAN_LIMIT_DEG  * STEPS_PER_DEG * PAN_GEAR_RATIO  + 0.5);
+const long TILT_MAX_STEPS = (long)(TILT_LIMIT_DEG * STEPS_PER_DEG * TILT_GEAR_RATIO + 0.5);
+const long PAN_MIN_STEPS  = -PAN_MAX_STEPS, TILT_MIN_STEPS = -TILT_MAX_STEPS;
 #if FINE_STAGE
 const int   FINE_CENTRE_US = 90;           // servo degrees at mechanical centre
 const float FINE_RANGE_DEG = 30.0;         // +/- offset the fine stage may take
@@ -130,7 +136,7 @@ unsigned long laserLastToggleUs = 0;
 bool  encodersPresent = false;
 long  panTurns = 0,  tiltTurns = 0;        // wrap accumulator, in whole turns
 int   panLastRaw = 0, tiltLastRaw = 0;
-float panZeroDeg = 0.0, tiltZeroDeg = 0.0; // datum set by C / Z
+float panZeroDeg = 0.0, tiltZeroDeg = 0.0; // datum: set at boot and by Z
 
 // ------------------------------------------------------------------------
 void tcaSelect(uint8_t channel) {
@@ -210,6 +216,11 @@ void setup() {
   encodersPresent = (panLastRaw >= 0 && tiltLastRaw >= 0);
   if (panLastRaw  < 0) panLastRaw  = 0;
   if (tiltLastRaw < 0) tiltLastRaw = 0;
+  // Datum: the steppers boot calling wherever they are 0, so the encoders
+  // must too. Without this the first status reply is the magnet's absolute
+  // angle (any of 0..360 deg) instead of 0.
+  panZeroDeg  = panLastRaw  * (360.0 / 4096.0);
+  tiltZeroDeg = tiltLastRaw * (360.0 / 4096.0);
 
   Serial.print(F("# ZeroDrift Mk2 ready, encoders="));
   Serial.println(encodersPresent ? F("yes") : F("no"));
@@ -300,7 +311,7 @@ void handleLine(char *line) {
     }
     case 'V': digitalWrite(VIBRATION_PIN, line[1] == '1' ? HIGH : LOW); break;
 
-    case 'C':                              // centre everything, re-datum
+    case 'C':                              // back to the datum (set at boot or by Z)
       panStepper.moveTo(0);
       tiltStepper.moveTo(0);
 #if FINE_STAGE
@@ -382,7 +393,7 @@ void selftest() {
 
   Serial.println(F("# selftest: coarse pan +10 deg and back"));
   long before = panStepper.currentPosition();
-  panStepper.moveTo(clampStepsPan(before + lround(10.0 * STEPS_PER_DEG)));
+  panStepper.moveTo(clampStepsPan(before + lround(10.0 * STEPS_PER_DEG * PAN_GEAR_RATIO)));
   while (panStepper.distanceToGo()) panStepper.run();
   delay(200);
   if (encodersPresent) {

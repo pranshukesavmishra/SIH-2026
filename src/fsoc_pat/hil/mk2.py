@@ -44,7 +44,7 @@ class Mk2Gimbal:
                  steps_per_rad: Tuple[float, float] = (DEFAULT_STEPS_PER_RAD,
                                                        DEFAULT_STEPS_PER_RAD),
                  fine_deg_per_rad: Tuple[float, float] = (57.29578, 57.29578),
-                 coarse_limit_steps: Tuple[int, int] = (1600, 1200),
+                 coarse_limit_steps: Tuple[int, int] = (800, 160),
                  max_step_per_cmd: int = 400,
                  min_interval_s: float = 0.10,
                  dry_run: bool = False):

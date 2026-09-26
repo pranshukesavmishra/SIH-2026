@@ -5,3 +5,19 @@
 # longer exists -- a fault that looks exactly like "the fix did nothing".
 /live.html
   Cache-Control: no-store, must-revalidate
+
+# Team-only pages: reachable by their address, never listed or indexed.
+/build.html
+  X-Robots-Tag: noindex, nofollow
+/build
+  X-Robots-Tag: noindex, nofollow
+/assembly.html
+  X-Robots-Tag: noindex, nofollow
+/assembly
+  X-Robots-Tag: noindex, nofollow
+/submission/ZeroDrift_MK2_Build_Guide.pdf
+  X-Robots-Tag: noindex, nofollow
+/submission/ZeroDrift_MK2_Amar_Shopping_List.pdf
+  X-Robots-Tag: noindex, nofollow
+/submission/ZeroDrift_MK2_Belt_Upgrade.pdf
+  X-Robots-Tag: noindex, nofollow

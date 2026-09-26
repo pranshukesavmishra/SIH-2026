@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
 <title>ZeroDrift MK2 Assembly</title>
 <style>
 :root{
@@ -239,8 +240,8 @@ td.bad{color:var(--red)}
     </div>
 
     <div class="foot">
-      <div class="row"><span>bill of materials</span><b>₹6,709</b></div>
-      <div class="row"><span>buy today</span><b>5 mm flange coupling ×2</b></div>
+      <div class="row"><span>shopping list</span><b>≈ ₹1,150–2,100</b></div>
+      <div class="row"><span>list</span><b><a href="submission/ZeroDrift_MK2_Amar_Shopping_List.pdf">shopping list PDF</a></b></div>
       <div class="row"><span>pan / tilt travel</span><b>±90° · ±18° (soft limits)</b></div>
       <div style="margin-top:7px;color:var(--ink-dim)">
         Geometry comes from <b>zerodrift_full_assembly.scad</b>, the same source as
@@ -279,48 +280,48 @@ const TILT_PIVOT = new THREE.Vector3(0, 6, 62);   // geometry.scad: TILT_Z
 
 const GIMBAL = [
   {id:'base', t:'Base plate', file:'base', group:'fixed', from:[0,0,-70],
-   d:'3 mm acrylic, 6 inch square. Shaft hole in the middle, the four M3 motor holes on a 31 mm square around it.'},
+   d:'White sheet, about 150 mm square, on four M4 x 60 bolts as legs. Shaft hole in the middle, the four M3 motor holes on a 31 mm square around it.'},
   {id:'pan_motor', t:'Pan motor', file:'pan_motor', group:'fixed', from:[0,0,-105],
    d:'NEMA17 bolts to the UNDERSIDE and hangs below. A face-mounted stepper’s shaft leaves through the same face that bolts down, so it cannot sit on top of a solid plate.'},
   {id:'platform', t:'Platform + diametric magnet', file:'platform', group:'pan', from:[0,0,75],
-   d:'60 mm disc on the pan shaft, cut from the second sheet in the acrylic pack. The magnet glues to its centre, on the axis.',
+   d:'60 mm clear acrylic disc, bolted to a 5 mm rigid flange coupling on the pan shaft. The magnet glues (Fevikwik) to its centre, on the axis.',
    warn:'The magnet must say DIAMETRIC. An axial magnet looks identical and makes the encoder read a constant — both feedback axes dead, with no error message.', hard:true},
   {id:'pan_encoder', t:'Pan encoder arm', file:'pan_encoder', group:'fixed', from:[95,10,25],
-   d:'Post on the frame at 38 mm radius, arm reaching in over the axis. It does NOT turn with the platform — a post that rotates with the magnet it measures reads a constant.',
+   d:'An M3 x 40 screw standing on the base at 38 mm radius, with a 15 x 60 mm clear acrylic strip reaching in over the axis. It does NOT turn with the platform — a post that rotates with the magnet it measures reads a constant.',
    warn:'The AS5600 chip sits ON the centreline, 1.5 mm above the magnet face. Not near the axis — on it. Off-axis it still answers on I²C and still returns numbers; they are simply not angles.', hard:true},
   {id:'riser', t:'14 mm standoff riser', file:'riser', group:'pan', from:[0,0,62],
-   d:'Four M3 standoffs from the assortment. Without them the head reaches the platform at only 17° of downward tilt.'},
+   d:'Four 15 mm M3 standoffs. Without them the head reaches the platform at only 17° of downward tilt.'},
   {id:'bracket', t:'L-bracket', file:'bracket', group:'pan', from:[-60,25,48],
    d:'Carries the tilt motor. Sits on the riser, not directly on the platform.'},
   {id:'tilt_motor', t:'Tilt motor', file:'tilt_motor', group:'pan', from:[-95,0,38],
    d:'Shaft horizontal, along world X. Tilt axis across the look direction, so the head nods rather than panning twice.'},
   {id:'tilt_encoder', t:'Tilt encoder arm', file:'tilt_encoder', group:'pan', from:[-18,0,86],
-   d:'Fixed to the motor side of the joint, reaching UP over the shaft. Reaching down drove the post straight through the pan platform.'},
+   d:'A second 15 x 60 mm clear acrylic strip, fixed to the L-bracket (the side that does not tilt), reaching UP and over the shaft end so the chip faces the tilt magnet.'},
   {id:'tilt_magnet', t:'Tilt magnet on the shaft end', file:'tilt_magnet', group:'tilt', from:[-70,0,48],
    d:'Disc on the tilt shaft, magnet centred on the tilt axis, 1.5 mm from its chip.'},
   {id:'standoff', t:'M3 BRASS standoff', file:'standoff', group:'tilt', from:[0,-30,42],
-   d:'42 mm, carrying about 80 g of head.',
+   d:'Two 20 mm brass standoffs screwed together (about 40 mm), carrying about 80 g of head.',
    warn:'Never print this part. In PLA it droops 28.5 px and resonates at 53 Hz — sitting on the 47 Hz platform mode the benchmark injects. Brass: 1.4 px, 237 Hz.'},
   {id:'head', t:'Head — webcam, red filter, laser', file:'head', group:'tilt', from:[15,-38,62],
-   d:'Camera and laser boresighted in one enclosure, so the loop closes on its own dot. The cable gets a service loop with slack for full travel — and it stays above the base plate.'},
+   d:'70 x 50 x 30 mm ABS box: webcam board behind the red filter and the laser beside it, both looking the same way, so the loop closes on its own dot. The cable gets a service loop with slack for full travel — and it stays above the base plate.'},
   {id:'vibration', t:'Vibration injector', file:'vibration', group:'pan', from:[70,25,45],
-   d:'Bolted to the moving structure on purpose. Robustness shown, not claimed.'},
+   d:'Optional, not needed for the demo build. Bolted to the moving structure to show robustness.'},
 ];
 
 const TARGETS = [
   {id:'beacon_case', t:'Beacon enclosure', file:'beacon_case', group:'tgt', from:[0,0,-60],
-   d:'90 × 60 × 40 ABS box. This is the thing the tracker has to find, across the room.'},
+   d:'100 x 60 x 25 mm ABS box. This is the thing the tracker has to find, across the room.'},
   {id:'beacon_led', t:'Red LED + ping-pong diffuser', file:'beacon_led', group:'tgt', from:[0,0,70],
-   d:'10 mm red LED through the lid, half a sanded ping-pong ball hot-glued over it. The diffuser turns a narrow LED cone into something visible well off-axis.'},
+   d:'10 mm red LED with a 220 ohm resistor, through the lid, half a ping-pong ball hot-glued over it. The diffuser turns a narrow LED cone into something visible well off-axis.'},
   {id:'beacon_nano', t:'Nano — the blink firmware', file:'beacon_nano', group:'tgt', from:[-70,0,30],
    d:'Drives the LED at exactly 4.00 Hz. Identity is the modulation, not the brightness — this single fact is what makes the beacon findable and the decoy refusable.',
    warn:'Verify with phone slow-motion or a scope: 4.00 ± 0.05 Hz. Do not trust the number printed on anything. That is the entire reason we build a beacon instead of using a phone strobe app.', hard:true},
-  {id:'beacon_switch', t:'Kill switch', file:'beacon_switch', group:'tgt', from:[70,0,30],
-   d:'In-line on the battery positive, so the whole unit dies with one flick mid-demo.'},
+  {id:'beacon_switch', t:'Power', file:'beacon_switch', group:'tgt', from:[70,0,30],
+   d:'USB power bank or the 5 V adapter into the Nano. With the adapter, a switch on its + wire turns the beacon off mid-demo.'},
   {id:'decoy_case', t:'Decoy enclosure', file:'decoy_case', group:'tgt', from:[0,-70,-40],
-   d:'70 × 55 × 26 box. The decoy exists to be rejected — it is the control in the experiment, not scenery.'},
-  {id:'decoy_led', t:'White LED — steady, and brighter', file:'decoy_led', group:'tgt', from:[0,-70,70],
-   d:'Deliberately brighter than the beacon and never blinking. A tracker that went by brightness would lock onto this every single time.'},
+   d:'100 x 60 x 25 mm ABS box, the same as the beacon. The decoy exists to be rejected — it is the control in the experiment, not scenery.'},
+  {id:'decoy_led', t:'Red LED — steady, never blinks', file:'decoy_led', group:'tgt', from:[0,-70,70],
+   d:'Same red LED as the beacon, 100 ohm resistor, the other half of the ping-pong ball: just as bright, never blinking. A tracker that went by brightness would lock onto this.'},
   {id:'decoy_cells', t:'3×AA holder', file:'decoy_cells', group:'tgt', from:[0,-70,-70],
    d:'No microcontroller. The decoy has no firmware because it has nothing to say.'},
   {id:'decoy_switch', t:'Decoy switch', file:'decoy_switch', group:'tgt', from:[70,-70,30],
@@ -395,7 +396,7 @@ const MAT = {
   head:{c:0xe8dcc8,m:.1,r:.6},      vibration:{c:0x8a6a3a,m:.6,r:.45},
   beacon_case:{c:0xd9c3a6,m:.05,r:.7,o:.55}, beacon_led:{c:0xe03131,m:0,r:.3},
   beacon_nano:{c:0x2b5c8a,m:.4,r:.5},        beacon_switch:{c:0x8892a0,m:.8,r:.35},
-  decoy_case:{c:0xc9cdd2,m:.05,r:.7,o:.55},  decoy_led:{c:0xf1f3f5,m:0,r:.25},
+  decoy_case:{c:0xc9cdd2,m:.05,r:.7,o:.55},  decoy_led:{c:0xd83a2e,m:0,r:.25},
   decoy_cells:{c:0x6b7f94,m:.5,r:.5},        decoy_switch:{c:0x8892a0,m:.8,r:.35},
 };
 
@@ -787,12 +788,12 @@ function simDraw() {
   const dx = bx + p2(0.9), dy = by + p2(0.58);
   const on = Math.sin(2 * Math.PI * 4 * S.t) > 0;
 
-  blob(g, dx, dy, 26, '235,240,245', 0.85);      // decoy: steady, brighter
+  blob(g, dx, dy, 26, '240,95,85', 0.85);        // decoy: steady red, never blinks
   if (on) blob(g, bx, by, 21, '224,49,49', 0.95);
 
   g.font = '11px ui-monospace,monospace';
   g.fillStyle = '#5f7288';
-  g.fillText('decoy · steady · brighter', dx + 30, dy + 4);
+  g.fillText('decoy · steady · never blinks', dx + 30, dy + 4);
 
   if (S.state !== 'SEARCH') {
     const tracking = S.state === 'TRACK' || S.state === 'LOCK';

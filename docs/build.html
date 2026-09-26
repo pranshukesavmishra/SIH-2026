@@ -728,9 +728,11 @@ M1        <span class="y">OK M1</span>        <span class="m">blinking again</sp
 <li><b>TEST MOTION</b>: it should pan right, tilt up, then blink the laser.
 <span class="chk">Wrong direction → tick <b>INVERT PAN</b> / <b>INVERT TILT</b>. Wrong axis → <b>SWAP PAN / TILT</b>. Repeat until correct.</span></li>
 <li><b>BEACON RATE</b> = 4 Hz (the beacon's rate). Only that rate (±10 %) is locked; a 3 Hz or 5 Hz light is ignored.</li>
+<li><b>RED BEACON FILTER</b>: tick it (Settings) whenever you use the red LED beacon. It scores the red LED high and pushes white walls, windows and lamps down, so tracking works in a lit room too. Leave it off for a phone or white light.
+<span class="chk">In a lit room the red beacon locks within about a second with the filter on.</span></li>
 <li>Beacon on, 1–3 m away.
 <span class="chk">It locks (green box). The head turns until the beacon is in the centre. The GIMBAL readout ends in <b>enc</b> (encoder confirmed).</span></li>
-<li>Bright room: the red filter over the camera is what makes this work. If the room is still too bright, add a second layer or dim the lights. The <b>EXPOSURE</b> slider helps where the browser supports it (Windows/Android).</li>
+<li>Bright room: RED BEACON FILTER on (step above). If it still struggles, add the red film over the camera or dim the lights. The <b>EXPOSURE</b> slider helps where the browser supports it (Windows/Android).</li>
 </ol>
 
 <h3>10.8 Demo layout</h3>
@@ -754,7 +756,7 @@ M1        <span class="y">OK M1</span>        <span class="m">blinking again</sp
 </figure>
 <h3>10.9 Demo script (2 minutes)</h3>
 <ol class="steps">
-<li><b>Lock.</b> Beacon on. The rig finds it, turns until it's centred, and the laser dot lands on it (after SET AIM). The page shows LOCKED and about 4.0 Hz.</li>
+<li><b>Lock.</b> RED BEACON FILTER on. Beacon on. The rig finds it, turns until it's centred, and the laser dot lands on it (after SET AIM). The page shows LOCKED and about 4.0 Hz.</li>
 <li><b>Decoy.</b> Switch the decoy on: same colour, same size, just as bright. The lock stays on the beacon. <i>"Brightness is not identity. The blink is."</i></li>
 <li><b>Follow.</b> Pick the beacon up and move it slowly left, right, up and down. The rig follows; the decoy is ignored.</li>
 <li><b>Wrong rate.</b> On the page, set BEACON RATE to <b>6 Hz</b>. The rig drops the 4 Hz beacon, because it only locks the rate it was told to. Set it back to 4 Hz and it locks again.</li>

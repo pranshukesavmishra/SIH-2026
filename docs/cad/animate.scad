@@ -16,7 +16,7 @@
 //   ffmpeg -framerate 30 -i frames/f%03d.png -c:v libx264 -pix_fmt yuv420p out.mp4
 
 use <parts_lib.scad>
-include <geometry.scad>     // the mechanism's numbers, shared with the still model
+include <geometry_legacy.scad>  // FROZEN pre-M-Seal layout; this video is not regenerated yet
 $fn = 32;
 
 // ---- timeline helpers ----------------------------------------------

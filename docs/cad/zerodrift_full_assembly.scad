@@ -1,179 +1,212 @@
-// ZeroDrift Mk3 — COMPLETE assembly, every item on the BOM
-// ========================================================
+// ZeroDrift MK2 — COMPLETE assembly, as built from the picture guide
+// ===================================================================
 // Uses parts_lib.scad, which draws each item at its real catalogue
 // size. This file only places them.
 //
 //   xvfb-run -a openscad -D 'view="all"'   -o all.png   --imgsize=2000,1500 zerodrift_full_assembly.scad
 //   xvfb-run -a openscad -D 'view="rig"'   -o rig.png   zerodrift_full_assembly.scad
-//   xvfb-run -a openscad -D 'view="head"'  -o head.png  zerodrift_full_assembly.scad
 //   xvfb-run -a openscad -D 'view="explode"' -o exp.png zerodrift_full_assembly.scad
 //
-// LAYOUT FINDING, recorded because the model is what surfaced it: the
-// 830-point breadboard is 165 mm and the 6-inch acrylic plate is
-// 152.4 mm, so the breadboard does NOT fit on the base plate -- it
-// overhangs by 12.6 mm. It belongs on the bench beside the rig, which
-// is better practice regardless: section 2E deliberately injects
-// vibration into that plate, and the control electronics are the last
-// thing that should be riding it.
+// The rig is the one in docs/submission/picture_guide_source.html:
+// NO COUPLER. The big disc is glued straight onto the pan shaft with a
+// ring of M-Seal under it, the magnet is superglued onto the 2 mm of
+// shaft tip left clean on top, three M3 x 40 stilts carry the
+// L-bracket over the sensor arm, and the head box is screwed flat and
+// centred on a small disc glued the same way onto the tilt shaft.
+// Every dimension comes from geometry.scad.
+//
+// LAYOUT FINDING, kept from the first model: the 830-point breadboard
+// is 165 mm and the base is 152.4 mm, so the breadboard lives on the
+// bench beside the rig, not on the base.
 
 use <parts_lib.scad>
+include <geometry.scad>
 $fn = 72;
 
 TILT_DEG = 12;
 PAN_DEG  = 20;
 
+// ---- fasteners -----------------------------------------------------
+// M3 screw, head DOWN at the origin, shank up +Z (flip with mirror).
+module m3_screw(len) {
+    color(C_STEEL) { translate([0,0,-2.4]) cylinder(d = 5.5, h = 2.4); cylinder(d = 3, h = len, $fn = 16); }
+}
+module m3_nut() { color(C_STEEL) cylinder(d = 6.4, h = NUT_H, $fn = 6); }
 
+// ---- one module per physical piece, in its FINAL position ----------
+// World coordinates at pan = 0 and tilt = 0. The kinematic groups
+// below and the per-part web export both use exactly these, so the
+// clearance sweep and the 3D page cannot disagree about the rig.
+
+// A  base, 15 cm square: LOOSE 8 mm middle hole, the 4 motor holes on
+// the 31 mm square, and one hole for the sensor-arm post.
 module base_plate() {
     color(C_ACRYLIC, 0.45) difference() {
         translate([-PLATE/2,-PLATE/2,-PLATE_T]) cube([PLATE, PLATE, PLATE_T]);
-        cylinder(d = 8, h = 20, center = true);                  // pan shaft
-        for (a = [45,135,225,315])                                // motor bolts
+        cylinder(d = BASE_HOLE_D, h = 20, center = true);
+        for (a = [45,135,225,315])
             rotate([0,0,a]) translate([31/2,0,0]) cylinder(d = 3.4, h = 20, center = true);
+        translate([PAN_POST_R,0,0]) cylinder(d = 3.4, h = 20, center = true);
     }
 }
-
-include <geometry.scad>
-
-// ---- the rig ------------------------------------------------------
-// Split strictly into what is BOLTED TO THE FRAME and what RIDES THE
-// PAN SHAFT. An earlier revision had the pan motor body and the
-// encoder post inside the pan rotation, which means the post turned
-// with the magnet it was supposed to measure -- an encoder that reads
-// a constant. The split below is the mechanism, not a drawing choice.
-module rig(pan = PAN_DEG, tilt = TILT_DEG) {
-    rig_fixed();
-    rig_rotating(pan, tilt);
+// Four legs, taller than the hanging motor, so it never touches the table.
+module base_legs() {
+    color("#c79e6e") for (sx = [-1,1], sy = [-1,1])
+        translate([sx*(PLATE/2 - LEG_W/2 - 3) - LEG_W/2, sy*(PLATE/2 - LEG_W/2 - 3) - LEG_W/2, -PLATE_T - LEG_H])
+            cube([LEG_W, LEG_W, LEG_H]);
 }
-
-// Everything bolted to the frame. The stator is the whole visible
-// motor; only the 5 mm shaft turns.
-module rig_fixed() {
-    base_plate();
-    translate([0,0,-PLATE_T]) nema17(shaft_len = 26);
-    pan_encoder_arm();
-}
-
-// Everything that rides the pan shaft.
-//
-// PAN TRAVEL IS LIMITED by the fixed encoder arm: past the limit the
-// tilt bracket drives into the encoder post. The limit is measured,
-// not guessed -- tools/cad/check_clearance.sh sweeps this module
-// against rig_fixed() and prints the first angle that touches.
-// Firmware soft-limits pan to +-PAN_LIMIT; the benchmark never asks
-// for more than +-35.
-module rig_rotating(pan = PAN_DEG, tilt = TILT_DEG) {
-    rig_pan_deck(pan);
-    rig_tilt_group(pan, tilt);
-}
-
-// Split again, one level down, because the first split was not enough:
-// the head and the pan platform are both carried by the pan shaft, so
-// a fixed-vs-rotating test cannot see them collide -- and they do, at
-// +21 deg of tilt. Three groups move relative to each other, so all
-// three pairs have to be tested.
-module rig_pan_deck(pan = PAN_DEG) {
-    rotate([0,0,pan]) {
-        // platform + DIAMETRIC magnet, magnet centred on the axis
-        translate([0,0,PLATFORM_Z]) {
-            color("#5b6b7c") cylinder(d = PLATFORM_D, h = PLATFORM_T);
-            translate([0,0,PLATFORM_T]) diametric_magnet();
-        }
-
-        // tilt stage, sitting ON the platform (underside at its top face)
-        //
-        // Axis convention, checked numerically rather than by eye after
-        // an earlier nesting put the tilt axis along world -Z and the
-        // camera looking at the ceiling:
-        //   tilt axis = world X,  look = world -Y,  shaft = world X.
-        translate([0, 6, TILT_Z]) {
-            // riser: four M3 standoffs lifting the bracket off the
-            // platform, so the head clears the plate at full tilt
-            for (dx = [-42, -20]) for (dy = [-14, 6])
-                color(C_BRASS) translate([dx, dy, PLATFORM_Z + PLATFORM_T - TILT_Z])
-                    cylinder(d = 5, h = RISER_H, $fn = 6);
-            translate([-46, -20, PLATFORM_Z + PLATFORM_T + RISER_H - TILT_Z])
-                l_bracket(leg = 30, th = 3, w = 30);
-            translate([-40, 0, 0]) rotate([0, 90, 0]) nema17(shaft_len = 22);
-
-            // Tilt encoder. Fixed to the motor side of the joint, so it
-            // is outside the rotating group below. The arm reaches UP
-            // and back over the shaft: reaching DOWN, as it first did,
-            // put the post straight through the pan platform.
-            translate([-20, 0, 0]) rotate([0, 90, 0]) {
-                color(C_BRASS) translate([-26,0,-4]) cylinder(d = 5, h = 22);
-                color("#5b6b7c") translate([-28,-4,TILT_SENS_L]) cube([30, 8, 3]);
-                // chip ON the tilt axis (local x = y = 0), AIRGAP away
-                translate([0, 0, TILT_SENS_L]) rotate([180,0,0]) as5600();
-            }
-
-        }
-        // vibration injector, bolted to the moving structure on purpose
-        translate([14,-14,PLATFORM_Z + PLATFORM_T]) vibration_motor();
+// Bottom (pan) motor hanging under the base, shaft up through the hole.
+module pan_motor() { translate([0,0,PAN_FACE_Z]) nema17(shaft_len = SHAFT_L); }
+// 4 x M3 x 16 down through the base, 2 nuts on each as spacers.
+module pan_motor_screws() {
+    for (a = [45,135,225,315]) rotate([0,0,a]) translate([31/2,0,0]) {
+        translate([0,0,2.4]) mirror([0,0,1]) m3_screw(16);
+        for (z = [-PLATE_T - NUT_H, -PLATE_T - 2*NUT_H]) translate([0,0,z]) m3_nut();
     }
 }
+// B  big disc: tight 5 mm middle hole, 3 small stilt holes on ONE side.
+module platform() {
+    color(C_ACRYLIC, 0.6) translate([0,0,PLATFORM_Z]) difference() {
+        cylinder(d = PLATFORM_D, h = PLATFORM_T);
+        cylinder(d = 5, h = 20, center = true);
+        for (a = STILT_ANG) rotate([0,0,a]) translate([STILT_R,0,0]) cylinder(d = 3.4, h = 20, center = true);
+    }
+}
+// Fat M-Seal ring UNDER the disc, all round the shaft. Never touching the base.
+module platform_glue() {
+    color("#8e9170") translate([0,0,PLATFORM_Z - GLUE_H]) difference() {
+        cylinder(d1 = GLUE_D * 0.7, d2 = GLUE_D, h = GLUE_H);
+        cylinder(d = 5, h = 40, center = true);
+    }
+}
+// Diametric magnet on the clean shaft TIP: north half and south half,
+// so the page can colour the poles across the diameter.
+module pan_magnet(half = "n") {
+    translate([0,0,PAN_TIP_Z]) intersection() {
+        cylinder(d = MAGNET_D, h = MAGNET_H);
+        translate([half == "n" ? -MAGNET_D : 0, -MAGNET_D, -1]) cube([MAGNET_D, 2*MAGNET_D, MAGNET_H + 2]);
+    }
+}
+// Sensor-arm post: M3 x 40 up through the base, locked with a nut, and
+// a nut under and over the strip to set its height. It NEVER turns.
+module pan_post() {
+    translate([PAN_POST_R,0,-PLATE_T]) m3_screw(POST_L);
+    translate([PAN_POST_R,0,0]) m3_nut();
+    translate([PAN_POST_R,0,PAN_SENS_Z - NUT_H]) m3_nut();
+    translate([PAN_POST_R,0,PAN_SENS_Z + STRIP_T]) m3_nut();
+}
+// D  strip 1.5 x 6 cm, hole at one end on the post, far end over the axis.
+module pan_strip() {
+    color(C_ACRYLIC, 0.6) difference() {
+        translate([PAN_POST_R + 3 - STRIP_L, -STRIP_W/2, PAN_SENS_Z]) cube([STRIP_L, STRIP_W, STRIP_T]);
+        translate([PAN_POST_R,0,0]) cylinder(d = 3.4, h = 200, center = true);
+    }
+}
+// AS5600 under the strip, chip DOWN, on the axis, AIRGAP over the magnet.
+module pan_sensor() { translate([0,0,PAN_SENS_Z]) rotate([180,0,0]) as5600(); }
+// 3 stilts: M3 x 40 pushed UP through the big disc on the side away
+// from the sensor arm. Nut on the disc; nut under and over the foot.
+module stilts() {
+    for (a = STILT_ANG) rotate([0,0,a]) translate([STILT_R,0,0]) {
+        translate([0,0,PLATFORM_Z]) m3_screw(STILT_L);
+        translate([0,0,PLATFORM_Z + PLATFORM_T]) m3_nut();
+        translate([0,0,FOOT_Z - NUT_H]) m3_nut();
+        translate([0,0,FOOT_Z + FOOT_T]) m3_nut();
+    }
+}
+// L-bracket: flat foot on the stilts, standing leg the tilt motor bolts to.
+module bracket() {
+    color("#9aa3ae") difference() {
+        union() {
+            translate([FOOT_X0, -BRACKET_W/2, FOOT_Z]) cube([LEG_X + BRACKET_T - FOOT_X0, BRACKET_W, FOOT_T]);
+            translate([LEG_X, -BRACKET_W/2, FOOT_Z]) cube([BRACKET_T, BRACKET_W, TILT_Z + 24 - FOOT_Z]);
+        }
+        for (a = STILT_ANG) rotate([0,0,a]) translate([STILT_R,0,0]) cylinder(d = 3.4, h = 400, center = true);
+        translate([0, TILT_Y, TILT_Z]) rotate([0,90,0]) {
+            cylinder(d = 23, h = 400, center = true);                   // boss + shaft
+            for (a = [45,135,225,315]) rotate([0,0,a]) translate([31/2,0,0]) cylinder(d = 3.4, h = 400, center = true);
+        }
+    }
+}
+// Top (tilt) motor, face on the standing leg, shaft pointing SIDEWAYS (+X).
+module tilt_motor() { translate([LEG_X, TILT_Y, TILT_Z]) rotate([0,90,0]) nema17(shaft_len = SHAFT_L); }
+// 4 x M3 x 6 through the leg into the motor face.
+module tilt_motor_screws() {
+    translate([LEG_X + BRACKET_T, TILT_Y, TILT_Z]) rotate([0,90,0])
+        for (a = [45,135,225,315]) rotate([0,0,a]) translate([31/2,0,0])
+            translate([0,0,2.4]) mirror([0,0,1]) m3_screw(6);
+}
+// C  small disc: tight middle hole, 2 small holes for the head screws.
+module tilt_disc() {
+    color(C_ACRYLIC, 0.6) translate([TILT_DISC_X, TILT_Y, TILT_Z]) rotate([0,90,0]) difference() {
+        cylinder(d = TILT_DISC_D, h = TILT_DISC_T);
+        cylinder(d = 5, h = 20, center = true);
+        for (s = [-1,1]) translate([0, s*13, 0]) cylinder(d = 3.4, h = 20, center = true);
+    }
+}
+// Same M-Seal ring, on the motor side of the small disc, clear of the bracket.
+module tilt_glue() {
+    color("#8e9170") translate([TILT_DISC_X - GLUE_H, TILT_Y, TILT_Z]) rotate([0,90,0]) difference() {
+        cylinder(d1 = GLUE_D * 0.6, d2 = GLUE_D * 0.85, h = GLUE_H);
+        cylinder(d = 5, h = 40, center = true);
+    }
+}
+// The head box, FLAT on the small disc and CENTRED on the tilt axis,
+// so it balances. Holes: shaft tip (back), camera window + laser (front).
+CAM_X   = HEAD_X - CAM_LASER/2;
+LASER_X = HEAD_X + CAM_LASER/2;
+module head_box() {
+    color("#d9822b", 0.25) difference() {
+        translate([HEAD_X - HEAD_W/2, TILT_Y - HEAD_D/2, TILT_Z - HEAD_H/2]) cube([HEAD_W, HEAD_D, HEAD_H]);
+        translate([HEAD_X - HEAD_W/2 + 2, TILT_Y - HEAD_D/2 + 2, TILT_Z - HEAD_H/2 + 2]) cube([HEAD_W - 4, HEAD_D - 4, HEAD_H - 4]);
+        translate([HEAD_X - HEAD_W/2, TILT_Y, TILT_Z]) rotate([0,90,0]) cylinder(d = 8, h = 10, center = true);
+        translate([CAM_X - 8, TILT_Y - HEAD_D/2 - 1, TILT_Z - 8]) cube([16, 4, 16]);
+        translate([LASER_X, TILT_Y - HEAD_D/2, TILT_Z]) rotate([90,0,0]) cylinder(d = 7.5, h = 10, center = true);
+    }
+}
+// Webcam board behind the window and the laser 2 cm beside it, both
+// looking the same way (world -Y), so the camera sees its own dot.
+module head_camera() { translate([CAM_X, TILT_Y - 14, TILT_Z]) rotate([90,0,0]) webcam_board(); }
+module head_laser()  { translate([LASER_X, TILT_Y - 5, TILT_Z]) rotate([90,0,0]) ky008_laser(); }
 
-// Everything that turns with the TILT shaft.
+module piece(which) {
+    if      (which == "base")              base_plate();
+    else if (which == "base_legs")         base_legs();
+    else if (which == "pan_motor")         pan_motor();
+    else if (which == "pan_motor_screws")  pan_motor_screws();
+    else if (which == "platform")          platform();
+    else if (which == "platform_glue")     platform_glue();
+    else if (which == "pan_magnet_n")      pan_magnet("n");
+    else if (which == "pan_magnet_s")      pan_magnet("s");
+    else if (which == "pan_post")          pan_post();
+    else if (which == "pan_strip")         pan_strip();
+    else if (which == "pan_sensor")        pan_sensor();
+    else if (which == "stilts")            stilts();
+    else if (which == "bracket")           bracket();
+    else if (which == "tilt_motor")        tilt_motor();
+    else if (which == "tilt_motor_screws") tilt_motor_screws();
+    else if (which == "tilt_disc")         tilt_disc();
+    else if (which == "tilt_glue")         tilt_glue();
+    else if (which == "head_box")          head_box();
+    else if (which == "head_camera")       head_camera();
+    else if (which == "head_laser")        head_laser();
+    else if (which == "vibration")         translate([14,-14,PLATFORM_Z + PLATFORM_T]) vibration_motor();
+}
+FIXED = ["base", "base_legs", "pan_motor", "pan_motor_screws", "pan_post", "pan_strip", "pan_sensor"];
+DECK  = ["platform", "platform_glue", "pan_magnet_n", "pan_magnet_s", "stilts", "bracket",
+         "tilt_motor", "tilt_motor_screws"];
+TILT  = ["tilt_disc", "tilt_glue", "head_box", "head_camera", "head_laser"];
+
+// ---- the rig, split by what moves ------------------------------------
+// Three groups move relative to each other, so tools/cad/check_clearance.sh
+// intersects all three pairs. The sensor arm is FIXED: a sensor that
+// turns with the magnet it measures reads a constant.
+module rig(pan = PAN_DEG, tilt = TILT_DEG) { rig_fixed(); rig_pan_deck(pan); rig_tilt_group(pan, tilt); }
+module rig_fixed() { for (p = FIXED) piece(p); }
+module rig_pan_deck(pan = PAN_DEG) { rotate([0,0,pan]) for (p = DECK) piece(p); }
 module rig_tilt_group(pan = PAN_DEG, tilt = TILT_DEG) {
-    rotate([0,0,pan]) translate([0, 6, TILT_Z]) rotate([tilt, 0, 0]) {
-        // magnet on the shaft end, centred on the tilt axis
-        translate([TILT_DISC_X, 0, 0]) rotate([0,90,0]) {
-            color("#5b6b7c") cylinder(d = 34, h = TILT_DISC_T);
-            translate([0,0,TILT_DISC_T]) diametric_magnet();
-        }
-        // brass standoff (never printed -- 53 Hz in PLA, on the
-        // 47 Hz platform mode; see README) then the head
-        color(C_BRASS) rotate([90,0,0]) cylinder(d = 6, h = 42, $fn = 6);
-        translate([0, -65, 0]) head();
-    }
-}
-
-// Fixed pan encoder: short stiff post on the frame, plate reaching in
-// over the axis, chip looking DOWN at the magnet from AIRGAP away.
-module pan_encoder_arm() {
-    color(C_BRASS) translate([PAN_POST_R,0,0]) cylinder(d = 5, h = PAN_SENS_Z + 3);
-    color("#5b6b7c") translate([-6,-5,PAN_SENS_Z]) cube([PAN_POST_R + 12, 10, 3]);
-    translate([0,0,PAN_SENS_Z]) rotate([180,0,0]) as5600();
-}
-
-// ---- the head: webcam board + laser + filter in the ABS box -------
-// Sized to its contents, and the sizing was wrong twice before it was
-// right. A de-housed webcam PCB is 32 mm square, so a 30 mm-tall box
-// cannot hold it -- the board poked through the floor and lid. And the
-// lens must point OUT through the front face; the first placement had
-// it aimed into the box's own interior. Both are the sort of thing you
-// only see once the parts are drawn at real size next to each other.
-//
-//   72 x 46 x 42   box
-//   32 x 32        webcam PCB, lens barrel 12 dia x 9 long
-//   6.5 x 18       KY-008 brass barrel, boresighted parallel
-HEAD_W = 72; HEAD_D = 46; HEAD_H = 42;
-
-module head(walls = true) {
-    if (walls)
-        translate([-HEAD_W/2, -HEAD_D/2, -HEAD_H/2])
-            abs_box(HEAD_W, HEAD_D, HEAD_H);
-    else                                   // detail view: frame only
-        color("#d9822b", 0.9)
-            for (x = [-HEAD_W/2, HEAD_W/2], y = [-HEAD_D/2, HEAD_D/2])
-                translate([x, y, -HEAD_H/2]) cylinder(d = 1.2, h = HEAD_H, $fn = 10);
-
-    // rotate([90,0,0]) sends a part's local +Z (its optical axis) to
-    // world -Y, which is the direction the head looks.
-    // Board at y = -14 puts the 9 mm lens barrel flush with the front
-    // face at y = -23, where its clearance hole is.
-    translate([-16, -14, 0]) rotate([90,0,0]) {
-        webcam_board();
-        translate([0,0,10.6]) red_filter(22);
-    }
-    // laser barrel is 18 mm, so its face sits at y = -5 to finish flush
-    translate([20, -5, -2]) rotate([90,0,0]) ky008_laser();
-
-    // Service loop: slack enough for full travel, never in tension, and
-    // it has to STAY ABOVE THE BASE PLATE. The first routing dropped to
-    // z = -4 in world coordinates -- i.e. the camera's own cable ran
-    // through the 3 mm acrylic it is bolted to. Invisible in every
-    // render; the clearance sweep found it at the neutral pose.
-    wire_run([[-30,12,-10],[-46,20,-22],[-48,6,-30],[-38,-6,-36]], 3.0);
+    rotate([0,0,pan]) translate([0, TILT_Y, TILT_Z]) rotate([tilt,0,0]) translate([0, -TILT_Y, -TILT_Z])
+        for (p = TILT) piece(p);
 }
 
 // ---- the bench: electronics that do NOT ride the plate -------------
@@ -224,82 +257,45 @@ module scene_targets() {
 }
 
 module desk() {
-    color(C_DESK) translate([-290,-120,-PLATE_T-40]) cube([540, 320, 34]);
+    color(C_DESK) translate([-290,-120,-PLATE_T-LEG_H-34]) cube([540, 320, 34]);
 }
 
 // ---- views ----------------------------------------------------------
 module view_all()  { desk(); rig(); bench_electronics(); scene_targets(); }
 module view_rig()  { rig(); }
-module view_head() { head(); }
-// Exploded, in build order, bottom to top -- the same order as
-// TERMINAL_MK3.md section 3's stages, so the picture and the procedure
-// agree. Labelled, because an exploded view without names is half a
-// diagram.
-module label(txt, sz = 9) {
+module view_head() { for (p = ["head_box", "head_camera", "head_laser", "tilt_disc", "tilt_glue"]) piece(p); }
+// Exploded, in build order, bottom to top -- the order of the picture
+// guide's cards 3 to 7. Labelled, because an exploded view without
+// names is half a diagram.
+module label(txt, sz = 7) {
     color("#1b1f24") rotate([72,0,30])
         linear_extrude(0.6) text(txt, size = sz, font = "DejaVu Sans:style=Bold");
 }
-
 module view_explode() {
-    // 1 - pan motor, bolts to the plate UNDERSIDE
-    translate([0,0,-95]) { nema17(shaft_len = 30); translate([70,0,10]) label("1  NEMA17 pan"); }
-
-    // 2 - acrylic base plate, shaft clearance hole + 31 mm bolt circle
-    base_plate();
-    translate([95,0,0]) label("2  acrylic base, 3 mm");
-
-    // 3 - platform + diametric magnet on the rotation axis
-    translate([0,0,62]) {
-        color("#5b6b7c") cylinder(d = PLATFORM_D, h = PLATFORM_T);
-        translate([0,0,PLATFORM_T]) diametric_magnet();
-        translate([70,0,0]) label("3  platform + DIAMETRIC magnet");
-    }
-    // 4 - AS5600 on its fixed arm: chip CONCENTRIC with the axis, and
-    //     AIRGAP (1.5 mm) above the magnet face. Off-axis it reads noise.
-    translate([0,0,92]) {
-        color(C_BRASS) translate([PAN_POST_R,0,-30]) cylinder(d = 5, h = 30);
-        color("#5b6b7c") translate([-6,-5,0]) cube([PAN_POST_R + 12, 10, 3]);
-        rotate([180,0,0]) as5600();
-        translate([PAN_POST_R + 26,0,0]) label("4  AS5600 on the axis, 1.5 mm gap");
-    }
-
-    // 4b - the 14 mm standoff riser. Not decoration: without it the
-    //      head reaches the base plate at +17 deg of tilt.
-    translate([0,0,126]) {
-        for (dx = [-11, 11]) for (dy = [-10, 10])
-            color(C_BRASS) translate([dx, dy, 0]) cylinder(d = 5, h = RISER_H, $fn = 6);
-        translate([70,0,0]) label("5  14 mm riser — buys full tilt travel");
-    }
-
-    // 5 - L-bracket carrying the tilt stage
-    translate([-54,-17,158]) { l_bracket(); translate([-96,0,10]) label("6  L-bracket"); }
-
-    // 7 - tilt motor, shaft horizontal
-    translate([0,0,202]) { rotate([-90,0,0]) nema17(); translate([78,0,0]) label("7  NEMA17 tilt"); }
-
-    // 8 - metal standoff (never printed -- 53 Hz resonance in PLA)
-    translate([0,0,252]) { color(C_BRASS) cylinder(d = 6, h = 42, $fn = 6);
-                           translate([56,0,20]) label("8  M3 BRASS standoff"); }
-
-    // 9 - head: webcam + red filter + laser
-    translate([0,0,324]) { head(); translate([78,0,0]) label("9  head: webcam + filter + laser"); }
+    E = [["base_legs", -40, "legs >= 6 cm"], ["pan_motor", -70, "pan motor, 4 x M3x16 + 2 spacer nuts each"],
+         ["pan_motor_screws", -30, ""], ["base", 0, "base 15 x 15 cm, 8 mm LOOSE middle hole"],
+         ["platform_glue", 30, "M-Seal ring UNDER the disc"], ["platform", 40, "big disc 9 cm, glued on the shaft"],
+         ["pan_magnet_n", 60, "diametric magnet on the shaft TIP"], ["pan_magnet_s", 60, ""],
+         ["pan_sensor", 80, "AS5600, chip down, 1.5 mm gap"], ["pan_strip", 80, "strip 1.5 x 6 cm"], ["pan_post", 80, "M3x40 post (fixed)"],
+         ["stilts", 110, "3 x M3x40 stilts"], ["bracket", 130, "L-bracket on the stilts"],
+         ["tilt_motor", 150, "tilt motor, 4 x M3x6"], ["tilt_motor_screws", 150, ""],
+         ["tilt_glue", 170, "M-Seal ring"], ["tilt_disc", 170, "small disc 4 cm"],
+         ["head_box", 200, "head, flat + centred on the small disc"], ["head_camera", 200, ""], ["head_laser", 200, ""]];
+    for (e = E) translate([0, 0, e[1]]) { piece(e[0]); if (e[2] != "") translate([110, 0, 20]) label(e[2]); }
 }
-
 
 // ---- per-part export, for the interactive assembly page -------------
 // docs/assembly.html animates the build one component at a time, which
-// a single fused mesh cannot do. Each part is emitted HERE, in its
-// FINAL assembled position, so the web page only has to animate an
-// offset back to zero -- no transform chain is re-derived in
-// JavaScript, which is exactly where the tilt-axis bug came from the
-// first time.
+// a single fused mesh cannot do. Each piece is emitted in its FINAL
+// assembled position at zero pan and zero tilt, so the page only
+// animates an offset back to zero -- no transform chain is re-derived
+// in JavaScript, which is exactly where the tilt-axis bug came from
+// the first time.
 //
-//   xvfb-run -a openscad -D 'part="head"' -D 'LOWPOLY=true' -o head.stl zerodrift_full_assembly.scad
+//   xvfb-run -a openscad -D 'part="head_box"' -D 'LOWPOLY=true' -o head_box.stl zerodrift_full_assembly.scad
 module view_part(which) {
-    if (which == "pan_motor")   translate([0,0,-PLATE_T]) nema17(shaft_len = 26);
-    else if (which == "base")   base_plate();
     // the two target units, for the beacon/decoy tab of assembly.html
-    else if (which == "beacon_case")   abs_box(90, 60, 40);
+    if      (which == "beacon_case")   abs_box(90, 60, 40);
     else if (which == "beacon_led")    translate([45, 30, 40]) { led_10mm("#e03131"); translate([0,0,14]) pingpong_ball(); }
     else if (which == "beacon_nano")   translate([16, 12, 40]) arduino_nano_usbc();
     else if (which == "beacon_switch") translate([74, 14, 40]) toggle_switch();
@@ -307,44 +303,7 @@ module view_part(which) {
     else if (which == "decoy_led")     translate([35, 27, 26]) led_10mm("#f1f3f5");
     else if (which == "decoy_cells")   translate([6, 4, -16]) aa_holder_3();
     else if (which == "decoy_switch")  translate([58, 12, 26]) toggle_switch();
-    else if (which == "pan_encoder") pan_encoder_arm();
-    else rotate([0,0,PAN_DEG]) {
-        if (which == "platform")
-            translate([0,0,PLATFORM_Z]) {
-                color("#5b6b7c") cylinder(d = PLATFORM_D, h = PLATFORM_T);
-                translate([0,0,PLATFORM_T]) diametric_magnet();
-            }
-        else if (which == "vibration")
-            translate([14,-14,PLATFORM_Z + PLATFORM_T]) vibration_motor();
-        else translate([0, 6, TILT_Z]) {
-            if (which == "riser")
-                for (dx = [-42, -20]) for (dy = [-14, 6])
-                    color(C_BRASS) translate([dx, dy, PLATFORM_Z + PLATFORM_T - TILT_Z])
-                        cylinder(d = 5, h = RISER_H, $fn = 6);
-            else if (which == "bracket")
-                translate([-46, -20, PLATFORM_Z + PLATFORM_T + RISER_H - TILT_Z])
-                    l_bracket(leg = 30, th = 3, w = 30);
-            else if (which == "tilt_motor")
-                translate([-40, 0, 0]) rotate([0, 90, 0]) nema17(shaft_len = 22);
-            else if (which == "tilt_encoder")
-                translate([TILT_ARM_X, 0, 0]) rotate([0, 90, 0]) {
-                    color(C_BRASS) translate([-26,0,-4]) cylinder(d = 5, h = 22);
-                    color("#5b6b7c") translate([-28,-4,TILT_SENS_L]) cube([30, 8, 3]);
-                    translate([0, 0, TILT_SENS_L]) rotate([180,0,0]) as5600();
-                }
-            else rotate([TILT_DEG, 0, 0]) {
-                if (which == "tilt_magnet")
-                    translate([TILT_DISC_X, 0, 0]) rotate([0,90,0]) {
-                        color("#5b6b7c") cylinder(d = 34, h = TILT_DISC_T);
-                        translate([0,0,TILT_DISC_T]) diametric_magnet();
-                    }
-                else if (which == "standoff")
-                    color(C_BRASS) rotate([90,0,0]) cylinder(d = 6, h = 42, $fn = 6);
-                else if (which == "head")
-                    translate([0, -65, 0]) head();
-            }
-        }
-    }
+    else piece(which);
 }
 
 view = "all";

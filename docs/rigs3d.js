@@ -184,14 +184,24 @@ function buildMk1(v) {
 // ======================================================================
 // MK2 — stepper terminal, from the CAD meshes
 // ======================================================================
-const TILT_PIVOT = new THREE.Vector3(0, 6, 62);
+// The picture-guide build (docs/cad/geometry.scad): no coupler, both discs
+// glued onto the shafts with M-Seal, the magnet on the pan shaft tip,
+// three M3 x 40 stilts under the L-bracket, and the head box flat and
+// centred on the small disc, so the tilt axis runs through the head.
+const TILT_PIVOT = new THREE.Vector3(0, 0, 73.35);
+const ACRYLIC = { c: 0xa8d8ef, m: 0, r: .15, o: .55 }, STEEL = { c: 0xb4bcc6, m: .85, r: .3 };
+const MOTOR = { c: 0x2b2f36, m: .85, r: .42 }, PUTTY = { c: 0x9a9d78, m: 0, r: .9 };
 const MK2_PARTS = {
-  base: ['fixed', { c: 0xa8d8ef, m: 0, r: .15, o: .55 }], pan_motor: ['fixed', { c: 0x2b2f36, m: .85, r: .42 }],
-  pan_encoder: ['fixed', { c: 0x1f7a4d, m: .3, r: .5 }], platform: ['pan', { c: 0xa8d8ef, m: 0, r: .15, o: .7 }],
-  riser: ['pan', { c: 0xc9a227, m: .9, r: .25 }], bracket: ['pan', { c: 0x7d8a99, m: .85, r: .3 }],
-  tilt_motor: ['pan', { c: 0x2b2f36, m: .85, r: .42 }], tilt_encoder: ['pan', { c: 0x1f7a4d, m: .3, r: .5 }],
-  vibration: ['pan', { c: 0x8a6a3a, m: .6, r: .45 }], tilt_magnet: ['tilt', { c: 0x9aa4b0, m: .8, r: .3 }],
-  standoff: ['tilt', { c: 0xd4a94a, m: .95, r: .2 }], head: ['tilt', { c: 0xe8dcc8, m: .1, r: .6 }],
+  base: ['fixed', ACRYLIC], base_legs: ['fixed', { c: 0xc79e6e, m: 0, r: .8 }],
+  pan_motor: ['fixed', MOTOR], pan_motor_screws: ['fixed', STEEL],
+  pan_post: ['fixed', STEEL], pan_strip: ['fixed', ACRYLIC], pan_sensor: ['fixed', { c: 0x7c4ddb, m: .2, r: .5 }],
+  platform: ['pan', ACRYLIC], platform_glue: ['pan', PUTTY],
+  pan_magnet_n: ['pan', { c: 0xe23b3b, m: .3, r: .4 }], pan_magnet_s: ['pan', { c: 0x2f6fe0, m: .3, r: .4 }],
+  stilts: ['pan', STEEL], bracket: ['pan', { c: 0x9aa3ae, m: .8, r: .35 }],
+  tilt_motor: ['pan', MOTOR], tilt_motor_screws: ['pan', STEEL],
+  tilt_disc: ['tilt', ACRYLIC], tilt_glue: ['tilt', PUTTY],
+  head_box: ['tilt', { c: 0xe8dcc8, m: .1, r: .6, o: .5 }], head_camera: ['tilt', { c: 0x2a8a5a, m: .3, r: .5 }],
+  head_laser: ['tilt', { c: 0xc9a227, m: .9, r: .25 }],
 };
 
 /* Soft additive glow, for LEDs that are lit. */
@@ -235,14 +245,10 @@ function loadUnit(loader, parts, centre, onMesh) {
 
 function buildMk2(v, onLoaded) {
   const { scene } = v;
-  // The pan motor hangs 43 mm under the base plate, so the plate stands on
-  // four legs; everything is lifted by their height.
-  const LEG = 46, K = 1.7;
+  // The pan motor hangs under the base plate, so the plate stands on four
+  // 60 mm legs (base_legs.stl); everything is lifted by their height.
+  const LEG = 63, K = 1.7;
   const root = new THREE.Group(); root.scale.setScalar(K); root.position.z = LEG * K; scene.add(root);
-  for (const [x, y] of [[-66, -66], [66, -66], [66, 66], [-66, 66]]) {
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, LEG, 12), std(0xd4a94a, 0.95, 0.2));
-    leg.rotation.x = Math.PI / 2; leg.position.set(x, y, -3 - LEG / 2); leg.castShadow = true; root.add(leg);
-  }
   const gFixed = new THREE.Group(), gPan = new THREE.Group(), gTilt = new THREE.Group();
   gTilt.position.copy(TILT_PIVOT); gPan.add(gTilt); root.add(gFixed, gPan);
   const G = { fixed: gFixed, pan: gPan, tilt: gTilt };
@@ -252,28 +258,21 @@ function buildMk2(v, onLoaded) {
     loader.load(`cad/web/${name}.stl`, geo => {
       geo.computeVertexNormals();
       if (grp === 'tilt') geo.translate(-TILT_PIVOT.x, -TILT_PIVOT.y, -TILT_PIVOT.z);
-      const o = name === 'head' ? 0.88 : sp.o;
-      G[grp].add(cadMesh(geo, std(sp.c, sp.m, sp.r, o ? { transparent: true, opacity: o } : {})));
+      G[grp].add(cadMesh(geo, std(sp.c, sp.m, sp.r, sp.o ? { transparent: true, opacity: sp.o } : {})));
       if (++n === Object.keys(MK2_PARTS).length && onLoaded) onLoaded();
     });
   }
 
-  // Head front face (y = -88 from the tilt pivot): the webcam lens behind
-  // its red filter, and the KY-008 laser beside it -- boresighted.
-  const lens = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 4, 24), std(0x0a0a0c, 0.6, 0.25));
-  lens.position.set(-16, -90, 0); gTilt.add(lens);
+  // Head front face (y = -23 from the tilt pivot): the webcam lens behind
+  // the clear window at x = 32, and the KY-008 laser 2 cm beside it at
+  // x = 52 -- boresighted, both on the tilt axis height.
   const glass = new THREE.Mesh(new THREE.CircleGeometry(4.2, 24), std(0x1a2a44, 0.9, 0.05));
-  glass.rotation.x = Math.PI / 2; glass.position.set(-16, -92.1, 0); gTilt.add(glass);
-  const filt = new THREE.Mesh(new THREE.BoxGeometry(22, 0.8, 22), new THREE.MeshStandardMaterial({
-    color: 0xd01c1c, transparent: true, opacity: 0.45, roughness: 0.2, metalness: 0 }));
-  filt.position.set(-16, -92.8, 0); gTilt.add(filt);
-  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(3.25, 3.25, 5, 20), std(0xc9a227, 0.95, 0.2));
-  barrel.position.set(20, -90.5, -2); gTilt.add(barrel);
+  glass.rotation.x = Math.PI / 2; glass.position.set(32, -24.8, 0); gTilt.add(glass);
   const aperture = new THREE.Mesh(new THREE.CircleGeometry(1.6, 16), new THREE.MeshBasicMaterial({ color: 0xff2020 }));
-  aperture.rotation.x = Math.PI / 2; aperture.position.set(20, -93.1, -2); gTilt.add(aperture);
+  aperture.rotation.x = Math.PI / 2; aperture.position.set(52, -23.1, 0); gTilt.add(aperture);
 
   // the laser, modulated at 7 Hz so the camera can tell its own dot apart
-  const beam = makeBeam(400); beam.position.set(20, -93, -2); gTilt.add(beam);
+  const beam = makeBeam(400); beam.position.set(52, -23.2, 0); gTilt.add(beam);
 
   // ---- the beacon: ABS box, red LED under a ping-pong diffuser, a Nano ----
   const beacon = loadUnit(loader, [
@@ -312,7 +311,7 @@ function buildMk2(v, onLoaded) {
     if (led) { led.material.emissiveIntensity = lit ? 1.4 : 0.02; led.material.color.setHex(lit ? 0xff4040 : 0x4a1414); }
     bGlow.visible = lit; bLight.intensity = lit ? 3e4 : 0;
     const P = TILT_PIVOT.clone().multiplyScalar(K).add(new THREE.Vector3(0, 0, LEG * K));
-    const tx = bx - P.x, ty = by + 40 * K - P.y, tz = bz - P.z;
+    const tx = bx - P.x, ty = by - P.y, tz = bz - P.z;
     const s = aim(Math.atan2(tx, -ty), -Math.atan2(tz, Math.hypot(tx, ty)), dt);
     gPan.rotation.z = s.pan; gTilt.rotation.x = s.tilt;
     beam.scale.y = Math.hypot(tx, ty, tz) / K / 400;

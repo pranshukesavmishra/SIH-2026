@@ -8,9 +8,9 @@
 // from the model it guards.
 //
 // THREE groups move relative to each other, so all three pairs matter:
-//   fixed      base plate, pan motor, pan encoder arm
-//   deck       platform, riser, tilt bracket, tilt motor, tilt encoder
-//   tilt       tilt magnet, standoff, head
+//   fixed      base plate, legs, pan motor, pan sensor post + strip + AS5600
+//   deck       big disc + M-Seal + magnet, stilts, L-bracket, tilt motor
+//   tilt       small disc + M-Seal, head box, camera, laser
 // The first version of this test only did fixed-vs-everything-else,
 // and missed the head clipping the pan platform at +21 deg of tilt --
 // both are carried by the pan shaft, so that pair never got compared.

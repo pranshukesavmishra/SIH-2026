@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ZeroDrift MK2 Shopping List</title>
+<style>
+@page{size:A4;margin:12mm 12mm 14mm}
+*{box-sizing:border-box}
+body{margin:0;font:10.5pt/1.42 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#0b1320;background:#fff}
+h1{font-size:21pt;margin:0 0 2px}
+.sub{color:#46566b;font-size:10.5pt;margin:0 0 10px}
+.say{background:#fff7e0;border:1px solid #e7c46a;border-radius:6px;padding:9px 12px;margin:10px 0 14px;font-size:11pt}
+h2{font-size:13pt;margin:16px 0 6px;padding:5px 10px;border-radius:5px;color:#fff;background:#0b2a45;break-after:avoid}
+h2.opt{background:#5b6b80}
+h2.have{background:#137a47}
+table{width:100%;border-collapse:collapse;margin:2px 0 8px}
+th{background:#eef3f8;text-align:left;font-size:8.5pt;letter-spacing:.3px;text-transform:uppercase;color:#3c4d63;padding:6px;border-bottom:1.5px solid #b9c6d6}
+td{padding:7px 6px;border-bottom:1px solid #dbe2eb;vertical-align:top}
+tr{break-inside:avoid}
+td.n{width:28px;font-weight:700;font-size:12pt;color:#0a5d7a}
+td.i{width:30%} td.i b{font-size:11pt}
+td.q{width:44px;text-align:center;font-weight:700;font-size:12pt}
+td.r{width:70px;white-space:nowrap}
+td.b{width:26px;text-align:center}
+.box{display:inline-block;width:15px;height:15px;border:1.8px solid #333;border-radius:2px}
+.tot td{font-weight:700;background:#f3f6fa}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:10pt}
+.grid div::before{content:"✓  ";color:#137a47;font-weight:700}
+.home div::before{content:"⌂  ";color:#0a5d7a}
+.warn{background:#fdecea;border:1px solid #f1b0aa;border-radius:6px;padding:8px 11px;margin:10px 0;font-size:10pt}
+</style>
+</head>
+<body>
+<h1>ZeroDrift MK2: shopping list</h1>
+<p class="sub">Team ZeroDrift · Jabalpur Engineering College · SIH 2026 · for Amar Robotics</p>
+
+<div class="say"><b>For the shopkeeper:</b> we are building a small pan-tilt camera turret with two <b>NEMA17 stepper motors (5 mm shaft)</b> and <b>A4988 drivers</b>, run by an Arduino Nano. We need the items below.</div>
+
+<h2>Must buy</h2>
+<table>
+<tr><th></th><th>No.</th><th>Item (ask for)</th><th>Qty</th><th>Description for the shopkeeper</th><th>≈ ₹</th></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">1</td><td class="i"><b>5 mm rigid flange coupling</b></td><td class="q">2</td><td>Metal flange coupling with a <b>5 mm bore</b>, to fit a NEMA17 stepper motor shaft. <b>Rigid (solid)</b> type, not the flexible or spring type. Must have a grub screw and a flange with 4 screw holes. Sometimes sold as a "5 mm wheel hub / shaft coupler".</td><td class="r">160–300</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">2</td><td class="i"><b>12 V 2 A DC adapter (SMPS)</b></td><td class="q">1</td><td>Wall adapter, output <b>12 V DC, 2 A</b>, with a 5.5 × 2.1 mm barrel plug. It powers the two stepper motors. (Our 5 V adapter is too weak for motors.)</td><td class="r">200–350</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">3</td><td class="i"><b>DC female jack with screw terminals</b></td><td class="q">1</td><td>Female barrel jack, 5.5 × 2.1 mm, matching item 2, with two screw terminals marked + and −. Lets us connect the adapter to wires without cutting it.</td><td class="r">20–40</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">4</td><td class="i"><b>Resistor 100 Ω, ¼ W</b></td><td class="q">5</td><td>Carbon film resistor, 100 ohm, quarter watt. Colour bands <b>brown-black-brown-gold</b>. For the decoy LED.</td><td class="r">5–10</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">5</td><td class="i"><b>Resistor 220 Ω, ¼ W</b></td><td class="q">5</td><td>Carbon film resistor, 220 ohm, quarter watt. Colour bands <b>red-red-brown-gold</b>. For the beacon LED.</td><td class="r">5–10</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">6</td><td class="i"><b>Red LED, high brightness</b></td><td class="q">2</td><td>Bright <b>red</b> LED, 10 mm (5 mm also fine), clear or red lens. One for the decoy, one spare.</td><td class="r">10–20</td></tr>
+<tr class="tot"><td></td><td></td><td colspan="3">Total for the must-buy items</td><td class="r">≈ ₹400–730</td></tr>
+</table>
+
+<h2 class="opt">Only if needed</h2>
+<table>
+<tr><th></th><th>No.</th><th>Item (ask for)</th><th>Qty</th><th>Description · buy it only when…</th><th>≈ ₹</th></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">7</td><td class="i"><b>TP4056 charging module</b> (with protection)</td><td class="q">1</td><td>Single-cell 18650 Li-ion charging board, USB-C or micro-USB. <b>Only if the shop has no 12 V adapter</b> (item 2): we then charge our 18650 cells one at a time and run the motors from them.</td><td class="r">30–60</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">8</td><td class="i"><b>Red cellophane or red gel sheet</b></td><td class="q">1</td><td>A small sheet of transparent red film, to go over the camera lens. <b>Only if</b> there is no red film or old sunglasses lens at home. Stationery shops have it.</td><td class="r">10–30</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">9</td><td class="i"><b>USB cable for Arduino Nano</b></td><td class="q">1</td><td>Mini-USB or USB-C, the same as the second Nano's port. <b>Only if</b> we don't already have the right cable.</td><td class="r">60–120</td></tr>
+<tr><td class="b"><span class="box"></span></td><td class="n">10</td><td class="i"><b>USB-C hub</b> (USB-C to 2× USB-A)</td><td class="q">1</td><td><b>Only if</b> the laptop has USB-C ports only: the Nano and the webcam must be plugged in at the same time.</td><td class="r">300–800</td></tr>
+</table>
+
+<h2 class="have">Already have: don't buy</h2>
+<div class="grid">
+<div>2× NEMA17 stepper motors</div><div>2× A4988 drivers (with heatsinks)</div>
+<div>2× NEMA17 L-brackets</div><div>100 µF capacitors</div>
+<div>2× AS5600 encoders + diametric magnets</div><div>TCA9548A multiplexer</div>
+<div>2× Arduino Nano</div><div>KY-008 laser</div>
+<div>Red and white LEDs</div><div>3×AA battery holder</div>
+<div>Ping-pong ball</div><div>3× 18650 cells + holder, B3 charger</div>
+<div>5 V 1 A adapter (for the beacon)</div><div>Toggle switches</div>
+<div>Brass standoffs, M3 screws and nuts</div><div>Breadboard + jumper wires</div>
+<div>Multimeter, soldering iron, glue gun</div><div>White sheet (base plate)</div>
+<div>USB webcam (arriving)</div><div>Foam tape, tape, scissors</div>
+</div>
+
+<h2 class="have" style="background:#0a5d7a">Find at home: no need to buy</h2>
+<div class="grid home">
+<div>2 small plastic boxes (tiffin, soap box): beacon and decoy</div><div>Old CD or stiff lid: the two small discs</div>
+<div>Short brass standoffs screwed together to ≈ 40 mm: head post</div><div>Old sunglasses lens: camera red filter</div>
+<div>Superglue (Fevikwik): magnets</div><div>Drill, or someone who has one (about 10 holes)</div>
+</div>
+
+<div class="warn"><b>Remember:</b> the B3 charger never connects to the rig; it only charges batteries. The 5 V 1 A adapter can't run the motors (it's for the beacon). The motors run on 12 V: item 2, or charged 18650s (3.7–4.2 V each).</div>
+</body>
+</html>

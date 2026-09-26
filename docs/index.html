@@ -749,7 +749,7 @@ body {
   background: rgba(4,9,21,.72); padding: 6px 10px; border-radius: 7px; border: 1px solid #15263F; }
 .rig-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: 0; }
 .lg-b { background: #ff3b3b; box-shadow: 0 0 8px #ff3b3b; }
-.lg-d { background: #fff; box-shadow: 0 0 8px #fff; }
+.lg-d { background: #ff5a48; box-shadow: 0 0 8px #ff5a48; }
 .rig-diff { width: 100%; margin-top: 16px; border: 1px solid #15263F; border-radius: 12px; overflow: hidden; background: rgba(8,16,32,.85); }
 .rd-row { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 12px; padding: 10px 16px; border-top: 1px solid #15263F;
   font: 13px/1.45 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #8EA4C4; }
@@ -771,6 +771,21 @@ body {
   font: 700 12px/1 ui-monospace, monospace; letter-spacing: .16em; color: #7FE0F8;
   background: rgba(4,9,21,.8); border: 1px solid rgba(79,199,234,.4); }
 .rig-badge.mk2 { color: #3BD68C; border-color: rgba(59,214,140,.45); }
+.rig-top { position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 8px; z-index: 3; }
+.rig-top .rig-badge { position: static; }
+.rig-tabs { display: flex; border: 1px solid rgba(79,199,234,.35); border-radius: 7px; overflow: hidden; background: rgba(4,9,21,.8); }
+.rig-tabs button { font: 700 10.5px/1 ui-monospace, monospace; letter-spacing: .12em; color: #8EA4C4; background: none;
+  border: 0; padding: 7px 10px; cursor: pointer; }
+.rig-tabs button + button { border-left: 1px solid rgba(79,199,234,.2); }
+.rig-tabs button.on { color: #04121c; background: #4FC7EA; }
+.rig-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #050a14; z-index: 2; display: none; }
+.rig-media.show { display: block; }
+.rig-empty { position: absolute; inset: 0; z-index: 2; display: none; align-items: center; justify-content: center; text-align: center;
+  background: #050a14; color: #8EA4C4; font: 12px/1.6 ui-monospace, monospace; letter-spacing: .06em; padding: 20px; }
+.rig-empty b { display: block; color: #EAF4FD; font-size: 13px; letter-spacing: .12em; margin-bottom: 6px; }
+.rig-empty.show { display: flex; }
+.rig-view.flat .rig-legend, .rig-view.flat .rig-read { display: none; }
+@media (max-width: 560px) { .rig-legend { top: 50px !important; right: auto !important; left: 12px; } }
 .rig-read { position: absolute; right: 12px; bottom: 10px; font: 11px ui-monospace, monospace; color: #8EA4C4;
   background: rgba(4,9,21,.7); padding: 4px 8px; border-radius: 6px; white-space: pre; }
 .rig-meta { padding: 14px 16px 16px; }
@@ -945,7 +960,11 @@ body {
       <div class="rig-card">
         <div class="rig-view">
           <canvas id="rigMk1" aria-label="MK1 servo rig, 3D"></canvas>
-          <span class="rig-badge">MK1</span>
+          <div class="rig-top"><span class="rig-badge">MK1</span><div class="rig-tabs" role="tablist" aria-label="MK1 view">
+            <button data-view="photo">PHOTO</button><button data-view="video">VIDEO</button><button data-view="3d" class="on">3D</button></div></div>
+          <img class="rig-media" data-kind="photo" data-src="media/mk1_photo.jpg" alt="MK1 rig, photo">
+          <video class="rig-media" data-kind="video" data-src="demo-video.mp4" data-alt="demo-video.webm" poster="media/mk1_photo.jpg" muted loop playsinline controls preload="none"></video>
+          <div class="rig-empty"><div><b>MK1 · <span class="rig-empty-kind"></span></b>Not available in this browser.</div></div>
           <span class="rig-read" id="rigMk1Read"></span>
         </div>
         <div class="rig-meta">
@@ -956,8 +975,12 @@ body {
       <div class="rig-card">
         <div class="rig-view">
           <canvas id="rigMk2" aria-label="MK2 stepper terminal, 3D"></canvas>
-          <span class="rig-badge mk2">MK2</span>
-          <span class="rig-legend"><i class="lg-b"></i>Beacon · 4 Hz · tracked<br><i class="lg-d"></i>Decoy · brighter, steady · ignored</span>
+          <div class="rig-top"><span class="rig-badge mk2">MK2</span><div class="rig-tabs" role="tablist" aria-label="MK2 view">
+            <button data-view="photo">PHOTO</button><button data-view="video">VIDEO</button><button data-view="3d" class="on">3D</button></div></div>
+          <img class="rig-media" data-kind="photo" data-src="media/mk2_photo.jpg" alt="MK2 rig, photo">
+          <video class="rig-media" data-kind="video" data-src="demo-mk2.mp4" muted loop playsinline controls preload="none"></video>
+          <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Recorded after tonight's build.</div></div>
+          <span class="rig-legend"><i class="lg-b"></i>Beacon · 4 Hz · tracked<br><i class="lg-d"></i>Decoy · steady, no blink · ignored</span>
           <span class="rig-read" id="rigMk2Read"></span>
         </div>
         <div class="rig-meta">
@@ -1516,5 +1539,39 @@ setTimeout(() => {
 }}
 </script>
 <script type="module" src="rigs3d.js"></script>
+<script>
+/* MK1 / MK2 cards: PHOTO · VIDEO · 3D. Media loads only when its tab is
+   opened; a file that is not there yet shows a placeholder instead. */
+document.querySelectorAll('.rig-view').forEach(view => {
+  const tabs = view.querySelectorAll('.rig-tabs button');
+  const empty = view.querySelector('.rig-empty');
+  const media = { photo: view.querySelector('img.rig-media'), video: view.querySelector('video.rig-media') };
+  const missing = {};
+  const show = kind => {
+    tabs.forEach(t => t.classList.toggle('on', t.dataset.view === kind));
+    view.classList.toggle('flat', kind !== '3d');
+    Object.entries(media).forEach(([k, el]) => {
+      const on = k === kind && !missing[k];
+      el.classList.toggle('show', on);
+      if (k === 'video') { if (on) el.play().catch(() => {}); else el.pause(); }
+    });
+    const gone = kind !== '3d' && missing[kind];
+    empty.classList.toggle('show', !!gone);
+    if (gone) empty.querySelector('.rig-empty-kind').textContent = kind.toUpperCase();
+  };
+  Object.entries(media).forEach(([k, el]) => {
+    el.addEventListener('error', () => { missing[k] = true; if (view.querySelector('.rig-tabs .on').dataset.view === k) show(k); });
+  });
+  tabs.forEach(t => t.addEventListener('click', () => {
+    const k = t.dataset.view, el = media[k];
+    if (el && !el.getAttribute('src')) {
+      // MP4 (H.264) where the browser plays it, else the WebM copy.
+      const mp4 = el.tagName !== 'VIDEO' || el.canPlayType('video/mp4; codecs="avc1.42E01E"');
+      el.setAttribute('src', mp4 || !el.dataset.alt ? el.dataset.src : el.dataset.alt);
+    }
+    show(k);
+  }));
+});
+</script>
 </body>
 </html>

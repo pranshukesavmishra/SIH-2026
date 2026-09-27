@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ZeroDrift Beacon and Decoy</title>
+<style>
+:root{
+  --bg:#060b14; --panel:#0a1220; --panel-2:#0d1624; --edge:#16233a;
+  --ink:#c9d6e6; --ink-dim:#5f7288; --ink-bright:#EAF4FD;
+  --cyan:#4FC7EA; --green:#3BD68C; --amber:#FFC24D; --red:#FF5555;
+  --mono:"SF Mono","Cascadia Code",Consolas,"DejaVu Sans Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:13px/1.5 var(--mono);overflow:hidden}
+a{color:var(--cyan);text-decoration:none}
+header{display:flex;align-items:center;gap:16px;padding:8px 16px;border-bottom:1px solid var(--edge);height:44px}
+header .wm{font-size:15px;font-weight:700;color:var(--ink-bright)} header .wm b{color:var(--cyan)}
+.tabs{display:flex}
+.tabs a{display:block;padding:6px 12px;font-size:11px;letter-spacing:.4px;color:var(--ink);background:var(--panel-2);border:1px solid var(--edge);border-left-width:0}
+.tabs a:first-child{border-radius:4px 0 0 4px;border-left-width:1px} .tabs a:last-child{border-radius:0 4px 4px 0}
+.tabs a:hover{color:var(--cyan)} .tabs a.on{background:#12243c;border-color:var(--cyan);color:var(--cyan)}
+header nav{margin-left:auto;font-size:11px} header nav a{margin-left:13px;color:var(--ink-dim)}
+.wrap{display:grid;grid-template-columns:1fr 360px;height:calc(100% - 44px)}
+.stage{position:relative;min-width:0;min-height:0}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;top:14px;left:16px;right:16px;pointer-events:none;z-index:2}
+.hud .n{font-size:10px;color:var(--ink-dim);letter-spacing:.8px}
+.hud .now{font-size:17px;color:var(--cyan);font-weight:700;margin:2px 0 4px}
+.hud .why{max-width:560px;font-size:12px;line-height:1.55;background:rgba(6,11,20,.6)}
+.hud .dims{display:inline-block;margin-top:8px;padding:4px 9px;border:1px solid var(--amber);color:var(--amber);font-size:11px;max-width:560px;background:rgba(6,11,20,.7)}
+.hud .dims.warn{border-color:var(--red);color:#ffb3b3}
+.lbl{position:absolute;z-index:3;pointer-events:none;font-size:11px;font-weight:700;color:var(--ink-bright);
+  background:rgba(6,11,20,.88);border:1px solid var(--cyan);padding:2px 7px;border-radius:3px;white-space:nowrap;transform:translate(-50%,-130%)}
+.lbl.red{border-color:var(--red);color:#ffb3b3} .lbl.amb{border-color:var(--amber);color:var(--amber)} .lbl.grn{border-color:var(--green);color:#a7f3d0}
+.lbl::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:10px;background:currentColor;opacity:.7}
+.bar{position:absolute;left:16px;right:16px;bottom:14px;display:flex;gap:8px;align-items:center;z-index:2}
+button{background:#0d1a2c;color:var(--ink);border:1px solid var(--edge);border-radius:4px;padding:8px 14px;font:700 12px var(--mono);cursor:pointer}
+button:hover{border-color:var(--cyan);color:var(--cyan)} button.on{border-color:var(--cyan);color:var(--cyan);background:#12243c}
+.prog{flex:1;height:3px;background:var(--edge);border-radius:2px;overflow:hidden} .prog i{display:block;height:100%;background:var(--cyan);width:0;transition:width .3s}
+aside{border-left:1px solid var(--edge);background:var(--panel);overflow-y:auto;padding:12px}
+aside h3{font-size:11px;color:var(--ink-dim);letter-spacing:.8px;margin:4px 0 10px}
+.step{display:flex;gap:10px;padding:7px 8px;border:1px solid transparent;border-radius:4px;cursor:pointer;margin-bottom:3px}
+.step:hover{border-color:var(--edge)} .step.on{border-color:var(--cyan);background:#0d1a2c}
+.step .k{flex:none;width:24px;height:24px;border-radius:50%;background:#12243c;color:var(--cyan);font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}
+.step.done .k{background:var(--cyan);color:#06101c}
+.step .t{font-size:12px;font-weight:700;color:var(--ink-bright)} .step .d{font-size:10.5px;color:var(--ink-dim);margin-top:1px}
+.need{margin-top:12px;border-top:1px solid var(--edge);padding-top:10px;font-size:11px}
+.need li{margin:2px 0 2px 16px}
+@media (max-width:860px){.wrap{grid-template-columns:1fr;grid-template-rows:64% 36%}aside{border-left:0;border-top:1px solid var(--edge)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wm">ZERO<b>DRIFT</b> · MK2</div>
+  <div class="tabs">
+    <a href="assembly.html">gimbal</a><a id="tb" href="targets.html?t=beacon">beacon</a><a id="td" href="targets.html?t=decoy">decoy</a><a href="assembly.html?tab=result">what it does</a><a href="headbox.html">head box</a><a href="wiring.html">wiring</a><a href="wiring3d.html">wiring 3D</a>
+  </div>
+  <nav><a href="build.html">BUILD GUIDE</a></nav>
+</header>
+<div class="wrap">
+  <div class="stage">
+    <canvas id="c"></canvas>
+    <div class="hud"><div class="n" id="hn"></div><div class="now" id="ht"></div><div class="why" id="hw"></div><div class="dims" id="hd"></div></div>
+    <div id="labels"></div>
+    <div class="bar">
+      <button id="prev">‹ prev</button><button id="play">▶ play</button><button id="next">next ›</button>
+      <div class="prog"><i id="pg"></i></div>
+      <button id="other"></button>
+    </div>
+  </div>
+  <aside>
+    <h3 id="sideTitle"></h3>
+    <div id="steps"></div>
+    <div class="need"><h3>YOU NEED</h3><ul id="need"></ul></div>
+  </aside>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"./vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"./vendor/three/OrbitControls.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+/* One page, two builds: ?t=beacon (blinks at 4 Hz, Nano on D9) or ?t=decoy (steady, 3xAA, no code).
+   Millimetres, Y up, table at y = 0. Both boxes are identical on the outside on purpose. */
+const KIND = new URLSearchParams(location.search).get('t') === 'decoy' ? 'decoy' : 'beacon';
+const BEACON = KIND === 'beacon';
+document.getElementById(BEACON ? 'tb' : 'td').classList.add('on');
+document.title = BEACON ? 'ZeroDrift Beacon 3D' : 'ZeroDrift Decoy 3D';
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x060b14);
+const cam = new THREE.PerspectiveCamera(38, 1, 1, 5000);
+const controls = new OrbitControls(cam, canvas); controls.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xdbe9ff, 0x0b1320, 1.1));
+const sun = new THREE.DirectionalLight(0xffffff, 1.4); sun.position.set(150, 260, 200); scene.add(sun);
+const fillL = new THREE.DirectionalLight(0x88aaff, .45); fillL.position.set(-200, 100, -150); scene.add(fillL);
+const grid = new THREE.GridHelper(600, 30, 0x1b2a44, 0x101a2c); scene.add(grid);
+
+const std = (color, r = .55, m = .1) => new THREE.MeshStandardMaterial({color, roughness:r, metalness:m});
+const M = {
+  acr: new THREE.MeshPhysicalMaterial({color:0xbfe9ff, transparent:true, opacity:.28, roughness:.08, depthWrite:false, side:THREE.DoubleSide}),
+  ball: new THREE.MeshPhysicalMaterial({color:0xfdfdfd, transparent:true, opacity:.8, roughness:.6, side:THREE.DoubleSide, emissive:0x000000}),
+  tape: std(0xf5c542, .7), led: new THREE.MeshPhysicalMaterial({color:0xff2a2a, transparent:true, opacity:.85, roughness:.2, emissive:0x000000}),
+  leg: std(0xc9ced6, .3, .9), nano: std(0x1e5aa8, .5), chip: std(0x0a0a0a, .4), steel: std(0xc9ced6, .3, .9), black: std(0x111827, .6),
+  res: std(0xe7cfa3, .6), holder: std(0x161a20, .7), cell: std(0x1f2937, .4, .3), cellTop: std(0xf59e0b, .4, .5), bank: std(0x1f2937, .5, .2),
+};
+const EDGE = new THREE.LineBasicMaterial({color:0x4fc7ea, transparent:true, opacity:.85});
+const edges = m => { m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry, 25), EDGE)); return m; };
+const mesh = (geo, mat, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); scene.add(m); return m; };
+const box = (w, h, d, mat, x, y, z) => mesh(new THREE.BoxGeometry(w, h, d), mat, x, y, z);
+const cyl = (r, h, mat, x, y, z, axis = 'y') => { const m = mesh(new THREE.CylinderGeometry(r, r, h, 28), mat, x, y, z); if (axis === 'x') m.rotation.z = Math.PI / 2; if (axis === 'z') m.rotation.x = Math.PI / 2; return m; };
+const group = (...kids) => { const g = new THREE.Group(); kids.forEach(k => g.add(k)); scene.add(g); return g; };
+const hole = (x, y, r) => { const h = new THREE.Path(); h.absarc(x, y, r, 0, Math.PI * 2, true); return h; };
+// a 3 mm acrylic panel from a rectangle with holes; plane 'xz' = horizontal, 'zy' = normal X, 'xy' = normal Z
+function panel(w, h, holes, plane, x, y, z) {
+  const s = new THREE.Shape(); s.moveTo(-w / 2, -h / 2); s.lineTo(w / 2, -h / 2); s.lineTo(w / 2, h / 2); s.lineTo(-w / 2, h / 2); s.closePath();
+  holes.forEach(hh => s.holes.push(hh));
+  const g = new THREE.ExtrudeGeometry(s, {depth:3, bevelEnabled:false, curveSegments:28}); g.translate(0, 0, -1.5);
+  if (plane === 'xz') g.rotateX(-Math.PI / 2); if (plane === 'zy') g.rotateY(Math.PI / 2);
+  return edges(mesh(g, M.acr, x, y, z));
+}
+const tube = (pts, color, r = .7) => { const c = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p))); return mesh(new THREE.TubeGeometry(c, 60, r, 8), std(color, .5)); };
+function resistor(x, y, z, bands) {
+  const g = new THREE.Group();
+  const b = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 6.5, 20), M.res); b.rotation.z = Math.PI / 2; g.add(b);
+  bands.forEach((c, i) => { const r = new THREE.Mesh(new THREE.CylinderGeometry(1.45, 1.45, .7, 20), std(c)); r.rotation.z = Math.PI / 2; r.position.x = -2.2 + i * 1.5; g.add(r); });
+  const l = new THREE.Mesh(new THREE.CylinderGeometry(.3, .3, 16, 8), M.leg); l.rotation.z = Math.PI / 2; g.add(l);
+  g.position.set(x, y, z); scene.add(g); return g;
+}
+
+/* ---------------- the parts ---------------- */
+// box: outside 100 x 35 x 64; base, 4 walls, lid with the LED hole in the middle
+const base = edges(box(100, 3, 64, M.acr, 0, 1.5, 0));
+const wallF = edges(box(100, 29, 3, M.acr, 0, 17.5, 30.5));
+const wallB = edges(box(100, 29, 3, M.acr, 0, 17.5, -30.5));
+const wallL = BEACON ? panel(58, 29, [hole(8, -8, 4.5)], 'zy', -48.5, 17.5, 0) : edges(box(3, 29, 58, M.acr, -48.5, 17.5, 0));   // beacon: USB-cable hole
+const wallR = BEACON ? edges(box(3, 29, 58, M.acr, 48.5, 17.5, 0)) : panel(58, 29, [hole(0, 0, 3.3)], 'zy', 48.5, 17.5, 0);       // decoy: switch hole
+const lid = panel(100, 64, [hole(0, 0, 2.7)], 'xz', 0, 33.5, 0);
+
+// ping-pong ball: two halves + the tape guide line. The top half ends up on the lid.
+const domeGeo = new THREE.SphereGeometry(20, 36, 18, 0, Math.PI * 2, 0, Math.PI / 2);
+const bowlGeo = new THREE.SphereGeometry(20, 36, 18, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
+const BALL = [120, 20, 20];
+const dome = mesh(domeGeo, M.ball, 0, 35, 0);                                // final home: on the lid, over the LED
+const bowl = mesh(bowlGeo, M.ball.clone(), BALL[0], 21, BALL[2] - 45);       // the other half, set aside
+const tapeRing = mesh(new THREE.TorusGeometry(20.3, 1.4, 10, 48), M.tape, BALL[0], BALL[1], BALL[2]); tapeRing.rotation.x = Math.PI / 2;
+
+// LED: 5 mm red, standing up through the lid hole, tip about 4 mm above the lid
+const led = group();
+{ const body = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 6, 20), M.led); body.position.y = 32.5;
+  const top = new THREE.Mesh(new THREE.SphereGeometry(2.5, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), M.led); top.position.y = 35.5;
+  const rim = new THREE.Mesh(new THREE.CylinderGeometry(2.95, 2.95, 1, 20), M.led); rim.position.y = 29.8;
+  const longLeg = new THREE.Mesh(new THREE.CylinderGeometry(.3, .3, 22, 8), M.leg); longLeg.position.set(-1.3, 18.3, 0);
+  const shortLeg = new THREE.Mesh(new THREE.CylinderGeometry(.3, .3, 17, 8), M.leg); shortLeg.position.set(1.3, 20.8, 0);
+  led.add(body, top, rim, longLeg, shortLeg); }
+const LEG_LONG = [-1.3, 7.5, 0], LEG_SHORT = [1.3, 12.5, 0];
+const glow = mesh(new THREE.SphereGeometry(9, 20, 12), new THREE.MeshBasicMaterial({color:0xff3030, transparent:true, opacity:.5}), 0, 40, 0);
+const lamp = new THREE.PointLight(0xff3030, 0, 160); lamp.position.set(0, 42, 0); scene.add(lamp);
+
+let parts = {}, wires = {}, STEPS, NEED;
+if (BEACON) {
+  const nano = group(); nano.add(new THREE.Mesh(new THREE.BoxGeometry(45, 2, 18), M.nano)); { const u = new THREE.Mesh(new THREE.BoxGeometry(7, 3.5, 8), M.steel); u.position.set(-24, 1, 0); nano.add(u); const c = new THREE.Mesh(new THREE.BoxGeometry(8, 1.4, 8), M.chip); c.position.set(2, 1.5, 0); nano.add(c); }
+  nano.position.set(-18, 4.5, -8);
+  parts.nano = nano;
+  parts.res = resistor(-2, 9, 10, ['#DC2626', '#DC2626', '#7A3B10']);                    // 220 ohm: red red brown
+  wires.d9 = tube([[-6, 6, -1], [-10, 8, 5], [-12, 9, 10], [-10.2, 9, 10]], 0x7c3aed);                 // Nano D9 -> resistor
+  wires.toLed = tube([[6.2, 9, 10], [4, 9, 8], [-1.3, 7.5, 3], LEG_LONG], 0xd62828);                  // resistor -> LED long leg (+)
+  wires.gnd = tube([[-9, 6, -1], [-4, 10, -4], [1.3, 12.5, -2], LEG_SHORT], 0x111827);                // LED short leg -> Nano GND
+  wires.usbLaptop = tube([[-42, 5, -8], [-49, 6.5, -8], [-80, 5, -12], [-130, 5, -30], [-170, 8, -40]], 0xcbd5e1, 2);
+  wires.usbBank = tube([[-42, 5, -8], [-49, 6.5, -8], [-80, 5, -6], [-115, 5, 20], [-135, 7, 40]], 0xcbd5e1, 2);
+  parts.laptop = group(); { const b = new THREE.Mesh(new THREE.BoxGeometry(90, 6, 60), std(0x334155, .6, .3)); const s = new THREE.Mesh(new THREE.BoxGeometry(90, 58, 3), std(0x0b1220, .3)); s.position.set(0, 30, -30); s.rotation.x = -.2; parts.laptop.add(b, s); parts.laptop.position.set(-215, 3, -40); }
+  parts.bank = box(35, 14, 70, M.bank, -155, 7, 50);
+  NEED = ['the 2nd Arduino Nano + its USB cable', 'red LED (the same kind as the decoy)', '220 Ω resistor (red-red-brown)', 'half a ping-pong ball', 'box: 6 pieces of 3 mm acrylic (or any small box — use the same kind for the decoy)', '2 jumper wires, hot glue, foam tape', 'phone charger or power bank'];
+} else {
+  const holder = group(); holder.add(new THREE.Mesh(new THREE.BoxGeometry(58, 14, 47), M.holder));
+  holder.position.set(-18, 10, 0); parts.holder = holder;
+  const cells = group();
+  [-15, 0, 15].forEach((z, i) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(7, 7, 50, 24), M.cell); c.rotation.z = Math.PI / 2; c.position.set(0, 0, z); cells.add(c);
+    const t = new THREE.Mesh(new THREE.CylinderGeometry(7.05, 7.05, 12, 24), M.cellTop); t.rotation.z = Math.PI / 2; t.position.set(i % 2 ? -19 : 19, 0, z); cells.add(t); });
+  cells.position.set(-18, 15, 0); parts.cells = cells;
+  parts.sw = group(); { const b = new THREE.Mesh(new THREE.BoxGeometry(10, 12, 9), M.black); b.position.x = -6; const n = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 7, 16), M.steel); n.rotation.z = Math.PI / 2; n.position.x = 1.5;
+    const lev = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 10, 12), M.steel); lev.position.set(7, 3, 0); lev.rotation.z = -.5; parts.sw.add(b, n, lev); parts.sw.position.set(48.5, 17.5, 0); scene.add(parts.sw); }
+  parts.res = resistor(22, 10, 14, ['#7A3B10', '#111111', '#7A3B10']);                   // 100 ohm: brown black brown
+  wires.red = tube([[11, 12, 18], [22, 14, 22], [34, 17, 12], [36.5, 17.5, 2.5]], 0xd62828);             // holder + -> switch
+  wires.swRes = tube([[36.5, 17.5, -2.5], [34, 15, -6], [34, 11, 14], [30, 10, 14]], 0xd62828);          // switch -> resistor
+  wires.toLed = tube([[14, 10, 14], [8, 9, 10], [-1.3, 7.5, 3], LEG_LONG], 0xd62828);                  // resistor -> LED long leg (+)
+  wires.black = tube([[11, 12, -18], [6, 14, -12], [1.3, 12.5, -3], LEG_SHORT], 0x111827);               // LED short leg -> holder -
+  NEED = ['3×AA holder + 3 AA cells (alkaline)', 'red LED (the SAME kind as the beacon)', '100 Ω resistor (brown-black-brown); a 220 Ω if it is too bright', 'small switch', 'the OTHER half of the ping-pong ball', 'box: 6 pieces of 3 mm acrylic (the SAME box as the beacon)', 'hot glue, foam tape, insulation tape'];
+}
+document.getElementById('need').innerHTML = NEED.map(t => `<li>${t}</li>`).join('');
+document.getElementById('sideTitle').textContent = BEACON ? 'BEACON · THE BLINKING TARGET' : 'DECOY · THE TRICK LIGHT';
+const other = document.getElementById('other'); other.textContent = BEACON ? 'decoy ›' : '‹ beacon'; other.onclick = () => location.href = BEACON ? 'targets.html?t=decoy' : 'targets.html?t=beacon';
+
+/* ---------------- keyframes: every part appears at a step and may move later ---------------- */
+// key(obj, step, fromOffset, toOffset): during `step` the part moves from `from` to `to` (offsets from its home).
+const KEYS = new Map();
+const key = (obj, s, from, to = [0, 0, 0]) => { if (!KEYS.has(obj)) KEYS.set(obj, {home:obj.position.clone(), rot:obj.rotation.clone(), keys:[]}); KEYS.get(obj).keys.push({s, from:new THREE.Vector3(...from), to:new THREE.Vector3(...to)}); };
+const HIDE_AFTER = new Map();   // obj -> last step it is visible
+const sv = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const BALL_OFF = sv(BALL, [0, 35, 0]);            // dome home is on the lid; before that it sits at the ball spot
+
+// common opening steps: 1 ball, 2 cut, 3 box, 4 holes
+key(dome, 1, [BALL_OFF[0], BALL_OFF[1] + 60, BALL_OFF[2]], BALL_OFF);
+key(bowl, 1, [0, 60, 45], [0, -1, 45]); HIDE_AFTER.set(tapeRing, 2); key(tapeRing, 1, [0, 60, 0]);
+key(dome, 2, BALL_OFF, [BALL_OFF[0], BALL_OFF[1] + 12, BALL_OFF[2]]);            // the cut: the top lifts off
+key(bowl, 2, [0, -1, 45], [0, 0, 0]);                                           // the other half slides aside
+key(base, 3, [0, -40, 0]); key(wallF, 3, [0, 0, 60]); key(wallB, 3, [0, 0, -60]); key(wallL, 3, [-60, 0, 0]); key(wallR, 3, [60, 0, 0]);
+key(lid, 4, [0, 90, 0], [0, 55, 0]);                                            // lid hovers above while you work inside
+
+let S = 5;
+if (BEACON) {
+  key(parts.laptop, S, [-80, 0, 0]); key(wires.usbLaptop, S, [0, 0, 0]); key(parts.nano, S, [0, 60, 0]); HIDE_AFTER.set(parts.laptop, S); HIDE_AFTER.set(wires.usbLaptop, S);
+  S++; key(led, S, [0, 60, 0]); key(parts.res, S, [0, 50, 0]); key(wires.toLed, S, [0, 50, 0]);      // 6 LED + resistor on the long leg
+  S++; key(wires.d9, S, [0, 0, 0]);                                                                    // 7 D9 -> resistor
+  S++; key(wires.gnd, S, [0, 0, 0]);                                                                   // 8 short leg -> GND
+  S++; key(lid, S, [0, 55, 0], [0, 0, 0]);                                                            // 9 lid down over the LED
+  S++; key(dome, S, [BALL_OFF[0], BALL_OFF[1] + 12, BALL_OFF[2]], [0, 0, 0]);                          // 10 dome on
+  S++; key(wires.usbBank, S, [0, 0, 0]); key(parts.bank, S, [-60, 0, 0]);                              // 11 power
+} else {
+  key(parts.holder, S, [0, 60, 0]);                                                                    // 5 holder in
+  S++; key(parts.sw, S, [40, 0, 0]);                                                                   // 6 switch in its hole
+  S++; key(wires.red, S, [0, 0, 0]); key(wires.swRes, S, [0, 0, 0]); key(parts.res, S, [0, 40, 0]);   // 7 + -> switch -> resistor
+  S++; key(led, S, [0, 60, 0]);                                                                       // 8 LED legs identified
+  S++; key(wires.toLed, S, [0, 0, 0]); key(wires.black, S, [0, 0, 0]);                                 // 9 LED wired
+  S++; key(lid, S, [0, 55, 0], [0, 0, 0]);                                                            // 10 lid down over the LED
+  S++; key(dome, S, [BALL_OFF[0], BALL_OFF[1] + 12, BALL_OFF[2]], [0, 0, 0]);                          // 11 dome on
+  S++; key(parts.cells, S, [0, 50, 0]);                                                               // 12 cells in, switch on
+}
+
+/* ---------------- the steps ---------------- */
+const COMMON = [
+  {t:'Cut the ping-pong ball in half', d:'tape line, score, snip', view:[190, 150, 210], target:[120, 22, 10],
+   why:'YES, cut it in half: ONE half goes on the beacon, the OTHER half on the decoy, so they look the same. Wrap a strip of tape round the middle as a straight guide. Score along the tape edge with a sharp cutter, round and round, then finish with small scissors. NO flame or hot nail: ping-pong balls burn very fast.',
+   dims:'ball Ø 40 mm → two 20 mm-tall domes · keep both halves', labels:[['tape = cutting line', [120, 20, 42], 'amb'], ['ping-pong ball', [120, 44, 20]]]},
+  {t:'Two halves: one for each', d:'this half → here, the other → the other target', view:[200, 170, 190], target:[120, 25, 0],
+   why:'Sand the cut edge flat with sandpaper so it sits on the lid with no gap. Keep the second half safe: it goes on the ' + (BEACON ? 'decoy' : 'beacon') + '.',
+   dims:'dome sits flat · no gaps (gaps leak light)', labels:[['this half', [120, 55, 20]], ['other half → ' + (BEACON ? 'decoy' : 'beacon'), [120, 26, -25], 'amb']]},
+  {t:'Build the box', d:'base + 4 walls, hot glue', view:[170, 160, 200], target:[0, 15, 0],
+   why:'Base 100 × 64 mm, two long walls 100 × 29, two short walls 58 × 29, all 3 mm acrylic, hot-glued on the base. Beacon and decoy MUST be the same box: the camera may only be able to tell them apart by the blink. (Any two identical small boxes also work.)',
+   dims:'outside 100 × 64 × 35 mm · base 100×64 · walls 100×29 (2) + 58×29 (2) · lid 100×64', labels:[['base 100 × 64', [0, 3, 34]], ['wall 100 × 29', [0, 32, 32]], ['wall 58 × 29', [-50, 32, 0]]]},
+  {t:'Holes: lid + ' + (BEACON ? 'cable' : 'switch'), d:'5 mm LED hole in the lid centre', view:[150, 190, 210], target:[0, 40, 0],
+   why:'Lid 100 × 64: a 5 mm hole exactly in the middle for the LED (hot nail is fine on acrylic, far from the ball). ' + (BEACON ? 'Left short wall: a 9 mm hole low down for the USB cable.' : 'Right short wall: a hole the size of your switch (about 6 mm) in the middle.'),
+   dims:'lid hole Ø 5 mm, centre · ' + (BEACON ? 'USB hole Ø 9 mm, left wall' : 'switch hole ≈ Ø 6 mm, right wall'), labels:[['5 mm LED hole', [0, 92, 0], 'amb'], [BEACON ? '9 mm USB hole' : 'switch hole', BEACON ? [-50, 12, 8] : [50, 18, 0], 'amb']]},
+];
+const BSTEPS = [
+  {t:'Upload the beacon code first', d:'Nano on the laptop', view:[-150, 150, 180], target:[-80, 10, -20],
+   why:'Plug the 2nd Nano into the laptop. Arduino IDE → open tools/rig/beacon_firmware.ino → Board: Arduino Nano → Processor: ATmega328P (Old Bootloader) → Port → Upload. The code blinks pin D9 at 4 Hz by itself every time it powers up. Then unplug it and put it in the box.',
+   dims:'beacon_firmware.ino · pin D9 · 4.0 Hz at power-on', labels:[['laptop', [-215, 40, -40]], ['Nano', [-18, 10, -8]], ['upload', [-120, 10, -26], 'amb']]},
+  {t:'LED legs + 220 Ω', d:'long leg = +', view:[80, 110, 120], target:[0, 35, 5],
+   why:'The LED\'s LONG leg is + , the SHORT leg is −. The 220 Ω resistor (red-red-brown) goes on the LONG leg: twist or solder it, then tape the joint. Either end of a resistor is fine.',
+   dims:'long leg = + · 220 Ω = red red brown', labels:[['long leg (+)', [-14, 20, -2], 'red'], ['short leg (−)', [10, 26, 2]], ['220 Ω', [-2, 12, 10], 'amb']]},
+  {t:'D9 → resistor', d:'purple wire', view:[90, 90, 110], target:[-8, 8, 4],
+   why:'A jumper from the Nano\'s D9 pin to the free end of the resistor. D9 is the pin the code blinks.',
+   dims:'Nano D9 → resistor → LED long leg', labels:[['D9', [-6, 10, -1]], ['→ resistor', [-11, 13, 10], 'amb']]},
+  {t:'LED short leg → GND', d:'black wire', view:[90, 90, 110], target:[-2, 10, 0],
+   why:'The resistor\'s other end is already on the LONG leg. Now the SHORT leg goes to a GND pin on the Nano with a black jumper.',
+   dims:'LED short leg → Nano GND', labels:[['GND', [-9, 10, -1]], ['short leg', [5, 16, 0]]]},
+  {t:'Lid on: LED through the hole', d:'hot glue under the lid', view:[120, 150, 170], target:[0, 30, 0],
+   why:'Stick the Nano to the base with foam tape. Bring the lid down so the LED pokes up through the 5 mm hole, round tip about 4 mm above the lid. Hot-glue the LED under the lid so it stands straight up.',
+   dims:'LED tip ≈ 4 mm above the lid · straight up', labels:[['LED tip', [0, 40, 0], 'red'], ['Nano on foam tape', [-18, 8, -8]]]},
+  {t:'Half ball over the LED', d:'dome up, glue all round', view:[130, 120, 170], target:[0, 40, 0],
+   why:'Put the half ball over the LED, dome up, centred. Run hot glue all round the rim so no light leaks out underneath. The ball spreads the light, so the camera sees a glowing dome from any side, not a tiny dot.',
+   dims:'dome centred on the LED · glue round the whole rim', labels:[['half ping-pong ball', [0, 58, 0]], ['glue round the rim', [18, 36, 12], 'amb']]},
+  {t:'Power it: it blinks 4× a second', d:'power bank or phone charger', view:[-120, 140, 260], target:[-50, 20, 20], blink:true,
+   why:'The USB cable goes out of the side hole to a power bank or phone charger. The dome blinks 4 times a second. Check with your phone\'s slow-motion video: 4 flashes per second. No light? The LED is the wrong way round: swap its two legs.',
+   dims:'blinks at 4.0 Hz · no light = swap the LED legs', labels:[['power bank', [-155, 20, 50]], ['blinks 4× / s', [0, 62, 0], 'grn']]},
+  {t:'Check it on the live page', d:'LOCKED 4.0 Hz', view:[180, 140, 220], target:[0, 30, 0], blink:true,
+   why:'Put the beacon a couple of metres from the rig, open the /live page and start the camera: the beacon gets a green box and the label LOCKED 4.0 Hz. That is the thing the rig will follow.',
+   dims:'about 2 m from the camera · green box = locked', labels:[['beacon', [0, 62, 0], 'grn']]},
+];
+const DSTEPS = [
+  {t:'Battery holder in', d:'3×AA, foam tape, NO cells yet', view:[130, 150, 170], target:[-10, 10, 0],
+   why:'Stick the 3×AA holder to the base with foam tape, its wires toward the right. Leave the cells OUT until the very end so nothing lights up while you wire it.',
+   dims:'3 × AA = about 4.5 V · cells go in LAST', labels:[['3×AA holder', [-18, 22, 0]], ['red wire = +', [11, 16, 20], 'red'], ['black wire = −', [11, 16, -20]]]},
+  {t:'Switch in its hole', d:'right short wall', view:[160, 120, 90], target:[40, 17, 0],
+   why:'Push the switch through the hole in the right wall, lever outside. Tighten its nut or hot-glue it inside. The switch lets you turn the decoy on in the middle of the demo.',
+   dims:'lever outside · switch body inside', labels:[['switch', [54, 24, 0], 'amb']]},
+  {t:'+ → switch → 100 Ω', d:'red wires', view:[130, 110, 130], target:[22, 14, 8],
+   why:'Holder RED wire to one switch pin. The other switch pin to one end of the 100 Ω resistor (brown-black-brown). Twist or solder, then tape each joint.',
+   dims:'holder + → switch → 100 Ω', labels:[['holder +', [12, 16, 22], 'red'], ['switch', [38, 22, 0]], ['100 Ω', [22, 16, 14], 'amb']]},
+  {t:'LED legs', d:'long leg = +', view:[80, 110, 120], target:[0, 35, 5],
+   why:'Use the SAME kind of red LED as the beacon. Its LONG leg is +, the SHORT leg is −.',
+   dims:'long leg = + · short leg = −', labels:[['long leg (+)', [-14, 20, -2], 'red'], ['short leg (−)', [10, 26, 2]]]},
+  {t:'Resistor → long leg, short leg → −', d:'close the loop', view:[110, 100, 120], target:[4, 12, 4],
+   why:'The resistor\'s free end to the LED\'s LONG leg. The LED\'s SHORT leg to the holder\'s BLACK wire. That is the whole circuit: no Arduino, no code.',
+   dims:'100 Ω → long leg · short leg → holder −', labels:[['→ long leg', [-2, 14, 5], 'red'], ['short leg → black', [6, 16, -12]]]},
+  {t:'Lid on: LED through the hole', d:'hot glue under the lid', view:[120, 150, 170], target:[0, 30, 0],
+   why:'Bring the lid down so the LED pokes up through the 5 mm hole, tip about 4 mm above the lid. Hot-glue it under the lid, straight up, exactly like the beacon.',
+   dims:'LED tip ≈ 4 mm above the lid', labels:[['LED tip', [0, 40, 0], 'red']]},
+  {t:'Half ball over the LED', d:'the other half of the same ball', view:[130, 120, 170], target:[0, 40, 0],
+   why:'The other half of the ping-pong ball goes over the LED, dome up, glued all round the rim. Now the decoy and the beacon look the same.',
+   dims:'dome centred · glue round the whole rim', labels:[['other half of the ball', [0, 58, 0]]]},
+  {t:'Cells in, switch on', d:'steady light, never blinks', view:[160, 140, 200], target:[0, 25, 0], steady:true,
+   why:'Put the 3 AA cells in (match the + and − marks in the holder), close the lid, flip the switch: a steady red glow that NEVER blinks. No light? Flip the LED\'s legs, or check the cells.',
+   dims:'steady ON · no light = swap the LED legs', labels:[['steady red', [0, 62, 0], 'red'], ['switch ON', [54, 24, 0], 'amb']]},
+  {t:'Match the brightness', d:'next to the beacon on the live page', view:[180, 140, 220], target:[0, 30, 0], steady:true,
+   why:'Put the decoy next to the beacon in front of the webcam on the /live page. They should look about as bright. If the decoy is MUCH brighter, swap its 100 Ω for a 220 Ω (you have spares). The tracker ignores it because it never blinks, and stays locked on the beacon.',
+   dims:'about as bright as the beacon · tracker ignores it', labels:[['decoy · ignored', [0, 62, 0], 'red']]},
+];
+const INTRO = {t:BEACON ? 'The finished beacon' : 'The finished decoy', d:BEACON ? 'blinks 4× a second' : 'always on, never blinks',
+  view:[170, 140, 200], target:[0, 28, 0], overview:true, blink:BEACON, steady:!BEACON,
+  why:BEACON ? 'The beacon is the target the rig follows. A red LED under half a ping-pong ball, driven by the 2nd Arduino Nano, blinking exactly 4 times a second. The blink is how the tracker knows it is the beacon.'
+             : 'The decoy is a trap. It looks exactly like the beacon (same box, same LED, same half ball) but it never blinks. A tracker that followed brightness would lock onto it; ZeroDrift ignores it because it does not blink at 4 Hz.',
+  dims:BEACON ? 'box 100 × 64 × 35 mm · dome Ø 40 · Nano D9 · 4 Hz' : 'box 100 × 64 × 35 mm · dome Ø 40 · 3×AA · 100 Ω · no code',
+  labels:BEACON ? [['half ping-pong ball', [0, 58, 0]], ['Nano (beacon code)', [-18, 8, -8]], ['USB → power bank', [-80, 10, -8]]]
+                : [['half ping-pong ball', [0, 58, 0]], ['3×AA', [-18, 22, 0]], ['switch', [54, 24, 0], 'amb']]};
+STEPS = [INTRO, ...COMMON, ...(BEACON ? BSTEPS : DSTEPS)];
+
+/* ---------------- engine ---------------- */
+let cur = 0, t0 = performance.now(), playing = false, playT = 0;
+const ease = x => 1 - Math.pow(1 - Math.min(Math.max(x, 0), 1), 3);
+const camFrom = new THREE.Vector3(), camTo = new THREE.Vector3(), tgFrom = new THREE.Vector3(), tgTo = new THREE.Vector3();
+let labelEls = [];
+function go(i) {
+  cur = (i + STEPS.length) % STEPS.length; t0 = performance.now();
+  const s = STEPS[cur];
+  camFrom.copy(cam.position); tgFrom.copy(controls.target); camTo.set(...s.view); tgTo.set(...s.target);
+  document.getElementById('hn').textContent = `${BEACON ? 'BEACON' : 'DECOY'} · STEP ${cur + 1} / ${STEPS.length}`;
+  document.getElementById('ht').textContent = s.t; document.getElementById('hw').textContent = s.why;
+  const hd = document.getElementById('hd'); hd.textContent = s.dims;
+  document.getElementById('pg').style.width = ((cur + 1) / STEPS.length * 100) + '%';
+  document.querySelectorAll('.step').forEach((e, k) => { e.classList.toggle('on', k === cur); e.classList.toggle('done', k < cur); });
+  const root = document.getElementById('labels'); root.innerHTML = '';
+  labelEls = (s.labels || []).map(([t, p, cls]) => { const e = document.createElement('div'); e.className = 'lbl ' + (cls || ''); e.textContent = t; e.style.opacity = 0; root.appendChild(e); return {e, p:new THREE.Vector3(...p)}; });
+}
+const stepsEl = document.getElementById('steps');
+STEPS.forEach((s, i) => { const e = document.createElement('div'); e.className = 'step'; e.innerHTML = `<div class="k">${i + 1}</div><div><div class="t">${s.t}</div><div class="d">${s.d}</div></div>`; e.onclick = () => { stop(); go(i); }; stepsEl.appendChild(e); });
+const stop = () => { playing = false; const b = document.getElementById('play'); b.textContent = '▶ play'; b.classList.remove('on'); };
+document.getElementById('prev').onclick = () => { stop(); go(cur - 1); };
+document.getElementById('next').onclick = () => { stop(); go(cur + 1); };
+document.getElementById('play').onclick = () => { if (playing) return stop(); playing = true; playT = performance.now(); const b = document.getElementById('play'); b.textContent = '❚❚ pause'; b.classList.add('on'); };
+addEventListener('keydown', e => { if (e.key === 'ArrowRight') { stop(); go(cur + 1); } if (e.key === 'ArrowLeft') { stop(); go(cur - 1); } if (e.key === ' ') { e.preventDefault(); document.getElementById('play').click(); } });
+function resize() { const r = canvas.parentElement.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+cam.position.set(...STEPS[0].view); controls.target.set(...STEPS[0].target);
+
+const tmp = new THREE.Vector3();
+function frame(now) {
+  requestAnimationFrame(frame);
+  const s = STEPS[cur], k = ease((now - t0) / 1200);
+  for (const [obj, P] of KEYS) {
+    const first = P.keys[0].s, last = HIDE_AFTER.get(obj);
+    if (s.overview) { obj.visible = last === undefined; obj.position.copy(P.home).add(P.keys[P.keys.length - 1].to); continue; }
+    obj.visible = cur >= first && (last === undefined || cur <= last);
+    let K = null; for (const kk of P.keys) if (kk.s <= cur) K = kk;
+    if (!K) continue;
+    const off = K.s === cur ? K.from.clone().lerp(K.to, k) : K.to;
+    obj.position.copy(P.home).add(off);
+  }
+  // the LED: blinking (beacon, 4 Hz = 125 ms on / 125 ms off) or steady (decoy)
+  const on = s.steady || (s.blink && Math.floor(now / 125) % 2 === 0);
+  glow.visible = !!on; lamp.intensity = on ? 3.2 : 0;
+  M.led.emissive.setHex(on ? 0xff2020 : 0x000000); M.ball.emissive.setHex(on ? 0x992020 : 0x000000);
+  glow.position.copy(dome.position).add(new THREE.Vector3(0, 6, 0));
+  if (now - t0 < 1400) { const c = ease((now - t0) / 1200); cam.position.lerpVectors(camFrom, camTo, c); controls.target.lerpVectors(tgFrom, tgTo, c); }
+  if (playing && now - playT > 5200) { playT = now; go(cur + 1); }
+  controls.update(); renderer.render(scene, cam);
+  const r = canvas.getBoundingClientRect(), la = ease((now - t0 - 700) / 400);
+  for (const L of labelEls) { tmp.copy(L.p).project(cam); L.e.style.left = ((tmp.x + 1) / 2 * r.width) + 'px'; L.e.style.top = ((1 - tmp.y) / 2 * r.height) + 'px'; L.e.style.opacity = tmp.z < 1 ? la : 0; }
+}
+go(0); requestAnimationFrame(frame);
+window.__steps = STEPS.length;
+</script>
+</body>
+</html>

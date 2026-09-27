@@ -6,8 +6,8 @@
 #   tools/rig/flash.sh rig        # tools/rig/rig_firmware_v2.ino  (MK2 gimbal)
 #   tools/rig/flash.sh beacon /dev/cu.usbserial-1420   # pick the port yourself
 #
-# Clone Nanos (USB-C, CH340 chip) usually need the "old bootloader" setting; the script
-# tries that first and falls back to the new one. Monitor runs for 8 s (MONITOR_SECS).
+# Our beacon Nano (FTDI chip) uses the NEW bootloader (115200). The script
+# tries that first and falls back to the old one (57600). Monitor runs for 8 s (MONITOR_SECS).
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -37,7 +37,7 @@ fi
 echo "Port: $port   Sketch: $src"
 
 ok=""
-for fqbn in arduino:avr:nano:cpu=atmega328old arduino:avr:nano:cpu=atmega328; do
+for fqbn in arduino:avr:nano:cpu=atmega328 arduino:avr:nano:cpu=atmega328old; do
   echo "== compile + upload as $fqbn"
   if arduino-cli compile --fqbn "$fqbn" "$stage" && arduino-cli upload -p "$port" --fqbn "$fqbn" "$stage"; then
     ok=$fqbn; break

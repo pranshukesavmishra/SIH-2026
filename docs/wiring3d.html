@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ZeroDrift Wiring 3D</title>
+<style>
+:root{
+  --bg:#060b14; --panel:#0a1220; --panel-2:#0d1624; --edge:#16233a;
+  --ink:#c9d6e6; --ink-dim:#5f7288; --ink-bright:#EAF4FD;
+  --cyan:#4FC7EA; --green:#3BD68C; --amber:#FFC24D; --red:#FF5555;
+  --mono:"SF Mono","Cascadia Code",Consolas,"DejaVu Sans Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:13px/1.5 var(--mono);overflow:hidden}
+a{color:var(--cyan);text-decoration:none}
+header{display:flex;align-items:center;gap:16px;padding:8px 16px;border-bottom:1px solid var(--edge);height:44px}
+header .wm{font-size:15px;font-weight:700;color:var(--ink-bright)} header .wm b{color:var(--cyan)}
+.tabs{display:flex}
+.tabs a{display:block;padding:6px 14px;font-size:11px;letter-spacing:.4px;color:var(--ink);background:var(--panel-2);border:1px solid var(--edge);border-left-width:0}
+.tabs a:first-child{border-radius:4px 0 0 4px;border-left-width:1px} .tabs a:last-child{border-radius:0 4px 4px 0}
+.tabs a:hover{color:var(--cyan)} .tabs a.on{background:#12243c;border-color:var(--cyan);color:var(--cyan)}
+header nav{margin-left:auto;font-size:11px} header nav a{margin-left:13px;color:var(--ink-dim)}
+.wrap{display:grid;grid-template-columns:1fr 360px;height:calc(100% - 44px)}
+.stage{position:relative;min-width:0;min-height:0}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;top:14px;left:16px;right:16px;pointer-events:none;z-index:2}
+.hud .n{font-size:10px;color:var(--ink-dim);letter-spacing:.8px}
+.hud .now{font-size:17px;color:var(--cyan);font-weight:700;margin:2px 0 4px}
+.hud .why{max-width:560px;font-size:12px;line-height:1.55;background:rgba(6,11,20,.6)}
+.hud .dims{display:inline-block;margin-top:8px;padding:4px 9px;border:1px solid var(--amber);color:var(--amber);font-size:11px;max-width:560px;background:rgba(6,11,20,.7)}
+.hud .dims.warn{border-color:var(--red);color:#ffb3b3}
+.lbl{position:absolute;z-index:3;pointer-events:none;font-size:11px;font-weight:700;color:var(--ink-bright);
+  background:rgba(6,11,20,.88);border:1px solid var(--cyan);padding:2px 7px;border-radius:3px;white-space:nowrap;transform:translate(-50%,-130%)}
+.lbl.red{border-color:var(--red);color:#ffb3b3} .lbl.amb{border-color:var(--amber);color:var(--amber)}
+.lbl::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:10px;background:currentColor;opacity:.7}
+.bar{position:absolute;left:16px;right:16px;bottom:14px;display:flex;gap:8px;align-items:center;z-index:2}
+button{background:#0d1a2c;color:var(--ink);border:1px solid var(--edge);border-radius:4px;padding:8px 14px;font:700 12px var(--mono);cursor:pointer}
+button:hover{border-color:var(--cyan);color:var(--cyan)} button.on{border-color:var(--cyan);color:var(--cyan);background:#12243c}
+.prog{flex:1;height:3px;background:var(--edge);border-radius:2px;overflow:hidden} .prog i{display:block;height:100%;background:var(--cyan);width:0;transition:width .3s}
+aside{border-left:1px solid var(--edge);background:var(--panel);overflow-y:auto;padding:12px}
+aside h3{font-size:11px;color:var(--ink-dim);letter-spacing:.8px;margin:4px 0 10px}
+.step{display:flex;gap:10px;padding:7px 8px;border:1px solid transparent;border-radius:4px;cursor:pointer;margin-bottom:3px}
+.step:hover{border-color:var(--edge)} .step.on{border-color:var(--cyan);background:#0d1a2c}
+.step .k{flex:none;width:24px;height:24px;border-radius:50%;background:#12243c;color:var(--cyan);font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}
+.step.done .k{background:var(--cyan);color:#06101c}
+.step .t{font-size:12px;font-weight:700;color:var(--ink-bright)} .step .d{font-size:10.5px;color:var(--ink-dim);margin-top:1px}
+.legend{margin-top:12px;border-top:1px solid var(--edge);padding-top:10px;font-size:11px;display:grid;grid-template-columns:1fr 1fr;gap:3px 10px}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+@media (max-width:860px){.wrap{grid-template-columns:1fr;grid-template-rows:64% 36%}aside{border-left:0;border-top:1px solid var(--edge)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wm">ZERO<b>DRIFT</b> · MK2</div>
+  <div class="tabs">
+    <a href="assembly.html">gimbal</a><a href="assembly.html?tab=targets">beacon &amp; decoy</a><a href="assembly.html?tab=result">what it does</a><a href="headbox.html">head box</a><a href="wiring.html">wiring</a><a class="on" href="wiring3d.html">wiring 3D</a>
+  </div>
+  <nav><a href="build.html">BUILD GUIDE</a></nav>
+</header>
+<div class="wrap">
+  <div class="stage">
+    <canvas id="c"></canvas>
+    <div class="hud"><div class="n" id="hn"></div><div class="now" id="ht"></div><div class="why" id="hw"></div><div class="dims" id="hd"></div></div>
+    <div id="labels"></div>
+    <div class="bar">
+      <button id="prev">‹ prev</button><button id="play">▶ play</button><button id="next">next ›</button>
+      <div class="prog"><i id="pg"></i></div>
+      <button id="all">show all</button>
+    </div>
+  </div>
+  <aside>
+    <h3>WIRING ORDER · CLICK ANY STEP</h3>
+    <div id="steps"></div>
+    <div class="legend">
+      <span><i style="background:#ff5555"></i>+12 V</span><span><i style="background:#ffb020"></i>5 V</span>
+      <span><i style="background:#9aa8bb"></i>GND</span><span><i style="background:#cbd5e1"></i>USB</span>
+      <span><i style="background:#b69cff"></i>STEP</span><span><i style="background:#ff6fb5"></i>DIR</span>
+      <span><i style="background:#4f9dff"></i>SDA</span><span><i style="background:#3bd68c"></i>SCL</span>
+      <span><i style="background:#2dd4bf"></i>laser S</span><span><i style="background:#f97316"></i>motor coils</span>
+    </div>
+    <p style="margin-top:10px;font-size:10.5px;color:var(--ink-dim)">Breadboard: back rails = +12 V / GND (motors), front rails = 5 V / GND (logic). One jumper joins the two GND rails. Pins match rig_firmware_v2.ino.</p>
+  </aside>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"./vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"./vendor/three/OrbitControls.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+/* Millimetres, Y up, table at y = 0. The rig sits at the origin; the breadboard is in front
+   of it (+Z). Every cable is a tube that belongs to one step and draws itself in. */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x060b14);
+const cam = new THREE.PerspectiveCamera(38, 1, 1, 8000);
+const controls = new OrbitControls(cam, canvas); controls.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xdbe9ff, 0x0b1320, 1.15));
+const sun = new THREE.DirectionalLight(0xffffff, 1.5); sun.position.set(200, 400, 300); scene.add(sun);
+const fill = new THREE.DirectionalLight(0x88aaff, .5); fill.position.set(-300, 150, -200); scene.add(fill);
+const table = new THREE.Mesh(new THREE.PlaneGeometry(900, 700), new THREE.MeshStandardMaterial({color:0x0c1422, roughness:.95}));
+table.rotation.x = -Math.PI / 2; table.position.set(-20, -.1, 40); scene.add(table);
+const grid = new THREE.GridHelper(900, 36, 0x1b2a44, 0x101a2c); grid.position.set(-20, 0, 40); scene.add(grid);
+
+const std = (color, r = .55, m = .1, extra = {}) => new THREE.MeshStandardMaterial({color, roughness:r, metalness:m, ...extra});
+const M = {
+  acr: new THREE.MeshPhysicalMaterial({color:0xbfe9ff, transparent:true, opacity:.25, roughness:.08, depthWrite:false, side:THREE.DoubleSide}),
+  white: std(0xeef2f6, .8), wood: std(0xd6b287, .9), motor: std(0x1d2127, .55, .4), cap: std(0xb9c1cb, .4, .7), steel: std(0xc9ced6, .3, .9),
+  bracket: std(0x9aa3ae, .45, .8), putty: std(0x8e9170, .9), cam: std(0x2b2f36, .45), face: std(0x0b0d10, .15, .2), brass: std(0xc9a227, .3, .9),
+  pcb: std(0x151515, .6), nano: std(0x1e5aa8, .5), drv: std(0x1f7a4a, .5), mux: std(0x1e3a5f, .5), sens: std(0x6d28d9, .5), chip: std(0x0a0a0a, .4),
+  bb: std(0xf5f5f4, .8), heat: std(0x9ca3af, .35, .8), black: std(0x111827, .6), mag: std(0xe23b3b, .4), magB: std(0x2563eb, .4), capB: std(0x2563eb, .4),
+};
+const EDGE = new THREE.LineBasicMaterial({color:0x4fc7ea, transparent:true, opacity:.8});
+const edges = m => { m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry, 25), EDGE)); return m; };
+const box = (w, h, d, mat, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); scene.add(m); return m; };
+const cyl = (r, h, mat, x, y, z, axis = 'y', seg = 32) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), mat);
+  if (axis === 'x') m.rotation.z = Math.PI / 2; if (axis === 'z') m.rotation.x = Math.PI / 2; m.position.set(x, y, z); scene.add(m); return m; };
+
+/* ---------------- the rig (static) ---------------- */
+// base plate on 4 legs, pan motor hanging under it
+edges(box(150, 3, 150, M.acr, 0, 61.5, 0));
+[[-65, -65], [65, -65], [-65, 65], [65, 65]].forEach(([x, z]) => box(12, 60, 12, M.wood, x, 30, z));
+box(42, 40, 42, M.motor, 0, 38, 0); box(43, 4, 43, M.cap, 0, 56, 0); box(43, 4, 43, M.cap, 0, 20, 0);
+box(16, 7, 8, M.white, 0, 26, 22);                                      // pan motor connector (front)
+cyl(2.5, 30, M.steel, 0, 73, 0);                                        // shaft up through the base
+const mseal = new THREE.Mesh(new THREE.TorusGeometry(5, 2.4, 12, 32), M.putty); mseal.rotation.x = Math.PI / 2; mseal.position.set(0, 81.5, 0); scene.add(mseal);
+edges(cyl(45, 3, M.acr, 0, 85.5, 0, 'y', 64));                          // big disc Ø 90
+box(3, 2.5, 6, M.mag, -1.5, 89.5, 0); box(3, 2.5, 6, M.magB, 1.5, 89.5, 0);   // magnet on the shaft tip
+// pan sensor arm: post at x 50, strip reaching over the magnet, AS5600 chip down
+cyl(1.6, 38, M.steel, 50, 82, 0); edges(box(60, 3, 15, M.acr, 25, 97.5, 0));
+box(20, 1.6, 20, M.sens, 0, 95.2, 0); box(5, 1, 5, M.chip, 0, 93.9, 0);
+// stilts + bracket foot + standing plate, tilt motor on the LEFT, shaft +X
+[[-30, -15], [-30, 15], [-45, 0]].forEach(([x, z]) => { cyl(1.6, 38, M.steel, x, 106, z); [96, 116, 121.5].forEach(y => cyl(3.2, 2.4, M.steel, x, y, z, 'y', 6)); });
+box(52, 2.5, 50, M.bracket, -34, 119.3, 0);
+box(2.5, 57, 50, M.bracket, -6.8, 146.5, 0);
+box(40, 42, 42, M.motor, -28, 146, 0); box(4, 43, 43, M.cap, -10, 146, 0); box(4, 43, 43, M.cap, -46, 146, 0);
+box(8, 7, 16, M.white, -30, 124, 0);                                    // tilt motor connector (underneath)
+cyl(2.5, 20, M.steel, 4, 146, 0, 'x');
+edges(cyl(20, 3, M.acr, 12.5, 146, 0, 'x', 48));                        // small disc
+// head tunnel: floor, lid, left E, right F (front + back open), x 14..101
+edges(box(87, 3, 50, M.acr, 57.5, 121.5, 0)); edges(box(87, 3, 50, M.acr, 57.5, 170.5, 0));
+edges(box(3, 46, 50, M.acr, 15.5, 146, 0)); edges(box(3, 46, 50, M.acr, 99.5, 146, 0));
+// webcam: face flush with the open front (z 25), clip flat on the floor out of the back
+const camShape = new THREE.Shape(); camShape.moveTo(-20.5, -16); camShape.lineTo(20.5, -16); camShape.absarc(20.5, 0, 16, -Math.PI / 2, Math.PI / 2, false);
+camShape.lineTo(-20.5, 16); camShape.absarc(-20.5, 0, 16, Math.PI / 2, 3 * Math.PI / 2, false);
+const camBody = new THREE.Mesh(new THREE.ExtrudeGeometry(camShape, {depth:29, bevelEnabled:false, curveSegments:28}), M.cam); camBody.position.set(57.5, 139, -4); scene.add(camBody);
+const lensR = cyl(6, 1.5, M.face, 41, 139, 25.3, 'z'); cyl(4, 1.6, std(0x05070a, .05, .6), 41, 139, 25.6, 'z');
+box(30, 3, 44, M.cam, 57.5, 124.5, -26); box(30, 3, 42, M.cam, 57.5, 130, -25); cyl(3.5, 30, M.cam, 57.5, 127, -5, 'x');
+// laser KY-008 on foam tape on top of the camera
+box(15, 1.2, 18, std(0xb91c1c, .8), 41, 155.6, 2); box(15, 1.6, 18, M.pcb, 41, 157, 2);
+cyl(3, 12, M.brass, 41, 160.8, 8, 'z'); cyl(1.3, .4, new THREE.MeshBasicMaterial({color:0xff3030}), 41, 160.8, 14.2, 'z');
+[-2.54, 0, 2.54].forEach(dx => box(.7, .7, 7, M.steel, 41 + dx, 158.2, -10));
+
+/* ---------------- electronics on the table (static) ---------------- */
+// breadboard in front of the rig: x -85..80, z 118..177
+box(165, 9, 59, M.bb, -2.5, 4.5, 147.5);
+const RAIL = {v12:123, g12:128, v5:167, g5:172};
+[[RAIL.v12, 0xff3b3b], [RAIL.g12, 0x3b82f6], [RAIL.v5, 0xff3b3b], [RAIL.g5, 0x3b82f6]].forEach(([z, c]) => box(160, .4, 1, new THREE.MeshBasicMaterial({color:c}), -2.5, 9.2, z + (c === 0xff3b3b ? -2.2 : 2.2)));
+// Nano: x -75..-32
+box(43, 2, 18, M.nano, -53.5, 10, 149); box(7, 3.5, 8, M.steel, -76, 11, 149); box(8, 1.4, 8, M.chip, -50, 11.5, 149);
+// drivers: pan at x0 = -12, tilt at x0 = 20 (20 x 16 boards with heatsinks)
+const DRV = {pan:-12, tilt:20};
+for (const x0 of Object.values(DRV)) { box(20, 1.6, 16, M.drv, x0 + 10, 11, 147); box(10, 6, 10, M.heat, x0 + 10, 15, 147); cyl(1.6, 1, std(0xd4d4d8), x0 + 4, 12.2, 147); }
+// multiplexer x 50..72
+box(22, 1.6, 18, M.mux, 61, 10.8, 147); box(6, 1, 6, M.chip, 61, 12, 147);
+// capacitors (standing, by each driver VMOT, over the back rails)
+for (const x0 of Object.values(DRV)) cyl(3, 9, M.capB, x0 + 17, 15, 131);
+// 12 V adapter, socket, switch at the back-right
+box(40, 28, 50, M.black, 150, 14, 70); box(10, 10, 12, M.black, 104, 5, 114); box(8, 6, 8, std(0x374151), 92, 8, 120);
+// laptop front-left
+box(120, 7, 80, std(0x334155, .6, .3), -210, 3.5, 150);
+const scr = box(120, 78, 4, std(0x0b1220, .3, .2), -210, 42, 112); scr.rotation.x = -.18;
+
+/* ---------------- pins (named points) ---------------- */
+const Y = 11.5;
+const NANO = {v5:[-40, Y, 158], gnd:[-44, Y, 158], d2:[-48, Y, 158], d3:[-51, Y, 158], d4:[-54, Y, 158], d5:[-57, Y, 158], d7:[-63, Y, 158], a4:[-60, Y, 140], a5:[-63, Y, 140], usb:[-80, 11, 149]};
+const drvPins = x0 => ({EN:[x0 + 2, Y, 154], MS1:[x0 + 4.3, Y, 154], MS2:[x0 + 6.6, Y, 154], MS3:[x0 + 8.9, Y, 154], RST:[x0 + 11.2, Y, 154], SLP:[x0 + 13.5, Y, 154],
+  STEP:[x0 + 15.8, Y, 154], DIR:[x0 + 18.1, Y, 154], VMOT:[x0 + 18.1, Y, 140], GNDm:[x0 + 15.8, Y, 140], B2:[x0 + 13.5, Y, 140], A2:[x0 + 11.2, Y, 140],
+  A1:[x0 + 8.9, Y, 140], B1:[x0 + 6.6, Y, 140], VDD:[x0 + 4.3, Y, 140], GNDl:[x0 + 2, Y, 140]});
+const PP = drvPins(DRV.pan), TP = drvPins(DRV.tilt);
+const MUX = {vin:[52, Y, 154], gnd:[55, Y, 154], sda:[58, Y, 154], scl:[61, Y, 154], adr:[64, Y, 154], sd0:[58, Y, 140], sc0:[61, Y, 140]};
+const rail = (name, x) => [x, 9.6, RAIL[name]];
+
+/* ---------------- wires ---------------- */
+const COL = {v12:0xff5555, v5:0xffb020, gnd:0x9aa8bb, usb:0xcbd5e1, step:0xb69cff, dir:0xff6fb5, sda:0x4f9dff, scl:0x3bd68c, las:0x2dd4bf,
+  cG:0x3bd68c, cK:0x4b5563, cR:0xff5555, cB:0x4f9dff, black:0x1f2937};
+const WIRES = [];
+function wire(step, pts, color, r = .8) {
+  const curve = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)), false, 'centripetal');
+  const seg = Math.max(24, Math.round(curve.getLength() / 3));
+  const geo = new THREE.TubeGeometry(curve, seg, r, 8, false);
+  const mat = new THREE.MeshStandardMaterial({color, roughness:.5, metalness:.05, transparent:true, opacity:1});
+  const mesh = new THREE.Mesh(geo, mat); scene.add(mesh);
+  WIRES.push({step, mesh, full:geo.index.count});
+}
+// short breadboard jumper: a low arch from a to b
+const arch = (a, b, h = 10) => [a, [(a[0] + b[0]) / 2, Math.max(a[1], b[1]) + h, (a[2] + b[2]) / 2], b];
+// a service loop: one turn of radius r around centre c (in the XZ plane), then continue
+const loop = (c, r, y) => [0, 1, 2, 3, 4, 5, 6].map(i => [c[0] + r * Math.cos(i / 6 * Math.PI * 2), y + i * .8, c[2] + r * Math.sin(i / 6 * Math.PI * 2)]);
+
+// 1 · Nano USB → laptop
+wire(1, [NANO.usb, [-100, 6, 149], [-130, 4, 152], [-150, 8, 150]], COL.usb, 2);
+// 2 · rails: Nano 5V / GND to the front rails, one jumper joining the two GND rails
+wire(2, arch(NANO.v5, rail('v5', -40), 8), COL.v5); wire(2, arch(NANO.gnd, rail('g5', -44), 10), COL.gnd);
+wire(2, arch(rail('g12', 76), rail('g5', 76), 22), COL.gnd);
+// 3 · driver jumpers + logic power, both drivers
+for (const P of [PP, TP]) {
+  wire(3, arch(P.EN, rail('g5', P.EN[0]), 7), COL.gnd, .6);
+  ['MS1', 'MS2', 'MS3'].forEach(k => wire(3, arch(P[k], rail('v5', P[k][0]), 6), COL.v5, .6));
+  wire(3, arch(P.RST, P.SLP, 3), COL.step, .6);
+  wire(3, arch(P.VDD, rail('v5', P.VDD[0] - 1), 24), COL.v5, .6); wire(3, arch(P.GNDl, rail('g5', P.GNDl[0] - 1), 27), COL.gnd, .6);
+}
+// 4 · STEP / DIR from the Nano
+wire(4, arch(NANO.d2, PP.STEP, 14), COL.step); wire(4, arch(NANO.d3, PP.DIR, 17), COL.dir);
+wire(4, arch(NANO.d4, TP.STEP, 20), COL.step); wire(4, arch(NANO.d5, TP.DIR, 23), COL.dir);
+// 5 · pan motor cable: from its connector (under the base, front) straight to the pan driver
+[['B2', COL.cG], ['A2', COL.cK], ['A1', COL.cR], ['B1', COL.cB]].forEach(([k, c], i) => {
+  const o = (i - 1.5) * 1.8;
+  wire(5, [[o, 26, 26], [o, 18, 45], [o * 2, 5, 80], [PP[k][0] - 2, 5, 118], [PP[k][0], 14, 132], PP[k]], c, .7);
+});
+// 6 · tilt motor cable: from under the tilt motor, down a stilt, round the disc edge,
+//     a service loop on the base (the top turns!), off the base and to the tilt driver
+[['B2', COL.cG], ['A2', COL.cK], ['A1', COL.cR], ['B1', COL.cB]].forEach(([k, c], i) => {
+  const o = (i - 1.5) * 1.8;
+  wire(6, [[-30 + o, 120, 0], [-40 + o, 112, -4], [-46, 98, -6 + o], [-50, 88, -6 + o], [-53, 72, -6 + o], ...loop([-45, 0, 22 + o], 12, 66), [-66, 64, 40 + o],
+    [-78, 45, 55 + o], [-72, 6, 80 + o], [TP[k][0] - 3, 5, 118], [TP[k][0], 14, 132], TP[k]], c, .7);
+});
+// 7 · webcam USB: out of the camera's back, out of the open back of the head, service loop, down behind the rig, round to the laptop
+wire(7, [[72, 124, -8], [74, 123, -30], [78, 118, -50], [95, 100, -62], [100, 70, -72], ...loop([90, 0, -95], 14, 60).map(p => [p[0], p[1] - 20, p[2]]),
+  [80, 20, -110], [40, 4, -115], [-60, 4, -110], [-120, 4, -50], [-150, 4, 60], [-165, 8, 110]], COL.usb, 2);
+// 8 · laser wires: out of the back of the head beside the USB, same route, then to D7 and the GND rail
+[[-2.54, COL.las, NANO.d7, 158], [2.54, COL.black, rail('g5', -68), 172]].forEach(([dx, c, end]) => {
+  wire(8, [[41 + dx, 158.2, -14], [44 + dx, 160, -32], [70 + dx, 140, -52], [92 + dx, 100, -66], [97 + dx, 60, -76], [92, 20, -104 + dx], [30, 4, -110 + dx],
+    [-70, 4, -104 + dx], [-100 + dx, 4, -40], [-100 + dx, 4, 100], [-80, 5, 150 + dx], [end[0] - 6, 14, end[2]], end], c, .7);
+});
+// 9 · sensor: 4 wires from the AS5600 along the arm, down the post, off the base, to the multiplexer; mux to the Nano + rails
+[[COL.v5, rail('v5', 66)], [COL.gnd, rail('g5', 69)], [COL.sda, MUX.sd0], [COL.scl, MUX.sc0]].forEach(([c, end], i) => {
+  const o = (i - 1.5) * 1.6;
+  wire(9, [[6, 96.2, o], [25, 100, o], [48, 100, o], [52, 90, o], [52, 66, o], [74, 64, 20 + o], [82, 40, 60 + o], [78, 6, 95 + o], [end[0] + 2, 5, 118], [end[0], 14, end[2] - 8], end], c, .6);
+});
+wire(9, arch(NANO.a4, MUX.sda, 32), COL.sda); wire(9, arch(NANO.a5, MUX.scl, 36), COL.scl);
+wire(9, arch(MUX.vin, rail('v5', 52), 7), COL.v5, .6); wire(9, arch(MUX.gnd, rail('g5', 55), 9), COL.gnd, .6); wire(9, arch(MUX.adr, rail('g5', 64), 6), COL.gnd, .6);
+// 10 · 12 V: adapter → socket → switch → +12 V rail; socket − → GND; VMOT + motor GND of both drivers
+wire(10, [[130, 8, 70], [115, 4, 95], [104, 5, 108]], COL.black, 1.6);
+wire(10, [[98, 8, 118], [92, 12, 120]], COL.v12, 1); wire(10, [[88, 10, 120], [82, 12, 122], rail('v12', 78)], COL.v12, 1);
+wire(10, [[104, 8, 120], [96, 13, 126], rail('g12', 78)], COL.gnd, 1);
+for (const P of [PP, TP]) { wire(10, arch(P.VMOT, rail('v12', P.VMOT[0]), 6), COL.v12, .7); wire(10, arch(P.GNDm, rail('g12', P.GNDm[0]), 5), COL.gnd, .7); }
+
+// cable ties (step 11)
+const TIES = [[-46, 98, -6], [-52, 72, -6], [52, 80, 0], [52, 68, 0], [94, 100, -64], [98, 74, -73]].map(([x, y, z]) => {
+  const t = new THREE.Mesh(new THREE.TorusGeometry(4.5, .9, 8, 20), M.black); t.position.set(x, y, z); t.rotation.x = Math.PI / 2; t.visible = false; scene.add(t); return t;
+});
+
+/* ---------------- steps ---------------- */
+const STEPS = [
+  {t:'Lay it all out', d:'nothing connected yet', view:[260, 320, 480], target:[-10, 60, 60],
+   why:'The rig at the back, the breadboard in front of it, the laptop on the left, the 12 V adapter on the right (UNPLUGGED until the last step). On the breadboard: Nano, pan driver, tilt driver, multiplexer. Back rails = +12 V / GND for the motors, front rails = 5 V / GND for the logic.',
+   dims:'breadboard rails: back +12 V / GND · front 5 V / GND', labels:[['rig', [0, 190, 0]], ['breadboard', [-2, 22, 176]], ['laptop', [-210, 90, 112]], ['12 V adapter', [150, 34, 70], 'red'], ['Nano', [-53, 20, 149]], ['pan driver', [-2, 26, 147]], ['tilt driver', [30, 26, 147]], ['mux', [61, 20, 147]]]},
+  {t:'Nano USB → laptop', d:'upload the code first', view:[-140, 140, 330], target:[-110, 10, 150],
+   why:'Plug the Nano into the laptop and upload rig_firmware_v2.ino before anything else is wired, so you know the Nano works.', dims:'Nano USB → laptop', labels:[['USB', [-120, 12, 151]]]},
+  {t:'Rails: 5 V and GND', d:'and join the two GND rails', view:[-20, 150, 300], target:[-20, 10, 150],
+   why:'Nano 5V → front 5 V rail, Nano GND → front GND rail. Then one jumper joins the back GND rail to the front GND rail: every GND in the rig must be the same wire.', dims:'Nano 5V → 5 V · Nano GND → GND · back GND ↔ front GND', labels:[['5V', [-40, 16, 165]], ['GND', [-44, 18, 170]], ['GND ↔ GND', [76, 32, 150], 'amb']]},
+  {t:'Driver jumpers + logic power', d:'both drivers', view:[40, 130, 260], target:[10, 10, 150],
+   why:'On both drivers: EN → GND, MS1 MS2 MS3 → 5 V (1/16 microstepping), RST ↔ SLP joined, VDD → 5 V, and the GND next to VDD → GND.', dims:'EN→GND · MS1-3→5V · RST↔SLP · VDD→5V · GND→GND', labels:[['EN · MS1-3 · RST-SLP', [8, 20, 160]], ['VDD + GND', [-8, 40, 150], 'amb']]},
+  {t:'STEP + DIR from the Nano', d:'D2 D3 pan · D4 D5 tilt', view:[-40, 160, 280], target:[-20, 10, 150],
+   why:'D2 → pan STEP, D3 → pan DIR, D4 → tilt STEP, D5 → tilt DIR. These are the four wires that move the motors.', dims:'D2→STEP D3→DIR (pan) · D4→STEP D5→DIR (tilt)', labels:[['D2 D3 → pan', [-20, 30, 158]], ['D4 D5 → tilt', [0, 38, 156]]]},
+  {t:'Pan motor cable', d:'bottom motor → pan driver', view:[150, 120, 260], target:[0, 30, 80],
+   why:'The bottom motor\'s cable comes out of its connector under the base and goes straight to the pan driver. Find the 2 coil pairs with the multimeter (1 to 4 Ω): one pair on 1A 1B, the other on 2A 2B.', dims:'pair 1 → 1A 1B · pair 2 → 2A 2B', labels:[['pan motor cable', [0, 20, 50]], ['1A 1B 2A 2B', [-2, 20, 132], 'amb']]},
+  {t:'Tilt motor cable', d:'down a stilt, service loop, to the tilt driver', view:[-260, 200, 200], target:[-45, 70, 40],
+   why:'The top motor turns with the pan, so its cable needs slack. Run it down a stilt, round the edge of the big disc, make one loose loop on the base (the service loop), then off the base to the tilt driver. Turn the top ±90° by hand: the loop must never go tight.', dims:'service loop ≈ 25 mm across · cable-tie it to a stilt', labels:[['tilt motor cable', [-46, 100, -6]], ['service loop', [-45, 72, 22], 'amb'], ['→ tilt driver', [30, 20, 118]]]},
+  {t:'Webcam USB from the back', d:'out of the head, loop, down, to the laptop', view:[260, 220, -260], target:[60, 90, -60],
+   why:'The webcam cable leaves the camera at the back, next to the clip, and comes straight out of the open back of the head. Leave a loose loop behind the rig so the head can nod and turn, tie it once to the sensor post side, then run it along the table to the laptop.', dims:'loose loop behind the head · to a laptop USB port', labels:[['webcam USB', [74, 128, -30]], ['loop', [90, 64, -95], 'amb'], ['→ laptop', [-120, 10, -50]]]},
+  {t:'Laser wires from the back', d:'S → D7, − → GND', view:[220, 240, -200], target:[40, 110, -40],
+   why:'The laser\'s 3 pins face backward. S and − come out of the open back beside the webcam cable, follow the same path down, and go to the breadboard: S → Nano D7, − → the GND rail. The middle pin connects to nothing.', dims:'S → D7 · − → GND · middle pin → nothing', labels:[['laser S + −', [44, 166, -30], 'red'], ['→ D7', [-63, 20, 158]]]},
+  {t:'Sensor through the multiplexer', d:'along the arm, down the post', view:[240, 200, 260], target:[40, 60, 60],
+   why:'The AS5600\'s 4 wires run along the acrylic arm and down its post (the arm never turns, so no loop needed), then to the multiplexer: SDA → SD0, SCL → SC0, VCC → 5 V, GND → GND. Its DIR pin goes to GND at the sensor. Mux: SDA → A4, SCL → A5, VIN → 5 V, GND and A0-A2 → GND.', dims:'sensor on channel 0 · A4 → SDA · A5 → SCL · DIR → GND', labels:[['AS5600', [0, 102, 0]], ['down the post', [52, 80, 0], 'amb'], ['A4 A5', [0, 50, 147]]]},
+  {t:'12 V to the motors', d:'switch OFF until everything is checked', view:[220, 150, 280], target:[60, 10, 130], warn:true,
+   why:'Adapter → DC socket → switch → back +12 V rail; socket − → back GND rail. Each driver: VMOT → +12 V, the GND beside it → GND, with the 100 µF capacitor across them (stripe to GND). 12 V touches nothing else. Set Vref to 0.55 V (USB only) before switching on.', dims:'VMOT → +12 V · 100 µF across · Vref 0.55 V first', labels:[['12 V adapter', [150, 34, 70], 'red'], ['switch', [92, 16, 120], 'amb'], ['100 µF', [5, 26, 131]]]},
+  {t:'Tie it up and test', d:'every wire, cable ties, power on', view:[300, 300, 420], target:[0, 70, 40], all:true,
+   why:'Cable-tie the tilt cable to a stilt, the sensor wires to the post, and the webcam + laser cables together behind the head. Turn the top ±90° and nod the head ±18° by hand: nothing pulls tight. Then switch the 12 V on, open the Serial Monitor (115200), type ? and look for encoders=pan.', dims:'nothing tight at pan ±90° / tilt ±18° · ? → encoders=pan', labels:[['cable ties', [-46, 110, -6], 'amb'], ['cable ties', [94, 112, -64], 'amb']]},
+];
+
+/* ---------------- step engine ---------------- */
+let cur = 0, t0 = performance.now(), playing = false, playT = 0, showAll = false;
+const ease = x => 1 - Math.pow(1 - Math.min(Math.max(x, 0), 1), 3);
+const camFrom = new THREE.Vector3(), camTo = new THREE.Vector3(), tgFrom = new THREE.Vector3(), tgTo = new THREE.Vector3();
+let labelEls = [];
+function go(i) {
+  cur = (i + STEPS.length) % STEPS.length; t0 = performance.now();
+  const s = STEPS[cur];
+  camFrom.copy(cam.position); tgFrom.copy(controls.target); camTo.set(...s.view); tgTo.set(...s.target);
+  document.getElementById('hn').textContent = `STEP ${cur + 1} / ${STEPS.length}`;
+  document.getElementById('ht').textContent = s.t; document.getElementById('hw').textContent = s.why;
+  const hd = document.getElementById('hd'); hd.textContent = s.dims; hd.classList.toggle('warn', !!s.warn);
+  document.getElementById('pg').style.width = ((cur + 1) / STEPS.length * 100) + '%';
+  document.querySelectorAll('.step').forEach((e, k) => { e.classList.toggle('on', k === cur); e.classList.toggle('done', k < cur); });
+  const root = document.getElementById('labels'); root.innerHTML = '';
+  labelEls = (s.labels || []).map(([t, p, cls]) => { const e = document.createElement('div'); e.className = 'lbl ' + (cls || ''); e.textContent = t; e.style.opacity = 0; root.appendChild(e); return {e, p:new THREE.Vector3(...p)}; });
+  TIES.forEach(t => t.visible = !!s.all || showAll);
+}
+const stepsEl = document.getElementById('steps');
+STEPS.forEach((s, i) => { const e = document.createElement('div'); e.className = 'step'; e.innerHTML = `<div class="k">${i + 1}</div><div><div class="t">${s.t}</div><div class="d">${s.d}</div></div>`; e.onclick = () => { stop(); go(i); }; stepsEl.appendChild(e); });
+const stop = () => { playing = false; const b = document.getElementById('play'); b.textContent = '▶ play'; b.classList.remove('on'); };
+document.getElementById('prev').onclick = () => { stop(); go(cur - 1); };
+document.getElementById('next').onclick = () => { stop(); go(cur + 1); };
+document.getElementById('play').onclick = () => { if (playing) return stop(); playing = true; playT = performance.now(); const b = document.getElementById('play'); b.textContent = '❚❚ pause'; b.classList.add('on'); };
+document.getElementById('all').onclick = e => { showAll = !showAll; e.target.classList.toggle('on', showAll); go(cur); };
+addEventListener('keydown', e => { if (e.key === 'ArrowRight') { stop(); go(cur + 1); } if (e.key === 'ArrowLeft') { stop(); go(cur - 1); } if (e.key === ' ') { e.preventDefault(); document.getElementById('play').click(); } });
+function resize() { const r = canvas.parentElement.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+cam.position.set(...STEPS[0].view); controls.target.set(...STEPS[0].target);
+
+const tmp = new THREE.Vector3();
+function frame(now) {
+  requestAnimationFrame(frame);
+  const s = STEPS[cur], every = showAll || !!s.all;
+  const k = ease((now - t0) / 1500);
+  for (const w of WIRES) {
+    const shown = every || w.step <= cur;
+    w.mesh.visible = shown;
+    if (!shown) continue;
+    const isNow = !every && w.step === cur;
+    w.mesh.geometry.setDrawRange(0, isNow ? Math.max(6, Math.floor(w.full * k / 6) * 6) : w.full);
+    w.mesh.material.opacity = every || isNow ? 1 : .3;
+    w.mesh.material.emissive.setHex(isNow ? w.mesh.material.color.getHex() : 0x000000);
+    w.mesh.material.emissiveIntensity = isNow ? .35 : 0;
+  }
+  if (now - t0 < 1500) { const c = ease((now - t0) / 1300); cam.position.lerpVectors(camFrom, camTo, c); controls.target.lerpVectors(tgFrom, tgTo, c); }
+  if (playing && now - playT > 5000) { playT = now; go(cur + 1); }
+  controls.update(); renderer.render(scene, cam);
+  const r = canvas.getBoundingClientRect(), la = ease((now - t0 - 900) / 400);
+  for (const L of labelEls) { tmp.copy(L.p).project(cam); L.e.style.left = ((tmp.x + 1) / 2 * r.width) + 'px'; L.e.style.top = ((1 - tmp.y) / 2 * r.height) + 'px'; L.e.style.opacity = tmp.z < 1 ? la : 0; }
+}
+go(0); requestAnimationFrame(frame);
+window.__steps = STEPS.length;
+</script>
+</body>
+</html>

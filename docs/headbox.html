@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ZeroDrift Head Box 3D</title>
+<style>
+:root{
+  --bg:#060b14; --panel:#0a1220; --edge:#16233a;
+  --ink:#c9d6e6; --ink-dim:#5f7288; --ink-bright:#EAF4FD;
+  --cyan:#4FC7EA; --green:#3BD68C; --amber:#FFC24D; --red:#FF5555; --violet:#B69CFF;
+  --mono:"SF Mono","Cascadia Code",Consolas,"DejaVu Sans Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:13px/1.5 var(--mono);overflow:hidden}
+a{color:var(--cyan);text-decoration:none}
+header{display:flex;align-items:center;gap:14px;padding:8px 16px;border-bottom:1px solid var(--edge);height:44px}
+header .wm{font-size:15px;font-weight:700;color:var(--ink-bright)} header .wm b{color:var(--cyan)}
+header .sub{font-size:10px;color:var(--ink-dim)}
+header nav{margin-left:auto;font-size:11px} header nav a{margin-left:13px;color:var(--ink-dim)}
+.wrap{display:grid;grid-template-columns:1fr 360px;height:calc(100% - 44px)}
+.stage{position:relative;min-width:0;min-height:0}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;top:14px;left:16px;right:16px;pointer-events:none;z-index:2}
+.hud .n{font-size:10px;color:var(--ink-dim);letter-spacing:.8px}
+.hud .now{font-size:17px;color:var(--cyan);font-weight:700;margin:2px 0 4px}
+.hud .why{max-width:520px;font-size:12px;line-height:1.55}
+.hud .dims{display:inline-block;margin-top:8px;padding:4px 9px;border:1px solid var(--amber);color:var(--amber);font-size:11px;max-width:520px}
+.lbl{position:absolute;z-index:3;pointer-events:none;font-size:11px;font-weight:700;color:var(--ink-bright);
+  background:rgba(6,11,20,.85);border:1px solid var(--cyan);padding:2px 7px;border-radius:3px;white-space:nowrap;transform:translate(-50%,-130%)}
+.lbl.red{border-color:var(--red);color:#ffb3b3} .lbl.amb{border-color:var(--amber);color:var(--amber)}
+.lbl::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:10px;background:currentColor;opacity:.7}
+.bar{position:absolute;left:16px;right:16px;bottom:14px;display:flex;gap:8px;align-items:center;z-index:2}
+button{background:#0d1a2c;color:var(--ink);border:1px solid var(--edge);border-radius:4px;padding:8px 14px;
+  font:700 12px var(--mono);cursor:pointer}
+button:hover{border-color:var(--cyan);color:var(--cyan)} button.on{border-color:var(--cyan);color:var(--cyan);background:#12243c}
+.prog{flex:1;height:3px;background:var(--edge);border-radius:2px;overflow:hidden} .prog i{display:block;height:100%;background:var(--cyan);width:0;transition:width .3s}
+aside{border-left:1px solid var(--edge);background:var(--panel);overflow-y:auto;padding:12px}
+aside h3{font-size:11px;color:var(--ink-dim);letter-spacing:.8px;margin:4px 0 10px}
+.step{display:flex;gap:10px;padding:8px;border:1px solid transparent;border-radius:4px;cursor:pointer;margin-bottom:4px}
+.step:hover{border-color:var(--edge)} .step.on{border-color:var(--cyan);background:#0d1a2c}
+.step .k{flex:none;width:24px;height:24px;border-radius:50%;background:#12243c;color:var(--cyan);font-weight:700;font-size:11px;
+  display:flex;align-items:center;justify-content:center} .step.done .k{background:var(--cyan);color:#06101c}
+.step .t{font-size:12px;font-weight:700;color:var(--ink-bright)} .step .d{font-size:10.5px;color:var(--ink-dim);margin-top:1px}
+.cut{margin-top:14px;border-top:1px solid var(--edge);padding-top:10px;font-size:11px}
+.cut td{padding:2px 6px 2px 0} .cut td:last-child{color:var(--amber);text-align:right}
+@media (max-width:820px){.wrap{grid-template-columns:1fr;grid-template-rows:62% 38%}aside{border-left:0;border-top:1px solid var(--edge)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wm">ZERO<b>DRIFT</b> · head box</div>
+  <div class="sub">MK2 · camera + laser box on the tilt motor · 3 mm clear acrylic</div>
+  <nav><a href="build.html">BUILD GUIDE</a><a href="assembly.html">FULL 3D ASSEMBLY</a></nav>
+</header>
+<div class="wrap">
+  <div class="stage">
+    <canvas id="c"></canvas>
+    <div class="hud"><div class="n" id="hn"></div><div class="now" id="ht"></div><div class="why" id="hw"></div><div class="dims" id="hd"></div></div>
+    <div id="labels"></div>
+    <div class="bar">
+      <button id="prev">‹ prev</button><button id="play">▶ play</button><button id="next">next ›</button>
+      <div class="prog"><i id="pg"></i></div>
+      <button id="explode">explode</button>
+    </div>
+  </div>
+  <aside>
+    <h3>BUILD ORDER · CLICK ANY STEP</h3>
+    <div id="steps"></div>
+    <div class="cut">
+      <h3>CUT LIST · 3 mm CLEAR ACRYLIC</h3>
+      <table>
+        <tr><td>A · bottom</td><td>87 × 50</td></tr>
+        <tr><td>B · lid</td><td>87 × 50</td></tr>
+        <tr><td>C · front (laser hole)</td><td>81 × 46</td></tr>
+        <tr><td>D · back (cable notch)</td><td>81 × 46</td></tr>
+        <tr><td>E · LEFT side (motor)</td><td>50 × 46</td></tr>
+        <tr><td>F · right side</td><td>50 × 46</td></tr>
+      </table>
+      <p style="margin-top:8px;color:var(--ink-dim)">Outside 87 × 50 × 52 mm. Sized for the Logitech 720p (73 × 32 mm front, 40 mm deep with its clip folded). Measure yours first.</p>
+    </div>
+  </aside>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"./vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"./vendor/three/OrbitControls.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+/* Units are millimetres. X runs along the tilt shaft (motor on the LEFT, -X),
+   Y is up, Z is where the camera looks (+Z, toward the viewer). The tilt axis
+   is the X axis itself, so the head group nods by rotating about X. */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x060b14);
+const cam = new THREE.PerspectiveCamera(38, 1, 1, 5000);
+cam.position.set(150, 120, 240);
+const controls = new OrbitControls(cam, canvas);
+controls.target.set(15, -5, 0); controls.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xdbe9ff, 0x0b1320, 1.1));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(120, 200, 160); scene.add(sun);
+const fill = new THREE.DirectionalLight(0x88aaff, .5); fill.position.set(-150, 60, -120); scene.add(fill);
+const grid = new THREE.GridHelper(600, 30, 0x1b2a44, 0x101a2c); grid.position.y = -60; scene.add(grid);
+
+// ---- materials
+const M = {
+  acr: new THREE.MeshPhysicalMaterial({color:0xbfe9ff, transparent:true, opacity:.26, roughness:.08, metalness:0, depthWrite:false, side:THREE.DoubleSide}),
+  motor: new THREE.MeshStandardMaterial({color:0x1d2127, roughness:.55, metalness:.4}),
+  cap: new THREE.MeshStandardMaterial({color:0xb9c1cb, roughness:.4, metalness:.7}),
+  steel: new THREE.MeshStandardMaterial({color:0xc9ced6, roughness:.3, metalness:.9}),
+  bracket: new THREE.MeshStandardMaterial({color:0x9aa3ae, roughness:.45, metalness:.8}),
+  putty: new THREE.MeshStandardMaterial({color:0x8e9170, roughness:.9}),
+  camBody: new THREE.MeshStandardMaterial({color:0x2b2f36, roughness:.45, metalness:.1}),
+  camFace: new THREE.MeshStandardMaterial({color:0x0b0d10, roughness:.15, metalness:.2}),
+  lens: new THREE.MeshStandardMaterial({color:0x05070a, roughness:.05, metalness:.6}),
+  brass: new THREE.MeshStandardMaterial({color:0xc9a227, roughness:.3, metalness:.9}),
+  pcb: new THREE.MeshStandardMaterial({color:0x151515, roughness:.6}),
+  red: new THREE.MeshBasicMaterial({color:0xff3030}),
+  cable: new THREE.MeshStandardMaterial({color:0x222429, roughness:.7}),
+  wR: new THREE.MeshStandardMaterial({color:0xd62828}), wK: new THREE.MeshStandardMaterial({color:0x111111}), wV: new THREE.MeshStandardMaterial({color:0x7c3aed}),
+  plate: new THREE.MeshPhysicalMaterial({color:0xbfe9ff, transparent:true, opacity:.18, roughness:.1, depthWrite:false}),
+};
+const EDGE = new THREE.LineBasicMaterial({color:0x4fc7ea, transparent:true, opacity:.9});
+const withEdges = mesh => { mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 25), EDGE)); return mesh; };
+
+// ---- geometry helpers
+function box(w, h, d, mat, x, y, z) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return m; }
+function cyl(r, len, mat, axis = 'x') {           // cylinder along an axis, centred at origin
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 40), mat);
+  if (axis === 'x') m.rotation.z = Math.PI / 2; if (axis === 'z') m.rotation.x = Math.PI / 2; return m;
+}
+const circleHole = (x, y, r) => { const h = new THREE.Path(); h.absarc(x, y, r, 0, Math.PI * 2, true); return h; };
+// Acrylic panel from a 2D outline (+holes), extruded 3 mm; plane: 'xy' (normal Z) or 'zy' (normal X).
+function panel(w, h, holes = [], plane = 'xy', outline = null) {
+  const s = outline || (() => { const p = new THREE.Shape(); p.moveTo(-w/2, -h/2); p.lineTo(w/2, -h/2); p.lineTo(w/2, h/2); p.lineTo(-w/2, h/2); p.closePath(); return p; })();
+  holes.forEach(h => s.holes.push(h));
+  const g = new THREE.ExtrudeGeometry(s, {depth:3, bevelEnabled:false, curveSegments:32});
+  g.translate(0, 0, -1.5);
+  if (plane === 'zy') g.rotateY(Math.PI / 2);
+  return withEdges(new THREE.Mesh(g, M.acr));
+}
+
+// ---- fixed parts (do not nod): motor, bracket, stilt plate
+const fixed = new THREE.Group(); scene.add(fixed);
+const tilt = new THREE.Group(); scene.add(tilt);           // everything that nods about X
+
+// NEMA17 on the LEFT: face at x = -24.5, body 40 long, shaft through the bracket's round hole
+const motor = new THREE.Group();
+motor.add(box(40, 42, 42, M.motor, -44.5, 0, 0));
+motor.add(box(4, 43, 43, M.cap, -26.5, 0, 0));
+motor.add(box(4, 43, 43, M.cap, -62.5, 0, 0));
+const boss = cyl(11, 2, M.cap); boss.position.x = -23.5; motor.add(boss);
+const conn = box(8, 7, 16, new THREE.MeshStandardMaterial({color:0xf5f5f4}), -50, -24, 0); motor.add(conn);
+// bracket: standing plate (with the big hole) + foot
+const bs = new THREE.Shape(); bs.moveTo(-23, -32.5); bs.lineTo(23, -32.5); bs.lineTo(23, 26); bs.lineTo(-23, 26); bs.closePath();
+bs.holes.push(circleHole(0, 0, 11)); [[-15.5, -15.5], [15.5, -15.5], [15.5, 15.5], [-15.5, 15.5]].forEach(([a, b]) => bs.holes.push(circleHole(a, b, 1.7)));
+const bg = new THREE.ExtrudeGeometry(bs, {depth:2.5, bevelEnabled:false, curveSegments:32}); bg.rotateY(Math.PI / 2);
+const bracketStand = new THREE.Mesh(bg, M.bracket); bracketStand.position.x = -22.5;
+const bracketFoot = box(42, 2.5, 46, M.bracket, -43, -31.25, 0);
+const bracket = new THREE.Group(); bracket.add(bracketStand, bracketFoot);
+const stiltPlate = withEdges(box(90, 3, 80, M.plate, -48, -34, 0));
+fixed.add(stiltPlate, bracket, motor);
+
+// ---- shaft, M-Seal ring, small disc (nod with the head)
+const shaft = cyl(2.5, 26.5, M.steel); shaft.position.x = -11.25;      // x -24.5 … +2
+const mseal = new THREE.Mesh(new THREE.TorusGeometry(5.2, 2.6, 16, 40), M.putty); mseal.rotation.y = Math.PI / 2; mseal.position.x = -5.6;
+const discG = new THREE.CylinderGeometry(20, 20, 3, 64); discG.rotateZ(Math.PI / 2);
+const disc = withEdges(new THREE.Mesh(discG, M.acr)); disc.position.x = -1.5;  // x -3 … 0
+[-14, 14].forEach(z => { const h = cyl(1.6, 3.2, new THREE.MeshBasicMaterial({color:0x06101c})); h.position.set(-1.5, 0, z); disc.add(h); h.position.sub(disc.position); });
+
+// ---- the box: x 0…87, y -26…26, z -25…25
+const A = withEdges(box(87, 3, 50, M.acr, 43.5, -24.5, 0));             // bottom
+const B = withEdges(box(87, 3, 50, M.acr, 43.5, 24.5, 0));              // lid
+const E = panel(50, 46, [circleHole(0, 0, 3.5), circleHole(-14, 0, 1.7), circleHole(14, 0, 1.7)], 'zy'); E.position.set(1.5, 0, 0);
+const F = panel(50, 46, [], 'zy'); F.position.set(85.5, 0, 0);
+// front C: panel centre x 43.5; laser hole at x 27, y 15 (straight above the lens at x 27, y -7)
+const C = panel(81, 46, [circleHole(27 - 43.5, 15, 3)], 'xy'); C.position.set(43.5, 0, 23.5);
+// back D with a 10 x 10 notch at the top edge
+const dS = new THREE.Shape(); dS.moveTo(-40.5, -23); dS.lineTo(40.5, -23); dS.lineTo(40.5, 23); dS.lineTo(5, 23); dS.lineTo(5, 13); dS.lineTo(-5, 13); dS.lineTo(-5, 23); dS.lineTo(-40.5, 23); dS.closePath();
+const D = panel(81, 46, [], 'xy', dS); D.position.set(43.5, 0, -23.5);
+
+// ---- webcam (clip folded flat on its back): 73 x 32 front, 28 deep body
+const webcam = new THREE.Group();
+const pill = new THREE.Shape(); pill.moveTo(-20.5, -16); pill.lineTo(20.5, -16); pill.absarc(20.5, 0, 16, -Math.PI / 2, Math.PI / 2, false);
+pill.lineTo(-20.5, 16); pill.absarc(-20.5, 0, 16, Math.PI / 2, 3 * Math.PI / 2, false);
+const bodyG = new THREE.ExtrudeGeometry(pill, {depth:28, bevelEnabled:true, bevelSize:1.2, bevelThickness:1.2, bevelSegments:3, curveSegments:32});
+const body = new THREE.Mesh(bodyG, M.camBody); body.position.set(0, 0, -6 - 1.2); webcam.add(body);
+const faceS = new THREE.Shape(); faceS.moveTo(-14, -9); faceS.lineTo(14, -9); faceS.absarc(14, 0, 9, -Math.PI / 2, Math.PI / 2, false); faceS.lineTo(-14, 9); faceS.absarc(-14, 0, 9, Math.PI / 2, 3 * Math.PI / 2, false);
+const face = new THREE.Mesh(new THREE.ShapeGeometry(faceS), M.camFace); face.position.set(-6.5, -1, 22.05); webcam.add(face);
+const lens = cyl(5.5, 1.5, M.lens, 'z'); lens.position.set(27 - 43.5, 0, 22.3); webcam.add(lens);
+const ring = new THREE.Mesh(new THREE.TorusGeometry(6.2, .8, 12, 32), M.cap); ring.position.set(27 - 43.5, 0, 22.3); webcam.add(ring);
+const clip = box(47, 26, 4, M.camBody, 0, -2, -9); webcam.add(clip);
+webcam.position.set(43.5, -7, 0);       // body x 7…80, y -23…9, face at z ≈ 22
+// the lens sits 20 mm from the camera's left edge -> x 27, which is where C's laser hole column is
+// ---- KY-008 laser: board lying above the camera, tube through C's hole
+const laser = new THREE.Group();
+const pcbM = box(15, 1.6, 18, M.pcb, 27, 11.2, 15); laser.add(pcbM);
+const tube = cyl(3, 12, M.brass, 'z'); tube.position.set(27, 15, 20); laser.add(tube);
+const dot = cyl(1.3, .4, M.red, 'z'); dot.position.set(27, 15, 26.1); laser.add(dot);
+[-2.54, 0, 2.54].forEach((dx, i) => { const p = box(.7, .7, 7, M.steel, 27 + dx, 12.4, 4.5); laser.add(p); });
+// cables to the back notch
+const tubeTo = (pts, r, mat) => new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p))), 40, r, 10), mat);
+const cables = new THREE.Group();
+cables.add(tubeTo([[60, -2, -11], [55, 6, -16], [45, 16, -22], [43.5, 19, -26], [43, 30, -40], [30, 60, -70]], 2.2, M.cable));
+[[M.wV, -1.2], [M.wK, 1.2]].forEach(([m, o]) => cables.add(tubeTo([[27 + o * 2, 12.4, 1], [30 + o, 16, -8], [42 + o, 18, -20], [42 + o, 20, -26], [40 + o, 32, -40], [26 + o, 62, -72]], .55, m)));
+// 2 M3 screws: heads inside the box, nuts on the motor side of the disc
+const screws = new THREE.Group();
+[-14, 14].forEach(z => {
+  const sh = cyl(1.4, 13, M.steel); sh.position.set(-2, 0, z);
+  const hd = cyl(2.7, 2, M.steel); hd.position.set(4, 0, z);
+  const nt = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.2, 2.4, 6), M.steel); nt.rotation.z = Math.PI / 2; nt.position.set(-4.3, 0, z);
+  screws.add(sh, hd, nt);
+});
+// laser beam for the final step
+const beam = new THREE.Mesh(new THREE.CylinderGeometry(.45, .45, 900, 8), new THREE.MeshBasicMaterial({color:0xff3030, transparent:true, opacity:.85}));
+beam.rotation.x = Math.PI / 2; beam.position.set(27, 15, 26 + 450);
+const glow = new THREE.Mesh(new THREE.SphereGeometry(3.2, 16, 16), new THREE.MeshBasicMaterial({color:0xff5050, transparent:true, opacity:.35})); glow.position.set(27, 15, 26.5);
+
+tilt.add(shaft, mseal, disc, A, E, C, F, webcam, laser, cables, D, B, screws, beam, glow);
+
+/* ---- steps: each step brings its parts in from an offset (the "explode" vector) */
+const STEPS = [
+  {t:'Start: tilt motor on the LEFT', d:'bracket + motor already on the stilt plate', parts:[], why:'The top (tilt) motor bolts to the back of the L-bracket\'s standing plate. Its shaft comes out through the big round hole and points RIGHT, toward where the head box will go.',
+   dims:'4 × M3 screws straight into the motor (no nuts) · shaft 5 mm', view:[-60, 90, 190], target:[-25, 0, 0], labels:[['tilt motor', [-45, 24, 0]], ['L-bracket', [-22, 28, 18]], ['shaft → right', [0, 5, 0]]]},
+  {t:'M-Seal ring on the shaft', d:'fat ring, leave the tip clean', parts:[[mseal, [30, 0, 0]]], why:'Mix the M-Seal until it is one colour and press a fat ring around the shaft, right where the disc will sit. It is the glue that makes the disc turn exactly with the shaft.',
+   dims:'ring ≈ 10 mm across · keep the last 2 mm of shaft clean', view:[40, 70, 150], target:[-10, 0, 0], labels:[['M-Seal ring', [-5.6, 8, 0], 'amb']]},
+  {t:'Small disc glued on', d:'4 cm disc, 2 mm of shaft pokes through', parts:[[disc, [40, 0, 0]]], why:'Push the 4 cm disc onto the shaft, into the M-Seal, until about 2 mm of shaft tip sticks out on the right. Keep it square to the shaft. Wait 1 hour.',
+   dims:'disc Ø 40 mm × 3 mm · tight centre hole · 2 small holes 14 mm from centre', view:[60, 60, 140], target:[-2, 0, 0], labels:[['small disc Ø40', [-1.5, 22, 0]], ['2 mm tip', [1, 4, 0], 'amb']]},
+  {t:'A · bottom panel', d:'87 × 50 mm, the floor', parts:[[A, [0, -70, 0]]], why:'The floor of the box. Everything else stands on it.',
+   dims:'A = 87 × 50 × 3 mm', view:[150, 110, 190], target:[40, -10, 0], labels:[['A 87 × 50', [43.5, -23, 25]]]},
+  {t:'E · LEFT side, on the disc side', d:'7 mm centre hole + 2 screw holes', parts:[[E, [0, 0, 0], [0, 70, 0]]], why:'Side E faces the motor. The 7 mm centre hole is for the shaft tip. Mark the 2 screw holes THROUGH the small disc\'s own holes so they line up. Hot-glue E onto the left edge of A.',
+   dims:'E = 50 × 46 mm · 7 mm hole in the exact centre · 2 × M3 holes', view:[-40, 60, 170], target:[5, 0, 0], labels:[['E · 7 mm centre hole', [2, 6, 0]], ['screw holes', [2, 3, 14], 'amb']]},
+  {t:'C · front panel', d:'clear window + 6 mm laser hole', parts:[[C, [0, 0, 70]]], why:'The camera looks straight through the clear acrylic, so there is NO hole for the lens. The only hole is for the laser: tight, 22 mm straight above the lens. Peel the film here last and do not scratch it.',
+   dims:'C = 81 × 46 mm · laser hole Ø 6 mm at 24 mm from left, 38 mm up', view:[120, 60, 200], target:[40, 0, 20], labels:[['C · clear front', [70, 20, 25]], ['6 mm laser hole', [27, 18, 25], 'red']]},
+  {t:'F · right side', d:'50 × 46 mm, plain', parts:[[F, [70, 0, 0]]], why:'The plain side, opposite the motor. Glue it on the right of A and C.',
+   dims:'F = 50 × 46 mm', view:[200, 70, 150], target:[50, 0, 0], labels:[['F', [87, 20, 0]]]},
+  {t:'Webcam in (clip folded)', d:'foam tape on the floor, face on the front', parts:[[webcam, [0, 80, 0]]], why:'Fold the webcam\'s clip (holder) flat against its back: it stays folded inside. Stick the camera to the floor with foam tape, face pressed against the front panel, lens right under your mark. The box holds the camera, not the shaft.',
+   dims:'camera 73 × 32 mm front · 40 mm deep with clip folded · 4 mm gap each side', view:[120, 130, 170], target:[43, -5, 5], labels:[['webcam', [60, 12, 0]], ['lens', [27, -7, 24]], ['clip folded', [43.5, -2, -12], 'amb']]},
+  {t:'Laser through its hole', d:'KY-008: tube pushed into C from inside', parts:[[laser, [0, 40, -30]]], why:'Push the laser tube into the front hole from inside, so the board lies on top of the camera. Hot-glue it so it points dead straight, same way as the lens. Wires: S → D7, − → GND, middle pin nothing.',
+   dims:'laser 22 mm above the lens · parallel to it', view:[100, 100, 170], target:[30, 10, 15], labels:[['laser (S→D7, −→GND)', [27, 18, 22], 'red']]},
+  {t:'D · back + cables out', d:'10 × 10 mm notch at the top', parts:[[cables, [0, 0, -50]], [D, [0, 0, -70]]], why:'The webcam USB and the laser wires leave through the notch at the top of the back panel. Leave slack so nothing pulls when the head nods and turns.',
+   dims:'D = 81 × 46 mm · notch 10 × 10 mm at the top edge', view:[80, 110, -190], target:[43, 5, -10], labels:[['cable notch', [43.5, 24, -25], 'amb'], ['D · back', [70, 0, -26]]]},
+  {t:'B · lid (taped)', d:'87 × 50 mm, opens for fixes', parts:[[B, [0, 70, 0]]], why:'Tape the lid on instead of gluing it, so you can open the box later.',
+   dims:'B = 87 × 50 × 3 mm · outside of the box 87 × 50 × 52 mm', view:[150, 150, 190], target:[40, 0, 0], labels:[['B · lid', [43.5, 26, 0]]]},
+  {t:'2 screws: box onto the disc', d:'heads inside, nuts on the motor side', parts:[[screws, [30, 0, 0]]], why:'Two M3 screws go from inside the box through side E and the disc\'s 2 holes. The nuts go on the motor side of the disc. Before tightening, turn the box so the camera looks level (phone level app on the lid).',
+   dims:'2 × M3 × 10–16 mm + 2 nuts · shaft tip sits in E\'s centre hole', view:[-30, 70, 150], target:[0, 0, 0], labels:[['M3 + nut', [-4.3, 5, 14], 'amb'], ['M3 + nut', [-4.3, 5, -14], 'amb']]},
+  {t:'Done: it nods ±18°', d:'the whole box turns with the shaft', parts:[[beam, [0, 0, 0]], [glow, [0, 0, 0]]], why:'The chain is: motor shaft → M-Seal → small disc → 2 screws → side E → box → camera + laser. Tilt ±18° by hand and pan ±90°: the box must touch nothing.',
+   dims:'check: nothing hits at tilt ±18° and pan ±90°', view:[210, 120, 260], target:[20, 0, 20], nod:true, labels:[['tilt axis', [95, 4, 0]]]},
+];
+
+// Every part remembers its home position and which step brings it in.
+const partStep = new Map();
+STEPS.forEach((s, i) => s.parts.forEach(([obj, off, rot]) => { partStep.set(obj, {i, off:new THREE.Vector3(...off), rot, home:obj.position.clone(), homeRot:obj.rotation.clone()}); }));
+
+let cur = 0, t0 = performance.now(), playing = false, exploded = false, playTimer = 0;
+const ease = x => 1 - Math.pow(1 - Math.min(Math.max(x, 0), 1), 3);
+const camFrom = new THREE.Vector3(), camTo = new THREE.Vector3(), tgFrom = new THREE.Vector3(), tgTo = new THREE.Vector3();
+
+function go(i) {
+  cur = (i + STEPS.length) % STEPS.length; t0 = performance.now();
+  const s = STEPS[cur];
+  camFrom.copy(cam.position); tgFrom.copy(controls.target);
+  camTo.set(...s.view); tgTo.set(...s.target);
+  document.getElementById('hn').textContent = `STEP ${cur + 1} / ${STEPS.length}`;
+  document.getElementById('ht').textContent = s.t;
+  document.getElementById('hw').textContent = s.why;
+  document.getElementById('hd').textContent = s.dims;
+  document.getElementById('pg').style.width = ((cur + 1) / STEPS.length * 100) + '%';
+  document.querySelectorAll('.step').forEach((el, k) => { el.classList.toggle('on', k === cur); el.classList.toggle('done', k < cur); });
+  buildLabels(s.labels || []);
+}
+const stepsEl = document.getElementById('steps');
+STEPS.forEach((s, i) => { const el = document.createElement('div'); el.className = 'step'; el.innerHTML = `<div class="k">${i + 1}</div><div><div class="t">${s.t}</div><div class="d">${s.d}</div></div>`; el.onclick = () => { stopPlay(); go(i); }; stepsEl.appendChild(el); });
+
+let labelEls = [];
+function buildLabels(list) {
+  const root = document.getElementById('labels'); root.innerHTML = '';
+  labelEls = list.map(([txt, p, cls]) => { const el = document.createElement('div'); el.className = 'lbl ' + (cls || ''); el.textContent = txt; el.style.opacity = 0; root.appendChild(el); return {el, p:new THREE.Vector3(...p)}; });
+}
+const stopPlay = () => { playing = false; document.getElementById('play').textContent = '▶ play'; document.getElementById('play').classList.remove('on'); };
+document.getElementById('prev').onclick = () => { stopPlay(); go(cur - 1); };
+document.getElementById('next').onclick = () => { stopPlay(); go(cur + 1); };
+document.getElementById('play').onclick = () => { playing = !playing; playTimer = performance.now(); const b = document.getElementById('play'); b.textContent = playing ? '❚❚ pause' : '▶ play'; b.classList.toggle('on', playing); };
+document.getElementById('explode').onclick = e => { exploded = !exploded; e.target.classList.toggle('on', exploded); };
+addEventListener('keydown', e => { if (e.key === 'ArrowRight') { stopPlay(); go(cur + 1); } if (e.key === 'ArrowLeft') { stopPlay(); go(cur - 1); } if (e.key === ' ') document.getElementById('play').click(); });
+
+function resize() { const r = canvas.parentElement.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+
+const tmp = new THREE.Vector3();
+function frame(now) {
+  requestAnimationFrame(frame);
+  const k = ease((now - t0) / 1100);
+  // parts: hidden if their step is ahead, flying in on their own step, home (or exploded) otherwise
+  for (const [obj, ps] of partStep) {
+    obj.visible = ps.i <= cur;
+    const f = ps.i === cur ? 1 - k : (exploded ? .55 : 0);
+    obj.position.copy(ps.home).addScaledVector(ps.off, f);
+    if (ps.rot) obj.rotation.set(ps.homeRot.x + THREE.MathUtils.degToRad(ps.rot[0]) * f, ps.homeRot.y + THREE.MathUtils.degToRad(ps.rot[1]) * f, ps.homeRot.z + THREE.MathUtils.degToRad(ps.rot[2]) * f);
+  }
+  // camera glides to each step's view during the first moments of the step
+  if (now - t0 < 1400) { const c = ease((now - t0) / 1200); cam.position.lerpVectors(camFrom, camTo, c); controls.target.lerpVectors(tgFrom, tgTo, c); }
+  // final step: nod the head ±18° about the X axis (the tilt shaft)
+  tilt.rotation.x = STEPS[cur].nod ? THREE.MathUtils.degToRad(18) * Math.sin((now - t0) / 700) : 0;
+  if (playing && now - playTimer > 4200) { playTimer = now; go(cur + 1 === STEPS.length ? 0 : cur + 1); }
+  controls.update();
+  renderer.render(scene, cam);
+  // labels follow their parts
+  const r = canvas.getBoundingClientRect(), la = ease((now - t0 - 700) / 400);
+  for (const L of labelEls) {
+    tmp.copy(L.p).applyMatrix4(tilt.matrixWorld).project(cam);
+    L.el.style.left = ((tmp.x + 1) / 2 * r.width) + 'px'; L.el.style.top = ((1 - tmp.y) / 2 * r.height) + 'px';
+    L.el.style.opacity = tmp.z < 1 ? la : 0;
+  }
+}
+go(0); requestAnimationFrame(frame);
+window.__steps = STEPS.length;
+</script>
+</body>
+</html>

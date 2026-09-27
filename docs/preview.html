@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ZeroDrift Preview</title>
+<style>
+:root{
+  --bg:#060b14; --panel:#0a1220; --panel-2:#0d1624; --edge:#16233a;
+  --ink:#c9d6e6; --ink-dim:#5f7288; --ink-bright:#EAF4FD;
+  --cyan:#4FC7EA; --green:#3BD68C; --amber:#FFC24D; --red:#FF5555;
+  --mono:"SF Mono","Cascadia Code",Consolas,"DejaVu Sans Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:13px/1.5 var(--mono);overflow:hidden}
+a{color:var(--cyan);text-decoration:none}
+header{display:flex;align-items:center;gap:16px;padding:8px 16px;border-bottom:1px solid var(--edge);height:44px}
+header .wm{font-size:15px;font-weight:700;color:var(--ink-bright)} header .wm b{color:var(--cyan)}
+.tabs{display:flex}
+.tabs a{display:block;padding:6px 11px;font-size:11px;letter-spacing:.4px;color:var(--ink);background:var(--panel-2);border:1px solid var(--edge);border-left-width:0}
+.tabs a:first-child{border-radius:4px 0 0 4px;border-left-width:1px} .tabs a:last-child{border-radius:0 4px 4px 0}
+.tabs a:hover{color:var(--cyan)} .tabs a.on{background:#12243c;border-color:var(--cyan);color:var(--cyan)}
+header nav{margin-left:auto;font-size:11px} header nav a{margin-left:13px;color:var(--ink-dim)}
+.wrap{display:grid;grid-template-columns:1fr 370px;height:calc(100% - 44px)}
+.stage{position:relative;min-width:0;min-height:0}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hud{position:absolute;top:14px;left:16px;right:16px;pointer-events:none;z-index:2}
+.hud .n{font-size:10px;color:var(--ink-dim);letter-spacing:.8px}
+.hud .now{font-size:17px;color:var(--cyan);font-weight:700;margin:2px 0 4px}
+.hud .why{max-width:580px;font-size:12px;line-height:1.55;background:rgba(6,11,20,.62)}
+.hud .dims{display:inline-block;margin-top:8px;padding:4px 9px;border:1px solid var(--amber);color:var(--amber);font-size:11px;max-width:580px;background:rgba(6,11,20,.7)}
+.lbl{position:absolute;z-index:3;pointer-events:none;font-size:11px;font-weight:700;color:var(--ink-bright);
+  background:rgba(6,11,20,.88);border:1px solid var(--cyan);padding:2px 7px;border-radius:3px;white-space:nowrap;transform:translate(-50%,-130%)}
+.lbl.red{border-color:var(--red);color:#ffb3b3} .lbl.amb{border-color:var(--amber);color:var(--amber)} .lbl.grn{border-color:var(--green);color:#a7f3d0} .lbl.dim{border-color:#475569;color:#94a3b8}
+.lbl::after{content:"";position:absolute;left:50%;top:100%;width:1px;height:10px;background:currentColor;opacity:.7}
+.bar{position:absolute;left:16px;right:16px;bottom:14px;display:flex;gap:8px;align-items:center;z-index:2}
+button{background:#0d1a2c;color:var(--ink);border:1px solid var(--edge);border-radius:4px;padding:8px 14px;font:700 12px var(--mono);cursor:pointer}
+button:hover{border-color:var(--cyan);color:var(--cyan)} button.on{border-color:var(--cyan);color:var(--cyan);background:#12243c}
+.prog{flex:1;height:3px;background:var(--edge);border-radius:2px;overflow:hidden} .prog i{display:block;height:100%;background:var(--cyan);width:0;transition:width .3s}
+aside{border-left:1px solid var(--edge);background:var(--panel);overflow-y:auto;padding:12px}
+aside h3{font-size:11px;color:var(--ink-dim);letter-spacing:.8px;margin:4px 0 10px}
+.step{display:flex;gap:10px;padding:7px 8px;border:1px solid transparent;border-radius:4px;cursor:pointer;margin-bottom:3px}
+.step:hover{border-color:var(--edge)} .step.on{border-color:var(--cyan);background:#0d1a2c}
+.step .k{flex:none;width:24px;height:24px;border-radius:50%;background:#12243c;color:var(--cyan);font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}
+.step.done .k{background:var(--cyan);color:#06101c}
+.step .t{font-size:12px;font-weight:700;color:var(--ink-bright)} .step .d{font-size:10.5px;color:var(--ink-dim);margin-top:1px}
+table.sum{width:100%;border-collapse:collapse;margin-top:6px;font-size:11px}
+table.sum td{padding:4px 4px;border-bottom:1px solid var(--edge);vertical-align:top} table.sum td:first-child{color:var(--ink-bright);font-weight:700;white-space:nowrap}
+.box2{margin-top:14px;border-top:1px solid var(--edge);padding-top:10px}
+@media (max-width:860px){.wrap{grid-template-columns:1fr;grid-template-rows:64% 36%}aside{border-left:0;border-top:1px solid var(--edge)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wm">ZERO<b>DRIFT</b> · MK2</div>
+  <div class="tabs">
+    <a class="on" href="preview.html">preview</a><a href="assembly.html">gimbal</a><a href="targets.html?t=beacon">beacon</a><a href="targets.html?t=decoy">decoy</a><a href="assembly.html?tab=result">what it does</a><a href="headbox.html">head box</a><a href="wiring.html">wiring</a><a href="wiring3d.html">wiring 3D</a>
+  </div>
+  <nav><a href="build.html">BUILD GUIDE</a></nav>
+</header>
+<div class="wrap">
+  <div class="stage">
+    <canvas id="c"></canvas>
+    <div class="hud"><div class="n" id="hn"></div><div class="now" id="ht"></div><div class="why" id="hw"></div><div class="dims" id="hd"></div></div>
+    <div id="labels"></div>
+    <div class="bar">
+      <button id="prev">‹ prev</button><button id="play">▶ play</button><button id="next">next ›</button>
+      <div class="prog"><i id="pg"></i></div>
+      <button id="scr">laptop screen</button>
+    </div>
+  </div>
+  <aside>
+    <h3>PREVIEW · THE WHOLE THING WORKING</h3>
+    <div id="steps"></div>
+    <div class="box2">
+      <h3>WHAT CONNECTS TO WHAT</h3>
+      <table class="sum">
+        <tr><td>Laptop USB 1</td><td>rig Arduino Nano (commands out, angles back)</td></tr>
+        <tr><td>Laptop USB 2</td><td>webcam on the head (the video)</td></tr>
+        <tr><td>Wall socket</td><td>extension board → 12 V adapter (rig motors only) + laptop charger</td></tr>
+        <tr><td>Beacon</td><td>its own power bank · NOT connected to the laptop</td></tr>
+        <tr><td>Decoy</td><td>its own 3 AA cells · NOT connected to anything</td></tr>
+        <tr><td>Red LEDs</td><td>beacon AND decoy: the same kind of red LED</td></tr>
+        <tr><td>White LED</td><td>optional: a 3rd steady light to show it is ignored too</td></tr>
+      </table>
+      <p style="margin-top:8px;font-size:10.5px;color:var(--ink-dim)">Only 2 USB cables go to the laptop. A laptop with only USB-C needs a small hub. The beacon talks to the rig through the camera: its blink is the message.</p>
+    </div>
+  </aside>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"./vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"./vendor/three/OrbitControls.js"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+/* The whole demo in one room. Millimetres, Y up, table top at y = 0.
+   The rig's camera looks along +Z at the beacon + decoy on a second table ~2 m away.
+   The laptop screen is a live canvas: it is drawn from what a virtual camera on the
+   rig's head actually sees, so the lock box, the decoy and the angles are real. */
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x05080f); scene.fog = new THREE.Fog(0x05080f, 3500, 7000);
+const cam = new THREE.PerspectiveCamera(40, 1, 5, 20000);
+const controls = new OrbitControls(cam, canvas); controls.enableDamping = true;
+scene.add(new THREE.HemisphereLight(0xcfe0ff, 0x0b1320, .9));
+const sun = new THREE.DirectionalLight(0xffffff, 1.2); sun.position.set(600, 1500, -800); scene.add(sun);
+
+const std = (color, r = .6, m = .1, extra = {}) => new THREE.MeshStandardMaterial({color, roughness:r, metalness:m, ...extra});
+const M = {
+  acr: new THREE.MeshPhysicalMaterial({color:0xbfe9ff, transparent:true, opacity:.3, roughness:.1, depthWrite:false, side:THREE.DoubleSide}),
+  wood: std(0x6b4f35, .85), floor: std(0x0b111c, .95), wall: std(0x101a2b, .95), leg: std(0xd6b287, .9),
+  motor: std(0x1d2127, .55, .4), cap: std(0xb9c1cb, .4, .7), steel: std(0xc9ced6, .3, .9), bracket: std(0x9aa3ae, .45, .8),
+  cam: std(0x2b2f36, .45), brass: std(0xc9a227, .3, .9), pcb: std(0x151515, .6), bb: std(0xf5f5f4, .8), nano: std(0x1e5aa8, .5), drv: std(0x1f7a4a, .5),
+  black: std(0x111827, .6), laptop: std(0x3a4658, .5, .4), bank: std(0x1f2937, .5, .2),
+  ball: new THREE.MeshPhysicalMaterial({color:0xffffff, transparent:true, opacity:.85, roughness:.55, emissive:0x000000}),
+};
+const add = (m, parent = scene) => { parent.add(m); return m; };
+const box = (w, h, d, mat, x, y, z, parent = scene) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); return add(m, parent); };
+const cyl = (r, h, mat, x, y, z, axis = 'y', parent = scene) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 32), mat);
+  if (axis === 'x') m.rotation.z = Math.PI / 2; if (axis === 'z') m.rotation.x = Math.PI / 2; m.position.set(x, y, z); return add(m, parent); };
+
+/* ---------- the room ---------- */
+box(6000, 10, 6000, M.floor, 0, -755, 800);
+box(6000, 2400, 20, M.wall, 0, 450, -900);
+function table(x, z, w, d) { box(w, 30, d, M.wood, x, -15, z); [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => box(40, 720, 40, M.wood, x + a * (w / 2 - 40), -390, z + b * (d / 2 - 40))); }
+table(-150, -150, 1500, 800);     // work table: rig + laptop
+table(0, 2000, 1300, 600);        // target table, ~2 m away
+// wall socket
+box(90, 90, 12, std(0xe5e7eb, .7), 600, 120, -890);
+
+/* ---------- the rig (base fixed, pan group turns about Y, tilt group nods about X) ---------- */
+const rig = new THREE.Group(); scene.add(rig);
+box(150, 3, 150, M.acr, 0, 61.5, 0, rig);
+[[-65, -65], [65, -65], [-65, 65], [65, 65]].forEach(([x, z]) => box(12, 60, 12, M.leg, x, 30, z, rig));
+box(42, 40, 42, M.motor, 0, 38, 0, rig);
+cyl(1.6, 38, M.steel, 50, 82, 0, 'y', rig); box(60, 3, 15, M.acr, 25, 97.5, 0, rig); box(20, 1.6, 20, std(0x6d28d9, .5), 0, 95.2, 0, rig);
+const pan = new THREE.Group(); rig.add(pan);
+cyl(45, 3, M.acr, 0, 85.5, 0, 'y', pan);
+[[-30, -15], [-30, 15], [-45, 0]].forEach(([x, z]) => cyl(1.6, 38, M.steel, x, 106, z, 'y', pan));
+box(52, 2.5, 50, M.bracket, -34, 119.3, 0, pan); box(2.5, 57, 50, M.bracket, -6.8, 146.5, 0, pan);
+box(40, 42, 42, M.motor, -28, 146, 0, pan); box(4, 43, 43, M.cap, -10, 146, 0, pan);
+const tilt = new THREE.Group(); tilt.position.set(0, 146, 0); pan.add(tilt);     // pivot = the tilt shaft
+cyl(20, 3, M.acr, 12.5, 0, 0, 'x', tilt);
+box(87, 3, 50, M.acr, 57.5, -24.5, 0, tilt); box(87, 3, 50, M.acr, 57.5, 24.5, 0, tilt); box(3, 46, 50, M.acr, 15.5, 0, 0, tilt); box(3, 46, 50, M.acr, 99.5, 0, 0, tilt);
+box(73, 32, 29, M.cam, 57.5, -7, 10.5, tilt); cyl(6, 1.5, std(0x05070a, .05, .6), 41, -7, 25.3, 'z', tilt);
+box(30, 3, 44, M.cam, 57.5, -21.5, -26, tilt);
+box(15, 1.6, 18, M.pcb, 41, 11, 2, tilt); cyl(3, 12, M.brass, 41, 14.8, 8, 'z', tilt);
+const laserTip = new THREE.Object3D(); laserTip.position.set(41, 14.8, 14.3); tilt.add(laserTip);
+// the rig's own camera (for the laptop screen): at the lens, looking +Z
+const headCam = new THREE.PerspectiveCamera(55, 16 / 9, 10, 10000); headCam.position.set(41, -7, 26); headCam.rotation.y = Math.PI; tilt.add(headCam);
+// breadboard + Nano + drivers in front of the rig, 12 V adapter
+box(165, 9, 59, M.bb, 0, 4.5, 190, rig); box(43, 2, 18, M.nano, -50, 10, 190, rig); box(20, 1.6, 16, M.drv, 0, 11, 190, rig); box(20, 1.6, 16, M.drv, 32, 11, 190, rig);
+box(300, 22, 64, std(0xf1f5f9, .7), 380, 11, -470);   // extension board on the table
+box(60, 50, 44, M.black, 300, 47, -470);   // 12 V adapter plugged into the extension board
+box(46, 30, 36, std(0x1f2937, .6), 430, 37, -470);   // laptop charger plug
+// laptop behind the rig, facing the person (who sits at -Z looking toward the targets)
+const laptop = new THREE.Group(); laptop.position.set(-470, 0, -380); scene.add(laptop);
+box(340, 18, 240, M.laptop, 0, 9, 0, laptop);
+const lid = new THREE.Group(); lid.position.set(0, 18, 118); lid.rotation.x = .28; laptop.add(lid);
+box(340, 220, 8, M.laptop, 0, 110, 0, lid);
+const scrCanvas = document.createElement('canvas'); scrCanvas.width = 1024; scrCanvas.height = 640;
+const scrTex = new THREE.CanvasTexture(scrCanvas); scrTex.colorSpace = THREE.SRGBColorSpace;
+const screen = new THREE.Mesh(new THREE.PlaneGeometry(320, 200), new THREE.MeshBasicMaterial({map:scrTex}));
+screen.position.set(0, 112, -4.5); screen.rotation.y = Math.PI; lid.add(screen);
+
+/* ---------- beacon, decoy, white light on the target table ---------- */
+function target(x, z, withNano) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g);
+  box(100, 35, 64, M.acr, 0, 17.5, 0, g);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(20, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), M.ball.clone()); dome.position.y = 35; g.add(dome);
+  if (withNano) { box(45, 2, 18, M.nano, -18, 4.5, -8, g); } else { box(58, 14, 47, M.black, -18, 10, 0, g); }
+  const glow = new THREE.Mesh(new THREE.SphereGeometry(26, 20, 12), new THREE.MeshBasicMaterial({color:0xff3030, transparent:true, opacity:.45})); glow.position.y = 45; g.add(glow);
+  const light = new THREE.PointLight(0xff3030, 0, 700); light.position.y = 60; g.add(light);
+  return {g, dome, glow, light, home:new THREE.Vector3(x, 0, z)};
+}
+const beacon = target(260, 2000, true), decoy = target(-260, 2000, false);
+const bank = box(35, 14, 70, M.bank, 360, 7, 2000);            // beacon's power bank
+// the white light (optional distractor)
+const white = target(20, 2150, false); white.glow.material.color.setHex(0xffffff); white.light.color.setHex(0xffffff); white.dome.material.color.setHex(0xffffff);
+const coverCard = box(160, 150, 4, std(0x7c5a3a, .9), 0, 0, 0); coverCard.visible = false;     // the "hand" covering the beacon
+
+/* ---------- cables ---------- */
+const cable = (pts, color, r = 3) => { const curve = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)));
+  const m = new THREE.Mesh(new THREE.TubeGeometry(curve, 120, r, 8), std(color, .5)); scene.add(m); return {m, curve}; };
+const USB_CAM = cable([[60, 90, -40], [90, 64, -70], [110, 10, -110], [0, 3, -230], [-250, 3, -330], [-300, 12, -400]], 0xcbd5e1, 3);
+const USB_NANO = cable([[-75, 10, 190], [-160, 3, 160], [-250, 3, -100], [-290, 12, -360]], 0x94a3b8, 3);
+const V12 = cable([[300, 30, -445], [290, 3, -380], [180, 3, 100], [85, 8, 180]], 0xff5555, 3);
+const STRIP = cable([[530, 11, -470], [560, 0, -540], [620, -200, -700], [610, 60, -860], [600, 110, -885]], 0xe5e7eb, 3.5);
+const BANK = cable([[342, 7, 2000], [320, 5, 2000], [300, 8, 1994], [290, 6, 1992]], 0xcbd5e1, 2.2);
+const CHARGER = cable([[430, 25, -495], [400, 3, -530], [-150, 3, -520], [-300, 9, -470]], 0x1f2937, 3);
+const signals = [];   // little pulses travelling along a cable
+function pulses(c, color, n, speed, reverse) { for (let i = 0; i < n; i++) { const s = new THREE.Mesh(new THREE.SphereGeometry(7, 12, 8), new THREE.MeshBasicMaterial({color})); scene.add(s); signals.push({s, c, off:i / n, speed, reverse}); } }
+pulses(USB_CAM, 0xffffff, 5, .35, true);    // video: head → laptop
+pulses(USB_NANO, 0x4fc7ea, 4, .45, true);   // commands: laptop → rig  (cable is drawn rig → laptop)
+signals.forEach(p => p.s.visible = false);
+// laser beam
+const beamMat = new THREE.MeshBasicMaterial({color:0xff2a2a, transparent:true, opacity:.85});
+const beam = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 1, 8), beamMat); scene.add(beam);
+const spot = new THREE.Mesh(new THREE.SphereGeometry(5, 12, 8), new THREE.MeshBasicMaterial({color:0xff4040})); scene.add(spot);
+
+/* ---------- the laptop screen: a mock of the /live page, fed by the head camera ---------- */
+const ctx = scrCanvas.getContext('2d');
+const tmp = new THREE.Vector3();
+function toScreen(worldPos) { tmp.copy(worldPos).project(headCam); return {x:(tmp.x + 1) / 2, y:(1 - tmp.y) / 2, in:tmp.z < 1 && Math.abs(tmp.x) < 1.05 && Math.abs(tmp.y) < 1.05}; }
+function drawScreen(state, now) {
+  const W = 1024, H = 640; ctx.fillStyle = '#060b14'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#0d1624'; ctx.fillRect(0, 0, W, 44); ctx.fillStyle = '#EAF4FD'; ctx.font = 'bold 20px monospace'; ctx.fillText('ZERO', 18, 29); ctx.fillStyle = '#4FC7EA'; ctx.fillText('DRIFT', 70, 29);
+  ctx.fillStyle = '#5f7288'; ctx.font = '14px monospace'; ctx.fillText('LIVE · zerodrift-fsoc-pat.netlify.app/live', 150, 28);
+  // camera view
+  const vx = 16, vy = 58, vw = 680, vh = 383;
+  ctx.fillStyle = '#020409'; ctx.fillRect(vx, vy, vw, vh);
+  ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2; ctx.strokeRect(vx, vy, vw, vh);
+  // faint crosshair (where the laser points)
+  ctx.strokeStyle = 'rgba(79,199,234,.35)'; ctx.beginPath(); ctx.moveTo(vx + vw / 2 - 20, vy + vh / 2); ctx.lineTo(vx + vw / 2 + 20, vy + vh / 2); ctx.moveTo(vx + vw / 2, vy + vh / 2 - 20); ctx.lineTo(vx + vw / 2, vy + vh / 2 + 20); ctx.stroke();
+  const blob = (t, col, r, alpha) => { if (!t.in) return; const x = vx + t.x * vw, y = vy + t.y * vh; const g = ctx.createRadialGradient(x, y, 0, x, y, r * 3); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.globalAlpha = alpha; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 3, 0, 7); ctx.fill(); ctx.globalAlpha = 1; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); };
+  const b = toScreen(beacon.dome.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 8, 0)));
+  const d = toScreen(decoy.dome.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 8, 0)));
+  const w = toScreen(white.dome.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 8, 0)));
+  if (state.decoyOn) { blob(d, '#ff4d4d', 9, .55); if (d.in) { ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 14px monospace'; { const px = vx + d.x * vw, py = vy + d.y * vh; ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px, py + 10); ctx.lineTo(px, py + (state.white ? 62 : 38) - 13); ctx.stroke(); ctx.fillText('decoy · ignored', px - 8, py + (state.white ? 62 : 38)); } } }
+  if (state.white) { blob(w, '#ffffff', 8, .5); if (w.in) { ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 14px monospace'; { const px = vx + w.x * vw, py = vy + w.y * vh; ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px, py + 10); ctx.lineTo(px, py + 38 - 13); ctx.stroke(); ctx.fillText('white · ignored', px - 8, py + 38); } } }
+  if (!state.covered && state.beaconLit) blob(b, '#ff3030', 10, .7);
+  if (state.laser && !state.covered) { ctx.fillStyle = '#ffb3b3'; ctx.beginPath(); ctx.arc(vx + vw / 2 + 4, vy + vh / 2 + 3, 3.5, 0, 7); ctx.fill(); }
+  // lock box / status
+  if (state.locked && b.in) { const x = vx + b.x * vw, y = vy + b.y * vh; ctx.strokeStyle = '#22C55E'; ctx.lineWidth = 3; ctx.strokeRect(x - 32, y - 32, 64, 64); ctx.fillStyle = '#22C55E'; ctx.font = 'bold 16px monospace'; ctx.fillText('LOCKED 4.0 Hz', x - 60, y - 42); }
+  else if (state.running) { ctx.fillStyle = '#FFC24D'; ctx.font = 'bold 18px monospace'; ctx.fillText(state.covered ? 'SEARCHING · holding position' : 'SEARCHING for a 4 Hz blink…', vx + 16, vy + 30); }
+  if (!state.running) { ctx.fillStyle = '#5f7288'; ctx.font = 'bold 18px monospace'; ctx.fillText('camera off · press START CAMERA', vx + 180, vy + vh / 2); }
+  // right panel: buttons + settings
+  const bx = 716, bw = 292;
+  [['START CAMERA', state.running], ['MK2 CAMERA (USB)', state.running], ['CONNECT RIG', state.connected], ['TEST MOTION', false]].forEach(([t, on], i) => {
+    const y = 58 + i * 58; ctx.fillStyle = on ? '#0f2e22' : '#0f2537'; ctx.fillRect(bx, y, bw, 44); ctx.strokeStyle = on ? '#22C55E' : '#22D3EE'; ctx.lineWidth = 2; ctx.strokeRect(bx, y, bw, 44);
+    ctx.fillStyle = on ? '#86EFAC' : '#67E8F9'; ctx.font = 'bold 16px monospace'; ctx.fillText(t + (on ? '  ✓' : ''), bx + 18, y + 28); });
+  ctx.fillStyle = '#111827'; ctx.fillRect(bx, 294, bw, 147); ctx.fillStyle = '#94a3b8'; ctx.font = 'bold 13px monospace'; ctx.fillText('SETTINGS', bx + 14, 318);
+  ctx.fillStyle = '#E2E8F0'; ctx.font = '14px monospace'; ctx.fillText('BEACON RATE   4 Hz', bx + 14, 346); ctx.fillText('RED BEACON FILTER  ✓', bx + 14, 372); ctx.fillText('MK2 DRIVE: direct 1:1', bx + 14, 398);
+  ctx.fillStyle = state.connected ? '#86EFAC' : '#5f7288'; ctx.fillText(state.connected ? 'rig: connected · encoders=pan' : 'rig: not connected', bx + 14, 424);
+  // bottom telemetry
+  ctx.fillStyle = '#0a1220'; ctx.fillRect(16, 455, W - 32, 170); ctx.strokeStyle = '#16233a'; ctx.strokeRect(16, 455, W - 32, 170);
+  ctx.fillStyle = '#EAF4FD'; ctx.font = 'bold 20px monospace';
+  ctx.fillText(`PAN  ${(state.pan >= 0 ? '+' : '') + state.pan.toFixed(1)}°`, 40, 500); ctx.fillText(`TILT ${(state.tilt >= 0 ? '+' : '') + state.tilt.toFixed(1)}°`, 40, 540);
+  ctx.fillStyle = state.locked ? '#22C55E' : '#FFC24D'; ctx.fillText(state.locked ? 'TRACKING' : state.running ? 'SEARCHING' : 'IDLE', 40, 590);
+  ctx.fillStyle = '#5f7288'; ctx.font = '15px monospace';
+  ctx.fillText('camera → laptop (USB 2) → tracker finds the 4 Hz blink', 330, 500);
+  ctx.fillText('laptop → Arduino (USB 1): "P<steps> T<steps>"', 330, 530);
+  ctx.fillText('Arduino → drivers → motors → head turns → camera sees', 330, 560);
+  ctx.fillStyle = state.laser ? '#ff8080' : '#5f7288'; ctx.fillText(state.laser ? 'LASER ON · closes the loop on its own dot' : 'laser off', 330, 590);
+  scrTex.needsUpdate = true;
+}
+
+/* ---------- steps ---------- */
+const STEPS = [
+  {t:'The whole setup', d:'one laptop, one rig, two targets', view:[-2200, 1600, -250], target:[-120, -50, 800], s:{running:true, connected:true, locked:true, laser:true, decoyOn:true, beaconLit:true},
+   why:'Everything in one room: the laptop and the rig on one table, the beacon and the decoy on another table about 2 m away. The rig\'s camera looks at the targets; the laptop does the thinking; the motors turn the head so the laser lands on the beacon.',
+   dims:'rig ↔ targets ≈ 2 m · only 2 USB cables to the laptop', labels:[['laptop', [-470, 250, -380]], ['rig', [0, 200, 0]], ['beacon (blinks)', [260, 90, 2000], 'grn'], ['decoy (steady)', [-260, 90, 2000], 'red'], ['≈ 2 m', [0, 30, 1000], 'amb']]},
+  {t:'Laptop USB 1: the rig', d:'Arduino Nano: commands out, angles back', view:[-700, 500, -800], target:[-200, 0, -100], s:{running:false, connected:true}, show:['nano'],
+   why:'One USB cable from the laptop to the rig\'s Arduino Nano on the breadboard. The website sends motor commands down it (P<steps> T<steps>, laser on/off) and the Nano sends the real angles back from the AS5600 sensor.',
+   dims:'USB 1 → rig Nano · Chrome → CONNECT RIG', labels:[['USB 1 → rig Arduino', [-160, 30, 160], 'amb'], ['Arduino Nano', [-50, 30, 190]]]},
+  {t:'Laptop USB 2: the webcam', d:'the video, from the back of the head', view:[-700, 520, -850], target:[-100, 60, -150], s:{running:true, connected:true}, show:['cam'],
+   why:'The second USB cable is the webcam on the head. It leaves the back of the head (with a loose loop) and runs to the laptop. That is the only video: the laptop sees exactly what the head sees.',
+   dims:'USB 2 → webcam · START CAMERA → MK2 CAMERA (USB)', labels:[['USB 2 → webcam', [0, 30, -230], 'amb'], ['webcam on the head', [60, 200, 0]]]},
+  {t:'Wall power', d:'12 V for the motors, charger for the laptop', view:[250, 750, 150], target:[380, 0, -650], s:{running:true, connected:true}, show:['v12'],
+   why:'One extension board from the wall socket. Into it: the 12 V adapter, whose cable goes to the rig\'s breadboard: it powers the two motors and nothing else. The laptop charger goes into the same board, so the laptop does not sleep in the middle of the demo.',
+   dims:'wall → extension board → 12 V adapter (motors only) + laptop charger', labels:[['wall socket', [600, 200, -890]], ['12 V adapter', [300, 110, -470], 'red'], ['extension board', [470, 40, -440]], ['laptop charger', [440, 80, -520]], ['→ rig motors', [180, 30, 100], 'red']]},
+  {t:'The targets: own power, no wires', d:'beacon on a power bank · decoy on AA', view:[800, 500, 1300], target:[0, 20, 2000], s:{running:true, connected:true, decoyOn:true, beaconLit:true},
+   why:'Neither target is connected to the laptop or the rig. The beacon runs on its own power bank and blinks 4 times a second. The decoy runs on its own 3 AA cells and glows steadily. Both are RED LEDs of the same kind under half a ping-pong ball, so they look alike: only the blink is different.',
+   dims:'beacon: power bank · decoy: 3 × AA · both red, same LED', labels:[['beacon · blinks 4×/s', [260, 90, 2000], 'grn'], ['decoy · steady', [-260, 90, 2000], 'red'], ['power bank', [360, 30, 2000]]]},
+  {t:'What the laptop shows', d:'the /live page', view:[-560, 260, -760], target:[-470, 120, -330], s:{running:true, connected:true, locked:true, laser:true, decoyOn:true, beaconLit:true}, screen:true,
+   why:'The /live page in Chrome: the camera picture on the left, the buttons on the right. The beacon gets a green box and LOCKED 4.0 Hz; the decoy is a red dot marked "decoy · ignored". Underneath: the live pan and tilt angles and the state (TRACKING).',
+   dims:'green box = locked on the beacon · decoy ignored', labels:[['laptop screen = the /live page', [-470, 250, -330], 'grn']]},
+  {t:'How it works: the loop', d:'camera → laptop → Arduino → motors', view:[-900, 700, -700], target:[-150, 60, -100], s:{running:true, connected:true, locked:true, laser:true, decoyOn:true, beaconLit:true}, loop:true,
+   why:'Around and around, many times a second: the webcam sends a picture to the laptop (white pulses). The tracker finds the thing blinking at 4 Hz and works out how far off-centre it is. The laptop sends a move to the Arduino (blue pulses). The motors turn the head. The camera sees the new picture. Repeat.',
+   dims:'webcam → laptop → Arduino → motors → head → webcam', labels:[['video', [0, 30, -230]], ['commands', [-250, 30, -100], 'amb']]},
+  {t:'Move the beacon: it follows', d:'the laser stays on the beacon', view:[-600, 700, -850], target:[150, 80, 1200], s:{running:true, connected:true, locked:true, laser:true, decoyOn:true, beaconLit:true}, move:true,
+   why:'Pick up the beacon and walk it left and right, up and down. The rig turns to follow and the laser dot stays on the beacon. The decoy is right there and just as bright, and the rig never looks at it.',
+   dims:'pan up to ±90° · tilt up to ±18°', labels:[['laser', [140, 120, 1000], 'red']]},
+  {t:'Cover the beacon', d:'it waits, it does not jump to the decoy', view:[-500, 650, -800], target:[80, 60, 1400], s:{running:true, connected:true, decoyOn:true, beaconLit:true}, cover:true,
+   why:'Put a hand or a card in front of the beacon. The lock is lost, the page says SEARCHING, and the rig holds still. It does NOT jump to the decoy, because the decoy does not blink. Take the card away: it locks again in about a second.',
+   dims:'covered → holds position · uncovered → locks again', labels:[['card over the beacon', [260, 180, 1900], 'amb']]},
+  {t:'White light too (optional)', d:'a 3rd steady light is ignored as well', view:[800, 500, 1300], target:[0, 20, 2000], s:{running:true, connected:true, locked:true, laser:true, decoyOn:true, beaconLit:true, white:true},
+   why:'You have white LEDs as well as red ones. Use RED for both the beacon and the decoy (the same kind). A white LED can be a third, steady light to show the tracker ignores that too: it is not blinking at 4 Hz, and the RED BEACON FILTER turns white light down.',
+   dims:'beacon + decoy = red · white = optional extra distraction', labels:[['white light · ignored', [20, 90, 2150]], ['beacon', [260, 90, 2000], 'grn'], ['decoy', [-260, 90, 2000], 'red']]},
+];
+
+/* ---------- engine ---------- */
+let cur = 0, t0 = performance.now(), playing = false, playT = 0, screenMode = false;
+const ease = x => 1 - Math.pow(1 - Math.min(Math.max(x, 0), 1), 3);
+const camFrom = new THREE.Vector3(), camTo = new THREE.Vector3(), tgFrom = new THREE.Vector3(), tgTo = new THREE.Vector3();
+let labelEls = [];
+function go(i) {
+  cur = (i + STEPS.length) % STEPS.length; t0 = performance.now(); screenMode = !!STEPS[cur].screen; document.getElementById('scr').classList.toggle('on', screenMode);
+  const s = STEPS[cur];
+  camFrom.copy(cam.position); tgFrom.copy(controls.target); camTo.set(...s.view); tgTo.set(...s.target);
+  document.getElementById('hn').textContent = `PREVIEW · ${cur + 1} / ${STEPS.length}`;
+  document.getElementById('ht').textContent = s.t; document.getElementById('hw').textContent = s.why; document.getElementById('hd').textContent = s.dims;
+  document.getElementById('pg').style.width = ((cur + 1) / STEPS.length * 100) + '%';
+  document.querySelectorAll('.step').forEach((e, k) => { e.classList.toggle('on', k === cur); e.classList.toggle('done', k < cur); });
+  const root = document.getElementById('labels'); root.innerHTML = '';
+  labelEls = (s.labels || []).map(([t, p, cls]) => { const e = document.createElement('div'); e.className = 'lbl ' + (cls || ''); e.textContent = t; e.style.opacity = 0; root.appendChild(e); return {e, p:new THREE.Vector3(...p)}; });
+  // highlight the cable this step is about
+  const hi = s.show || [];
+  [[USB_NANO, 'nano'], [USB_CAM, 'cam'], [V12, 'v12']].forEach(([c, k]) => { c.m.material.emissive.setHex(hi.includes(k) ? 0x445566 : 0); c.m.scale.setScalar(1); });
+}
+const stepsEl = document.getElementById('steps');
+STEPS.forEach((s, i) => { const e = document.createElement('div'); e.className = 'step'; e.innerHTML = `<div class="k">${i + 1}</div><div><div class="t">${s.t}</div><div class="d">${s.d}</div></div>`; e.onclick = () => { stop(); go(i); }; stepsEl.appendChild(e); });
+const stop = () => { playing = false; const b = document.getElementById('play'); b.textContent = '▶ play'; b.classList.remove('on'); };
+document.getElementById('prev').onclick = () => { stop(); go(cur - 1); };
+document.getElementById('next').onclick = () => { stop(); go(cur + 1); };
+document.getElementById('play').onclick = () => { if (playing) return stop(); playing = true; playT = performance.now(); const b = document.getElementById('play'); b.textContent = '❚❚ pause'; b.classList.add('on'); };
+document.getElementById('scr').onclick = e => { screenMode = !screenMode; e.target.classList.toggle('on', screenMode); t0 = performance.now() - 2000;
+  camFrom.copy(cam.position); tgFrom.copy(controls.target);
+  if (screenMode) { camTo.set(-560, 260, -760); tgTo.set(-470, 120, -330); } else { camTo.set(...STEPS[cur].view); tgTo.set(...STEPS[cur].target); } t0 = performance.now(); };
+addEventListener('keydown', e => { if (e.key === 'ArrowRight') { stop(); go(cur + 1); } if (e.key === 'ArrowLeft') { stop(); go(cur - 1); } if (e.key === ' ') { e.preventDefault(); document.getElementById('play').click(); } });
+function resize() { const r = canvas.parentElement.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); cam.aspect = r.width / r.height; cam.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+cam.position.set(...STEPS[0].view); controls.target.set(...STEPS[0].target);
+
+const PIVOT = new THREE.Vector3(0, 146, 0), Y = new THREE.Vector3(0, 1, 0);
+let panA = 0, tiltA = 0;
+const lp = new THREE.Vector3(), bp = new THREE.Vector3();
+function frame(now) {
+  requestAnimationFrame(frame);
+  const s = STEPS[cur], st = s.s, tt = (now - t0) / 1000;
+  // beacon position: at home, or carried around on the "move" step
+  beacon.g.position.copy(beacon.home);
+  if (s.move) beacon.g.position.add(new THREE.Vector3(-520 * Math.sin(tt * .55), 60 + 140 * Math.sin(tt * .8) ** 2, -250 * Math.sin(tt * .3)));
+  bank.position.set(beacon.g.position.x + 100, beacon.g.position.y + 7, beacon.g.position.z);
+  // the cover card: on for the first 3.5 s of the cover step, then taken away
+  const covered = !!s.cover && tt % 6 < 3.5;
+  coverCard.visible = covered; coverCard.position.set(beacon.g.position.x, 70, beacon.g.position.z - 90);
+  const locked = !!st.locked || (s.cover && !covered);
+  // lights: beacon blinks at 4 Hz, decoy steady, white steady (optional)
+  const blinkOn = st.beaconLit && Math.floor(now / 125) % 2 === 0;
+  const setLit = (T, on, col) => { T.glow.visible = on; T.light.intensity = on ? 2.5 : 0; T.dome.material.emissive.setHex(on ? col : 0); };
+  setLit(beacon, !!blinkOn, 0x992020); setLit(decoy, !!st.decoyOn, 0x992020); setLit(white, !!st.white, 0x888888);
+  white.g.visible = !!st.white;
+  // aim the rig at the beacon (with a little lag), hold still when the lock is lost
+  if (locked) {
+    beacon.dome.getWorldPosition(bp); bp.y += 8;
+    const d = bp.clone().sub(PIVOT);
+    const wantPan = THREE.MathUtils.clamp(Math.atan2(d.x, d.z), -Math.PI / 2, Math.PI / 2);
+    const wantTilt = THREE.MathUtils.clamp(Math.atan2(d.y, Math.hypot(d.x, d.z)), -.314, .314);
+    panA += (wantPan - panA) * .08; tiltA += (wantTilt - tiltA) * .08;
+  } else if (!st.running) { panA += (0 - panA) * .05; tiltA += (0 - tiltA) * .05; }
+  pan.rotation.y = panA; tilt.rotation.x = -tiltA;
+  rig.updateMatrixWorld(true);
+  // laser beam from the tip to the beacon
+  const laserOn = !!st.laser && locked;
+  beam.visible = spot.visible = laserOn;
+  if (laserOn) { laserTip.getWorldPosition(lp); beacon.dome.getWorldPosition(bp); bp.y += 12; const dir = bp.clone().sub(lp), L = dir.length();
+    beam.position.copy(lp).addScaledVector(dir, .5); beam.scale.set(1, L, 1); beam.quaternion.setFromUnitVectors(Y, dir.normalize()); spot.position.copy(bp); }
+  // pulses along the cables in the loop step
+  for (const p of signals) { p.s.visible = !!s.loop; if (!s.loop) continue; let u = (p.off + tt * p.speed) % 1; if (p.reverse) u = 1 - u; p.s.position.copy(p.c.curve.getPointAt(u)); }
+  // camera glide
+  if (now - t0 < 1600) { const c = ease((now - t0) / 1400); cam.position.lerpVectors(camFrom, camTo, c); controls.target.lerpVectors(tgFrom, tgTo, c); }
+  if (playing && now - playT > 7000) { playT = now; go(cur + 1); }
+  controls.update();
+  headCam.updateMatrixWorld(true);
+  drawScreen({running:!!st.running, connected:!!st.connected, locked, laser:!!st.laser, decoyOn:!!st.decoyOn, white:!!st.white, covered, beaconLit:blinkOn, pan:THREE.MathUtils.radToDeg(panA), tilt:THREE.MathUtils.radToDeg(tiltA)}, now);
+  renderer.render(scene, cam);
+  const r = canvas.getBoundingClientRect(), la = ease((now - t0 - 900) / 400);
+  for (const L of labelEls) { tmp.copy(L.p).project(cam); L.e.style.left = ((tmp.x + 1) / 2 * r.width) + 'px'; L.e.style.top = ((1 - tmp.y) / 2 * r.height) + 'px'; L.e.style.opacity = (!(screenMode && !STEPS[cur].screen) && tmp.z < 1 && Math.abs(tmp.x) < .92 && Math.abs(tmp.y) < .95) ? la : 0; }
+}
+go(0); requestAnimationFrame(frame);
+window.__steps = STEPS.length;
+</script>
+</body>
+</html>

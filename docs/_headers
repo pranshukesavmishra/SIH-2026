@@ -43,3 +43,7 @@
   X-Robots-Tag: noindex, nofollow
 /submission/picture_guide/*
   X-Robots-Tag: noindex, nofollow
+/preview.html
+  X-Robots-Tag: noindex, nofollow
+/preview
+  X-Robots-Tag: noindex, nofollow

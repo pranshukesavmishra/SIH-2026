@@ -151,6 +151,8 @@ td.bad{color:var(--red)}
     <button data-tab="gimbal" class="on">gimbal</button>
     <button data-tab="targets">beacon &amp; decoy</button>
     <button data-tab="result">what it does</button>
+    <button data-href="headbox.html">head box</button>
+    <button data-href="wiring.html">wiring</button>
   </div>
   <nav>
     <a href="index.html">overview</a>
@@ -807,7 +809,7 @@ function goStage(i) {
   focus = {target:c, pos:c.clone().addScaledVector(dir, dist)};
 }
 
-document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => b.dataset.href ? (location.href = b.dataset.href) : switchTab(b.dataset.tab));
 
 function switchTab(name) {
   tab = name;

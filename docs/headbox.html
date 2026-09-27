@@ -19,6 +19,10 @@ a{color:var(--cyan);text-decoration:none}
 header{display:flex;align-items:center;gap:14px;padding:8px 16px;border-bottom:1px solid var(--edge);height:44px}
 header .wm{font-size:15px;font-weight:700;color:var(--ink-bright)} header .wm b{color:var(--cyan)}
 header .sub{font-size:10px;color:var(--ink-dim)}
+.tabs{display:flex}
+.tabs a{display:block;padding:6px 14px;font-size:11px;letter-spacing:.4px;color:var(--ink);background:#0d1624;border:1px solid var(--edge);border-left-width:0}
+.tabs a:first-child{border-radius:4px 0 0 4px;border-left-width:1px} .tabs a:last-child{border-radius:0 4px 4px 0}
+.tabs a:hover{color:var(--cyan)} .tabs a.on{background:#12243c;border-color:var(--cyan);color:var(--cyan)}
 header nav{margin-left:auto;font-size:11px} header nav a{margin-left:13px;color:var(--ink-dim)}
 .wrap{display:grid;grid-template-columns:1fr 360px;height:calc(100% - 44px)}
 .stage{position:relative;min-width:0;min-height:0}
@@ -51,9 +55,11 @@ aside h3{font-size:11px;color:var(--ink-dim);letter-spacing:.8px;margin:4px 0 10
 </head>
 <body>
 <header>
-  <div class="wm">ZERO<b>DRIFT</b> · head box</div>
-  <div class="sub">MK2 · camera + laser box on the tilt motor · 3 mm clear acrylic</div>
-  <nav><a href="build.html">BUILD GUIDE</a><a href="assembly.html">FULL 3D ASSEMBLY</a></nav>
+  <div class="wm">ZERO<b>DRIFT</b> · MK2</div>
+  <div class="tabs">
+    <a href="assembly.html">gimbal</a><a href="assembly.html?tab=targets">beacon &amp; decoy</a><a href="assembly.html?tab=result">what it does</a><a class="on" href="headbox.html">head box</a><a href="wiring.html">wiring</a>
+  </div>
+  <nav><a href="build.html">BUILD GUIDE</a></nav>
 </header>
 <div class="wrap">
   <div class="stage">

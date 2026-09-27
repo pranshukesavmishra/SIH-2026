@@ -17,6 +17,10 @@
   X-Robots-Tag: noindex, nofollow
 /headbox
   X-Robots-Tag: noindex, nofollow
+/wiring.html
+  X-Robots-Tag: noindex, nofollow
+/wiring
+  X-Robots-Tag: noindex, nofollow
 /assembly
   X-Robots-Tag: noindex, nofollow
 /submission/ZeroDrift_MK2_Build_Guide.pdf

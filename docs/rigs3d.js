@@ -188,9 +188,12 @@ function start() {
   // Both framed from the side, so the mechanism, the beam and the beacon
   // it is chasing are all in view.
   const v1 = makeViewer(c1, { cam: [820, -300, 520], target: [0, -120, 130] });
-  const v2 = makeViewer(c2, { cam: [780, -340, 520], target: [-20, -215, 90], autoRotate: -0.3,
-    fog: [1500, 3400], dist: [160, 2200], shadowR: 650, shadowMap: 2048 });
+  // MK2 orbits the centre of the whole bench -- rig, phone, decoy, laptop and
+  // adapter -- from far enough out that the laptop never leaves the frame.
+  const v2 = makeViewer(c2, { cam: [944, -163, 665], target: [-40, -10, 90], autoRotate: -0.3,
+    fog: [2000, 4600], dist: [160, 2800], shadowR: 700, shadowMap: 2048 });
   const step1 = buildMk1(v1), mk2 = buildMk2Twin(v2);
+  window.__zdViewers = { v1, v2 };                                  // test hook (screenshots)
   const view2 = c2.closest('.rig-view');
   const t0 = parseFloat(new URLSearchParams(location.search).get('mk2t')) || 0;   // start the MK2 run at a given second
   const out1 = document.getElementById('rigMk1Read'), out2 = document.getElementById('rigMk2Read');

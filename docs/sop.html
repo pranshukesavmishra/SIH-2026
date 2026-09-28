@@ -4,89 +4,117 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ZeroDrift — Standard Operating Procedure</title>
-<meta name="description" content="Standard operating procedure for the ZeroDrift FSOC coarse pointing, acquisition and tracking system: simulation test, live tracking and MK2 terminal operation.">
+<meta name="description" content="ZD-SOP-001: standard operating procedure for the ZeroDrift FSOC pointing, acquisition and tracking system: simulation test, live tracking and MK2 terminal.">
 <link rel="icon" type="image/png" href="brand/zerodrift_mark.png">
 <style>
 :root{
-  --bg-deep:#03070D; --panel:#0A111E; --edge:#18263A; --ink-primary:#E6F1FA; --ink-secondary:#8B9EBA; --ink-muted:#53647B;
-  --cyan:#4FC7EA; --green:#3BD68C; --amber:#FFC24D; --red:#FF5555;
-  --font-mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace;
-  --font-sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --bg:#03070D; --panel:#0A111E; --panel2:#0d1728; --edge:#18263A; --ink:#E6F1FA; --ink2:#9fb1c8; --mute:#5b6d84;
+  --cyan:#4FC7EA; --green:#3BD68C; --amber:#FFC24D; --orange:#FF9D45; --red:#FF5555; --blue:#5B8DEF; --vio:#B48CFF;
+  --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;overflow-x:hidden}
-body{background:var(--bg-deep);color:var(--ink-primary);font:15px/1.65 var(--font-sans);
-  background-image:radial-gradient(circle at 50% 0%,rgba(14,35,65,.35) 0%,transparent 55%),
-  linear-gradient(rgba(24,38,58,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(24,38,58,.12) 1px,transparent 1px);
+html,body{width:100%;overflow-x:hidden;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--sans);
+  background-image:radial-gradient(circle at 50% -10%,rgba(14,35,65,.5) 0%,transparent 55%),
+  linear-gradient(rgba(24,38,58,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(24,38,58,.13) 1px,transparent 1px);
   background-size:100% 100%,32px 32px,32px 32px}
-a{color:var(--cyan)}
-/* header, same as the other public pages */
-.top{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--edge);background:rgba(6,11,20,.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;font-family:var(--font-mono)}
+a{color:var(--cyan);text-decoration:none}
+svg text{font-family:var(--sans)}
+/* header (same as the other public pages) */
+.top{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--edge);background:rgba(6,11,20,.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;font-family:var(--mono)}
 .brand-logo-full{height:42px;width:auto;display:block;margin:-4px 0}
 .nav-links{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px}
-.nav-link{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:5px;color:var(--ink-secondary);text-decoration:none;font-size:11px;letter-spacing:1px;transition:all .2s ease;border:1px solid transparent}
+.nav-link{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:5px;color:var(--ink2);font-size:11px;letter-spacing:1px;transition:all .2s;border:1px solid transparent}
 .nav-link svg{width:13px;height:13px;fill:currentColor;opacity:.85}
 .nav-link:hover{color:var(--cyan);background:rgba(79,199,234,.08)}
 .nav-link.active{color:var(--cyan);background:rgba(79,199,234,.14);border-color:rgba(79,199,234,.3)}
-.github-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:5px;background:var(--panel);border:1px solid var(--edge);color:var(--ink-secondary)}
+.github-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:5px;background:var(--panel);border:1px solid var(--edge);color:var(--ink2)}
 .github-icon-btn svg{width:16px;height:16px;fill:currentColor}
-.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:rgba(6,11,20,.95);backdrop-filter:blur(16px);border-top:1px solid var(--edge);z-index:200;justify-content:space-around;align-items:center;padding:0 10px;font-family:var(--font-mono)}
-.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink-secondary);text-decoration:none;font-size:10px;flex:1;padding:6px 0}
+.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:rgba(6,11,20,.95);backdrop-filter:blur(16px);border-top:1px solid var(--edge);z-index:200;justify-content:space-around;align-items:center;padding:0 10px;font-family:var(--mono)}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink2);font-size:10px;flex:1;padding:6px 0}
 .mobile-nav-item svg{width:18px;height:18px;fill:currentColor}
 .mobile-nav-item.active{color:var(--cyan)}
 @media (max-width:900px){.nav-links{display:none}.mobile-bottom-nav{display:flex}body{padding-bottom:70px}}
 
-/* document */
-.doc{max-width:1060px;margin:0 auto;padding:34px 18px 60px}
-.kicker{font:700 11px var(--font-mono);letter-spacing:2px;color:var(--cyan)}
-h1{font-size:34px;line-height:1.2;margin:8px 0 6px;letter-spacing:-.5px}
-.lede{color:var(--ink-secondary);max-width:760px}
-.ctrl{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--edge);border:1px solid var(--edge);border-radius:10px;overflow:hidden;margin:22px 0 10px}
-.ctrl div{background:var(--panel);padding:11px 14px}
-.ctrl span{display:block;font:700 10px var(--font-mono);letter-spacing:1.3px;color:var(--ink-muted)}
-.ctrl b{font:700 13px var(--font-mono);color:var(--ink-primary)}
-.toc{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 6px}
-.toc a{font:11px var(--font-mono);letter-spacing:.8px;text-decoration:none;color:var(--ink-secondary);border:1px solid var(--edge);border-radius:5px;padding:5px 9px;background:rgba(10,17,30,.7)}
-.toc a:hover{color:var(--cyan);border-color:rgba(79,199,234,.4)}
-section{margin-top:34px;scroll-margin-top:80px}
-h2{display:flex;align-items:baseline;gap:12px;font-size:21px;padding-bottom:9px;border-bottom:1px solid var(--edge);margin-bottom:14px}
-h2 i{font:700 13px var(--font-mono);font-style:normal;color:var(--cyan);min-width:30px}
-h3{font-size:16px;margin:20px 0 8px;color:#fff}
-h3 i{font-style:normal;font-family:var(--font-mono);color:var(--cyan);margin-right:8px}
-p{margin:6px 0;color:#c9d6e6}
-ul{margin:6px 0 6px 20px;color:#c9d6e6}
-li{margin:3px 0}
-b,strong{color:#fff}
-code{font:13px var(--font-mono);background:rgba(79,199,234,.08);border:1px solid rgba(79,199,234,.18);padding:1px 6px;border-radius:4px;color:#bfeaf7}
-.tbl{overflow-x:auto;border:1px solid var(--edge);border-radius:10px;margin:10px 0}
-table{width:100%;border-collapse:collapse;font-size:14px;min-width:620px}
-th{text-align:left;font:700 10.5px var(--font-mono);letter-spacing:1.2px;color:var(--ink-muted);background:rgba(3,8,18,.7);padding:10px 14px;border-bottom:1px solid var(--edge)}
-td{padding:10px 14px;border-bottom:1px solid rgba(24,38,58,.7);color:#c9d6e6;vertical-align:top}
+/* layout */
+.doc{max-width:1180px;margin:0 auto;padding:30px 18px 60px}
+.kicker{font:700 11px var(--mono);letter-spacing:2.4px;color:var(--cyan)}
+h1{font-size:40px;line-height:1.1;letter-spacing:-.8px;margin:10px 0 8px}
+h1 span{color:var(--cyan)}
+.lede{color:var(--ink2);max-width:560px;font-size:16px}
+.hero{display:grid;grid-template-columns:1fr 1.15fr;gap:26px;align-items:center}
+.hero-art{border:1px solid var(--edge);border-radius:16px;background:linear-gradient(180deg,#07101f,#040912);overflow:hidden}
+.ctrl{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--edge);border:1px solid var(--edge);border-radius:12px;overflow:hidden;margin-top:18px}
+.ctrl div{background:var(--panel);padding:10px 13px}
+.ctrl span{display:block;font:700 9.5px var(--mono);letter-spacing:1.3px;color:var(--mute)}
+.ctrl b{font:700 12.5px var(--mono);color:var(--ink)}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 4px}
+.toc a{display:inline-flex;align-items:center;gap:7px;font:600 12px var(--sans);color:var(--ink2);border:1px solid var(--edge);border-radius:999px;padding:6px 12px 6px 7px;background:rgba(10,17,30,.8)}
+.toc a i{font:700 10.5px var(--mono);font-style:normal;color:#06101c;background:var(--cyan);border-radius:999px;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center}
+.toc a:hover{color:#fff;border-color:rgba(79,199,234,.5)}
+section{margin-top:54px;scroll-margin-top:80px}
+.sh{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.sh .n{font:800 13px var(--mono);color:#06101c;background:var(--cyan);width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}
+.sh h2{font-size:24px;letter-spacing:-.3px;line-height:1.1}
+.sh p{color:var(--mute);font:12px var(--mono);letter-spacing:.6px;margin-top:3px}
+.grid{display:grid;gap:14px}
+.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--edge);border-radius:14px;padding:16px}
+.card h3{font-size:15.5px;margin:10px 0 4px}
+.card p{color:var(--ink2);font-size:13.5px;line-height:1.45}
+.pill{display:inline-block;font:700 10px var(--mono);letter-spacing:1px;padding:3px 8px;border-radius:5px;border:1px solid}
+.ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.ico svg{width:26px;height:26px}
+/* figure panel for the flowchart */
+.fig{background:#fff;border-radius:16px;padding:10px;border:1px solid #cbd5e1;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.fig svg{width:100%;height:auto;display:block}
+.figcap{font:11.5px var(--mono);color:var(--mute);margin-top:8px;text-align:center}
+.scroller{overflow-x:auto}
+.scroller .fig{min-width:760px}
+/* state strip */
+.states{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--edge);border-radius:14px;overflow:hidden}
+.states div{padding:14px 12px;background:var(--panel);border-right:1px solid var(--edge);position:relative}
+.states div:last-child{border-right:0}
+.states b{display:block;font:800 13px var(--mono);letter-spacing:1px}
+.states span{display:block;color:var(--ink2);font-size:12.5px;margin-top:4px;line-height:1.35}
+.states i{position:absolute;left:0;right:0;top:0;height:3px}
+/* stepper */
+.stepper{display:grid;gap:12px;counter-reset:st}
+.step{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:10px 14px;position:relative}
+.step .d{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 13px var(--mono);color:#06101c}
+.step b{font-size:14.5px}
+.step small{display:block;color:var(--ink2);font-size:12.5px}
+.step .v{font:700 10.5px var(--mono);letter-spacing:.6px;color:var(--green);border:1px solid rgba(59,214,140,.4);background:rgba(59,214,140,.08);padding:5px 9px;border-radius:6px;white-space:nowrap}
+.flowline{display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;overflow-x:auto}
+.fl{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--edge);padding:14px 12px;position:relative}
+.fl:first-child{border-radius:12px 0 0 12px}.fl:last-child{border-radius:0 12px 12px 0}
+.fl + .fl{border-left:0}
+.fl .k{font:800 22px var(--mono);color:var(--cyan)}
+.fl b{display:block;font-size:14px;margin-top:4px}
+.fl small{color:var(--ink2);font-size:12px;display:block;line-height:1.35;margin-top:2px}
+.fl .ok{display:inline-block;margin-top:8px;font:700 10px var(--mono);color:var(--green)}
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--edge);border-radius:14px;background:var(--panel)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
+th{text-align:left;font:700 10px var(--mono);letter-spacing:1.3px;color:var(--mute);padding:11px 14px;border-bottom:1px solid var(--edge);background:rgba(3,8,18,.6)}
+td{padding:10px 14px;border-bottom:1px solid rgba(24,38,58,.75);color:#c9d6e6;vertical-align:middle}
 tr:last-child td{border-bottom:0}
-td.k{font:700 12.5px var(--font-mono);color:#fff;white-space:nowrap}
-/* numbered procedure steps */
-ol.steps{list-style:none;counter-reset:s;margin:10px 0;padding:0}
-ol.steps>li{counter-increment:s;position:relative;padding:11px 14px 11px 58px;border:1px solid var(--edge);border-radius:8px;background:rgba(10,17,30,.72);margin:8px 0}
-ol.steps>li::before{content:attr(data-n);position:absolute;left:12px;top:11px;font:700 12px var(--font-mono);color:var(--cyan)}
-.chk{display:block;margin-top:5px;font-size:13.5px;color:var(--green)}
-.chk::before{content:"✓ VERIFY  ";font:700 10.5px var(--font-mono);letter-spacing:1px}
-.box{border:1px solid;border-radius:10px;padding:13px 16px;margin:12px 0}
-.box.warn{border-color:rgba(255,85,85,.45);background:rgba(255,85,85,.06)}
-.box.warn b.h{color:var(--red)}
-.box.note{border-color:rgba(79,199,234,.35);background:rgba(79,199,234,.05)}
-.box.note b.h{color:var(--cyan)}
-.box b.h{font:700 11px var(--font-mono);letter-spacing:1.4px;display:block;margin-bottom:4px}
-.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0;font:700 11.5px var(--font-mono);letter-spacing:.8px}
-.flow span{border:1px solid var(--edge);border-radius:6px;padding:7px 10px;background:rgba(10,17,30,.8)}
-.flow em{font-style:normal;color:var(--ink-muted)}
-.s-search{color:#5B8DEF}.s-acq{color:#FFC24D}.s-track{color:#3BD68C}.s-coast{color:#FF9D45}.s-reacq{color:#FF5555}
-.foot{border-top:1px solid var(--edge);margin-top:46px;padding-top:16px;font:11px var(--font-mono);color:var(--ink-muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-@media (max-width:720px){h1{font-size:26px}.ctrl{grid-template-columns:1fr 1fr}}
-@media print{
-  body{background:#fff;color:#000}.top,.mobile-bottom-nav,.toc{display:none}
-  p,li,td{color:#111}b,strong,h3,td.k{color:#000}th{background:#eee;color:#333}
-  ol.steps>li,.ctrl div{background:#fff}.ctrl{background:#ccc}
-}
+td.k{font:700 12.5px var(--mono);color:#fff;white-space:nowrap}
+td code,.code{font:12.5px var(--mono);color:#bfeaf7;background:rgba(79,199,234,.08);border:1px solid rgba(79,199,234,.2);padding:2px 7px;border-radius:5px}
+.bar{height:6px;border-radius:3px;background:rgba(79,199,234,.12);overflow:hidden;min-width:90px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green))}
+/* safety */
+.haz{display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:center;border:1px solid rgba(255,85,85,.35);background:linear-gradient(90deg,rgba(255,85,85,.09),rgba(255,85,85,.02));border-radius:14px;padding:14px}
+.haz b{font-size:15px}
+.haz p{color:var(--ink2);font-size:13px;line-height:1.4}
+.seq{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{font:700 12px var(--mono);padding:8px 12px;border-radius:8px;border:1px solid;letter-spacing:.5px}
+.arrow{color:var(--mute);font:700 14px var(--mono)}
+.foot{border-top:1px solid var(--edge);margin-top:56px;padding-top:16px;font:11px var(--mono);color:var(--mute);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (max-width:900px){.hero{grid-template-columns:1fr}.g4{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr}.states{grid-template-columns:1fr 1fr}.states div{border-bottom:1px solid var(--edge)}}
+@media (max-width:560px){h1{font-size:30px}.ctrl{grid-template-columns:1fr 1fr}.g2,.g4{grid-template-columns:1fr}.step{grid-template-columns:40px 1fr}.step .v{grid-column:2;justify-self:start}.states{grid-template-columns:1fr}}
+@media print{.top,.mobile-bottom-nav,.toc{display:none}}
 </style>
 </head>
 <body>
@@ -96,197 +124,412 @@ ol.steps>li::before{content:attr(data-n);position:absolute;left:12px;top:11px;fo
   <div class="nav-links">
     <a href="index.html" class="nav-link"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>HOME</a>
     <a href="console.html" class="nav-link"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg>CONSOLE</a>
-    <a href="sop.html" class="nav-link active"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg>SOP</a>
     <a href="live.html" class="nav-link"><svg viewBox="0 0 24 24"><path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4zM9 3l-1.8 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 15a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/></svg>LIVE DEMO</a>
     <a href="about.html" class="nav-link"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>ABOUT US</a>
+    <a href="sop.html" class="nav-link active"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg>SOP</a>
   </div>
   <a href="https://github.com/pranshukesavmishra/SIH-2026" class="github-icon-btn" title="View Source on GitHub" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg></a>
 </div>
 
 <main class="doc">
-  <div class="kicker">STANDARD OPERATING PROCEDURE</div>
-  <h1>ZeroDrift PAT System: Operation and Test</h1>
-  <p class="lede">How to run, verify and shut down the ZeroDrift pointing, acquisition and tracking (PAT) system for free-space optical communication: the simulation test in the Console, live optical tracking, and the MK2 stepper terminal.</p>
-
-  <div class="ctrl">
-    <div><span>DOCUMENT NO.</span><b>ZD-SOP-001</b></div>
-    <div><span>REVISION</span><b>1.0 · 28 Sep 2026</b></div>
-    <div><span>PROBLEM STATEMENT</span><b>SIH 2026 · PS26169 (ISRO)</b></div>
-    <div><span>OWNER</span><b>Team ZeroDrift, JEC</b></div>
+  <!-- ================= HERO ================= -->
+  <div class="hero">
+    <div>
+      <div class="kicker">STANDARD OPERATING PROCEDURE</div>
+      <h1>ZeroDrift PAT system: <span>operation &amp; test</span></h1>
+      <p class="lede">Run, verify and shut down the pointing, acquisition and tracking system the same way every time, in all three modes.</p>
+      <div class="ctrl">
+        <div><span>DOC NO.</span><b>ZD-SOP-001</b></div>
+        <div><span>REVISION</span><b>1.1 · 28 Sep 26</b></div>
+        <div><span>PROBLEM</span><b>PS26169 · ISRO</b></div>
+        <div><span>OWNER</span><b>Team ZeroDrift</b></div>
+      </div>
+    </div>
+    <div class="hero-art">
+      <!-- the whole system in one picture: beacon, decoy, camera, lock, gimbal, laptop -->
+      <svg viewBox="0 0 560 330" role="img" aria-label="ZeroDrift locks on the blinking beacon and ignores a steady decoy">
+        <defs>
+          <radialGradient id="hb" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="#ff6b6b"/><stop offset="1" stop-color="#ff3b3b" stop-opacity="0"/></radialGradient>
+          <radialGradient id="hd" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd0d0"/><stop offset=".3" stop-color="#d94646"/><stop offset="1" stop-color="#d94646" stop-opacity="0"/></radialGradient>
+          <linearGradient id="beam" x1="0" x2="1"><stop offset="0" stop-color="#3BD68C" stop-opacity=".0"/><stop offset=".5" stop-color="#3BD68C" stop-opacity=".9"/><stop offset="1" stop-color="#3BD68C" stop-opacity=".2"/></linearGradient>
+          <linearGradient id="scr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1a30"/><stop offset="1" stop-color="#050b16"/></linearGradient>
+        </defs>
+        <g opacity=".5" fill="#9fb1c8"><circle cx="40" cy="30" r="1"/><circle cx="120" cy="60" r="1.2"/><circle cx="210" cy="24" r="1"/><circle cx="300" cy="50" r=".9"/><circle cx="380" cy="18" r="1.1"/><circle cx="470" cy="40" r="1"/><circle cx="520" cy="90" r=".9"/><circle cx="80" cy="120" r=".8"/><circle cx="250" cy="110" r="1"/></g>
+        <!-- beacon (blinking) -->
+        <circle cx="455" cy="92" r="30" fill="url(#hb)"><animate attributeName="opacity" values="1;.08;1" dur=".25s" repeatCount="indefinite"/></circle>
+        <circle cx="455" cy="92" r="4" fill="#fff"/>
+        <path d="M430 67 h-8 v8 M480 67 h8 v8 M430 117 h-8 v-8 M480 117 h8 v-8" stroke="#3BD68C" stroke-width="2.4" fill="none"/>
+        <text x="455" y="138" fill="#3BD68C" font-size="11" font-weight="700" text-anchor="middle">BEACON · 4 Hz · LOCKED</text>
+        <!-- decoy (steady) -->
+        <circle cx="330" cy="70" r="18" fill="url(#hd)"/><circle cx="330" cy="70" r="2.6" fill="#ffe4e4"/>
+        <path d="M318 58 l24 24 M342 58 l-24 24" stroke="#FF5555" stroke-width="2" opacity=".9"/>
+        <text x="330" y="104" fill="#FF7a7a" font-size="10.5" font-weight="700" text-anchor="middle">DECOY · rejected</text>
+        <!-- laser beam from rig to beacon -->
+        <path d="M150 196 L455 92" stroke="url(#beam)" stroke-width="3"/>
+        <!-- MK2 rig -->
+        <rect x="96" y="276" width="104" height="10" rx="3" fill="#1f2b3d"/>
+        <rect x="136" y="236" width="24" height="40" rx="3" fill="#2b3647"/>
+        <rect x="118" y="226" width="60" height="12" rx="3" fill="#8fd3ea" opacity=".45"/>
+        <rect x="126" y="186" width="44" height="40" rx="5" fill="#2b3647"/>
+        <rect x="118" y="176" width="60" height="30" rx="6" fill="#162234" stroke="#4FC7EA" stroke-width="1.2"/>
+        <circle cx="160" cy="191" r="7" fill="#050b16" stroke="#4FC7EA"/><circle cx="160" cy="191" r="3" fill="#4FC7EA"/>
+        <text x="148" y="306" fill="#9fb1c8" font-size="10.5" font-weight="700" text-anchor="middle">MK2 TERMINAL</text>
+        <!-- laptop -->
+        <path d="M258 300 h210 l-14 18 h-182 z" fill="#1c2738"/>
+        <rect x="272" y="190" width="182" height="110" rx="6" fill="url(#scr)" stroke="#2e4058"/>
+        <rect x="282" y="200" width="112" height="90" rx="3" fill="#040a14" stroke="#18263A"/>
+        <circle cx="352" cy="232" r="3" fill="#ff6b6b"/>
+        <path d="M342 222 h-5 v5 M362 222 h5 v5 M342 242 h-5 v-5 M362 242 h5 v-5" stroke="#3BD68C" stroke-width="1.4" fill="none"/>
+        <path d="M290 280 q20 -30 40 -20 t40 -30" stroke="#4FC7EA" stroke-width="1.2" fill="none" opacity=".8"/>
+        <rect x="400" y="200" width="46" height="12" rx="2" fill="#123a2a"/><text x="423" y="209" fill="#3BD68C" font-size="7.5" font-weight="700" text-anchor="middle">LOCKED</text>
+        <rect x="400" y="216" width="46" height="6" rx="2" fill="#18263A"/><rect x="400" y="226" width="34" height="6" rx="2" fill="#18263A"/><rect x="400" y="236" width="40" height="6" rx="2" fill="#18263A"/>
+        <!-- usb link -->
+        <path d="M178 262 C 220 262, 230 300, 262 306" stroke="#4FC7EA" stroke-width="1.6" fill="none" stroke-dasharray="4 3"/>
+        <text x="214" y="258" fill="#4FC7EA" font-size="9.5" font-weight="700">USB · Web Serial</text>
+      </svg>
+    </div>
   </div>
 
   <nav class="toc">
-    <a href="#s1">1 Purpose</a><a href="#s2">2 Scope</a><a href="#s3">3 Definitions</a><a href="#s4">4 Roles</a><a href="#s5">5 Equipment</a>
-    <a href="#s6">6 Safety</a><a href="#s7">7 Simulation test</a><a href="#s8">8 Live tracking</a><a href="#s9">9 MK2 terminal</a>
-    <a href="#s10">10 Shutdown</a><a href="#s11">11 Acceptance</a><a href="#s12">12 Faults</a><a href="#s13">13 Records</a>
+    <a href="#modes"><i>1</i>Modes</a><a href="#flow"><i>2</i>Flowchart</a><a href="#states"><i>3</i>States</a><a href="#kit"><i>4</i>Equipment</a>
+    <a href="#safety"><i>5</i>Safety</a><a href="#a"><i>A</i>Simulation</a><a href="#b"><i>B</i>Live</a><a href="#c"><i>C</i>MK2</a>
+    <a href="#off"><i>D</i>Shutdown</a><a href="#accept"><i>6</i>Acceptance</a><a href="#faults"><i>7</i>Faults</a><a href="#records"><i>8</i>Records</a>
   </nav>
 
-  <section id="s1"><h2><i>1</i>Purpose</h2>
-    <p>This procedure makes every test and demonstration of ZeroDrift repeatable. Any team member following it should get the same results, recorded in the same format, whichever system is being run.</p>
+  <!-- ================= 1 MODES ================= -->
+  <section id="modes">
+    <div class="sh"><div class="n">1</div><div><h2>Purpose &amp; scope</h2><p>ONE ENGINE · THREE WAYS TO RUN IT · SAME RESULTS, SAME RECORD</p></div></div>
+    <div class="grid g3">
+      <a class="card" href="#a">
+        <div class="ico" style="background:rgba(91,141,239,.15)"><svg viewBox="0 0 24 24" fill="none" stroke="#5B8DEF" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-25 12 12)"/><circle cx="20" cy="8" r="1.4" fill="#5B8DEF"/></svg></div>
+        <h3>A · Simulation test</h3><p>Replay of logged engine runs in the Console, auto-graded.</p>
+        <div style="margin-top:10px"><span class="pill" style="color:#5B8DEF;border-color:rgba(91,141,239,.5)">NO HARDWARE</span></div>
+      </a>
+      <a class="card" href="#b">
+        <div class="ico" style="background:rgba(79,199,234,.15)"><svg viewBox="0 0 24 24" fill="none" stroke="#4FC7EA" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="12" cy="10" r="2.4"/></svg></div>
+        <h3>B · Live optical tracking</h3><p>Laptop webcam locks the 4 Hz beacon in the browser.</p>
+        <div style="margin-top:10px"><span class="pill" style="color:#4FC7EA;border-color:rgba(79,199,234,.5)">WEBCAM + BEACON</span></div>
+      </a>
+      <a class="card" href="#c">
+        <div class="ico" style="background:rgba(59,214,140,.15)"><svg viewBox="0 0 24 24" fill="none" stroke="#3BD68C" stroke-width="1.8" stroke-linecap="round"><path d="M5 20h14M9 20v-5h6v5"/><rect x="7" y="6" width="10" height="7" rx="2"/><path d="M17 9.5h4"/><path d="M12 13v2"/></svg></div>
+        <h3>C · MK2 terminal</h3><p>Two-axis stepper gimbal closes the loop on real hardware.</p>
+        <div style="margin-top:10px"><span class="pill" style="color:#3BD68C;border-color:rgba(59,214,140,.5)">12 V · STEPPERS · LASER</span></div>
+      </a>
+    </div>
   </section>
 
-  <section id="s2"><h2><i>2</i>Scope</h2>
-    <ul>
-      <li><b>Simulation test</b>: replay of logged engine runs in the Console, with the automatic test record (Section 7).</li>
-      <li><b>Live optical tracking</b>: detection and tracking of a 4 Hz beacon with a webcam in the browser (Section 8).</li>
-      <li><b>MK2 terminal</b>: the two-axis stepper gimbal with laser and webcam, driven from the browser (Section 9).</li>
-    </ul>
-    <p>Out of scope: fine-stage (fast steering mirror) control, and link budget analysis. Those are covered in the technical report.</p>
+  <!-- ================= 2 FLOWCHART ================= -->
+  <section id="flow">
+    <div class="sh"><div class="n">2</div><div><h2>How the software decides</h2><p>ENGINE STATE MACHINE · src/fsoc_pat/pipeline.py · ONE PASS EVERY 33 ms</p></div></div>
+    <div class="scroller"><div class="fig"><svg viewBox="0 0 852 578" role="img" aria-label="ZeroDrift engine flowchart">
+  <defs>
+    <marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0b1f3a"/></marker>
+    <marker id="br" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#b3261e"/></marker>
+    <marker id="bg" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#166534"/></marker>
+    <marker id="bb" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1d4ed8"/></marker>
+    <marker id="bo" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c2410c"/></marker>
+    <marker id="bt" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0e7c9a"/></marker>
+  </defs>
+  <g font-size="11" text-anchor="middle">
+  <!-- lane backgrounds -->
+  <rect x="4" y="4" width="844" height="100" rx="8" fill="#f1f6fb" stroke="#c7d7ea" stroke-dasharray="4 3"/>
+  <text x="14" y="18" text-anchor="start" font-size="10" font-weight="700" fill="#475569">① SENSE: every frame</text>
+  <rect x="4" y="112" width="612" height="136" rx="8" fill="#fbf7ef" stroke="#ecdcbc" stroke-dasharray="4 3"/>
+  <text x="14" y="126" text-anchor="start" font-size="10" font-weight="700" fill="#475569">② DECIDE: identify the beacon</text>
+  <rect x="4" y="256" width="844" height="318" rx="8" fill="#f3faf5" stroke="#c6e3cf" stroke-dasharray="4 3"/>
+  <text x="14" y="270" text-anchor="start" font-size="10" font-weight="700" fill="#475569">③ ACT: state machine SEARCH → ACQUIRE → TRACK ⇄ COAST → REACQUIRE</text>
+
+  <!-- lane 1 -->
+  <path d="M38 36 L130 36 L150 58 L130 80 L38 80 Z" fill="#334155"/>
+  <text x="92" y="55" font-weight="700" fill="#fff">START</text><text x="92" y="69" fill="#e2e8f0" font-size="9.5">new frame (33 ms)</text>
+  <path d="M152 58 H176" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="178" y="32" width="150" height="52" rx="7" fill="#fff" stroke="#1665b8" stroke-width="1.4"/>
+  <text x="253" y="52" font-weight="700" fill="#0b1f3a">PREPROCESS</text><text x="253" y="66" fill="#334155" font-size="9.5">top-hat removes sky glow,</text><text x="253" y="78" fill="#334155" font-size="9.5">cloud, sun halo</text>
+  <path d="M328 58 H352" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="354" y="32" width="160" height="52" rx="7" fill="#fff" stroke="#1665b8" stroke-width="1.4"/>
+  <text x="434" y="52" font-weight="700" fill="#0b1f3a">DETECT</text><text x="434" y="66" fill="#334155" font-size="9.5">matched filter + CFAR</text><text x="434" y="78" fill="#334155" font-size="9.5">threshold (fixed false-alarm)</text>
+  <path d="M514 58 H538" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="540" y="32" width="146" height="52" rx="7" fill="#fff" stroke="#1665b8" stroke-width="1.4"/>
+  <text x="613" y="52" font-weight="700" fill="#0b1f3a">EXTRACT</text><text x="613" y="66" fill="#334155" font-size="9.5">sub-pixel centroid of</text><text x="613" y="78" fill="#334155" font-size="9.5">each point (~6 / frame)</text>
+  <path d="M686 58 H708" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <path d="M768 30 L832 58 L768 86 L704 58 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="768" y="55" font-weight="700" fill="#7c2d12">Any</text><text x="768" y="68" font-weight="700" fill="#7c2d12">candidate?</text>
+
+  <!-- NO candidate -> search -->
+  <path d="M832 58 H846 V546 H840" stroke="#1d4ed8" fill="none" marker-end="url(#bb)"/>
+  <text x="838" y="112" fill="#1d4ed8" font-weight="700" font-size="10" transform="rotate(90 838 112)">NO: nothing in view</text>
+
+  <!-- YES -> lane 2 -->
+  <path d="M768 86 V96 H74 V140" stroke="#166534" fill="none" marker-end="url(#bg)"/>
+  <text x="700" y="94" fill="#166534" font-weight="700" font-size="10">YES</text>
+  <rect x="14" y="142" width="120" height="58" rx="7" fill="#fff" stroke="#b45309" stroke-width="1.4"/>
+  <text x="74" y="162" font-weight="700" fill="#0b1f3a">TRACK ALL</text><text x="74" y="176" fill="#334155" font-size="9.5">one IMM Kalman</text><text x="74" y="188" fill="#334155" font-size="9.5">per light</text>
+  <path d="M134 171 H156" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="158" y="142" width="148" height="58" rx="7" fill="#fff" stroke="#b45309" stroke-width="1.4"/>
+  <text x="232" y="162" font-weight="700" fill="#0b1f3a">IDENTIFY</text><text x="232" y="176" fill="#334155" font-size="9.5">Goertzel 4 Hz blink power</text><text x="232" y="188" fill="#334155" font-size="9.5">+ neural verifier score</text>
+  <path d="M306 171 H330" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <path d="M396 140 L462 171 L396 202 L330 171 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="396" y="167" font-weight="700" fill="#7c2d12">Blink signature</text><text x="396" y="180" font-weight="700" fill="#7c2d12">matches?</text>
+  <path d="M462 171 H486" stroke="#b3261e" marker-end="url(#br)"/>
+  <text x="474" y="164" fill="#b3261e" font-weight="700" font-size="10">NO</text>
+  <rect x="488" y="146" width="120" height="50" rx="7" fill="#fdecea" stroke="#b3261e" stroke-width="1.4"/>
+  <text x="548" y="165" font-weight="700" fill="#b3261e">VETO</text><text x="548" y="179" fill="#7f1d1d" font-size="9.5">star · lamp · glint ·</text><text x="548" y="191" fill="#7f1d1d" font-size="9.5">wrong-rate strobe</text>
+  <path d="M548 146 V122 H232 V140" stroke="#b3261e" fill="none" stroke-dasharray="3 2" marker-end="url(#br)"/>
+  <text x="400" y="118" fill="#b3261e" font-size="9.5">next candidate</text>
+  <!-- YES -> lane 3 -->
+  <path d="M396 202 V222 H110 V288" stroke="#166534" fill="none" marker-end="url(#bg)"/>
+  <text x="408" y="216" text-anchor="start" fill="#166534" font-weight="700" font-size="10">YES: this is the beacon</text>
+
+  <!-- lane 3 : acquire decision -->
+  <path d="M110 290 L182 322 L110 354 L38 322 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="110" y="316" font-weight="700" fill="#7c2d12">Error small</text><text x="110" y="329" font-weight="700" fill="#7c2d12">for N frames?</text>
+  <path d="M110 354 V378" stroke="#b45309" marker-end="url(#b)"/>
+  <text x="122" y="370" text-anchor="start" fill="#b45309" font-weight="700" font-size="10">NO</text>
+  <rect x="38" y="380" width="144" height="46" rx="7" fill="#fff4d6" stroke="#b45309" stroke-width="1.4"/>
+  <text x="110" y="398" font-weight="700" fill="#92400e">ACQUIRE</text><text x="110" y="412" fill="#334155" font-size="9.5">steer toward it → next frame</text>
+  <path d="M182 322 H206" stroke="#166534" marker-end="url(#bg)"/>
+  <text x="194" y="315" fill="#166534" font-weight="700" font-size="10">YES</text>
+  <rect x="208" y="296" width="140" height="52" rx="7" fill="#dcfce7" stroke="#166534" stroke-width="1.8"/>
+  <text x="278" y="316" font-weight="700" fill="#14532d" font-size="12">TRACK</text><text x="278" y="331" fill="#334155" font-size="9.5">lock confirmed, error</text><text x="278" y="343" fill="#334155" font-size="9.5">measured on the image</text>
+  <path d="M348 322 H372" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="374" y="296" width="156" height="52" rx="7" fill="#fff" stroke="#166534" stroke-width="1.4"/>
+  <text x="452" y="316" font-weight="700" fill="#0b1f3a">PREDICT</text><text x="452" y="331" fill="#334155" font-size="9.5">Smith predictor + IMM</text><text x="452" y="343" fill="#334155" font-size="9.5">feed-forward cancel 40 ms</text>
+  <path d="M530 322 H554" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="556" y="296" width="150" height="52" rx="7" fill="#0b1f3a"/>
+  <text x="631" y="316" font-weight="700" fill="#fff">OUTPUT</text><text x="631" y="331" fill="#cbd5e1" font-size="9.5">AZ / EL command to the</text><text x="631" y="343" fill="#cbd5e1" font-size="9.5">gimbal or virtual viewport</text>
+  <!-- loop back to START -->
+  <path d="M706 322 H728 V108 H24 V58 H36" stroke="#0e7c9a" stroke-width="1.8" fill="none" stroke-dasharray="5 3" marker-end="url(#bt)"/>
+  <text x="738" y="215" fill="#0e7c9a" font-weight="700" font-size="9.5" transform="rotate(90 738 215)">camera moves with the aim → next frame</text>
+
+  <!-- dropout branch from TRACK -->
+  <path d="M278 348 V372" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <text x="272" y="366" text-anchor="end" fill="#475569" font-size="9">checked every frame</text>
+  <path d="M278 374 L346 400 L278 426 L210 400 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="278" y="397" font-weight="700" fill="#7c2d12">Beacon dark /</text><text x="278" y="410" font-weight="700" fill="#7c2d12">not detected?</text>
+  <path d="M346 400 H372" stroke="#c2410c" marker-end="url(#bo)"/>
+  <text x="358" y="393" fill="#c2410c" font-weight="700" font-size="10">YES</text>
+  <rect x="374" y="378" width="156" height="46" rx="7" fill="#ffedd5" stroke="#c2410c" stroke-width="1.4"/>
+  <text x="452" y="396" font-weight="700" fill="#9a3412">COAST</text><text x="452" y="410" fill="#334155" font-size="9.5">keep following the prediction</text>
+  <path d="M530 401 H554" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <path d="M614 376 L674 401 L614 426 L554 401 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="614" y="398" font-weight="700" fill="#7c2d12">Seen again in</text><text x="614" y="411" font-weight="700" fill="#7c2d12">coast window?</text>
+  <path d="M614 376 V362 H322 V352" stroke="#166534" fill="none" marker-end="url(#bg)"/>
+  <text x="630" y="372" text-anchor="start" fill="#166534" font-weight="700" font-size="10">YES → back to TRACK</text>
+  <path d="M614 426 V452" stroke="#b3261e" marker-end="url(#br)"/>
+  <text x="626" y="444" text-anchor="start" fill="#b3261e" font-weight="700" font-size="10">NO</text>
+  <rect x="540" y="454" width="148" height="48" rx="7" fill="#fdecea" stroke="#b3261e" stroke-width="1.4"/>
+  <text x="614" y="472" font-weight="700" fill="#b3261e">REACQUIRE</text><text x="614" y="486" fill="#334155" font-size="9.5">small spiral at the</text><text x="614" y="497" fill="#334155" font-size="9.5">last good position</text>
+  <path d="M688 478 H700" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <path d="M746 456 L792 478 L746 500 L700 478 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="746" y="482" font-weight="700" fill="#7c2d12">Found?</text>
+  <path d="M792 478 H816 V362 H620" stroke="#166534" fill="none"/>
+  <text x="820" y="470" text-anchor="start" fill="#166534" font-weight="700" font-size="9.5">YES</text>
+  <path d="M746 500 V522" stroke="#1d4ed8" marker-end="url(#bb)"/>
+  <text x="756" y="516" text-anchor="start" fill="#1d4ed8" font-weight="700" font-size="10">NO</text>
+  <!-- SEARCH -->
+  <rect x="660" y="524" width="178" height="46" rx="7" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.6"/>
+  <text x="749" y="540" font-weight="700" fill="#1e3a8a">SEARCH</text><text x="749" y="553" fill="#334155" font-size="9.5">spiral scan, widens ×1.5 per</text><text x="749" y="564" fill="#334155" font-size="9.5">empty cycle (≤ 25°) → next frame</text>
+
+  <!-- telemetry side output -->
+  <rect x="14" y="452" width="250" height="112" rx="8" fill="#f8fafc" stroke="#475569" stroke-dasharray="4 3"/>
+  <text x="139" y="470" font-weight="700" fill="#0b1f3a">EVERY FRAME → TELEMETRY LOG</text>
+  <text x="139" y="488" fill="#334155" font-size="9.8">state · error µrad · detections · blink score</text>
+  <text x="139" y="503" fill="#334155" font-size="9.8">slew rate · compute time (8–21 ms)</text>
+  <text x="139" y="524" fill="#0e5a8a" font-size="10" font-weight="700">→ Console replay + test record</text>
+  <text x="139" y="539" fill="#0e5a8a" font-size="10" font-weight="700">→ 64-run Monte-Carlo campaign</text>
+  <text x="139" y="554" fill="#0e5a8a" font-size="10" font-weight="700">→ acceptance tests (pytest, CI)</text>
+  </g>
+</svg></div></div>
+    <div class="figcap">Every box exists in the engine. YES / NO branches are the real decisions made on each camera frame.</div>
   </section>
 
-  <section id="s3"><h2><i>3</i>Definitions</h2>
+  <!-- ================= 3 STATES ================= -->
+  <section id="states">
+    <div class="sh"><div class="n">3</div><div><h2>Tracker states</h2><p>WHAT THE STATUS LIGHT MEANS</p></div></div>
+    <div class="states">
+      <div><i style="background:#5B8DEF"></i><b style="color:#5B8DEF">SEARCH</b><span>Spiral scan, widens until something is seen</span></div>
+      <div><i style="background:#FFC24D"></i><b style="color:#FFC24D">ACQUIRE</b><span>Beacon identified, steering onto it</span></div>
+      <div><i style="background:#3BD68C"></i><b style="color:#3BD68C">TRACK</b><span>Locked; error measured on the image</span></div>
+      <div><i style="background:#FF9D45"></i><b style="color:#FF9D45">COAST</b><span>Beacon dark (blink / cloud): follow the prediction. Normal</span></div>
+      <div><i style="background:#FF5555"></i><b style="color:#FF5555">REACQUIRE</b><span>Small spiral at the last good position</span></div>
+    </div>
+  </section>
+
+  <!-- ================= 4 EQUIPMENT ================= -->
+  <section id="kit">
+    <div class="sh"><div class="n">4</div><div><h2>Equipment</h2><p>WHAT EACH MODE NEEDS</p></div></div>
     <div class="tbl"><table>
-      <tr><th>TERM</th><th>MEANING</th></tr>
-      <tr><td class="k">PAT</td><td>Pointing, acquisition and tracking: finding the far terminal and keeping the optical link aimed at it.</td></tr>
-      <tr><td class="k">Beacon</td><td>The light source to be tracked. It blinks at a known rate (4 Hz), which identifies it.</td></tr>
-      <tr><td class="k">Decoy</td><td>Any other light in view: steady lamps, reflections, sun glints, a steady red LED used in tests. It must never be locked.</td></tr>
-      <tr><td class="k">Boresight</td><td>The centre of the camera view, where the terminal is pointing.</td></tr>
-      <tr><td class="k">Pointing error</td><td>Angle between boresight and beacon, in µrad (1 µrad ≈ 1 mm at 1 km).</td></tr>
-      <tr><td class="k">FOV</td><td>Field of view of the camera. Simulation: 6° (±52,360 µrad).</td></tr>
-      <tr><td class="k">Vref</td><td>Reference voltage on each A4988 driver that sets the motor current limit.</td></tr>
+      <tr><th>ITEM</th><th>ROLE</th><th style="text-align:center">A</th><th style="text-align:center">B</th><th style="text-align:center">C</th></tr>
+      <tr><td class="k">💻 Laptop · Chrome / Edge</td><td>Runs everything; Web Serial for the rig</td><td align="center">●</td><td align="center">●</td><td align="center">●</td></tr>
+      <tr><td class="k">📷 Webcam</td><td>Built-in (B) or USB on the head (C)</td><td align="center">·</td><td align="center">●</td><td align="center">●</td></tr>
+      <tr><td class="k">🔴 Beacon</td><td>Red LED on a Nano, 4 Hz, or phone torch</td><td align="center">·</td><td align="center">●</td><td align="center">●</td></tr>
+      <tr><td class="k">⭕ Decoy</td><td>Steady red LED: must be ignored</td><td align="center">·</td><td align="center">●</td><td align="center">●</td></tr>
+      <tr><td class="k">⚙ MK2 terminal</td><td>Nano · 2× A4988 + NEMA17 · AS5600 · laser</td><td align="center">·</td><td align="center">·</td><td align="center">●</td></tr>
+      <tr><td class="k">🔌 12 V 2 A adapter</td><td>Motors only, through the kill switch</td><td align="center">·</td><td align="center">·</td><td align="center">●</td></tr>
+      <tr><td class="k">📏 Multimeter</td><td>Rail checks, Vref</td><td align="center">·</td><td align="center">·</td><td align="center">●</td></tr>
     </table></div>
-    <p>Tracker states, in the order they normally occur:</p>
-    <div class="flow"><span class="s-search">SEARCH</span><em>→</em><span class="s-acq">ACQUIRE</span><em>→</em><span class="s-track">TRACK</span><em>→</em><span class="s-coast">COAST</span><em>→</em><span class="s-reacq">REACQUIRE</span><em>→ back to TRACK</em></div>
-    <p><b>COAST</b> means the beacon is briefly dark (off-phase of the blink or short occlusion) and the tracker holds its prediction. This is normal.</p>
   </section>
 
-  <section id="s4"><h2><i>4</i>Roles</h2>
-    <div class="tbl"><table>
-      <tr><th>ROLE</th><th>RESPONSIBILITY</th></tr>
-      <tr><td class="k">Operator</td><td>Runs the procedure step by step and fills in the test record.</td></tr>
-      <tr><td class="k">Safety officer</td><td>Holds the 12 V kill switch during every MK2 run and switches off on any fault.</td></tr>
-      <tr><td class="k">Reviewer</td><td>Checks the test record against Section 11 and signs it off.</td></tr>
+  <!-- ================= 5 SAFETY ================= -->
+  <section id="safety">
+    <div class="sh"><div class="n">5</div><div><h2>Safety</h2><p>READ BEFORE PROCEDURE C</p></div></div>
+    <div class="grid g3">
+      <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="rgba(255,85,85,.15)" stroke="#FF5555" stroke-width="2.5" stroke-linejoin="round"/><circle cx="30" cy="36" r="5" fill="#FF5555"/><path d="M30 36 L46 22" stroke="#FF5555" stroke-width="2.5"/></svg><div><b>Laser</b><p>Never at eyes, people or mirrors. Off (<span class="code">L0</span>) unless needed.</p></div></div>
+      <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="rgba(255,85,85,.15)" stroke="#FF5555" stroke-width="2.5" stroke-linejoin="round"/><path d="M32 20 L24 36 H31 L27 46 L38 30 H31 Z" fill="#FF5555"/></svg><div><b>Electrical</b><p>12 V only to the motor rail. Wire unplugged. No motor swaps while powered.</p></div></div>
+      <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="rgba(255,85,85,.15)" stroke="#FF5555" stroke-width="2.5" stroke-linejoin="round"/><circle cx="30" cy="36" r="8" fill="none" stroke="#FF5555" stroke-width="2.5"/><path d="M30 24v4M30 44v4M18 36h4M38 36h4" stroke="#FF5555" stroke-width="2.5"/></svg><div><b>Moving head</b><p>Hands and cables clear. Kill switch on any noise, smell or heat.</p></div></div>
+    </div>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card"><div class="kicker" style="color:var(--green)">POWER ON</div><div class="seq" style="margin-top:10px"><span class="chip" style="color:#4FC7EA;border-color:rgba(79,199,234,.5)">① USB</span><span class="arrow">→</span><span class="chip" style="color:#3BD68C;border-color:rgba(59,214,140,.5)">② 12 V switch ON</span></div></div>
+      <div class="card"><div class="kicker" style="color:var(--red)">POWER OFF</div><div class="seq" style="margin-top:10px"><span class="chip" style="color:#FF5555;border-color:rgba(255,85,85,.5)">① 12 V switch OFF</span><span class="arrow">→</span><span class="chip" style="color:#9fb1c8;border-color:var(--edge)">② USB out</span></div></div>
+    </div>
+  </section>
+
+  <!-- ================= A SIMULATION ================= -->
+  <section id="a">
+    <div class="sh"><div class="n" style="background:#5B8DEF">A</div><div><h2>Procedure A · Simulation test</h2><p>CONSOLE · NO HARDWARE · 3 SCENARIOS</p></div></div>
+    <div class="flowline">
+      <div class="fl"><div class="k">01</div><b>Open Console</b><small>desktop browser</small><span class="ok">✓ run starts playing</span></div>
+      <div class="fl"><div class="k">02</div><b>Pick scenario</b><small>decoy field · ISS pass · turbulence</small></div>
+      <div class="fl"><div class="k">03</div><b>Watch the lock</b><small>SEARCH → ACQUIRE → TRACK</small><span class="ok">✓ decoys never bracketed</span></div>
+      <div class="fl"><div class="k">04</div><b>Read test record</b><small>auto-opens at the end</small><span class="ok">✓ 8 / 8 PASS</span></div>
+      <div class="fl"><div class="k">05</div><b>Log it</b><small>record ID + score + date</small></div>
+    </div>
+    <div class="tbl" style="margin-top:14px"><table>
+      <tr><th>SCENARIO</th><th>WHAT IT STRESSES</th><th>LENGTH</th><th>RECORD ID</th></tr>
+      <tr><td class="k">Decoy field</td><td>3 moving decoys + glints</td><td>130 s</td><td><span class="code">ZD-SIM-DECOYS</span></td></tr>
+      <tr><td class="k">ISS pass</td><td>Real SGP4 orbit over Bengaluru</td><td>45 s</td><td><span class="code">ZD-SIM-RUN</span></td></tr>
+      <tr><td class="k">Hard turbulence</td><td>400 µrad tilt</td><td>30 s</td><td><span class="code">ZD-SIM-TURBULENCE</span></td></tr>
     </table></div>
   </section>
 
-  <section id="s5"><h2><i>5</i>Equipment</h2>
+  <!-- ================= B LIVE ================= -->
+  <section id="b">
+    <div class="sh"><div class="n">B</div><div><h2>Procedure B · Live optical tracking</h2><p>LIVE DEMO PAGE · DIM ROOM · BEACON + DECOY IN VIEW</p></div></div>
+    <div class="stepper">
+      <div class="step"><div class="d" style="background:#4FC7EA">B1</div><div><b>Set the scene</b><small>Dim room · beacon at 4 Hz · steady decoy in the same view</small></div><span class="v">✓ both visible</span></div>
+      <div class="step"><div class="d" style="background:#4FC7EA">B2</div><div><b>START CAMERA</b><small>Allow camera access</small></div><span class="v">✓ SEARCHING · ≥ 25 fps</span></div>
+      <div class="step"><div class="d" style="background:#4FC7EA">B3</div><div><b>Show the beacon</b><small>Hold it anywhere in view</small></div><span class="v">✓ LOCKED · 4.0 Hz · ≈ 2 s</span></div>
+      <div class="step"><div class="d" style="background:#4FC7EA">B4</div><div><b>Move it</b><small>Slow, then fast, across the whole view</small></div><span class="v">✓ lock follows · decoy ignored</span></div>
+      <div class="step"><div class="d" style="background:#4FC7EA">B5</div><div><b>Cover it 1 s</b><small>Then uncover</small></div><span class="v">✓ coasts, relocks alone</span></div>
+    </div>
+    <p style="color:var(--mute);font-size:12.5px;margin-top:10px">Red LED in a bright room: Settings → <b style="color:var(--ink)">RED BEACON FILTER</b>.</p>
+  </section>
+
+  <!-- ================= C MK2 ================= -->
+  <section id="c">
+    <div class="sh"><div class="n" style="background:#3BD68C">C</div><div><h2>Procedure C · MK2 terminal</h2><p>PRE-POWER CHECK → COMMISSION → CLOSED LOOP</p></div></div>
+    <div class="grid g2">
+      <div>
+        <div class="kicker" style="margin-bottom:8px">C.1 · PRE-POWER CHECK (UNPLUGGED)</div>
+        <div class="tbl"><table style="min-width:0">
+          <tr><th>CHECK</th><th>EXPECT</th></tr>
+          <tr><td class="k">12 V rail ↔ 5 V rail</td><td>no beep</td></tr>
+          <tr><td class="k">12 V rail ↔ GND</td><td>no beep (short chirp = capacitor, OK)</td></tr>
+          <tr><td class="k">A4988 VMOT / VDD</td><td>12 V / 5 V</td></tr>
+          <tr><td class="k">EN · MS1-3 · RST-SLP</td><td>GND · 5 V · joined</td></tr>
+          <tr><td class="k">STEP / DIR</td><td>pan D2 / D3 · tilt D4 / D5</td></tr>
+          <tr><td class="k">Laser · sensor bus</td><td>D7 · A4 / A5 via mux</td></tr>
+          <tr><td class="k">Turn by hand</td><td>no cable tight at the limits</td></tr>
+        </table></div>
+      </div>
+      <div>
+        <div class="kicker" style="margin-bottom:8px">C.2 · SERIAL COMMISSIONING (115200)</div>
+        <div class="tbl"><table style="min-width:0">
+          <tr><th>SEND</th><th>EXPECT</th></tr>
+          <tr><td><span class="code">?</span></td><td>status line · encoders found</td></tr>
+          <tr><td><span class="code">P200 T0</span></td><td>pan turns ≈ 22.5°</td></tr>
+          <tr><td><span class="code">P0 T100</span></td><td>tilt nods ≈ 11°</td></tr>
+          <tr><td><span class="code">C</span></td><td>both back to centre</td></tr>
+          <tr><td><span class="code">L1</span> / <span class="code">L0</span></td><td>laser on / off</td></tr>
+        </table></div>
+        <div class="card" style="margin-top:12px;padding:12px 14px">
+          <div class="seq"><span class="chip" style="color:#FFC24D;border-color:rgba(255,194,77,.5)">Vref 0.55 V</span><span class="chip" style="color:#9fb1c8;border-color:var(--edge)">pan ±90°</span><span class="chip" style="color:#9fb1c8;border-color:var(--edge)">tilt ±18°</span><span class="chip" style="color:#9fb1c8;border-color:var(--edge)">1/16 step</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="kicker" style="margin:18px 0 8px">C.3 · CLOSED LOOP</div>
+    <div class="flowline">
+      <div class="fl"><div class="k">C1</div><b>CONNECT RIG</b><small>pick the Nano's port</small></div>
+      <div class="fl"><div class="k">C2</div><b>MK2 CAMERA</b><small>USB camera on the head</small></div>
+      <div class="fl"><div class="k">C3</div><b>TEST MOTION</b><small>short self-move</small><span class="ok">✓ both axes move</span></div>
+      <div class="fl"><div class="k">C4</div><b>Show beacon</b><small>move it around</small><span class="ok">✓ head follows · decoy ignored</span></div>
+    </div>
+  </section>
+
+  <!-- ================= D SHUTDOWN ================= -->
+  <section id="off">
+    <div class="sh"><div class="n" style="background:#FF5555">D</div><div><h2>Shutdown</h2><p>ALWAYS IN THIS ORDER</p></div></div>
+    <div class="flowline">
+      <div class="fl"><div class="k" style="color:var(--amber)">1</div><b>Centre + laser off</b><small><span class="code">C</span> then <span class="code">L0</span></small></div>
+      <div class="fl"><div class="k" style="color:var(--red)">2</div><b>12 V OFF</b><small>kill switch</small></div>
+      <div class="fl"><div class="k" style="color:var(--ink2)">3</div><b>USB out</b><small>then adapter from the wall</small></div>
+      <div class="fl"><div class="k" style="color:var(--ink2)">4</div><b>Beacon · decoy off</b><small>batteries out for storage</small></div>
+    </div>
+  </section>
+
+  <!-- ================= 6 ACCEPTANCE ================= -->
+  <section id="accept">
+    <div class="sh"><div class="n">6</div><div><h2>Acceptance criteria</h2><p>GRADED AUTOMATICALLY BY THE CONSOLE TEST RECORD · SAME FOR EVERY SCENARIO</p></div></div>
     <div class="tbl"><table>
-      <tr><th>ITEM</th><th>USED IN</th><th>NOTES</th></tr>
-      <tr><td class="k">Laptop + Chrome or Edge</td><td>7, 8, 9</td><td>Web Serial is needed for the MK2 connection; Firefox and Safari do not support it.</td></tr>
-      <tr><td class="k">Webcam</td><td>8, 9</td><td>Built-in camera for live tracking; USB camera on the MK2 head.</td></tr>
-      <tr><td class="k">Beacon</td><td>8, 9</td><td>Red LED on an Arduino Nano blinking at 4 Hz, or a phone torch at the same rate.</td></tr>
-      <tr><td class="k">Decoy</td><td>8, 9</td><td>Steady red LED (3 × 18650, switch, 1 kΩ). Must be ignored.</td></tr>
-      <tr><td class="k">MK2 terminal</td><td>9</td><td>Arduino Nano, 2 × A4988, 2 × NEMA17, TCA9548A, AS5600 (pan), KY-008 laser.</td></tr>
-      <tr><td class="k">12 V 2 A adapter</td><td>9</td><td>Through the kill switch to the motor rail only.</td></tr>
-      <tr><td class="k">Multimeter</td><td>9</td><td>Rail checks and Vref setting.</td></tr>
+      <tr><th>ID</th><th>PARAMETER</th><th>PASS IF</th><th>DEMO RUN (ISS PASS)</th><th></th></tr>
+      <tr><td class="k">TC-01</td><td>Acquisition time</td><td>≤ 3.0 s</td><td><b>1.27 s</b></td><td><div class="bar"><i style="width:42%"></i></div></td></tr>
+      <tr><td class="k">TC-02</td><td>Lock retention</td><td>≥ 90 %</td><td><b>98.3 %</b></td><td><div class="bar"><i style="width:98%"></i></div></td></tr>
+      <tr><td class="k">TC-03</td><td>Median pointing error</td><td>≤ 1,047 µrad (2 % FOV)</td><td><b>198 µrad</b></td><td><div class="bar"><i style="width:19%"></i></div></td></tr>
+      <tr><td class="k">TC-04</td><td>95th-percentile error</td><td>≤ 2,618 µrad (5 % FOV)</td><td><b>692 µrad</b></td><td><div class="bar"><i style="width:26%"></i></div></td></tr>
+      <tr><td class="k">TC-05</td><td>Beacon in field of view</td><td>≥ 95 %</td><td><b>100 %</b></td><td><div class="bar"><i style="width:100%"></i></div></td></tr>
+      <tr><td class="k">TC-06</td><td>Frames locked on a decoy</td><td>≤ 1 %</td><td><b>0 %</b></td><td><div class="bar"><i style="width:0%"></i></div></td></tr>
+      <tr><td class="k">TC-07</td><td>p95 compute per frame</td><td>≤ 33.3 ms</td><td><b>19.1 ms</b></td><td><div class="bar"><i style="width:57%"></i></div></td></tr>
+      <tr><td class="k">TC-08</td><td>Frames over budget</td><td>≤ 1 %</td><td><b>0.07 %</b></td><td><div class="bar"><i style="width:7%"></i></div></td></tr>
+      <tr><td class="k">TC-09</td><td>Re-acquisitions</td><td>recorded</td><td><b>4</b></td><td><span class="pill" style="color:var(--ink2);border-color:var(--edge)">INFO</span></td></tr>
+    </table></div>
+    <p style="color:var(--mute);font-size:12px;margin-top:8px">Bars show the measured value against its limit. B and C pass when every ✓ check is met.</p>
+  </section>
+
+  <!-- ================= 7 FAULTS ================= -->
+  <section id="faults">
+    <div class="sh"><div class="n">7</div><div><h2>Fault finding</h2><p>SYMPTOM → CAUSE → FIX</p></div></div>
+    <div class="tbl"><table>
+      <tr><th>SYMPTOM</th><th>LIKELY CAUSE</th><th>FIX</th></tr>
+      <tr><td class="k">Never locks</td><td>Room too bright · beacon not 4 Hz</td><td>Dim room · RED BEACON FILTER · check beacon code</td></tr>
+      <tr><td class="k">Locks a lamp</td><td>Flicker near 4 Hz · strong reflection</td><td>Remove from view · no windows in frame</td></tr>
+      <tr><td class="k">Motor buzzes</td><td>Coil pair split</td><td>Re-pair with meter (2–4 Ω)</td></tr>
+      <tr><td class="k">No holding torque</td><td>No 12 V · EN not GND · RST-SLP open</td><td>Switch on · check the three links</td></tr>
+      <tr><td class="k">Moves 16× wrong</td><td>MS1-3 not all at 5 V</td><td>All three to the 5 V rail</td></tr>
+      <tr><td class="k">Driver hot</td><td>Vref high · no heat sink</td><td>Vref 0.55 V · fit heat sink</td></tr>
+      <tr><td class="k">Encoder silent</td><td>Axial magnet · off-axis · big gap</td><td>Diametric · centred · 1–2 mm</td></tr>
+      <tr><td class="k">CONNECT RIG dead</td><td>No Web Serial · port busy</td><td>Chrome / Edge · close serial monitors</td></tr>
     </table></div>
   </section>
 
-  <section id="s6"><h2><i>6</i>Safety</h2>
-    <div class="box warn"><b class="h">⚠ LASER</b>Never look into the laser or point it at people, mirrors or glossy surfaces. Keep the laser off (<code>L0</code>) unless a test step needs it.</div>
-    <div class="box warn"><b class="h">⚠ ELECTRICAL</b>12 V goes only to the motor rail and the drivers' VMOT pins. It must never reach the 5 V rail, the Arduino, VDD or the sensors. Wire only with everything unplugged. Never connect or disconnect a motor while 12 V is on.</div>
-    <div class="box warn"><b class="h">⚠ MECHANICAL</b>Keep hands and cables clear of the moving head. Stop immediately with the kill switch on any grinding, smell, smoke or hot component.</div>
-    <div class="box note"><b class="h">POWER ORDER</b>Power on: USB first, then 12 V. Power off: 12 V first, then USB.</div>
-  </section>
-
-  <section id="s7"><h2><i>7</i>Procedure A: simulation test (Console)</h2>
-    <p>Replays a logged run of the tracking engine and produces a test record automatically. No hardware is needed.</p>
-    <ol class="steps">
-      <li data-n="A1">Open <a href="console.html">Console</a> in a desktop browser.<span class="chk">The viewport shows the scenario and the play button shows ❚❚ (playing).</span></li>
-      <li data-n="A2">Select a scenario: <b>Decoy field</b> (3 moving decoys and glints, 130 s), <b>ISS pass over Bengaluru</b> (45 s, SGP4 orbit) or <b>Hard turbulence</b> (400 µrad tilt, 30 s).</li>
-      <li data-n="A3">Let the run play to the end. Watch the state move <span class="s-search">SEARCH</span> → <span class="s-acq">ACQUIRE</span> → <span class="s-track">TRACK</span>, and the pointing error fall.<span class="chk">The green brackets stay on the beacon; red ◇ decoys are never bracketed.</span></li>
-      <li data-n="A4">At the end the debrief opens by itself (or press ▤). Read the <b>Test record</b> at the bottom: nine test cases, each with its criterion, measured value and PASS / FAIL.</li>
-      <li data-n="A5">Record the test record ID (for example <code>ZD-SIM-DECOYS</code>), the score and the date in the log (Section 13). Repeat A2–A5 for each scenario.</li>
-    </ol>
-    <div class="box note"><b class="h">REGENERATING THE LOGS</b>The engine is open source. <code>pip install -e ".[gui,dev]"</code>, then <code>pytest</code> to run the automated test suite and <code>python -m fsoc_pat.gui.app</code> for the desktop GUI.</div>
-  </section>
-
-  <section id="s8"><h2><i>8</i>Procedure B: live optical tracking (browser)</h2>
-    <ol class="steps">
-      <li data-n="B1">Dim the room. Switch the beacon on (4 Hz) and place the steady decoy in the same view.</li>
-      <li data-n="B2">Open <a href="live.html">Live Demo</a> and press <b>START CAMERA</b>; allow camera access.<span class="chk">Status shows SEARCHING and the frame rate is 25 fps or more.</span></li>
-      <li data-n="B3">Bring the beacon into view.<span class="chk">Within about 2 s the status turns LOCKED, the lock box sits on the beacon and the blink rate reads 4.0 Hz.</span></li>
-      <li data-n="B4">Move the beacon slowly, then quickly, across the whole view.<span class="chk">The lock follows; offset AZ / EL and target speed update live. The decoy is never locked.</span></li>
-      <li data-n="B5">Cover the beacon for 1 s, then uncover it.<span class="chk">The tracker coasts, then relocks without a manual reset.</span></li>
-      <li data-n="B6">For a red LED beacon in a bright room, turn on <b>RED BEACON FILTER</b> in Settings.</li>
-    </ol>
-  </section>
-
-  <section id="s9"><h2><i>9</i>Procedure C: MK2 terminal</h2>
-    <h3><i>C.1</i>Pre-power checks (everything unplugged)</h3>
-    <ol class="steps">
-      <li data-n="C1">Beep-test the rails: 12 V rail to 5 V rail must <b>not</b> beep; 12 V rail to GND must not beep (a short chirp from the capacitor is normal).</li>
-      <li data-n="C2">Check each A4988: VMOT → 12 V, VDD → 5 V, EN → GND, MS1–MS3 → 5 V, RST joined to SLP, 100 µF across VMOT / GND with the stripe to GND.</li>
-      <li data-n="C3">Check signals: pan STEP / DIR on D2 / D3, tilt STEP / DIR on D4 / D5, laser on D7, sensor bus on A4 / A5 through the multiplexer.</li>
-      <li data-n="C4">Turn both axes by hand through their full range: no cable goes tight.</li>
-    </ol>
-    <h3><i>C.2</i>Power-up and commissioning</h3>
-    <ol class="steps">
-      <li data-n="C5">Kill switch OFF. Connect the Nano USB to the laptop.<span class="chk">The Nano power LED is on; 5 V rail reads about 5 V.</span></li>
-      <li data-n="C6">First run only: set Vref to <b>0.55 V</b> on both drivers (black probe GND, red probe on the trimmer, USB power only).</li>
-      <li data-n="C7">Flash the firmware if needed (<code>rig_firmware_v2.ino</code>, 115200 baud).<span class="chk">The serial ready line appears; it reports the encoders it found.</span></li>
-      <li data-n="C8">Safety officer switches 12 V ON.<span class="chk">Both motor shafts hold stiff; nothing gets hot.</span></li>
-      <li data-n="C9">Motion check over serial: <code>?</code> status, <code>P200 T0</code> (pan about 22.5°), <code>P0 T100</code> (tilt about 11°), <code>C</code> back to centre.<span class="chk">Each axis moves in the commanded direction and returns to centre. With the AS5600 fitted, <code>?</code> after a move reports the same pan steps as commanded.</span></li>
-    </ol>
-    <h3><i>C.3</i>Closed-loop tracking</h3>
-    <ol class="steps">
-      <li data-n="C10">In Live Demo press <b>CONNECT RIG</b>, choose the Nano's port, then <b>MK2 CAMERA (USB)</b> and <b>TEST MOTION</b>.</li>
-      <li data-n="C11">Bring the beacon into view.<span class="chk">The head turns until the beacon is on boresight and follows it as it moves; the decoy is ignored.</span></li>
-      <li data-n="C12">Soft limits are pan ±90° and tilt ±18°. The terminal must stop at the limits and never strike an end stop.</li>
-    </ol>
-  </section>
-
-  <section id="s10"><h2><i>10</i>Shutdown</h2>
-    <ol class="steps">
-      <li data-n="D1">Stop tracking; send <code>C</code> to centre the head and <code>L0</code> for laser off.</li>
-      <li data-n="D2">Kill switch OFF (12 V off), then unplug the USB.</li>
-      <li data-n="D3">Unplug the 12 V adapter from the wall. Switch off the beacon and decoy.</li>
-    </ol>
-  </section>
-
-  <section id="s11"><h2><i>11</i>Acceptance criteria</h2>
-    <p>The simulation test record (Section 7) grades every run against the same fixed criteria. A run passes when all graded cases pass.</p>
+  <!-- ================= 8 RECORDS ================= -->
+  <section id="records">
+    <div class="sh"><div class="n">8</div><div><h2>Records &amp; roles</h2><p>ONE LINE PER RUN · SIGNED BY THE REVIEWER</p></div></div>
+    <div class="grid g3" style="margin-bottom:14px">
+      <div class="card"><div class="kicker">OPERATOR</div><p style="margin-top:6px">Runs the steps, fills the log.</p></div>
+      <div class="card"><div class="kicker" style="color:var(--red)">SAFETY OFFICER</div><p style="margin-top:6px">Holds the 12 V kill switch in C.</p></div>
+      <div class="card"><div class="kicker" style="color:var(--green)">REVIEWER</div><p style="margin-top:6px">Checks against Section 6, signs.</p></div>
+    </div>
     <div class="tbl"><table>
-      <tr><th>ID</th><th>PARAMETER</th><th>CRITERION</th></tr>
-      <tr><td class="k">TC-01</td><td>Acquisition time, cold start to first lock</td><td>≤ 3.0 s</td></tr>
-      <tr><td class="k">TC-02</td><td>Lock retention after first lock</td><td>≥ 90 %</td></tr>
-      <tr><td class="k">TC-03</td><td>Median pointing error</td><td>≤ 2 % of FOV half-width</td></tr>
-      <tr><td class="k">TC-04</td><td>95th-percentile pointing error</td><td>≤ 5 % of FOV half-width</td></tr>
-      <tr><td class="k">TC-05</td><td>Beacon kept in field of view</td><td>≥ 95 % of frames</td></tr>
-      <tr><td class="k">TC-06</td><td>Frames locked on a decoy</td><td>≤ 1 % of frames</td></tr>
-      <tr><td class="k">TC-07</td><td>95th-percentile compute time per frame</td><td>≤ one frame period (33.3 ms at 30 Hz)</td></tr>
-      <tr><td class="k">TC-08</td><td>Frames over the real-time budget</td><td>≤ 1 % of frames</td></tr>
-      <tr><td class="k">TC-09</td><td>Re-acquisitions</td><td>Recorded, not graded</td></tr>
+      <tr><th>DATE</th><th>PROC.</th><th>RECORD ID</th><th>RESULT</th><th>OPERATOR</th><th>REVIEWER</th></tr>
+      <tr><td>28-09-26</td><td>A</td><td><span class="code">ZD-SIM-DECOYS</span></td><td><b style="color:var(--green)">8 / 8 PASS</b></td><td>&nbsp;</td><td>&nbsp;</td></tr>
+      <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
     </table></div>
-    <p>Live and MK2 runs pass when every <span style="color:var(--green)">✓ VERIFY</span> condition in Sections 8 and 9 is met.</p>
-  </section>
-
-  <section id="s12"><h2><i>12</i>Fault finding</h2>
-    <div class="tbl"><table>
-      <tr><th>SYMPTOM</th><th>LIKELY CAUSE</th><th>ACTION</th></tr>
-      <tr><td>Never locks (live)</td><td>Room too bright; beacon not at 4 Hz</td><td>Dim the room; turn on RED BEACON FILTER; check the beacon firmware</td></tr>
-      <tr><td>Locks on a lamp</td><td>Lamp flicker near 4 Hz or a strong reflection</td><td>Remove the lamp from view; keep windows out of frame</td></tr>
-      <tr><td>Motor buzzes, does not turn</td><td>Coil pair split across 1A/1B and 2A/2B</td><td>Re-pair the wires with the multimeter (2–4 Ω per pair)</td></tr>
-      <tr><td>No holding torque</td><td>No 12 V at VMOT; EN not at GND; RST–SLP link missing</td><td>Switch ON; check the three connections</td></tr>
-      <tr><td>Moves 16× too far or too short</td><td>MS1–MS3 not all at 5 V</td><td>Connect all three to the 5 V rail</td></tr>
-      <tr><td>Driver hot or cutting out</td><td>Vref too high; no heat sink</td><td>Reset Vref to 0.55 V; fit the heat sink</td></tr>
-      <tr><td>Encoder reads nothing</td><td>Wrong magnet type, chip off-axis, gap too big</td><td>Diametric magnet, chip centred, 1–2 mm gap</td></tr>
-      <tr><td>CONNECT RIG does nothing</td><td>Browser without Web Serial; port held by another program</td><td>Use Chrome or Edge; close other serial monitors</td></tr>
-    </table></div>
-  </section>
-
-  <section id="s13"><h2><i>13</i>Records</h2>
-    <p>Keep one line per run in the team test log:</p>
-    <div class="tbl"><table>
-      <tr><th>DATE</th><th>PROCEDURE</th><th>RUN / RECORD ID</th><th>RESULT</th><th>OPERATOR</th><th>REVIEWER</th></tr>
-      <tr><td>&nbsp;</td><td>A / B / C</td><td>e.g. ZD-SIM-DECOYS</td><td>e.g. 8 / 8 PASS</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-    </table></div>
-    <h3>Revision history</h3>
-    <div class="tbl"><table>
+    <div class="tbl" style="margin-top:12px"><table>
       <tr><th>REV</th><th>DATE</th><th>CHANGE</th></tr>
-      <tr><td class="k">1.0</td><td>28 Sep 2026</td><td>First release: simulation test record, live tracking and MK2 terminal procedures.</td></tr>
+      <tr><td class="k">1.0</td><td>28 Sep 2026</td><td>First release</td></tr>
+      <tr><td class="k">1.1</td><td>28 Sep 2026</td><td>Graphic layout · engine flowchart · acceptance bars</td></tr>
     </table></div>
   </section>
 
-  <div class="foot"><span>ZeroDrift · Jabalpur Engineering College · SIH 2026 PS26169</span><span>ZD-SOP-001 rev 1.0</span></div>
+  <div class="foot"><span>ZeroDrift · Jabalpur Engineering College · SIH 2026 PS26169</span><span>ZD-SOP-001 rev 1.1</span></div>
 </main>
 
 <nav class="mobile-bottom-nav">
   <a href="index.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a>
   <a href="console.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg><span>Console</span></a>
-  <a href="sop.html" class="mobile-nav-item active"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg><span>SOP</span></a>
   <a href="live.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Live</span></a>
   <a href="about.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>About</span></a>
+  <a href="sop.html" class="mobile-nav-item active"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg><span>SOP</span></a>
 </nav>
 </body>
 </html>

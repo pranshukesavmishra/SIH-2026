@@ -1,0 +1,11 @@
+import { createRequire } from 'node:module';
+const require = createRequire('/opt/node22/lib/node_modules/');
+const { chromium } = require('playwright');
+const dir = process.cwd();
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 });
+await p.goto('file://' + dir + '/slides23_v2.html'); await p.waitForTimeout(600);
+await p.pdf({ path: dir + '/ZeroDrift_Slides_2_3_v2.pdf', width: '13.333in', height: '7.5in', printBackground: true, preferCSSPageSize: true });
+const slides = await p.$$('.slide');
+for (let i = 0; i < slides.length; i++) await slides[i].screenshot({ path: dir + `/v2_slide${i + 2}.png` });
+await b.close();

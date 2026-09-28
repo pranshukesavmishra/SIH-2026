@@ -1,6 +1,25 @@
-# Handoff: make the MK2 motors run (local Mac session)
+# Handoff: make the MK2 motors run + first live tracking test (local session)
 
-Written 28 Sept 2026. Read `CLAUDE.md` and `docs/LOCAL_HANDOFF.md` first (user, tone, tools).
+Written 28 Sept 2026, updated same day once hardware moved to Aryan's **Windows PC**.
+Read `CLAUDE.md` and `docs/LOCAL_HANDOFF.md` first (user, tone, tools). Commands below
+give the Mac (`brew`, zsh) form first, Windows (PowerShell / Git Bash) form second —
+check `arduino-cli version` / `echo $OS` or just ask Aryan which machine he's on before
+running anything.
+
+## Windows setup (if this is the Windows PC)
+- Arduino CLI: easiest is the **Arduino IDE** installer (arduino.cc/en/software) — it can
+  install boards/libraries with a GUI, and Aryan can watch it happen. `arduino-cli` alone
+  also works: `winget install ArduinoSDA.arduino-cli` (or download the .zip and put
+  `arduino-cli.exe` on PATH).
+- `tools/rig/flash.sh` is a **bash script** — on Windows run it from **Git Bash** (installed
+  with Git for Windows), not PowerShell/cmd directly. If Git Bash isn't installed, either
+  install it, or drive `arduino-cli compile` / `arduino-cli upload` by hand with the same
+  flags as in the script, or just use the Arduino IDE's own Upload button after opening
+  `tools/rig/rig_firmware_v2.ino` and installing the **AccelStepper** and **Servo** libraries
+  via Library Manager, board = "Arduino Nano", processor = **ATmega328P** (try "(Old
+  Bootloader)" too if upload fails), port = whatever `COM#` shows up in Device Manager
+  once the Nano is plugged in (CH340 driver may be needed for a clone Nano).
+- Serial monitor from Git Bash: `arduino-cli monitor -p COM# -c baudrate=115200`.
 
 ## Where we are
 - Aryan has wired the rig breadboard himself: Nano, 2× A4988 (red boards), TCA9548A mux,
@@ -28,7 +47,17 @@ Motors turn on command from the laptop. Nothing else.
    `?` status · `!` self-test · `P200 T0` pan +200 steps · `P0 T0` back · `P0 T100` tilt ·
    `C` return to datum · `Z` zero here · `L1`/`L0` laser.
    200 steps = 22.5° at 1/16 microstep (8.889 steps/deg). Soft limits pan ±90°, tilt ±18°.
-7. Then the live page: CONNECT RIG → TEST MOTION.
+7. **Then the live page: CONNECT RIG → TEST MOTION.** No Python and no local server needed
+   for this — `docs/live.html` does the webcam capture and the tracking math in the
+   **browser** itself, and talks to the Nano straight from the page over the **Web Serial
+   API**. That only works in **Chrome or Edge** (not Firefox/Safari), and only on a secure
+   (https) or localhost page — the deployed site `https://zerodrift-fsoc-pat.netlify.app/live.html`
+   already qualifies, so Aryan can just open that URL on the Windows PC, plug in the Nano,
+   click **CONNECT RIG**, pick the Nano's port from the browser's own picker, allow the
+   camera, then **TEST MOTION**. Pick **MK2** rig mode. Point the webcam at the beacon LED
+   (blinking 4 Hz) to see it lock and track for real.
+   - The separate Python engine (`pip install -e ".[gui,dev]"`, `python -m fsoc_pat.gui.app`)
+     is for offline simulation/tests only — it is **not** part of this live hardware path.
 
 ## Troubleshooting
 | Symptom | Likely cause |

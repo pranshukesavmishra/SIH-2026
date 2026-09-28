@@ -47,3 +47,7 @@
   X-Robots-Tag: noindex, nofollow
 /preview
   X-Robots-Tag: noindex, nofollow
+/submission/ZeroDrift_Slides_2_3.pdf
+  X-Robots-Tag: noindex, nofollow
+/submission/deck_src/*
+  X-Robots-Tag: noindex, nofollow

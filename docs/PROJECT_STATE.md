@@ -58,7 +58,7 @@ of a judge.
 | **14.7%** | Link closure, **coarse stage alone** | `docs/technical_report.md` L281 |
 | **3.1 dB** | Mean link margin | `docs/technical_report.md` L283 |
 | **AUC 0.957 vs 0.900** | NN verifier vs classical, short window | `docs/defence_brief.md` |
-| **132 / 132** | Automated tests passing (+1 skipped) | CI, verified 18 Sept post-merge |
+| **250 / 251** | Automated tests passing (1 skipped) | `pytest -q`, verified 28 Sept |
 | **8–21 ms** | Tracker time per 33 ms frame, 2 cores | engine benchmark |
 | **₹0.22** | Electricity, full 64-run campaign | `docs/economic_feasibility.md` |
 | **207×** | Throughput vs hardware bench | `docs/economic_feasibility.md` |

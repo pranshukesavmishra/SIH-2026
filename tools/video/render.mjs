@@ -7,7 +7,7 @@ const p = await b.newPage({ viewport: { width: 1920, height: 1080 }, deviceScale
 const base = 'file://' + process.cwd() + '/motion/motion.html?';
 if (a[0] === 'preview') {
   await p.goto(base + 'scene=' + a[1] + '&' + (a[3] || '')); await p.evaluate(() => document.fonts.ready);
-  for (const t of a[2].split(',')) { await p.evaluate(t => seek(+t), t); await p.screenshot({ path: `prev_${a[1]}_${t}.png`, omitBackground: a[1] === 'tag' }); }
+  for (const t of a[2].split(',')) { await p.evaluate(t => seek(+t), t); await p.screenshot({ path: `prev_${a[1]}_${t}.png`, omitBackground: ['tag','lockfx','hud'].includes(a[1]) }); }
 } else {
   const [scene, secs, out, qs, alpha] = a; fs.mkdirSync(out, { recursive: true });
   await p.goto(base + 'scene=' + scene + '&' + (qs || '')); await p.evaluate(() => document.fonts.ready);

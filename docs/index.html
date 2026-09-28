@@ -795,6 +795,21 @@ body {
 .rig-chips span { font: 11px ui-monospace, monospace; color: #8EA4C4; padding: 4px 9px; border-radius: 6px;
   border: 1px solid #15263F; background: rgba(255,255,255,.03); }
 .rig-hint { margin-top: 12px; font: 11px ui-monospace, monospace; color: #536988; letter-spacing: .08em; text-align: center; }
+/* ---------- Software demo video: video left, brief right ---------- */
+.sw-duo { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; width: min(1060px, 100%); align-items: center; }
+.sw-view { position: relative; aspect-ratio: 1920 / 1086; background: #050a14; }
+.sw-view video { width: 100%; height: 100%; display: block; object-fit: contain; background: #050a14; }
+.sw-brief { text-align: left; }
+.sw-brief p { font: 14px/1.6 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #8EA4C4; margin: 0 0 14px; }
+.sw-brief p b { color: #EAF4FD; font-weight: 600; }
+.sw-steps { list-style: none; margin: 0 0 18px; padding: 0; border: 1px solid #15263F; border-radius: 12px; overflow: hidden; background: rgba(8,16,32,.85); }
+.sw-steps li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 10px 14px; border-top: 1px solid #15263F;
+  font: 13px/1.45 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #8EA4C4; }
+.sw-steps li:first-child { border-top: 0; }
+.sw-steps li span { font: 700 11px/1.6 ui-monospace, monospace; color: #7FE0F8; letter-spacing: .1em; }
+.sw-steps li b { color: #EAF4FD; font-weight: 600; }
+@media (max-width: 860px) { .sw-duo { grid-template-columns: 1fr; } }
+@media (max-width: 768px) { .sw-brief .btn-cta { width: auto; } }
 
 /* Organisations: ISRO (problem statement), SIH 2026, JEC. Official
    colours, so each sits on its own white chip. */
@@ -995,6 +1010,32 @@ body {
       <div class="rd-row"><span>Aiming</span><span>Camera sits beside the laser, so the aim is estimated</span><b>Camera moves with the laser, so it sees exactly where it is aiming</b></div>
     </div>
     <div class="rig-hint">Drag to rotate · click, then scroll to zoom · double-click to resume</div>
+  </section>
+
+  <!-- SECTION 2B: THE SOFTWARE, RUNNING LIVE (screen recording) -->
+  <section class="section-view" id="sec-software">
+    <div class="timeline-section-header">
+      <div class="section-tag">SOFTWARE · RUNNING LIVE</div>
+      <h3 class="section-title">Live tracking in the browser</h3>
+    </div>
+    <div class="sw-duo">
+      <div class="rig-card">
+        <div class="sw-view">
+          <video id="swVideo" muted loop playsinline controls preload="none" poster="media/software_demo_poster.jpg" aria-label="ZeroDrift live demo: the software locks onto the blinking beacon"></video>
+        </div>
+      </div>
+      <div class="sw-brief">
+        <p>A real screen recording of our <b>Live Demo</b> page. It uses only a laptop webcam, with no special hardware.</p>
+        <ul class="sw-steps">
+          <li><span>01</span><div><b>Search.</b> The camera scans the dark room for the beacon.</div></li>
+          <li><span>02</span><div><b>Lock.</b> It finds the red LED by its blink rate and draws a lock box around it.</div></li>
+          <li><span>03</span><div><b>Track.</b> The beacon is moved by hand and the lock follows it, showing direction and speed live.</div></li>
+        </ul>
+        <button type="button" class="btn-cta secondary" id="swFull">
+          <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>FULL SCREEN
+        </button>
+      </div>
+    </div>
   </section>
 
   <!-- SECTION 3: CONNECTED VERTICAL LINE PIPELINE FLOW (DIRECT FROM SIH PDF) -->
@@ -1572,6 +1613,33 @@ document.querySelectorAll('.rig-view').forEach(view => {
     show(k);
   }));
 });
+</script>
+<script>
+/* Software demo: pick 720p on phones, set the source only when the section
+   is first reached, play muted while at least half visible. */
+(function () {
+  const sec = document.getElementById('sec-software');
+  const v = document.getElementById('swVideo');
+  if (!sec || !v || !('IntersectionObserver' in window)) return;
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const load = () => {
+    if (v.getAttribute('src')) return;
+    v.src = window.innerWidth <= 800 ? 'media/software_demo_720.mp4' : 'media/software_demo.mp4';
+  };
+  new IntersectionObserver((es, o) => {
+    if (es.some(e => e.isIntersecting)) { load(); o.disconnect(); }
+  }, { rootMargin: '200px 0px' }).observe(sec);
+  new IntersectionObserver(es => es.forEach(e => {
+    if (e.intersectionRatio >= 0.5) { load(); if (!still) v.play().catch(() => {}); }
+    else if (!v.paused) v.pause();
+  }), { threshold: [0, 0.5] }).observe(v);
+  document.getElementById('swFull').addEventListener('click', () => {
+    load();
+    if (v.requestFullscreen) v.requestFullscreen().catch(() => {});
+    else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+    v.play().catch(() => {});
+  });
+})();
 </script>
 </body>
 </html>

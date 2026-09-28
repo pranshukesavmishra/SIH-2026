@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round">
+  <!-- lock brackets -->
+  <path d="M6 18V8a2 2 0 0 1 2-2h10M46 6h10a2 2 0 0 1 2 2v10M58 46v10a2 2 0 0 1-2 2H46M18 58H8a2 2 0 0 1-2-2V46" stroke-width="4.5"/>
+  <!-- target ring -->
+  <circle cx="32" cy="32" r="15" stroke-width="4"/>
+  <!-- check -->
+  <path d="M24.5 32.5l5.2 5.2L40 27" stroke-width="5"/>
+</svg>

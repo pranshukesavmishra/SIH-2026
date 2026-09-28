@@ -404,6 +404,31 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
 .foot a { color: var(--cyan); text-decoration: none; }
 .foot a:hover { text-decoration: underline; }
 
+/* Test record table inside the debrief */
+.test-record { margin-top: 14px; border: 1px solid rgba(79,199,234,.28); border-radius: 10px; background: rgba(6,14,28,.75); overflow: hidden; }
+.tr-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 16px; border-bottom: 1px solid rgba(79,199,234,.18); background: rgba(79,199,234,.05); }
+.tr-title { font: 700 13px var(--font-mono); letter-spacing: 1.4px; color: var(--cyan); }
+.tr-title span { color: var(--ink-primary); }
+.tr-sub { font: 11px/1.5 var(--font-mono); color: var(--ink-secondary); margin-top: 3px; }
+.tr-score { font: 700 13px var(--font-mono); letter-spacing: 1px; padding: 7px 12px; border-radius: 6px; white-space: nowrap; border: 1px solid; }
+.tr-score.ok { color: var(--green); border-color: rgba(59,214,140,.5); background: rgba(59,214,140,.08); }
+.tr-score.bad { color: var(--amber); border-color: rgba(255,194,77,.5); background: rgba(255,194,77,.08); }
+.tr-scroll { overflow-x: auto; }
+.tr-table { width: 100%; border-collapse: collapse; font: 12px/1.45 var(--font-mono); min-width: 860px; }
+.tr-table th { text-align: left; font-weight: 700; font-size: 10px; letter-spacing: 1.2px; color: var(--ink-muted); padding: 9px 14px; border-bottom: 1px solid var(--edge); background: rgba(3,8,18,.6); }
+.tr-table td { padding: 9px 14px; border-bottom: 1px solid rgba(24,38,58,.7); color: var(--ink-secondary); vertical-align: top; }
+.tr-table tr:last-child td { border-bottom: 0; }
+.tr-table tbody tr:hover td { background: rgba(79,199,234,.04); }
+.tr-table td.id { color: var(--ink-muted); white-space: nowrap; }
+.tr-table td.p { color: var(--ink-primary); font-weight: 700; }
+.tr-table td.m { color: #fff; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tr-pill { display: inline-block; min-width: 50px; text-align: center; font-weight: 700; font-size: 10.5px; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; }
+.tr-pill.pass { color: #06220f; background: var(--green); }
+.tr-pill.fail { color: #2a1400; background: var(--amber); }
+.tr-pill.info { color: var(--ink-secondary); border: 1px solid var(--edge); }
+.tr-note { font: 10.5px/1.5 var(--font-mono); color: var(--ink-muted); padding: 9px 16px; border-top: 1px solid rgba(24,38,58,.7); }
+@media (max-width: 720px) { .tr-head { flex-direction: column; align-items: flex-start; } }
+
 /* Modals & Debrief (Stitch Aerospace Command Dashboard - Full Screen Wide, Clean & Balanced) */
 .debrief-overlay {
   position: fixed;
@@ -963,6 +988,10 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
       <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg>
       CONSOLE
     </a>
+    <a href="sop.html" class="nav-link">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg>
+      SOP
+    </a>
     <a href="live.html" class="nav-link">
       <svg viewBox="0 0 24 24"><path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4zM9 3l-1.8 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 15a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/></svg>
       LIVE DEMO
@@ -1134,6 +1163,24 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
       </div>
     </div>
 
+    <!-- Test record: fixed acceptance criteria vs this run's measured values -->
+    <div class="test-record">
+      <div class="tr-head">
+        <div>
+          <div class="tr-title">▦ TEST RECORD · <span id="trId"></span></div>
+          <div class="tr-sub" id="trCond"></div>
+        </div>
+        <div class="tr-score" id="trScore"></div>
+      </div>
+      <div class="tr-scroll">
+        <table class="tr-table">
+          <thead><tr><th>ID</th><th>PARAMETER</th><th>METHOD</th><th>ACCEPTANCE CRITERION</th><th>MEASURED</th><th>RESULT</th></tr></thead>
+          <tbody id="trBody"></tbody>
+        </table>
+      </div>
+      <div class="tr-note">Criteria are fixed before the run and identical for every scenario. Values are computed in the browser from the logged frames of this run; nothing is typed in by hand.</div>
+    </div>
+
     <!-- Unified Footer Row: Verdict + Action Buttons -->
     <div class="debrief-footer-bar">
       <div id="dbVerdict" class="debrief-verdict-inline"></div>
@@ -1192,6 +1239,10 @@ canvas { width: 100%; display: block; cursor: crosshair; border-radius: 4px; }
   <a href="console.html" class="mobile-nav-item active">
     <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg>
     <span>Console</span>
+  </a>
+  <a href="sop.html" class="mobile-nav-item">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg>
+    <span>SOP</span>
   </a>
   <a href="live.html" class="mobile-nav-item">
     <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
@@ -1516,6 +1567,33 @@ function debHist(cv){const [c,w,h]=px(cv);c.clearRect(0,0,w,h);
     c.strokeStyle=col;c.setLineDash([3,3]);c.beginPath();c.moveTo(x,4);c.lineTo(x,base);c.stroke();c.setLineDash([]);
     c.fillStyle=col;c.fillText(l,x+3,12)});
   c.fillStyle='#8EA4C4';c.fillText('0',0,h-3);const t=Math.round(top)+'';c.fillText(t,w-c.measureText(t).width,h-3)}
+/* ---- test record: fixed acceptance criteria, measured values from this run's frames ---- */
+function testRecord(){
+  const s=D.summary,K=D.constants,F=D.frames,N=F.length;
+  const fov=K.fov_half_width_urad||52360,hz=K.frame_rate_hz||30,budget=1000/hz;
+  const late=F.filter(f=>f.proc_ms!=null&&f.proc_ms>budget).length;
+  const decoyPct=100*(s.decoy_locked_frames||0)/N;
+  const pe=s.pointing_error_urad,pm=s.processing_ms;
+  const f1=(v,d)=>v==null?'—':v.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+  // [id, parameter, method, criterion text, measured text, pass (true/false/null = info)]
+  const rows=[
+    ['TC-01','Acquisition time','cold start → first TRACK frame','≤ 3.0 s',f1(s.acquisition_time_s,2)+' s',s.acquisition_time_s!=null&&s.acquisition_time_s<=3],
+    ['TC-02','Lock retention','locked frames after first lock','≥ 90 %',f1(s.lock_retention_pct,1)+' %',s.lock_retention_pct>=90],
+    ['TC-03','Pointing error, median','p50 of locked frames','≤ 2 % of FOV half-width ('+f1(fov*.02,0)+' µrad)',f1(pe.p50,0)+' µrad',pe.p50<=fov*.02],
+    ['TC-04','Pointing error, 95th percentile','p95 of locked frames','≤ 5 % of FOV half-width ('+f1(fov*.05,0)+' µrad)',f1(pe.p95,0)+' µrad',pe.p95<=fov*.05],
+    ['TC-05','Beacon kept in field of view','frames with beacon inside FOV','≥ 95 %',f1(s.beacon_in_fov_pct,1)+' %',s.beacon_in_fov_pct>=95],
+    ['TC-06','Decoy rejection','frames locked on a decoy','≤ 1 % of frames',f1(decoyPct,2)+' % ('+(s.decoy_locked_frames||0)+' / '+N+')',decoyPct<=1],
+    ['TC-07','Frame compute latency','p95 tracker time per frame','≤ '+f1(budget,1)+' ms (one frame at '+f1(hz,0)+' Hz)',f1(pm.p95,1)+' ms',pm.p95<=budget],
+    ['TC-08','Real-time deadline misses','frames over the '+f1(budget,1)+' ms budget','≤ 1 % of frames',f1(100*late/N,2)+' % ('+late+' / '+N+')',100*late/N<=1],
+    ['TC-09','Re-acquisitions','lock regained after a loss','recorded, not graded',String(s.reacquisitions??'—'),null],
+  ];
+  const graded=rows.filter(r=>r[5]!==null),passed=graded.filter(r=>r[5]).length;
+  const code=($('scen').value.split('/').pop()||'').replace('telemetry_','').replace('.json','').toUpperCase();
+  $('trId').textContent='ZD-SIM-'+code;
+  $('trCond').textContent=D.scenario+' · '+N+' frames @ '+f1(hz,0)+' Hz ('+f1(N/hz,1)+' s) · FOV '+(K.fov_deg||'—')+'° · beacon '+(K.beacon_blink_hz||'—')+' Hz · gimbal ≤ '+(K.gimbal_max_rate_deg_s||'—')+'°/s · command latency '+(K.command_latency_ms||'—')+' ms';
+  const sc=$('trScore');sc.textContent=passed+' / '+graded.length+' PASSED';sc.className='tr-score '+(passed===graded.length?'ok':'bad');
+  $('trBody').innerHTML=rows.map(r=>'<tr><td class="id">'+r[0]+'</td><td class="p">'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td><td class="m">'+r[4]+'</td><td><span class="tr-pill '+(r[5]===null?'info">INFO':r[5]?'pass">PASS':'fail">FAIL')+'</span></td></tr>').join('');
+}
 function fmtCard(v,l,m){return '<div class="fcard"><b>'+v+'</b><span>'+l+'</span><i>'+m+'</i></div>'}
 function showDebrief(record){
   if(!D)return;
@@ -1540,6 +1618,7 @@ function showDebrief(record){
 
   $('dbVerdict').innerHTML='<span style="font-size:15px;color:#3BD68C">✓</span> <span>Beacon in view <b>' + s.beacon_in_fov_pct.toFixed(0) + '%</b> of the run — ready for fine-stage handoff.</span>';
 
+  testRecord();
   $('debrief').hidden=false;
 
   // Render Debrief Telemetry Charts

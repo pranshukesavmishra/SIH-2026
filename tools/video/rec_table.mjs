@@ -1,0 +1,11 @@
+import pkg from '/opt/node22/lib/node_modules/playwright/index.js'; const { chromium } = pkg;
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const p = await b.newPage({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 2 });
+await p.goto('http://localhost:8791/console.html', { waitUntil: 'networkidle' });
+await p.waitForFunction(() => typeof D !== 'undefined' && D && D.frames && D.frames.length > 3000);
+await p.evaluate(() => { playing = false; i = D.frames.length - 1; ph = i; draw(); showDebrief(true); });
+await p.waitForTimeout(1500);
+const el = await p.$('.test-record'); await el.scrollIntoViewIfNeeded(); await p.waitForTimeout(500);
+await el.screenshot({ path: 'test_record_decoy.png' });
+console.log(await p.evaluate(() => [document.getElementById('trScore').textContent, document.getElementById('trId').textContent]));
+await b.close();

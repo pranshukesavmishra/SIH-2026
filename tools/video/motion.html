@@ -1,0 +1,197 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:SG;src:url(space-grotesk-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:SG;src:url(space-grotesk-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:IN;src:url(inter-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:IN;src:url(inter-latin-600-normal.woff2);font-weight:600}
+@font-face{font-family:JB;src:url(jetbrains-mono-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:JB;src:url(jetbrains-mono-latin-500-normal.woff2);font-weight:500}
+:root{--blue:#62B8FC;--cyan:#4FC7EA;--green:#5DD27A;--ink:#EAF4FD;--mute:#8EA4C4;--bg:#050a14}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:transparent}
+.stage{position:absolute;inset:0;overflow:hidden}
+.bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 55% at 50% 45%,#0d2138 0%,#07111f 45%,#03070e 100%)}
+.grid{position:absolute;inset:-60px;background-image:linear-gradient(rgba(98,184,252,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(98,184,252,.06) 1px,transparent 1px);background-size:60px 60px;
+  -webkit-mask-image:radial-gradient(ellipse 55% 50% at 50% 50%,#000 20%,transparent 75%);animation:gridDrift 8s linear both}
+@keyframes gridDrift{from{transform:translate(0,0)}to{transform:translate(60px,30px)}}
+.stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:#9fc6ee;opacity:.5;animation:tw 3s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.15}to{opacity:.7}}
+.vign{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+.fadein{animation:fadeIn 1s ease both}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes up{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes down{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.6)}70%{opacity:1;transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes ring{0%{opacity:.9;transform:scale(.6)}100%{opacity:0;transform:scale(2.4)}}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes glowSweep{from{transform:translateX(-120%)}to{transform:translateX(620%)}}
+@keyframes spacing{from{letter-spacing:.9em;opacity:0}to{letter-spacing:.55em;opacity:1}}
+.scene{display:none}.scene.on{display:block}
+.c{position:absolute;left:0;right:0;text-align:center}
+
+/* ---------- radar mark ---------- */
+.mark{position:absolute}
+.mark svg{display:block;overflow:visible}
+.sweep{transform-origin:150px 150px;animation:spin 2.6s linear infinite}
+.lockring{position:absolute;inset:0;border:2px solid var(--green);border-radius:50%;opacity:0}
+
+/* ---------- intro ---------- */
+#intro .welcome{top:176px;font:700 26px JB;color:var(--cyan);letter-spacing:.55em;padding-left:.55em;animation:spacing 1.2s .3s cubic-bezier(.2,.7,.2,1) both}
+#intro .mark{top:238px;left:810px;width:300px;height:300px;animation:pop 1s .5s cubic-bezier(.2,.8,.2,1) both}
+#intro .mark .lockring{animation:ring 1.6s 1.1s ease-out both}
+#intro .mark .lockring.b{animation-delay:1.5s}
+#intro .word{top:566px;font:700 132px/1 SG;letter-spacing:.02em;color:var(--ink);animation:wipe 1s 1.2s cubic-bezier(.6,0,.2,1) both}
+#intro .word b{color:var(--blue);font-weight:700}
+#intro .word .o{display:inline-block;width:.74em;height:.74em;vertical-align:-.02em;margin:0 .04em}
+#intro .shine{position:absolute;top:560px;left:560px;width:800px;height:150px;overflow:hidden;animation:fadeIn .1s 1.9s both;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 20%,#000 80%,transparent)}
+#intro .shine::after{content:"";position:absolute;top:0;bottom:0;width:160px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);transform:translateX(-120%);animation:glowSweep 1.1s 2.0s ease-in-out both}
+#intro .tag{top:730px;font:500 46px SG;color:var(--mute);letter-spacing:.01em;animation:up .9s 2.2s cubic-bezier(.2,.7,.2,1) both}
+#intro .tag em{font-style:normal;color:var(--ink)}
+#intro .rule{position:absolute;top:822px;left:50%;width:520px;height:1px;margin-left:-260px;background:linear-gradient(90deg,transparent,rgba(98,184,252,.5),transparent);animation:fadeIn .8s 2.7s both}
+#intro .foot{top:860px;display:flex;justify-content:center;align-items:center;gap:26px;animation:up .9s 2.9s cubic-bezier(.2,.7,.2,1) both}
+.chip{background:#fff;border-radius:14px;padding:10px 18px;display:flex;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+.chip img{height:70px;display:block}
+#intro .ps{font:700 34px JB;color:var(--ink);letter-spacing:.08em;text-align:left;line-height:1.1}
+#intro .ps small{display:block;font:500 16px JB;color:var(--cyan);letter-spacing:.3em;margin-bottom:6px}
+#intro .vbar{width:1px;height:70px;background:rgba(142,164,196,.4)}
+
+/* ---------- section box ---------- */
+#sec .box{position:absolute;left:50%;top:50%;width:1040px;height:330px;margin:-165px 0 0 -520px}
+#sec .box svg{position:absolute;inset:0;overflow:visible}
+#sec .frame{stroke-dasharray:2800;stroke-dashoffset:2800;animation:draw 1s .15s cubic-bezier(.6,0,.2,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+#sec .fill{position:absolute;inset:0;border-radius:22px;background:linear-gradient(135deg,rgba(13,33,56,.92),rgba(5,12,24,.92));animation:fadeIn .6s .5s both;box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 60px rgba(79,199,234,.10) inset}
+#sec .br{position:absolute;width:46px;height:46px;border:4px solid var(--green);animation:pop .5s .95s both}
+#sec .br.tl{left:-18px;top:-18px;border-right:0;border-bottom:0}
+#sec .br.tr{right:-18px;top:-18px;border-left:0;border-bottom:0}
+#sec .br.bl{left:-18px;bottom:-18px;border-right:0;border-top:0}
+#sec .br.brr{right:-18px;bottom:-18px;border-left:0;border-top:0}
+#sec .scan{position:absolute;inset:0;border-radius:22px;overflow:hidden;animation:fadeIn .1s .6s both}
+#sec .scan::after{content:"";position:absolute;top:0;bottom:0;width:220px;background:linear-gradient(90deg,transparent,rgba(79,199,234,.18),transparent);transform:translateX(-120%);animation:scanX 1.4s .7s ease-in-out both}
+@keyframes scanX{from{transform:translateX(-120%)}to{transform:translateX(620%)}}
+#sec .inner{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 80px}
+#sec .num{font:700 22px JB;color:var(--cyan);letter-spacing:.4em;animation:up .7s .75s cubic-bezier(.2,.7,.2,1) both}
+#sec .title{font:700 104px/1.05 SG;color:var(--ink);margin-top:12px;overflow:hidden}
+#sec .title span{display:inline-block;animation:up .8s .85s cubic-bezier(.2,.7,.2,1) both}
+#sec .sub{font:400 30px IN;color:var(--mute);margin-top:14px;animation:up .8s 1.05s cubic-bezier(.2,.7,.2,1) both}
+#sec .dot{display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--green);margin-right:18px;vertical-align:4px;box-shadow:0 0 18px var(--green);animation:blink .25s steps(1) infinite}
+@keyframes blink{50%{opacity:.15}}
+
+/* ---------- lower-third tag (transparent) ---------- */
+#tag .lt{position:absolute;left:64px;bottom:70px;display:flex;align-items:stretch;border-radius:14px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.55);
+  animation:ltIn .7s .2s cubic-bezier(.2,.8,.2,1) both,ltOut .5s var(--out) cubic-bezier(.6,0,.8,.2) forwards}
+@keyframes ltIn{from{transform:translateX(-120%);opacity:0}to{transform:none;opacity:1}}
+@keyframes ltOut{to{transform:translateX(-120%);opacity:0}}
+#tag .k{background:var(--kc,#1f8f4e);color:#fff;font:700 26px JB;letter-spacing:.12em;padding:22px 26px;display:flex;align-items:center}
+#tag .t{background:rgba(5,12,24,.9);backdrop-filter:blur(8px);padding:16px 30px 16px 26px;border:1px solid rgba(98,184,252,.28);border-left:0;border-radius:0 14px 14px 0}
+#tag .t b{display:block;font:700 30px SG;color:var(--ink)}
+#tag .t span{display:block;font:400 21px IN;color:var(--mute);margin-top:4px}
+#tag .t,#tag .k{clip-path:inset(0 0 0 0)}
+
+
+/* ---------- test table ---------- */
+#table .wrap{position:absolute;left:50%;top:560px;width:1720px;margin-left:-860px;transform:translateY(-50%)}
+#table .card{position:relative;border-radius:18px;overflow:hidden;border:1px solid rgba(79,199,234,.35);box-shadow:0 40px 120px rgba(0,0,0,.7),0 0 80px rgba(79,199,234,.10);
+  animation:rise 1s .2s cubic-bezier(.2,.8,.2,1) both,push 7s 1.2s linear both}
+#table .card img{display:block;width:100%}
+@keyframes rise{from{opacity:0;transform:translateY(60px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes push{from{scale:1}to{scale:1.035}}
+#table .hl{position:absolute;left:0;right:0;height:9.2%;top:18.8%;background:linear-gradient(90deg,transparent,rgba(93,210,122,.14) 30%,rgba(93,210,122,.14) 70%,transparent);border-top:1px solid rgba(93,210,122,.35);border-bottom:1px solid rgba(93,210,122,.35);
+  animation:rows 3.2s 1.2s steps(1) both}
+@keyframes rows{0%{top:18.8%}11%{top:27%}22%{top:35.2%}33%{top:43.4%}44%{top:51.6%}55%{top:59.8%}66%{top:68%}77%{top:76.2%}88%,100%{top:-20%}}
+#table .head{position:absolute;left:100px;top:118px;font:700 22px JB;letter-spacing:.4em;color:var(--cyan);animation:up .8s .1s both}
+#table .badge{position:absolute;right:100px;top:100px;font:700 40px SG;color:#0b1a10;background:var(--green);padding:12px 26px;border-radius:12px;box-shadow:0 0 40px rgba(93,210,122,.5);animation:pop .6s 4.6s cubic-bezier(.2,.8,.2,1) both}
+/* ---------- thanks ---------- */
+#thanks .mark{top:250px;left:845px;width:230px;height:230px;animation:pop 1s .2s cubic-bezier(.2,.8,.2,1) both}
+#thanks .mark .lockring{animation:ring 1.6s .8s ease-out both}
+#thanks .ty{top:530px;font:700 150px/1 SG;color:var(--ink);animation:up 1s .6s cubic-bezier(.2,.7,.2,1) both}
+#thanks .sm{top:720px;font:700 26px JB;color:var(--cyan);letter-spacing:.5em;padding-left:.5em;animation:fadeIn 1s 1.2s both}
+</style></head>
+<body>
+<template id="markTpl">
+<svg width="100%" height="100%" viewBox="0 0 300 300">
+  <defs>
+    <radialGradient id="gd" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#5DD27A" stop-opacity=".55"/><stop offset="1" stop-color="#5DD27A" stop-opacity="0"/></radialGradient>
+    <linearGradient id="sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#62B8FC" stop-opacity="0"/><stop offset="1" stop-color="#62B8FC" stop-opacity=".45"/></linearGradient>
+  </defs>
+  <circle cx="150" cy="150" r="118" fill="rgba(98,184,252,.05)" stroke="#62B8FC" stroke-width="7"/>
+  <circle cx="150" cy="150" r="80" fill="none" stroke="#62B8FC" stroke-opacity=".35" stroke-width="3"/>
+  <circle cx="150" cy="150" r="44" fill="none" stroke="#62B8FC" stroke-opacity=".35" stroke-width="3"/>
+  <path d="M150 8V58M150 242V292M8 150H58M242 150H292" stroke="#62B8FC" stroke-width="7" stroke-linecap="round"/>
+  <path d="M150 32V268M32 150H268" stroke="#62B8FC" stroke-opacity=".3" stroke-width="2"/>
+  <g class="sweep"><path d="M150 150 L150 32 A118 118 0 0 1 222 57 Z" fill="url(#sw)"/></g>
+  <circle cx="92" cy="96" r="13" fill="#62B8FC"/><circle cx="76" cy="126" r="10" fill="#62B8FC" opacity=".85"/>
+  <circle cx="110" cy="70" r="8" fill="#62B8FC" opacity=".7"/><circle cx="204" cy="194" r="10" fill="#62B8FC"/>
+  <circle cx="150" cy="150" r="46" fill="url(#gd)"/>
+  <circle cx="150" cy="150" r="22" fill="#5DD27A"/><circle cx="150" cy="150" r="9" fill="#fff"/>
+</svg>
+</template>
+
+<!-- ============ INTRO ============ -->
+<div class="scene stage" id="intro">
+  <div class="bg fadein"></div><div class="grid"></div><div class="stars"></div><div class="vign"></div>
+  <div class="c welcome">WELCOME</div>
+  <div class="mark" data-mark><div class="lockring"></div><div class="lockring b"></div></div>
+  <div class="c word"><b>ZER</b><svg class="o" viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="none" stroke="#62B8FC" stroke-width="10"/><path d="M50 2V20M50 80V98M2 50H20M80 50H98" stroke="#62B8FC" stroke-width="10" stroke-linecap="round"/><circle cx="50" cy="50" r="15" fill="#5DD27A"/></svg>DRIFT</div>
+  <div class="shine"></div>
+  <div class="c tag">The <em>pointing brain</em></div>
+  <div class="rule"></div>
+  <div class="c foot">
+    <div class="chip"><img src="isro.png" alt="ISRO"></div>
+    <div class="vbar"></div>
+    <div class="ps"><small>PROBLEM STATEMENT</small>PS 26169</div>
+  </div>
+</div>
+
+<!-- ============ SECTION BOX ============ -->
+<div class="scene stage" id="sec">
+  <div class="bg"></div><div class="grid"></div><div class="stars"></div><div class="vign"></div>
+  <div class="box">
+    <div class="fill"></div>
+    <svg viewBox="0 0 1040 330" preserveAspectRatio="none"><rect class="frame" x="1" y="1" width="1038" height="328" rx="22" fill="none" stroke="#4FC7EA" stroke-width="2.5"/></svg>
+    <div class="scan"></div>
+    <i class="br tl"></i><i class="br tr"></i><i class="br bl"></i><i class="br brr"></i>
+    <div class="inner"><div class="num" id="secNum"></div><div class="title"><span id="secTitle"></span></div><div class="sub" id="secSub"></div></div>
+  </div>
+</div>
+
+<!-- ============ LOWER THIRD (alpha) ============ -->
+<div class="scene stage" id="tag">
+  <div class="lt"><div class="k" id="tagK"></div><div class="t"><b id="tagT"></b><span id="tagS"></span></div></div>
+</div>
+
+
+<!-- ============ TEST TABLE ============ -->
+<div class="scene stage" id="table">
+  <div class="bg fadein"></div><div class="grid"></div><div class="stars"></div><div class="vign"></div>
+  <div class="head">GRADED AUTOMATICALLY · SAME DECOY RUN</div>
+  <div class="badge">8 / 8 PASSED</div>
+  <div class="wrap"><div class="card"><img src="test_record_decoy.png"><div class="hl"></div></div></div>
+</div>
+<!-- ============ THANKS ============ -->
+<div class="scene stage" id="thanks">
+  <div class="bg fadein"></div><div class="grid"></div><div class="stars"></div><div class="vign"></div>
+  <div class="mark" data-mark><div class="lockring"></div></div>
+  <div class="c ty">Thank you</div>
+
+</div>
+
+<script>
+const q = new URLSearchParams(location.search);
+const scene = q.get('scene') || 'intro';
+document.getElementById(scene).classList.add('on');
+document.querySelectorAll('[data-mark]').forEach(m => m.insertAdjacentHTML('afterbegin', document.getElementById('markTpl').innerHTML));
+// deterministic starfield
+let s = 7; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+document.querySelectorAll('.stars').forEach(st => { for (let k = 0; k < 90; k++) { const i = document.createElement('i');
+  i.style.left = r() * 1920 + 'px'; i.style.top = r() * 1080 + 'px'; i.style.animationDelay = (-r() * 3) + 's';
+  const z = 1 + r() * 1.5; i.style.width = i.style.height = z + 'px'; st.appendChild(i); } });
+if (scene === 'sec') { secNum.innerHTML = '<span class="dot"></span>' + q.get('num'); secTitle.textContent = q.get('title'); secSub.textContent = q.get('sub'); }
+if (scene === 'tag') { tagK.textContent = q.get('k'); tagT.textContent = q.get('t'); tagS.textContent = q.get('s');
+  document.querySelector('.lt').style.setProperty('--out', q.get('out') + 's'); if (q.get('kc')) document.querySelector('.lt').style.setProperty('--kc', q.get('kc')); }
+window.seek = t => { document.getAnimations().forEach(a => { a.pause(); a.currentTime = t * 1000; }); };
+</script>
+</body></html>

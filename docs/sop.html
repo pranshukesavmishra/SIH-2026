@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ZeroDrift — Standard Operating Procedure (SOP)</title>
-<meta name="description" content="ZD-SOP-001: Standard Operating Procedure for the ZeroDrift Pointing, Acquisition and Tracking system for Free-Space Optical Communication: simulation test, live tracking and MK2 terminal, with proof for every step.">
+<meta name="description" content="ZD-SOP-001: how Team ZeroDrift runs and tests the ZeroDrift Pointing, Acquisition and Tracking system for Free-Space Optical Communication: simulation test, live tracking and MK2 terminal, with proof for every step.">
 <link rel="icon" type="image/png" href="brand/zerodrift_mark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -144,6 +144,70 @@ td.full{color:var(--ink)}
 .foot{border-top:1px solid var(--line);margin-top:60px;padding-top:18px;font:12px var(--mono);color:var(--mute);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 @media (max-width:980px){.hero,.split{grid-template-columns:1fr}.stats,.g4{grid-template-columns:1fr 1fr}.g3,.gloss{grid-template-columns:1fr 1fr}.states{grid-template-columns:1fr 1fr}.states div{border-bottom:1px solid var(--line)}}
 @media (max-width:600px){h1{font-size:34px}h2{font-size:25px}.ctrl{grid-template-columns:1fr 1fr}.g2,.g3,.gloss{grid-template-columns:1fr}.states{grid-template-columns:1fr}.stat b{font-size:27px}}
+
+/* v3: MK2 viewer (same card as the home page) */
+.rig-card{background:#08101f;border:1px solid #15263F;border-radius:18px;overflow:hidden;box-shadow:0 24px 60px rgba(11,31,58,.28)}
+.rig-view{position:relative;aspect-ratio:4/3;background:#050a14}
+.rig-view canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:pan-y}
+.rig-top{position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:8px;z-index:3}
+.rig-badge{padding:5px 11px;border-radius:7px;font:700 11px var(--mono);letter-spacing:.12em;color:#3BD68C;background:rgba(4,9,21,.8);border:1px solid rgba(59,214,140,.45)}
+.rig-tabs{display:flex;border:1px solid rgba(79,199,234,.35);border-radius:7px;overflow:hidden;background:rgba(4,9,21,.8)}
+.rig-tabs button{font:700 10.5px/1 var(--mono);letter-spacing:.12em;color:#8EA4C4;background:none;border:0;padding:7px 11px;cursor:pointer}
+.rig-tabs button+button{border-left:1px solid rgba(79,199,234,.2)}
+.rig-tabs button.on{color:#04121c;background:#4FC7EA}
+.rig-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#050a14;z-index:2;display:none}
+.rig-media.show{display:block}
+.rig-empty{position:absolute;inset:0;z-index:2;display:none;align-items:center;justify-content:center;text-align:center;font:12px var(--mono);color:#8EA4C4;padding:20px;background:repeating-linear-gradient(45deg,#07101f 0 14px,#0a1628 14px 28px)}
+.rig-empty b{display:block;color:#EAF4FD;font-size:14px;letter-spacing:.12em;margin-bottom:6px}
+.rig-empty.show{display:flex}
+.rig-legend{position:absolute;top:12px;right:12px;font:11px/1.7 var(--mono);color:#cdd8e6;background:rgba(4,9,21,.72);padding:6px 10px;border-radius:7px;border:1px solid #15263F;z-index:3}
+.rig-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}
+.lg-b{background:#fff3dc;box-shadow:0 0 8px #fff3dc}.lg-d{background:#ff5a48;box-shadow:0 0 8px #ff5a48}
+.rig-read{position:absolute;right:12px;bottom:10px;font:11px var(--mono);color:#8EA4C4;z-index:3}
+.rig-read[data-state="LOCKED"]{color:#3BD68C}
+.rig-view.flat .rig-legend,.rig-view.flat .rig-read,.rig-view.flat .hs-hint{display:none!important}
+.hero .ctrl{grid-template-columns:1fr 1fr}
+.rig-meta{padding:12px 16px 14px;display:flex;flex-wrap:wrap;gap:6px}
+.rig-meta span{font:11px var(--mono);color:#8EA4C4;padding:4px 9px;border-radius:6px;border:1px solid #15263F;background:#0a1426}
+@media (max-width:560px){.rig-legend{display:none}}
+/* real charts */
+.proof img.chart{background:#fff;padding:6px}
+/* states + video */
+.stv{display:grid;grid-template-columns:1.25fr .75fr;gap:20px;align-items:start}
+.stl{display:grid;gap:10px}
+.stl div{display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stl b{font:700 13.5px var(--mono);letter-spacing:1px;padding:6px 0;border-radius:7px;text-align:center;color:#fff}
+.stl span{font-size:14px;color:var(--ink2);line-height:1.35}
+/* software */
+.soft{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.sw{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 10px 14px;text-align:center;box-shadow:0 8px 22px rgba(11,31,58,.06);transition:transform .2s,box-shadow .2s}
+.sw:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(11,31,58,.12)}
+.sw img,.sw .mono{width:46px;height:46px;display:block;margin:0 auto 10px}
+.sw .mono{border-radius:12px;display:flex;align-items:center;justify-content:center;font:700 16px var(--mono);color:#fff}
+.sw b{display:block;font:600 14.5px var(--head);color:var(--navy)}
+.sw span{display:block;font:600 10.5px var(--mono);letter-spacing:.8px;color:var(--mute);margin-top:3px;text-transform:uppercase}
+/* journey */
+.jr{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px;align-items:stretch}
+.jc{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.jc.now{border:2px solid var(--green);box-shadow:0 16px 40px rgba(21,128,61,.14)}
+.jc .jh{display:flex;align-items:center;gap:10px;padding:14px 16px 0}
+.jc .jh em{font:700 10.5px var(--mono);letter-spacing:1.4px;font-style:normal;padding:4px 9px;border-radius:6px}
+.jc h3{margin:0}
+.jc p{padding:6px 16px 0;color:var(--ink2);font-size:14.5px}
+.jm{display:grid;gap:10px;padding:14px 16px 16px;margin-top:auto}
+.jc.now .jm{grid-template-columns:1fr 1fr}
+.shot{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:4/3;background:#050a14;border:1px solid var(--line)}
+.shot img,.shot video{width:100%;height:100%;object-fit:cover;display:block}
+.shot .ph{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:6px;text-align:center;color:#8EA4C4;font:12px var(--mono);background:repeating-linear-gradient(45deg,#07101f 0 14px,#0a1628 14px 28px)}
+.shot .ph b{color:#EAF4FD;font-size:13px;letter-spacing:1.2px}
+.shot.missing .ph{display:flex}.shot.missing img,.shot.missing video{visibility:hidden}
+.shot figcaption{position:absolute;left:8px;bottom:8px;font:700 10.5px var(--mono);letter-spacing:1px;color:#fff;background:rgba(4,9,21,.75);padding:3px 8px;border-radius:5px;z-index:2}
+.diff{display:grid;gap:8px;padding:0 16px 16px}
+.diff div{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:14px;color:var(--ink2)}
+.diff i{font-style:normal;color:var(--green);font-weight:700}
+.wiring img{display:block;width:100%;height:auto;background:#fff}
+@media (max-width:980px){.stv,.jr{grid-template-columns:1fr}.soft{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:600px){.soft{grid-template-columns:repeat(3,1fr)}.jc.now .jm{grid-template-columns:1fr}}
 @media print{.top,.mobile-bottom-nav,.toc{display:none}body{background:#fff}.proof,.fig{box-shadow:none}}
 </style>
 </head>
@@ -166,121 +230,69 @@ td.full{color:var(--ink)}
 <!-- ======================= HERO ======================= -->
 <div class="hero">
   <div>
-    <div class="eyebrow">ZD-SOP-001 · Standard Operating Procedure (SOP)</div>
-    <h1>How to run, test and trust <em>ZeroDrift</em></h1>
-    <p class="lede">ZeroDrift is a <b>Pointing, Acquisition and Tracking (PAT)</b> system for <b>Free-Space Optical Communication (FSOC)</b>. It finds a partner's blinking beacon with a camera, ignores every other light, and keeps the laser aimed at it. This page is the exact routine our team follows, and every claim links to its proof.</p>
+    <div class="eyebrow">ZD-SOP-001 · Standard Operating Procedure</div>
+    <h1>How we run, test and trust <em>ZeroDrift</em></h1>
+    <p class="lede">We built ZeroDrift to keep a laser aimed at a moving partner, so data can travel <b>through the open air</b>. Here we show you exactly how we run it, step by step, with <b>the proof behind every result</b>.</p>
     <div class="ctrl">
       <div><span>DOCUMENT</span><b>ZD-SOP-001</b></div>
-      <div><span>REVISION</span><b>2.0 · 28 Sep 26</b></div>
+      <div><span>REVISION</span><b>3.0 · 28 Sep 26</b></div>
       <div><span>PROBLEM STATEMENT</span><b>PS26169 · ISRO</b></div>
       <div><span>OWNER</span><b>Team ZeroDrift</b></div>
     </div>
   </div>
-  <div class="hero-art"><svg viewBox="0 0 560 330" role="img" aria-label="ZeroDrift locks on the blinking beacon and ignores a steady decoy">
-        <defs>
-          <radialGradient id="hb" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="#ff6b6b"/><stop offset="1" stop-color="#ff3b3b" stop-opacity="0"/></radialGradient>
-          <radialGradient id="hd" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd0d0"/><stop offset=".3" stop-color="#d94646"/><stop offset="1" stop-color="#d94646" stop-opacity="0"/></radialGradient>
-          <linearGradient id="beam" x1="0" x2="1"><stop offset="0" stop-color="#3BD68C" stop-opacity=".0"/><stop offset=".5" stop-color="#3BD68C" stop-opacity=".9"/><stop offset="1" stop-color="#3BD68C" stop-opacity=".2"/></linearGradient>
-          <linearGradient id="scr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1a30"/><stop offset="1" stop-color="#050b16"/></linearGradient>
-        </defs>
-        <g opacity=".5" fill="#9fb1c8"><circle cx="40" cy="30" r="1"/><circle cx="120" cy="60" r="1.2"/><circle cx="210" cy="24" r="1"/><circle cx="300" cy="50" r=".9"/><circle cx="380" cy="18" r="1.1"/><circle cx="470" cy="40" r="1"/><circle cx="520" cy="90" r=".9"/><circle cx="80" cy="120" r=".8"/><circle cx="250" cy="110" r="1"/></g>
-        <!-- beacon (blinking) -->
-        <circle cx="455" cy="92" r="30" fill="url(#hb)"><animate attributeName="opacity" values="1;.08;1" dur=".25s" repeatCount="indefinite"/></circle>
-        <circle cx="455" cy="92" r="4" fill="#fff"/>
-        <path d="M430 67 h-8 v8 M480 67 h8 v8 M430 117 h-8 v-8 M480 117 h8 v-8" stroke="#3BD68C" stroke-width="2.4" fill="none"/>
-        <text x="455" y="138" fill="#3BD68C" font-size="11" font-weight="700" text-anchor="middle">BEACON · 4 Hz · LOCKED</text>
-        <!-- decoy (steady) -->
-        <circle cx="330" cy="70" r="18" fill="url(#hd)"/><circle cx="330" cy="70" r="2.6" fill="#ffe4e4"/>
-        <path d="M318 58 l24 24 M342 58 l-24 24" stroke="#FF5555" stroke-width="2" opacity=".9"/>
-        <text x="330" y="104" fill="#FF7a7a" font-size="10.5" font-weight="700" text-anchor="middle">DECOY · rejected</text>
-        <!-- laser beam from rig to beacon -->
-        <path d="M150 196 L455 92" stroke="url(#beam)" stroke-width="3"/>
-        <!-- MK2 rig -->
-        <rect x="96" y="276" width="104" height="10" rx="3" fill="#1f2b3d"/>
-        <rect x="136" y="236" width="24" height="40" rx="3" fill="#2b3647"/>
-        <rect x="118" y="226" width="60" height="12" rx="3" fill="#8fd3ea" opacity=".45"/>
-        <rect x="126" y="186" width="44" height="40" rx="5" fill="#2b3647"/>
-        <rect x="118" y="176" width="60" height="30" rx="6" fill="#162234" stroke="#4FC7EA" stroke-width="1.2"/>
-        <circle cx="160" cy="191" r="7" fill="#050b16" stroke="#4FC7EA"/><circle cx="160" cy="191" r="3" fill="#4FC7EA"/>
-        <text x="148" y="306" fill="#9fb1c8" font-size="10.5" font-weight="700" text-anchor="middle">MK2 TERMINAL</text>
-        <!-- laptop -->
-        <path d="M258 300 h210 l-14 18 h-182 z" fill="#1c2738"/>
-        <rect x="272" y="190" width="182" height="110" rx="6" fill="url(#scr)" stroke="#2e4058"/>
-        <rect x="282" y="200" width="112" height="90" rx="3" fill="#040a14" stroke="#18263A"/>
-        <circle cx="352" cy="232" r="3" fill="#ff6b6b"/>
-        <path d="M342 222 h-5 v5 M362 222 h5 v5 M342 242 h-5 v-5 M362 242 h5 v-5" stroke="#3BD68C" stroke-width="1.4" fill="none"/>
-        <path d="M290 280 q20 -30 40 -20 t40 -30" stroke="#4FC7EA" stroke-width="1.2" fill="none" opacity=".8"/>
-        <rect x="400" y="200" width="46" height="12" rx="2" fill="#123a2a"/><text x="423" y="209" fill="#3BD68C" font-size="7.5" font-weight="700" text-anchor="middle">LOCKED</text>
-        <rect x="400" y="216" width="46" height="6" rx="2" fill="#18263A"/><rect x="400" y="226" width="34" height="6" rx="2" fill="#18263A"/><rect x="400" y="236" width="40" height="6" rx="2" fill="#18263A"/>
-        <!-- usb link -->
-        <path d="M178 262 C 220 262, 230 300, 262 306" stroke="#4FC7EA" stroke-width="1.6" fill="none" stroke-dasharray="4 3"/>
-        <text x="214" y="258" fill="#4FC7EA" font-size="9.5" font-weight="700">USB · Web Serial</text>
-      </svg></div>
+  <div class="rig-card">
+    <div class="rig-view">
+      <canvas id="rigMk2" aria-label="MK2 terminal, live 3D model"></canvas>
+      <div class="rig-top"><span class="rig-badge">MK2</span><div class="rig-tabs" role="tablist" aria-label="MK2 view">
+        <button data-view="photo">PHOTO</button><button data-view="video">VIDEO</button><button data-view="3d" class="on">3D</button></div></div>
+      <img class="rig-media" data-kind="photo" data-src="media/mk2_photo.jpg" alt="MK2 terminal, photo">
+      <video class="rig-media" data-kind="video" data-src="demo-mk2.mp4" muted loop playsinline controls preload="none"></video>
+      <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Coming soon: recorded after this build.</div></div>
+      <span class="rig-legend"><i class="lg-b"></i>beacon · blinks 4 Hz · tracked<br><i class="lg-d"></i>decoy · steady · ignored</span>
+      <span class="rig-read" id="rigMk2Read"></span>
+    </div>
+    <div class="rig-meta"><span>2× NEMA17 + A4988</span><span>camera + laser move together</span><span>AS5600 angle sensor</span><span>drag to rotate</span></div>
+  </div>
 </div>
 
 <div class="stats">
-  <div class="stat" style="--c:#0e7c9a"><b>1.27 s</b><span><strong>median time to lock</strong> across 64 simulated satellite passes</span><a href="#p-accept">SEE PROOF ↓</a></div>
-  <div class="stat" style="--c:#15803d"><b>0 / 64</b><span>runs that <strong>ever locked onto a decoy</strong> light</span><a href="#p-decoy">SEE PROOF ↓</a></div>
+  <div class="stat" style="--c:#0e7c9a"><b>1.27 s</b><span><strong>median time to lock</strong> across 64 simulated satellite passes</span><a href="#p-decoy">SEE PROOF ↓</a></div>
+  <div class="stat" style="--c:#15803d"><b>0 / 64</b><span>runs that <strong>ever locked onto a wrong light</strong></span><a href="#p-decoy">SEE PROOF ↓</a></div>
   <div class="stat" style="--c:#1d5fb8"><b>198 µrad</b><span><strong>median pointing error</strong> on the ISS (International Space Station) pass</span><a href="#p-accept">SEE PROOF ↓</a></div>
   <div class="stat" style="--c:#6d28d9"><b>250 / 251</b><span>automated <strong>tests passing</strong> (1 skipped), re-run 28 Sep</span><a href="#p-tests">SEE PROOF ↓</a></div>
 </div>
 
 <nav class="toc">
-  <a href="#modes"><i>1</i>Modes</a><a href="#gloss"><i>2</i>Full forms</a><a href="#flow"><i>3</i>How it decides</a><a href="#states"><i>4</i>States</a>
-  <a href="#kit"><i>5</i>Equipment</a><a href="#safety"><i>6</i>Safety</a><a href="#a"><i>A</i>Simulation</a><a href="#b"><i>B</i>Live</a>
-  <a href="#c"><i>C</i>MK2 terminal</a><a href="#off"><i>D</i>Shutdown</a><a href="#accept"><i>7</i>Acceptance</a><a href="#faults"><i>8</i>Faults</a><a href="#records"><i>9</i>Records</a>
+  <a href="#modes"><i>1</i>Modes</a><a href="#flow"><i>2</i>How it decides</a><a href="#states"><i>3</i>Status light</a><a href="#soft"><i>4</i>Software</a>
+  <a href="#safety"><i>5</i>Safety</a><a href="#journey"><i>6</i>MK1 → MK2</a><a href="#a"><i>A</i>Simulation</a><a href="#b"><i>B</i>Live</a>
+  <a href="#c"><i>C</i>MK2</a><a href="#off"><i>D</i>Shutdown</a><a href="#accept"><i>7</i>Acceptance</a><a href="#faults"><i>8</i>Faults</a><a href="#records"><i>9</i>Record</a>
 </nav>
 
 <!-- ======================= 1 MODES ======================= -->
 <section id="modes">
-  <div class="sh"><div class="n">1</div><div><h2>Purpose &amp; scope</h2><p>One tracking engine, <b>three ways to run it</b>. Whichever you use, you follow the same steps and write the same record, so results can be compared.</p></div></div>
+  <div class="sh"><div class="n">1</div><div><h2>One engine, three ways to run it</h2><p>We wrote <b>one tracking engine</b>. You can watch it in a simulation, on your own webcam, or on our MK2 hardware. The steps and the record are the same every time, so every result can be compared.</p></div></div>
   <div class="grid g3">
     <a class="card mode" href="#a">
       <div class="ico" style="background:#e6eefb"><svg viewBox="0 0 24 24" fill="none" stroke="#1d5fb8" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-25 12 12)"/><circle cx="20" cy="8" r="1.4" fill="#1d5fb8"/></svg></div>
-      <h3>A · Simulation test</h3><p>Replays real engine runs in the <b>Console</b> and grades them automatically. <b>No hardware needed.</b></p>
+      <h3>A · Simulation test</h3><p>We replay real engine runs in the <b>Console</b>, and it grades them for us. <b>No hardware needed.</b></p>
       <img src="media/sop/console.jpg" alt="Console replaying a logged run" loading="lazy"><span class="src">▲ real Console screenshot</span>
     </a>
     <a class="card mode" href="#b">
       <div class="ico" style="background:var(--cyanL)"><svg viewBox="0 0 24 24" fill="none" stroke="#0e7c9a" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="12" cy="10" r="2.4"/></svg></div>
-      <h3>B · Live optical tracking</h3><p>Your <b>laptop webcam</b> locks the 4 Hz beacon inside the browser, live.</p>
+      <h3>B · Live optical tracking</h3><p>Your <b>laptop webcam</b> locks our 4 Hz beacon, live, inside the browser.</p>
       <img src="media/software_demo_poster.jpg" alt="Live demo locked on the beacon" loading="lazy"><span class="src">▲ frame from our unedited recording</span>
     </a>
     <a class="card mode" href="#c">
       <div class="ico" style="background:var(--greenL)"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="1.9" stroke-linecap="round"><path d="M5 20h14M9 20v-5h6v5"/><rect x="7" y="6" width="10" height="7" rx="2"/><path d="M17 9.5h4M12 13v2"/></svg></div>
-      <h3>C · MK2 terminal</h3><p>A two-axis <b>stepper-motor gimbal</b> closes the loop on real hardware.</p>
-      <img src="media/sop/mk2_twin.jpg" alt="MK2 digital twin" loading="lazy"><span class="src">▲ 3D digital twin of the build</span>
+      <h3>C · MK2 terminal</h3><p>Our two-axis <b>stepper-motor gimbal</b> closes the loop on real hardware.</p>
+      <img src="media/sop/mk2_twin.jpg" alt="MK2 digital twin" loading="lazy"><span class="src">▲ 3D model of our build</span>
     </a>
   </div>
 </section>
 
-<!-- ======================= 2 GLOSSARY ======================= -->
-<section id="gloss">
-  <div class="sh"><div class="n">2</div><div><h2>Full forms used on this page</h2><p>Every short form, written out once, so nobody has to guess.</p></div></div>
-  <div class="gloss">
-    <div class="gl"><b>SOP</b><span>Standard Operating Procedure</span></div>
-    <div class="gl"><b>PAT</b><span>Pointing, Acquisition and Tracking</span></div>
-    <div class="gl"><b>FSOC</b><span>Free-Space Optical Communication: data sent by laser through open air</span></div>
-    <div class="gl"><b>FOV</b><span>Field of View: how much the camera sees (simulation: 6°)</span></div>
-    <div class="gl"><b>µrad</b><span>Microradian: 1 µrad ≈ 1 mm of error at 1 km</span></div>
-    <div class="gl"><b>AZ / EL</b><span>Azimuth / Elevation: left-right and up-down angle</span></div>
-    <div class="gl"><b>CFAR</b><span>Constant False Alarm Rate: a detector threshold that adapts to background glare</span></div>
-    <div class="gl"><b>IMM</b><span>Interacting Multiple Model: Kalman filter that switches between steady and manoeuvring motion</span></div>
-    <div class="gl"><b>SGP4 · TLE</b><span>Simplified General Perturbations 4 · Two-Line Element set: real satellite orbit data</span></div>
-    <div class="gl"><b>ISS</b><span>International Space Station, used as the realistic test target</span></div>
-    <div class="gl"><b>NN</b><span>Neural Network: our small learned verifier that double-checks the beacon</span></div>
-    <div class="gl"><b>USB · I²C</b><span>Universal Serial Bus · Inter-Integrated Circuit (sensor bus)</span></div>
-    <div class="gl"><b>NEMA17</b><span>National Electrical Manufacturers Association size-17 stepper motor (1.7-inch frame)</span></div>
-    <div class="gl"><b>Vref</b><span>Reference Voltage on the driver: sets the motor current limit</span></div>
-    <div class="gl"><b>LED · GND</b><span>Light-Emitting Diode · Ground (0 V)</span></div>
-    <div class="gl"><b>fps · Hz · ms</b><span>frames per second · hertz (per second) · millisecond</span></div>
-    <div class="gl"><b>CI</b><span>Continuous Integration: tests run on every code change</span></div>
-    <div class="gl"><b>ISRO · SIH</b><span>Indian Space Research Organisation · Smart India Hackathon</span></div>
-  </div>
-</section>
-
-<!-- ======================= 3 FLOW ======================= -->
+<!-- ======================= 2 FLOW ======================= -->
 <section id="flow">
-  <div class="sh"><div class="n">3</div><div><h2>How the software decides</h2><p>Every <b>33 milliseconds</b> the engine runs this loop once. Every box is real code in <span class="code">src/fsoc_pat/pipeline.py</span>, and every YES / NO is a decision it actually makes.</p></div></div>
+  <div class="sh"><div class="n">2</div><div><h2>How our software decides</h2><p>Every <b>33 milliseconds</b> our engine runs this loop once. Every box is real code in <span class="code">src/fsoc_pat/pipeline.py</span>, and every YES / NO is a decision it really makes.</p></div></div>
   <div class="scroller"><div class="fig"><svg viewBox="0 0 852 578" role="img" aria-label="ZeroDrift engine flowchart">
   <defs>
     <marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0b1f3a"/></marker>
@@ -401,105 +413,61 @@ td.full{color:var(--ink)}
   </g>
 </svg></div></div>
   <div class="grid g2" style="margin-top:22px">
-    <div class="proof" id="p-blink">
-      <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Why a steady light can never win</span></div>
-      <div class="svgw">
-        <svg viewBox="0 0 520 220" role="img" aria-label="Beacon blinks at 4 Hz, decoy is steady; only the beacon has power at 4 Hz">
-          <text x="10" y="20" font-size="12" font-weight="700" fill="#0b1f3a">Brightness over 1 second, as the camera measures it</text>
-          <text x="10" y="54" font-size="11" font-weight="700" fill="#15803d">BEACON</text>
-          <path d="M70 70 V40 H100 V70 H130 V40 H160 V70 H190 V40 H220 V70 H250 V40 H280 V70 H310 V40" fill="none" stroke="#15803d" stroke-width="3"/>
-          <text x="10" y="112" font-size="11" font-weight="700" fill="#b91c1c">DECOY</text>
-          <path d="M70 108 H310" stroke="#b91c1c" stroke-width="3"/>
-          <path d="M70 128 H310" stroke="#c7d3e2"/><text x="70" y="142" font-size="10" fill="#6b7a90">0 s</text><text x="296" y="142" font-size="10" fill="#6b7a90">1 s</text>
-          <text x="190" y="142" font-size="10" fill="#6b7a90" text-anchor="middle">4 on / off cycles = 4 Hz</text>
-          <text x="345" y="40" font-size="11.5" font-weight="700" fill="#0b1f3a">Signal strength at 4 Hz</text>
-          <rect x="345" y="52" width="150" height="22" rx="4" fill="#e7f6ec"/><rect x="345" y="52" width="142" height="22" rx="4" fill="#15803d"/>
-          <text x="352" y="67" font-size="11" font-weight="700" fill="#fff">beacon: strong ✓ lock</text>
-          <rect x="345" y="92" width="150" height="22" rx="4" fill="#fdecec"/><rect x="345" y="92" width="6" height="22" rx="2" fill="#b91c1c"/>
-          <text x="358" y="107" font-size="11" font-weight="700" fill="#b91c1c">decoy: ≈ 0 ✕ veto</text>
-          <text x="10" y="178" font-size="12" fill="#3b4a60">The engine listens for the beacon's <tspan font-weight="700">4 Hz rhythm</tspan> (a Goertzel filter in</text>
-          <text x="10" y="196" font-size="12" fill="#3b4a60"><tspan font-family="JetBrains Mono,monospace" font-size="11">tracking.py</tspan>). Brightness alone never decides: a lamp, star or glint</text>
-          <text x="10" y="214" font-size="12" fill="#3b4a60">has no 4 Hz rhythm, so it is <tspan font-weight="700">vetoed</tspan> however bright it is.</text>
-        </svg>
-      </div>
-      <div class="pc">Diagram of the check the code runs, <b>not a mock result</b>: see the live recording in Procedure B for the same check on a real webcam.</div>
-    </div>
-    <div class="proof" id="p-decoy">
-      <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>64 runs, 0 wrong-target locks</span></div>
-      <div class="svgw">
-        <svg viewBox="0 0 520 220" role="img" aria-label="64 simulated passes, none locked onto a decoy">
-          <text x="10" y="20" font-size="12" font-weight="700" fill="#0b1f3a">Monte-Carlo campaign: 64 randomised passes</text>
-          <g id="g64"></g>
-          <text x="330" y="70" font-size="40" font-weight="700" fill="#15803d" font-family="Space Grotesk,sans-serif">0 / 64</text>
-          <text x="330" y="92" font-size="12" fill="#3b4a60">runs with <tspan font-weight="700">any</tspan> decoy lock</text>
-          <text x="330" y="126" font-size="26" font-weight="700" fill="#0e7c9a" font-family="Space Grotesk,sans-serif">100 %</text>
-          <text x="330" y="146" font-size="12" fill="#3b4a60">of runs acquired the beacon</text>
-          <text x="10" y="200" font-size="12" fill="#3b4a60">Each square is one full pass with turbulence, vibration, stars and decoys.</text>
-          <text x="10" y="216" font-size="12" fill="#3b4a60">Source: <tspan font-family="JetBrains Mono,monospace" font-size="11">runs/mc-leo/summary.json</tspan> (canonical table, PROJECT_STATE §2).</text>
-        </svg>
-      </div>
-      <div class="pc"><b>Green = locked the real beacon, never a decoy.</b> Same numbers as the project's canonical results table.</div>
-    </div>
+    <div class="proof" id="p-blink"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>It follows the 4 Hz blink, not the brightest light</span></div><img class="chart" src="media/sop/proof_blink.png" alt="Measured blink rate stays at 4 Hz for the whole 130 second run" loading="lazy"><div class="pc">Plotted from our <b>logged decoy-field run</b>: the light we lock on measures <b>4.01 Hz</b> for all 130 seconds. A steady lamp reads 0 Hz, so however bright it is, <b>it can never win</b>.</div></div>
+    <div class="proof" id="p-decoy"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>64 passes, 0 wrong-light locks</span></div><img class="chart" src="media/sop/proof_campaign.png" alt="64 runs: all locked, none on a wrong light" loading="lazy"><div class="pc">Every bar is <b>one real run</b> of our Monte-Carlo campaign, with 900 stars in view. All 64 locked; <b>none ever locked a wrong light</b>. Three runs were slower than 3 s: we show them, we do not hide them.</div></div>
   </div>
 </section>
 
-<!-- ======================= 4 STATES ======================= -->
+<!-- ======================= 3 STATES ======================= -->
 <section id="states">
-  <div class="sh"><div class="n">4</div><div><h2>What the status light means</h2><p>The tracker is always in exactly <b>one</b> of these five states. <b>COAST is normal</b>: it happens every time the beacon blinks off.</p></div></div>
-  <div class="states">
-    <div><i style="background:#1d5fb8"></i><b style="color:#1d5fb8">SEARCH</b><span>Spiral scan; widens until something is seen</span></div>
-    <div><i style="background:#b45309"></i><b style="color:#b45309">ACQUIRE</b><span>Beacon identified; steering onto it</span></div>
-    <div><i style="background:#15803d"></i><b style="color:#15803d">TRACK</b><span><strong>Locked.</strong> Error measured on the image itself</span></div>
-    <div><i style="background:#c2410c"></i><b style="color:#c2410c">COAST</b><span>Beacon dark for a moment; follows the prediction</span></div>
-    <div><i style="background:#b91c1c"></i><b style="color:#b91c1c">REACQUIRE</b><span>Small spiral at the last good position</span></div>
+  <div class="sh"><div class="n">3</div><div><h2>What the status light means</h2><p>Press play and watch the label on the lock box. It goes <b>SEARCH → ACQUIRE → TRACK</b>, and flickers to <b>COAST</b> every time the beacon blinks off.</p></div></div>
+  <div class="stv">
+    <div class="proof"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Our unedited laptop-webcam recording</span></div><video src="media/software_demo_720.mp4" poster="media/software_demo_poster.jpg" controls muted playsinline preload="none"></video><div class="pc">Nothing here is edited or simulated: a real LED, a real webcam, our real software.</div></div>
+    <div class="stl"><div><b style="background:#1d5fb8">SEARCH</b><span>Nothing locked yet. We sweep a growing spiral until a light shows up.</span></div><div><b style="background:#b45309">ACQUIRE</b><span>We found the 4 Hz blink. Now we steer onto it.</span></div><div><b style="background:#15803d">TRACK</b><span><strong>Locked.</strong> We measure the error on the picture itself.</span></div><div><b style="background:#c2410c">COAST</b><span>The beacon blinked off. We keep following our prediction. <strong>This is normal.</strong></span></div><div><b style="background:#b91c1c">REACQUIRE</b><span>Lost for too long. A small spiral where we last saw it.</span></div></div>
   </div>
 </section>
 
-<!-- ======================= 5 EQUIPMENT ======================= -->
-<section id="kit">
-  <div class="sh"><div class="n">5</div><div><h2>Equipment</h2><p>What you need for each mode. <span class="dot" style="vertical-align:-1px"></span> needed · <span class="dot no" style="vertical-align:-1px"></span> not needed</p></div></div>
-  <div class="tbl"><table>
-    <tr><th>ITEM</th><th>WHAT IT DOES</th><th style="text-align:center">A · SIM</th><th style="text-align:center">B · LIVE</th><th style="text-align:center">C · MK2</th></tr>
-    <tr><td class="k">Laptop + Chrome / Edge</td><td>Runs everything; <b>Web Serial</b> talks to the rig over USB</td><td align="center"><span class="dot"></span></td><td align="center"><span class="dot"></span></td><td align="center"><span class="dot"></span></td></tr>
-    <tr><td class="k">Webcam</td><td>Built-in camera (B) or the USB camera on the head (C)</td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td><td align="center"><span class="dot"></span></td></tr>
-    <tr><td class="k">Beacon</td><td>Red LED on an Arduino Nano blinking at <b>4 Hz</b>, or a phone torch</td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td><td align="center"><span class="dot"></span></td></tr>
-    <tr><td class="k">Decoy</td><td>Steady red LED. <b>Must be ignored</b></td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td><td align="center"><span class="dot"></span></td></tr>
-    <tr><td class="k">MK2 terminal</td><td>Nano · 2 × A4988 drivers + NEMA17 motors · AS5600 encoder · KY-008 laser</td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td></tr>
-    <tr><td class="k">12 V 2 A adapter</td><td>Motor power only, through the DC jack and kill switch</td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td></tr>
-    <tr><td class="k">Multimeter</td><td>Rail checks and setting Vref</td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td></tr>
-  </table></div>
+<!-- ======================= 4 SOFTWARE ======================= -->
+<section id="soft">
+  <div class="sh"><div class="n">4</div><div><h2>The software we built it with</h2><p>Free, open tools. Anyone can install them and check our work.</p></div></div>
+  <div class="soft"><div class="sw"><img src="media/sop/logos/python.svg" alt="" loading="lazy"><b>Python</b><span>engine</span></div><div class="sw"><img src="media/sop/logos/numpy.svg" alt="" loading="lazy"><b>NumPy</b><span>maths</span></div><div class="sw"><img src="media/sop/logos/opencv.svg" alt="" loading="lazy"><b>OpenCV</b><span>vision</span></div><div class="sw"><img src="media/sop/logos/yaml.svg" alt="" loading="lazy"><b>PyYAML</b><span>test scenes</span></div><div class="sw"><img src="media/sop/logos/qt.svg" alt="" loading="lazy"><b>PySide6 · Qt</b><span>desktop app</span></div><div class="sw"><div class="mono" style="background:#1f6feb">Pg</div><b>pyqtgraph</b><span>live plots</span></div><div class="sw"><img src="media/sop/logos/pytest.svg" alt="" loading="lazy"><b>pytest</b><span>250 tests</span></div><div class="sw"><img src="media/sop/logos/githubactions.svg" alt="" loading="lazy"><b>GitHub Actions</b><span>auto-testing</span></div><div class="sw"><div class="mono" style="background:#475569">Pi</div><b>PyInstaller</b><span>Windows .exe</span></div><div class="sw"><img src="media/sop/logos/javascript.svg" alt="" loading="lazy"><b>JavaScript</b><span>web tracker</span></div><div class="sw"><img src="media/sop/logos/html5.svg" alt="" loading="lazy"><b>HTML5 · CSS</b><span>website</span></div><div class="sw"><img src="media/sop/logos/threedotjs.svg" alt="" loading="lazy"><b>three.js</b><span>3D twin</span></div><div class="sw"><img src="media/sop/logos/webrtc.svg" alt="" loading="lazy"><b>WebRTC</b><span>webcam</span></div><div class="sw"><img src="media/sop/logos/googlechrome.svg" alt="" loading="lazy"><b>Web Serial</b><span>browser → rig</span></div><div class="sw"><img src="media/sop/logos/arduino.svg" alt="" loading="lazy"><b>Arduino C++</b><span>firmware</span></div><div class="sw"><div class="mono" style="background:#00878F">As</div><b>AccelStepper</b><span>motor control</span></div><div class="sw"><img src="media/sop/logos/netlify.svg" alt="" loading="lazy"><b>Netlify</b><span>hosting</span></div></div>
 </section>
 
-<!-- ======================= 6 SAFETY ======================= -->
+<!-- ======================= 5 SAFETY ======================= -->
 <section id="safety">
-  <div class="sh"><div class="n">6</div><div><h2>Safety first</h2><p>Read before Procedure C. <b>The person holding the 12 V switch can stop everything instantly.</b></p></div></div>
+  <div class="sh"><div class="n">5</div><div><h2>Safety first</h2><p>We follow these three rules <b>every single time</b> we switch MK2 on. One of us always keeps a hand on the 12 V switch, so <b>everything can be stopped in one second</b>.</p></div></div>
   <div class="grid g3">
-    <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="#fdecec" stroke="#b91c1c" stroke-width="2.6" stroke-linejoin="round"/><circle cx="30" cy="36" r="5" fill="#b91c1c"/><path d="M30 36 L46 22" stroke="#b91c1c" stroke-width="2.6"/></svg><div><h3>Laser</h3><p><b>Never</b> at eyes, people or mirrors. Keep it off (<span class="code">L0</span>) unless a step needs it.</p></div></div>
-    <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="#fdecec" stroke="#b91c1c" stroke-width="2.6" stroke-linejoin="round"/><path d="M32 20 L24 36 H31 L27 46 L38 30 H31 Z" fill="#b91c1c"/></svg><div><h3>Electrical</h3><p>12 V goes <b>only</b> to the motor rail. Wire with everything unplugged. Never swap a motor while powered.</p></div></div>
-    <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="#fdecec" stroke="#b91c1c" stroke-width="2.6" stroke-linejoin="round"/><circle cx="30" cy="36" r="8" fill="none" stroke="#b91c1c" stroke-width="2.6"/><path d="M30 24v4M30 44v4M18 36h4M38 36h4" stroke="#b91c1c" stroke-width="2.6"/></svg><div><h3>Moving head</h3><p>Hands and cables clear. <b>Switch off</b> at any grinding, smell or heat.</p></div></div>
+    <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="#fdecec" stroke="#b91c1c" stroke-width="2.6" stroke-linejoin="round"/><circle cx="30" cy="36" r="5" fill="#b91c1c"/><path d="M30 36 L46 22" stroke="#b91c1c" stroke-width="2.6"/></svg><div><h3>The laser</h3><p>We <b>never</b> point it at eyes, people or mirrors. It stays off (<span class="code">L0</span>) until a step needs it.</p></div></div>
+    <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="#fdecec" stroke="#b91c1c" stroke-width="2.6" stroke-linejoin="round"/><path d="M32 20 L24 36 H31 L27 46 L38 30 H31 Z" fill="#b91c1c"/></svg><div><h3>The 12 volts</h3><p>12 V goes <b>only</b> to the motor drivers. We wire with everything unplugged, and never swap a motor while it is powered.</p></div></div>
+    <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="#fdecec" stroke="#b91c1c" stroke-width="2.6" stroke-linejoin="round"/><circle cx="30" cy="36" r="8" fill="none" stroke="#b91c1c" stroke-width="2.6"/><path d="M30 24v4M30 44v4M18 36h4M38 36h4" stroke="#b91c1c" stroke-width="2.6"/></svg><div><h3>The moving head</h3><p>We keep hands and cables clear, and switch off at <b>any grinding, smell or heat</b>.</p></div></div>
   </div>
   <div class="split" style="margin-top:18px">
     <div class="grid" style="gap:14px">
-      <div class="card"><div class="eyebrow" style="color:var(--green)">Power on</div><div class="seq"><span class="chip" style="color:#0e7c9a;border-color:#9fd3e3;background:var(--cyanL)">① USB</span><span class="arrow">→</span><span class="chip" style="color:#15803d;border-color:#b9e2c6;background:var(--greenL)">② 12 V switch ON</span></div><span class="why">The Arduino must be awake before the motors get power.</span></div>
-      <div class="card"><div class="eyebrow" style="color:var(--red)">Power off</div><div class="seq"><span class="chip" style="color:#b91c1c;border-color:#f2c4c4;background:var(--redL)">① 12 V switch OFF</span><span class="arrow">→</span><span class="chip" style="color:#3b4a60;border-color:var(--line2);background:var(--bg)">② USB out</span></div><span class="why">Motors lose power first, so nothing moves unexpectedly.</span></div>
+      <div class="card"><div class="eyebrow" style="color:var(--green)">How we power on</div><div class="seq"><span class="chip" style="color:#0e7c9a;border-color:#9fd3e3;background:var(--cyanL)">① USB</span><span class="arrow">→</span><span class="chip" style="color:#15803d;border-color:#b9e2c6;background:var(--greenL)">② 12 V switch ON</span></div><span class="why">The Arduino wakes up first, so it is in control before the motors get any power.</span></div>
+      <div class="card"><div class="eyebrow" style="color:var(--red)">How we power off</div><div class="seq"><span class="chip" style="color:#b91c1c;border-color:#f2c4c4;background:var(--redL)">① 12 V switch OFF</span><span class="arrow">→</span><span class="chip" style="color:#3b4a60;border-color:var(--line2);background:var(--bg)">② USB out</span></div><span class="why">The motors lose power first, so nothing can move by surprise.</span></div>
     </div>
-    <div class="proof">
-      <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Where the 12 V can and cannot go</span></div>
-      <div class="svgw">
-        <svg viewBox="0 0 520 190" role="img" aria-label="12 V path: adapter, DC jack, kill switch, top red rail, driver VMOT only">
-          <rect x="8" y="24" width="84" height="46" rx="8" fill="#1b2230"/><text x="50" y="44" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">12 V</text><text x="50" y="60" fill="#9fb1c8" font-size="10" text-anchor="middle">adapter</text>
-          <path d="M92 47 H124" stroke="#1b2230" stroke-width="4"/>
-          <rect x="124" y="28" width="66" height="38" rx="6" fill="#2b3444"/><text x="157" y="51" fill="#fff" font-size="11" font-weight="700" text-anchor="middle">DC jack</text>
-          <path d="M190 40 H232" stroke="#b91c1c" stroke-width="4"/><text x="211" y="33" font-size="10" fill="#b91c1c" font-weight="700" text-anchor="middle">+</text>
-          <rect x="232" y="26" width="70" height="42" rx="6" fill="#ef6b4a"/><text x="267" y="44" fill="#fff" font-size="10.5" font-weight="700" text-anchor="middle">KILL</text><text x="267" y="58" fill="#fff" font-size="10.5" font-weight="700" text-anchor="middle">SWITCH</text>
-          <path d="M302 47 H336" stroke="#b91c1c" stroke-width="4"/>
-          <rect x="336" y="30" width="176" height="34" rx="6" fill="#fdecec" stroke="#b91c1c" stroke-width="1.5"/><text x="424" y="51" font-size="11.5" font-weight="700" fill="#b91c1c" text-anchor="middle">TOP red rail → VMOT only</text>
-          <path d="M157 66 V104 H336" fill="none" stroke="#1b2230" stroke-width="3"/><text x="160" y="92" font-size="10" fill="#3b4a60" font-weight="700">−</text>
-          <rect x="336" y="88" width="176" height="30" rx="6" fill="#eef3f9" stroke="#3b4a60"/><text x="424" y="107" font-size="11.5" font-weight="700" fill="#3b4a60" text-anchor="middle">TOP blue rail = GND</text>
-          <rect x="8" y="136" width="504" height="44" rx="8" fill="#e7f6ec" stroke="#b9e2c6"/>
-          <text x="20" y="155" font-size="11.5" fill="#15803d" font-weight="700">✓ 12 V never touches: the Nano · the 5 V rail · driver VDD · sensors · laser</text>
-          <text x="20" y="171" font-size="11" fill="#3b4a60">Beep test: 12 V rail ↔ 5 V rail must be silent before every power-up.</text>
-        </svg>
+    <div class="proof"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Our real wiring sheet: where the 12 V can and cannot go</span></div><a class="wiring" href="media/sop/mk2_wiring.jpg" target="_blank" rel="noopener"><img src="media/sop/mk2_wiring.jpg" alt="MK2 wiring sheet with 22 numbered wires" loading="lazy"></a><div class="pc">The sheet we wire MK2 from: <b>22 numbered wires</b>, 12 V (red) only on the driver <b>VMOT</b> pins. Tap to open it full size.</div></div>
+  </div>
+</section>
+
+<!-- ======================= 6 JOURNEY ======================= -->
+<section id="journey">
+  <div class="sh"><div class="n">6</div><div><h2>Our journey: MK1 → MK2</h2><p>We built <b>MK1</b> first, to prove the idea works on real hardware. <b>MK2 is what we are building now</b>, and it is the one this page is about.</p></div></div>
+  <div class="jr">
+    <div class="jc">
+      <div class="jh"><em style="background:var(--bg2);color:var(--mute)">HISTORY</em><h3>MK1 · servo rig</h3></div>
+      <p>Two small servos and a laptop webcam. It <b>tracked the beacon on hardware</b>, and taught us what to fix.</p>
+      <div class="jm"><figure class="shot"><img src="media/mk1_photo.jpg" alt="MK1 rig" loading="lazy"><figcaption>MK1 · PHOTO</figcaption></figure></div>
+    </div>
+    <div class="jc now">
+      <div class="jh"><em style="background:var(--green);color:#fff">NOW · OUR FOCUS</em><h3>MK2 · stepper terminal</h3></div>
+      <div class="jm">
+        <figure class="shot"><img src="media/mk2_photo.jpg" alt="MK2 terminal" loading="lazy" onerror="this.parentNode.classList.add('missing')"><div class="ph"><b>MK2 · PHOTO</b>coming soon</div><figcaption>MK2 · PHOTO</figcaption></figure>
+        <figure class="shot"><video src="demo-mk2.mp4" muted loop playsinline controls preload="metadata" onerror="this.parentNode.classList.add('missing')"></video><div class="ph"><b>MK2 · VIDEO</b>coming soon</div><figcaption>MK2 · VIDEO</figcaption></figure>
+      </div>
+      <div class="diff">
+        <div><i>✓</i><span><b>Moves smoothly and precisely</b>, and always knows where it is pointing (angle sensor).</span></div>
+        <div><i>✓</i><span><b>The camera moves with the laser</b>, so it sees exactly where it is aiming.</span></div>
       </div>
     </div>
   </div>
@@ -507,23 +475,18 @@ td.full{color:var(--ink)}
 
 <!-- ======================= A SIMULATION ======================= -->
 <section id="a">
-  <div class="sh"><div class="n" style="background:#1d5fb8">A</div><div><h2>Procedure A · Simulation test</h2><p>No hardware. About <b>5 minutes</b> per scenario. The Console grades the run for you.</p></div></div>
+  <div class="sh"><div class="n" style="background:#1d5fb8">A</div><div><h2>Procedure A · Simulation test</h2><p>No hardware. About <b>5 minutes</b>.</p></div></div>
   <div class="split">
     <div class="steps">
-      <div class="step" style="--c:#1d5fb8"><div class="d">A1</div><div><h4>Open the Console</h4><p>Any desktop browser: <a href="console.html">zerodrift…/console</a>.</p><span class="ok">✓ the run starts playing</span></div></div>
-      <div class="step" style="--c:#1d5fb8"><div class="d">A2</div><div><h4>Choose a scenario</h4><p><b>Decoy field</b> (130 s) · <b>ISS pass</b> over Bengaluru (45 s) · <b>Hard turbulence</b> (30 s).</p></div></div>
-      <div class="step" style="--c:#1d5fb8"><div class="d">A3</div><div><h4>Watch the lock</h4><p>State goes <b>SEARCH → ACQUIRE → TRACK</b>; the error number drops.</p><span class="ok">✓ green brackets stay on the beacon, never on a red ◇ decoy</span></div></div>
-      <div class="step" style="--c:#1d5fb8"><div class="d">A4</div><div><h4>Read the Test Record</h4><p>Opens by itself at the end: <b>nine test cases</b>, each graded PASS / FAIL.</p><span class="ok">✓ 8 / 8 PASSED</span></div></div>
-      <div class="step" style="--c:#1d5fb8"><div class="d">A5</div><div><h4>Log it</h4><p>Write the record ID, score and date in the log (Section 9).</p></div></div>
+      <div class="step" style="--c:#1d5fb8"><div class="d">A1</div><div><h4>Open the Console</h4><p><a href="console.html">zerodrift…/console</a> in any desktop browser.</p><span class="ok">✓ the run starts playing</span></div></div>
+      <div class="step" style="--c:#1d5fb8"><div class="d">A2</div><div><h4>Pick a scenario</h4><p><b>Decoy field</b> · <b>ISS pass</b> · <b>Hard turbulence</b>.</p></div></div>
+      <div class="step" style="--c:#1d5fb8"><div class="d">A3</div><div><h4>Watch it lock</h4><p><b>SEARCH → ACQUIRE → TRACK</b>.</p><span class="ok">✓ green box on the beacon, never on a red ◇ decoy</span></div></div>
+      <div class="step" style="--c:#1d5fb8"><div class="d">A4</div><div><h4>Read the Test Record</h4><p>It opens by itself: every test graded PASS / FAIL.</p><span class="ok">✓ 8 / 8 PASSED</span></div></div>
     </div>
     <div class="grid" style="gap:16px">
-      <div class="proof">
-        <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Real Test Record from the Console</span></div>
-        <img src="media/sop/test_record.jpg" alt="Console test record, 8 of 8 passed" loading="lazy">
-        <div class="pc">Decoy-field run: <b>8 / 8 PASSED</b>. Values are computed from the logged frames in your browser, <b>not typed in</b>.</div>
-      </div>
+      <div class="proof"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Real Test Record from our Console</span></div><img src="media/sop/test_record.jpg" alt="Console test record, 8 of 8 passed" loading="lazy"><div class="pc">Decoy-field run: <b>8 / 8 PASSED</b>. Computed in your browser from the logged frames, <b>not typed in</b>.</div></div>
       <div class="proof" id="p-tests">
-        <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>The engine's own test suite</span></div>
+        <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Our engine's own test suite</span></div>
         <div class="svgw" style="background:#0b1220;padding:14px">
           <svg viewBox="0 0 520 112" role="img" aria-label="pytest: 250 passed, 1 skipped">
             <text x="0" y="16" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#7fe0f8">$ pytest -q</text>
@@ -533,7 +496,7 @@ td.full{color:var(--ink)}
             <text x="0" y="102" font-family="JetBrains Mono,monospace" font-size="13" font-weight="700" fill="#fff">250 passed, 1 skipped</text>
           </svg>
         </div>
-        <div class="pc">Run on <b>28 September 2026</b>. Anyone can repeat it: <span class="code">pip install -e ".[dev]"</span> then <span class="code">pytest</span>.</div>
+        <div class="pc">Run on <b>28 September 2026</b>. Anyone can repeat it: <span class="code">pytest</span>.</div>
       </div>
     </div>
   </div>
@@ -541,75 +504,50 @@ td.full{color:var(--ink)}
 
 <!-- ======================= B LIVE ======================= -->
 <section id="b">
-  <div class="sh"><div class="n" style="background:#0e7c9a">B</div><div><h2>Procedure B · Live optical tracking</h2><p>Just a laptop, a beacon and a steady decoy. <b>Dim the room</b> for best results.</p></div></div>
-  <div class="split">
-    <div class="steps">
-      <div class="step" style="--c:#0e7c9a"><div class="d">B1</div><div><h4>Set the scene</h4><p>Beacon on (<b>4 Hz</b>) and the steady decoy, both in view.</p></div></div>
-      <div class="step" style="--c:#0e7c9a"><div class="d">B2</div><div><h4>Press START CAMERA</h4><p>On the <a href="live.html">Live Demo</a> page; allow camera access.</p><span class="ok">✓ SEARCHING at 25 fps or more</span></div></div>
-      <div class="step" style="--c:#0e7c9a"><div class="d">B3</div><div><h4>Show the beacon</h4><p>Hold it anywhere in the picture.</p><span class="ok">✓ LOCKED · 4.0 Hz · in about 2 s</span></div></div>
-      <div class="step" style="--c:#0e7c9a"><div class="d">B4</div><div><h4>Move it around</h4><p>Slowly, then fast, across the whole view.</p><span class="ok">✓ lock follows · decoy is never boxed</span></div></div>
-      <div class="step" style="--c:#0e7c9a"><div class="d">B5</div><div><h4>Cover it for 1 second</h4><p>Then uncover it.</p><span class="ok">✓ COAST, then relocks by itself</span><span class="why">Bright room and a red LED? Turn on <b>RED BEACON FILTER</b> in Settings.</span></div></div>
-    </div>
-    <div class="proof">
-      <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Unedited screen recording, laptop webcam</span></div>
-      <video src="media/software_demo_720.mp4" poster="media/software_demo_poster.jpg" controls muted playsinline preload="none"></video>
-      <div class="pc">Press play: the lock box appears on the blinking LED, reads <b>4.0 Hz</b>, and follows it as it moves by hand. <b>Nothing is edited or simulated.</b></div>
-    </div>
+  <div class="sh"><div class="n" style="background:#0e7c9a">B</div><div><h2>Procedure B · Live optical tracking</h2><p>A laptop, our beacon and a steady decoy. <b>Dim the room.</b></p></div></div>
+  <div class="steps" style="grid-template-columns:repeat(2,1fr)">
+    <div class="step" style="--c:#0e7c9a"><div class="d">B1</div><div><h4>START CAMERA</h4><p>On the <a href="live.html">Live Demo</a> page; allow the camera.</p><span class="ok">✓ SEARCHING, 25 fps or more</span></div></div>
+    <div class="step" style="--c:#0e7c9a"><div class="d">B2</div><div><h4>Show the beacon</h4><p>Anywhere in the picture, decoy in view too.</p><span class="ok">✓ LOCKED · 4.0 Hz · about 2 s</span></div></div>
+    <div class="step" style="--c:#0e7c9a"><div class="d">B3</div><div><h4>Move it around</h4><p>Slowly, then fast.</p><span class="ok">✓ lock follows · decoy never boxed</span></div></div>
+    <div class="step" style="--c:#0e7c9a"><div class="d">B4</div><div><h4>Cover it for 1 second</h4><p>Then uncover it.</p><span class="ok">✓ COAST, then relocks by itself</span></div></div>
   </div>
 </section>
 
 <!-- ======================= C MK2 ======================= -->
 <section id="c">
-  <div class="sh"><div class="n" style="background:#15803d">C</div><div><h2>Procedure C · MK2 terminal</h2><p>Three stages: <b>check it unplugged</b>, <b>commission it over USB</b>, then <b>close the loop</b> on the beacon.</p></div></div>
+  <div class="sh"><div class="n" style="background:#15803d">C</div><div><h2>Procedure C · MK2 terminal</h2><p><b>Check it unplugged</b>, <b>test it over USB</b>, then <b>close the loop</b>.</p></div></div>
   <div class="grid g2">
     <div>
-      <h3>C.1 · Pre-power check (everything unplugged)</h3>
+      <h3>C.1 · Before power (unplugged)</h3>
       <div class="tbl"><table style="min-width:0">
         <tr><th>CHECK</th><th>EXPECT</th></tr>
-        <tr><td class="k">12 V rail ↔ 5 V rail</td><td><b>no beep</b></td></tr>
-        <tr><td class="k">12 V rail ↔ GND</td><td>no beep <span class="small">(a short chirp is the capacitor: OK)</span></td></tr>
+        <tr><td class="k">12 V bus ↔ 5 V bus</td><td><b>no beep</b></td></tr>
         <tr><td class="k">A4988 VMOT / VDD</td><td>12 V / <b>5 V</b></td></tr>
-        <tr><td class="k">EN · MS1–3 · RST–SLP</td><td>GND · 5 V · joined</td></tr>
         <tr><td class="k">STEP / DIR</td><td>pan D2 / D3 · tilt D4 / D5</td></tr>
-        <tr><td class="k">Laser · sensor bus</td><td>D7 · A4 / A5 through the multiplexer</td></tr>
-        <tr><td class="k">Turn by hand</td><td>no cable tight at the limits</td></tr>
+        <tr><td class="k">Laser</td><td>D7</td></tr>
       </table></div>
     </div>
     <div>
-      <h3>C.2 · Commissioning over USB serial (115200 baud)</h3>
+      <h3>C.2 · Over USB (115200 baud)</h3>
       <div class="tbl"><table style="min-width:0">
         <tr><th>TYPE</th><th>YOU SHOULD SEE</th></tr>
-        <tr><td><span class="code">?</span></td><td>status line · encoders found</td></tr>
+        <tr><td><span class="code">?</span></td><td>status line</td></tr>
         <tr><td><span class="code">P200 T0</span></td><td>pan turns <b>≈ 22.5°</b></td></tr>
-        <tr><td><span class="code">P0 T100</span></td><td>tilt nods <b>≈ 11°</b></td></tr>
-        <tr><td><span class="code">C</span></td><td>both return to centre</td></tr>
+        <tr><td><span class="code">C</span></td><td>back to centre</td></tr>
         <tr><td><span class="code">L1</span> / <span class="code">L0</span></td><td>laser on / off</td></tr>
       </table></div>
-      <div class="seq"><span class="chip" style="color:#b45309;border-color:#f1d2a8;background:var(--amberL)">Vref 0.55 V</span><span class="chip" style="color:#3b4a60;border-color:var(--line2);background:#fff">pan ±90°</span><span class="chip" style="color:#3b4a60;border-color:var(--line2);background:#fff">tilt ±18°</span><span class="chip" style="color:#3b4a60;border-color:var(--line2);background:#fff">1/16 step</span></div>
     </div>
   </div>
   <div class="split" style="margin-top:22px">
     <div>
       <h3>C.3 · Closed loop</h3>
       <div class="steps">
-        <div class="step" style="--c:#15803d"><div class="d">C1</div><div><h4>CONNECT RIG</h4><p>Pick the Nano's port in the browser.</p></div></div>
-        <div class="step" style="--c:#15803d"><div class="d">C2</div><div><h4>MK2 CAMERA (USB)</h4><p>Switch to the camera on the head.</p></div></div>
-        <div class="step" style="--c:#15803d"><div class="d">C3</div><div><h4>TEST MOTION</h4><p>A short self-move on both axes.</p><span class="ok">✓ both axes move and return</span></div></div>
-        <div class="step" style="--c:#15803d"><div class="d">C4</div><div><h4>Show the beacon</h4><p>Walk it around the room.</p><span class="ok">✓ head follows · laser stays on it · decoy ignored</span></div></div>
+        <div class="step" style="--c:#15803d"><div class="d">C1</div><div><h4>CONNECT RIG</h4><p>Pick the Nano's port (Chrome / Edge).</p></div></div>
+        <div class="step" style="--c:#15803d"><div class="d">C2</div><div><h4>TEST MOTION</h4><p>A short move on both axes.</p><span class="ok">✓ both axes move and return</span></div></div>
+        <div class="step" style="--c:#15803d"><div class="d">C3</div><div><h4>Show the beacon</h4><p>Walk it around the room.</p><span class="ok">✓ head follows · laser stays on it · decoy ignored</span></div></div>
       </div>
     </div>
-    <div class="grid" style="gap:16px">
-      <div class="proof">
-        <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Hardware closed loop already done on MK1</span></div>
-        <img src="media/mk1_photo.jpg" alt="MK1 rig tracking" loading="lazy">
-        <div class="pc">Our first rig (<b>MK1</b>) already tracked the beacon on hardware. MK2 replaces its servos with <b>stepper motors and an angle sensor</b> for precision.</div>
-      </div>
-      <div class="proof">
-        <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>How the angle sensor is mounted</span></div>
-        <img src="media/sop/encoder_card.jpg" alt="AS5600 mounted over the magnet" loading="lazy" style="max-height:360px;object-fit:contain;background:#fff">
-        <div class="pc">AS5600 chip <b>centred over the shaft magnet, 1–2 mm gap</b>: the build card our team follows.</div>
-      </div>
-    </div>
+    <div class="proof"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>How we mount the angle sensor</span></div><img src="media/sop/encoder_card.jpg" alt="AS5600 mounted over the magnet" loading="lazy" style="max-height:360px;object-fit:contain;background:#fff"><div class="pc">AS5600 <b>centred over the shaft magnet, 1–2 mm gap</b>: the build card we follow.</div></div>
   </div>
 </section>
 
@@ -619,14 +557,13 @@ td.full{color:var(--ink)}
   <div class="grid g4">
     <div class="card"><div class="eyebrow" style="color:var(--amber)">Step 1</div><h3 style="margin-top:6px">Centre + laser off</h3><p><span class="code">C</span> then <span class="code">L0</span></p></div>
     <div class="card"><div class="eyebrow" style="color:var(--red)">Step 2</div><h3 style="margin-top:6px">12 V OFF</h3><p>Flip the kill switch.</p></div>
-    <div class="card"><div class="eyebrow">Step 3</div><h3 style="margin-top:6px">USB out</h3><p>Then the adapter from the wall.</p></div>
-    <div class="card"><div class="eyebrow">Step 4</div><h3 style="margin-top:6px">Beacon &amp; decoy off</h3><p>Batteries out for storage.</p></div>
+    <div class="card"><div class="eyebrow">Step 3</div><h3 style="margin-top:6px">USB out</h3><p>Then the adapter.</p></div>
+    <div class="card"><div class="eyebrow">Step 4</div><h3 style="margin-top:6px">Beacon off</h3><p>Batteries out.</p></div>
   </div>
 </section>
-
 <!-- ======================= 7 ACCEPTANCE ======================= -->
 <section id="accept">
-  <div class="sh"><div class="n">7</div><div><h2>Acceptance criteria</h2><p>The limits are <b>fixed before a run</b> and the same for every scenario. The bar shows how much of each limit the ISS-pass run actually used.</p></div></div>
+  <div class="sh"><div class="n">7</div><div><h2>Acceptance criteria</h2><p>We fix these limits <b>before</b> a run, the same for every scenario. The bar shows how much of each limit our ISS-pass run used.</p></div></div>
   <div class="tbl"><table>
     <tr><th>ID</th><th>PARAMETER</th><th>PASS IF</th><th>ISS PASS RUN</th><th>USE OF LIMIT</th><th></th></tr>
     <tr><td class="k">TC-01</td><td class="full">Time to first lock</td><td>≤ 3.0 s</td><td><b>1.27 s</b></td><td><div class="bar"><i style="width:42%"></i></div></td><td><span class="pass">PASS</span></td></tr>
@@ -648,7 +585,7 @@ td.full{color:var(--ink)}
 
 <!-- ======================= 8 FAULTS ======================= -->
 <section id="faults">
-  <div class="sh"><div class="n">8</div><div><h2>If something goes wrong</h2><p>Find the symptom, check the cause, apply the fix.</p></div></div>
+  <div class="sh"><div class="n">8</div><div><h2>If something goes wrong</h2><p>What we check first when something is off.</p></div></div>
   <div class="tbl"><table>
     <tr><th>SYMPTOM</th><th>LIKELY CAUSE</th><th>FIX</th></tr>
     <tr><td class="k">Never locks</td><td>Room too bright · beacon not at 4 Hz</td><td>Dim the room · <b>RED BEACON FILTER</b> · check the beacon code</td></tr>
@@ -662,28 +599,17 @@ td.full{color:var(--ink)}
   </table></div>
 </section>
 
-<!-- ======================= 9 RECORDS ======================= -->
+<!-- ======================= 9 RECORD ======================= -->
 <section id="records">
-  <div class="sh"><div class="n">9</div><div><h2>Records &amp; roles</h2><p>One line per run, signed by the reviewer. <b>No record, no result.</b></p></div></div>
-  <div class="grid g3" style="margin-bottom:16px">
-    <div class="card"><div class="eyebrow">Operator</div><h3 style="margin-top:6px">Runs the steps</h3><p>Follows this page and fills in the log.</p></div>
-    <div class="card"><div class="eyebrow" style="color:var(--red)">Safety officer</div><h3 style="margin-top:6px">Holds the switch</h3><p>Hand on the 12 V kill switch in Procedure C.</p></div>
-    <div class="card"><div class="eyebrow" style="color:var(--green)">Reviewer</div><h3 style="margin-top:6px">Signs off</h3><p>Checks every run against Section 7.</p></div>
-  </div>
+  <div class="sh"><div class="n">9</div><div><h2>Run record</h2><p>One line per run. <b>No record, no result.</b></p></div></div>
   <div class="tbl"><table>
     <tr><th>DATE</th><th>PROCEDURE</th><th>RECORD ID</th><th>RESULT</th><th>OPERATOR</th><th>REVIEWER</th></tr>
     <tr><td>28-09-26</td><td>A</td><td><span class="code">ZD-SIM-DECOYS</span></td><td><b style="color:var(--green)">8 / 8 PASS</b></td><td>&nbsp;</td><td>&nbsp;</td></tr>
     <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
   </table></div>
-  <div class="tbl" style="margin-top:14px"><table>
-    <tr><th>REV</th><th>DATE</th><th>CHANGE</th></tr>
-    <tr><td class="k">1.0</td><td>28 Sep 2026</td><td>First release</td></tr>
-    <tr><td class="k">1.1</td><td>28 Sep 2026</td><td>Graphic layout, engine flowchart, acceptance bars</td></tr>
-    <tr><td class="k">2.0</td><td>28 Sep 2026</td><td>Light theme, full forms, proof beside every claim</td></tr>
-  </table></div>
 </section>
 
-<div class="foot"><span>ZeroDrift · Jabalpur Engineering College · SIH 2026 · PS26169</span><span>ZD-SOP-001 rev 2.0</span></div>
+<div class="foot"><span>ZeroDrift · Jabalpur Engineering College · SIH 2026 · PS26169</span><span>ZD-SOP-001 rev 3.0</span></div>
 </main>
 <nav class="mobile-bottom-nav">
   <a href="index.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a>
@@ -692,18 +618,42 @@ td.full{color:var(--ink)}
   <a href="about.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>About</span></a>
   <a href="sop.html" class="mobile-nav-item active"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg><span>SOP</span></a>
 </nav>
+<script type="importmap">
+{"imports":{
+  "three":"./vendor/three/three.module.js",
+  "three/addons/controls/OrbitControls.js":"./vendor/three/OrbitControls.js",
+  "three/addons/loaders/STLLoader.js":"./vendor/three/STLLoader.js"
+}}
+</script>
+<script type="module" src="rigs3d.js"></script>
 <script>
-// the 64-run grid in the decoy proof
-(function () {
-  const g = document.getElementById('g64'); if (!g) return;
-  const NS = 'http://www.w3.org/2000/svg';
-  for (let i = 0; i < 64; i++) {
-    const r = document.createElementNS(NS, 'rect');
-    r.setAttribute('x', 12 + (i % 16) * 18); r.setAttribute('y', 40 + Math.floor(i / 16) * 34);
-    r.setAttribute('width', 14); r.setAttribute('height', 28); r.setAttribute('rx', 3); r.setAttribute('fill', '#15803d');
-    g.appendChild(r);
-  }
-})();
+/* MK2 card: PHOTO · VIDEO · 3D (same behaviour as the home page) */
+document.querySelectorAll('.rig-view').forEach(view => {
+  const tabs = view.querySelectorAll('.rig-tabs button');
+  const empty = view.querySelector('.rig-empty');
+  const media = { photo: view.querySelector('img.rig-media'), video: view.querySelector('video.rig-media') };
+  const missing = {};
+  const show = kind => {
+    tabs.forEach(t => t.classList.toggle('on', t.dataset.view === kind));
+    view.classList.toggle('flat', kind !== '3d');
+    Object.entries(media).forEach(([k, el]) => {
+      const on = k === kind && !missing[k];
+      el.classList.toggle('show', on);
+      if (k === 'video') { if (on) el.play().catch(() => {}); else el.pause(); }
+    });
+    const gone = kind !== '3d' && missing[kind];
+    empty.classList.toggle('show', !!gone);
+    if (gone) empty.querySelector('.rig-empty-kind').textContent = kind.toUpperCase();
+  };
+  Object.entries(media).forEach(([k, el]) => {
+    el.addEventListener('error', () => { missing[k] = true; if (view.querySelector('.rig-tabs .on').dataset.view === k) show(k); });
+  });
+  tabs.forEach(t => t.addEventListener('click', () => {
+    const k = t.dataset.view, el = media[k];
+    if (el && !el.getAttribute('src')) el.setAttribute('src', el.dataset.src);
+    show(k);
+  }));
+});
 </script>
 </body>
 </html>

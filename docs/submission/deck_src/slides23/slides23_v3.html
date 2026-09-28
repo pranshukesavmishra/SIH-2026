@@ -1,0 +1,430 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@page { size: 13.333in 7.5in; margin: 0; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Liberation Sans",Arial,Helvetica,sans-serif;color:#0f172a;background:#fff}
+.slide{width:1280px;height:720px;position:relative;overflow:hidden;page-break-after:always;background:#fff}
+.oval{position:absolute;left:28px;top:18px;width:136px;height:62px;border-radius:50%;background:#0b1f3a;border:2px solid #0e7c9a;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center}
+.sih{position:absolute;right:18px;top:6px;height:92px}
+.ttl{position:absolute;left:0;right:0;top:12px;text-align:center}
+.ttl h1{font-family:"Liberation Serif","Times New Roman",serif;font-size:44px;letter-spacing:1px;line-height:1}
+.ttl .sub{font-size:14.5px;color:#0e5a8a;font-weight:700;margin-top:3px}
+.ptr{position:absolute;left:190px;top:80px;font-size:10.5px;color:#64748b;font-style:italic}
+.foot{position:absolute;left:0;right:0;bottom:0;height:34px;background:#1665b8;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;letter-spacing:.5px}
+.foot b{position:absolute;right:26px;font-size:17px}
+.tag{display:inline-block;color:#fff;font-weight:700;font-size:13px;letter-spacing:.6px;padding:4px 12px;border-radius:8px 8px 0 0}
+.box{border:1.6px solid #cbd5e1;border-radius:0 10px 10px 10px;padding:8px 10px}
+/* problem cards */
+.pcards{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.pc{background:#fff;border:1px solid #f3b4ae;border-radius:9px;padding:9px 9px;display:grid;grid-template-columns:34px 1fr;gap:7px;align-items:start}
+.pc .ic{width:34px;height:34px;border-radius:9px;background:#fde8e6;display:flex;align-items:center;justify-content:center}
+.pc b{display:block;font-size:13px;color:#b3261e;line-height:1.15}
+.pc span{font-size:11.2px;line-height:1.3;color:#1f2937;display:block;margin-top:2px}
+.pc em{font-style:italic;font-size:8.8px;color:#64748b}
+/* solution */
+.one{font-size:13px;font-weight:700;color:#0b1f3a;line-height:1.35;margin-bottom:6px}
+.one b{color:#0e5a8a}
+.caps{display:grid;grid-template-columns:1fr 1fr;gap:5px 8px}
+.cap{display:grid;grid-template-columns:30px 1fr;gap:7px;align-items:center;background:#fff;border:1px solid #9cc4e4;border-radius:8px;padding:7px 8px}
+.cap .ic{width:30px;height:30px;border-radius:8px;background:#e3f0fa;display:flex;align-items:center;justify-content:center}
+.cap b{font-size:12.2px;color:#0b1f3a;display:block;line-height:1.1}
+.cap span{font-size:10.8px;color:#334155;line-height:1.25;display:block}
+.cap strong{color:#0e5a8a}
+.cap.wide{grid-column:1 / -1}
+/* uvp */
+.uvp{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.uv{background:#fff;border:1px solid #a7d7b5;border-radius:9px;padding:12px 8px;text-align:center}
+.uv .ic{width:34px;height:34px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 4px}
+.uv b{display:block;font-size:12px;color:#166534;line-height:1.15}
+.uv span{display:block;font-size:10.4px;color:#334155;line-height:1.25;margin-top:2px}
+.kpis{display:flex;gap:6px;margin-top:6px}
+.kpi{flex:1;background:#0b1f3a;color:#fff;border-radius:8px;padding:6px 8px;text-align:center}
+.kpi b{display:block;font-size:22px;line-height:1.05;color:#7fe0f8}
+.kpi span{font-size:9.6px;color:#cbd5e1}
+/* tech stack badges */
+.sg{margin-bottom:3px}
+.sgh{font-size:9.5px;font-weight:800;letter-spacing:1.2px;margin-bottom:2px}
+.bds{display:flex;flex-wrap:wrap;gap:3px}
+.bd{display:inline-flex;align-items:center;gap:5px;border:1px solid #cbd5e1;border-radius:7px;padding:1px 6px 1px 1px;background:#fff}
+.bd i{font-style:normal;color:#fff;font-weight:800;font-size:9.5px;width:19px;height:19px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center}
+.bd span{font-size:10px;font-weight:700;color:#0f172a;white-space:nowrap}
+.shots{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.shots img{width:100%;height:54px;object-fit:cover;border-radius:6px;border:1px solid #94a3b8;display:block}
+.shots figure{margin:0}.shots figcaption{font-size:9.2px;color:#334155;text-align:center;margin-top:2px;line-height:1.15}
+.res{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:6px}
+.res div{background:#0b1f3a;border-radius:7px;padding:5px 4px;text-align:center}
+.res b{display:block;color:#7fe0f8;font-size:16px;line-height:1.1}
+.res span{display:block;color:#cbd5e1;font-size:8.6px;line-height:1.2}
+svg text{font-family:"Liberation Sans",Arial,sans-serif}
+
+.col h5{font-size:9.5px;font-weight:800;letter-spacing:1.1px;margin-bottom:3px}
+.stackrow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.stackrow .bds{flex-direction:column;align-items:flex-start;gap:2px}
+.stackrow .bd{padding:0 5px 0 0}.stackrow .bd i{width:16px;height:16px;font-size:8.2px}.stackrow .bd span{font-size:9.6px}
+.proofrow{display:grid;grid-template-columns:1.25fr 1fr;gap:8px;align-items:center}
+.kp4{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.kp4 div{background:#0b1f3a;border-radius:7px;padding:4px 3px;text-align:center}
+.kp4 b{display:block;color:#7fe0f8;font-size:14.5px;line-height:1.1}
+.kp4 span{display:block;color:#cbd5e1;font-size:8.2px;line-height:1.15}
+</style></head><body><div class="slide"><div class="oval">ZeroDrift</div><img class="sih" src="sih.png"><div class="ttl"><h1>ZERODRIFT</h1><div class="sub">AI virtual-camera tracking that finds, identifies and holds the partner terminal's beacon, in software</div></div><div class="ptr">❖ Proposed solution · Detailed explanation · How it addresses the problem · Innovation and uniqueness</div>
+<div style="position:absolute;left:24px;top:98px;width:772px">
+  <span class="tag" style="background:#b3261e">PROBLEM EXISTING</span>
+  <div class="box" style="background:#fff6f5;border-color:#f3b4ae">
+    <div class="pcards">
+      <div class="pc"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b3261e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg></div><div><b>Micro-radian aim</b><span>A hair-thin laser must stay on target while vehicles, drones and masts move. <em>(Kaymak 2018)</em></span></div></div>
+      <div class="pc"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b3261e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M4 4l16 16M20 4L4 20"/></svg></div><div><b>Wrong-target lock</b><span>Stars, glints and lamps look like the beacon; brightness-only trackers lock the wrong light.</span></div></div>
+      <div class="pc"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b3261e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg></div><div><b>Delay &amp; dropouts</b><span>≈40 ms command lag and blink gaps drop the beam, forcing slow manual re-alignment.</span></div></div>
+    </div>
+  </div>
+  <div style="height:7px"></div>
+  <span class="tag" style="background:#0e5a8a">PROPOSED SOLUTION</span>
+  <div class="box" style="background:#f4f9fd;border-color:#9cc4e4">
+    <div class="one">We propose <b>ZeroDrift</b>: software that finds the partner's <b>4 Hz beacon</b> in a camera image, <b>proves</b> it is the right light and <b>steers</b> the terminal to hold it centred: PS26169 solved without special hardware.</div>
+    <div class="caps">
+      <div class="cap"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e5a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-25 12 12)"/></svg></div><div><b>Physics-true virtual camera</b><span>SGP4 orbits, turbulence, decoys: <strong>tested before hardware</strong></span></div></div>
+      <div class="cap"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e5a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V4h3M21 7V4h-3M3 17v3h3M21 17v3h-3"/><circle cx="12" cy="12" r="2.5"/></svg></div><div><b>Detect</b><span>top-hat · matched filter · CFAR · <strong>sub-pixel</strong></span></div></div>
+      <div class="cap"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e5a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l2-6 4 12 3-9 2 3h6"/></svg></div><div><b>Identify</b><span>4 Hz blink test + neural verifier: <strong>0 / 64 wrong locks</strong></span></div></div>
+      <div class="cap"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e5a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c4-8 8-8 12-4s5 1 6-3"/><circle cx="21" cy="10" r="1.6"/></svg></div><div><b>Track &amp; coast</b><span>IMM Kalman holds through blinks: <strong>98.3 % held</strong></span></div></div>
+      <div class="cap wide"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0e5a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></div><div><b>Control</b><span>Smith predictor cancels the command delay: <strong>198 µrad</strong> median error, lock in <strong>1.27 s</strong></span></div></div>
+    </div>
+  </div>
+  <div style="height:7px"></div>
+  <span class="tag" style="background:#166534">UVP (UNIQUE VALUE PROPOSITION)</span>
+  <div class="box" style="background:#f3fbf5;border-color:#a7d7b5">
+    <div class="uvp">
+      <div class="uv"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div><b>Identity, not brightness</b><span>Locks only on the blink signature</span></div>
+      <div class="uv"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 14-5l2 2M20 12a8 8 0 0 1-14 5l-2-2"/><path d="M20 4v5h-5M4 20v-5h5"/></svg></div><b>Delay-cancelled loop</b><span>Error measured on the image itself</span></div>
+      <div class="uv"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg></div><b>One engine, 3 modes</b><span>Simulation · webcam · MK2 terminal</span></div>
+      <div class="uv"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#166534" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 12l3 3 5-6"/></svg></div><b>Measured, not claimed</b><span>Open source · 250 passing tests</span></div>
+    </div>
+  </div>
+</div>
+<div style="position:absolute;left:812px;top:98px;width:446px">
+  <span class="tag" style="background:#0b1f3a">ARCHITECTURE</span>
+  <div class="box" style="background:#fff;border-color:#0b1f3a;padding:6px 6px 8px"><svg width="432" height="438" viewBox="0 0 432 438">
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0b1f3a"/></marker>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#b3261e"/></marker>
+    <marker id="ag" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0e7c9a"/></marker>
+  </defs>
+  <g font-size="10.5" text-anchor="middle">
+  <!-- input selector -->
+  <path d="M216 4 L286 22 L216 40 L146 22 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="216" y="26" font-weight="700" fill="#7c2d12">Input source?</text>
+  <path d="M146 22 H62 V52" stroke="#0b1f3a" fill="none" marker-end="url(#a)"/>
+  <path d="M216 40 V52" stroke="#0b1f3a" fill="none" marker-end="url(#a)"/>
+  <path d="M286 22 H370 V52" stroke="#0b1f3a" fill="none" marker-end="url(#a)"/>
+  <rect x="6" y="54" width="112" height="40" rx="7" fill="#e0ecff" stroke="#1665b8"/>
+  <text x="62" y="70" font-weight="700" fill="#0b1f3a">SIMULATION</text><text x="62" y="84" fill="#334155" font-size="9.5">virtual sky · SGP4</text>
+  <rect x="160" y="54" width="112" height="40" rx="7" fill="#e0ecff" stroke="#1665b8"/>
+  <text x="216" y="70" font-weight="700" fill="#0b1f3a">LIVE WEBCAM</text><text x="216" y="84" fill="#334155" font-size="9.5">browser · laptop camera</text>
+  <rect x="314" y="54" width="112" height="40" rx="7" fill="#e0ecff" stroke="#1665b8"/>
+  <text x="370" y="70" font-weight="700" fill="#0b1f3a">MK2 TERMINAL</text><text x="370" y="84" fill="#334155" font-size="9.5">USB camera on gimbal</text>
+  <path d="M62 94 V108 H216" stroke="#0b1f3a" fill="none"/><path d="M370 94 V108 H216" stroke="#0b1f3a" fill="none"/>
+  <path d="M216 94 V116" stroke="#0b1f3a" fill="none" marker-end="url(#a)"/>
+  <!-- core pipeline -->
+  <rect x="116" y="118" width="200" height="28" rx="6" fill="#0b1f3a"/>
+  <text x="216" y="136" font-weight="700" fill="#fff">Camera frame · 30 fps</text>
+  <path d="M216 146 V156" stroke="#0b1f3a" marker-end="url(#a)"/>
+  <rect x="96" y="158" width="240" height="32" rx="6" fill="#eef6fb" stroke="#0e7c9a"/>
+  <text x="216" y="172" font-weight="700" fill="#0b1f3a">DETECT</text><text x="216" y="184" fill="#334155" font-size="9.5">top-hat · matched filter · CFAR · sub-pixel</text>
+  <path d="M216 190 V200" stroke="#0b1f3a" marker-end="url(#a)"/>
+  <rect x="96" y="202" width="240" height="32" rx="6" fill="#eef6fb" stroke="#0e7c9a"/>
+  <text x="216" y="216" font-weight="700" fill="#0b1f3a">IDENTIFY</text><text x="216" y="228" fill="#334155" font-size="9.5">track every light · 4 Hz blink test · NN verifier</text>
+  <path d="M216 234 V244" stroke="#0b1f3a" marker-end="url(#a)"/>
+  <path d="M216 246 L276 264 L216 282 L156 264 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="216" y="268" font-weight="700" fill="#7c2d12">Beacon verified?</text>
+  <!-- no -> decoy veto -->
+  <path d="M276 264 H330" stroke="#b3261e" marker-end="url(#ar)"/>
+  <text x="302" y="258" fill="#b3261e" font-weight="700" font-size="9.5">NO</text>
+  <rect x="332" y="248" width="94" height="32" rx="6" fill="#fdecea" stroke="#b3261e"/>
+  <text x="379" y="262" font-weight="700" fill="#b3261e">VETO decoy</text><text x="379" y="274" fill="#7f1d1d" font-size="9">star · lamp · glint</text>
+  <path d="M379 248 V200 H336" stroke="#b3261e" fill="none" stroke-dasharray="3 2" marker-end="url(#ar)"/>
+  <!-- yes -> track -->
+  <path d="M216 282 V296" stroke="#166534" marker-end="url(#a)"/>
+  <text x="228" y="292" fill="#166534" font-weight="700" font-size="9.5" text-anchor="start">YES</text>
+  <rect x="96" y="298" width="240" height="32" rx="6" fill="#eaf7ee" stroke="#166534"/>
+  <text x="216" y="312" font-weight="700" fill="#0b1f3a">TRACK &amp; PREDICT</text><text x="216" y="324" fill="#334155" font-size="9.5">IMM Kalman · coast through blinks · Smith predictor</text>
+  <path d="M216 330 V342" stroke="#0b1f3a" marker-end="url(#a)"/>
+  <rect x="116" y="344" width="200" height="28" rx="6" fill="#0b1f3a"/>
+  <text x="216" y="362" font-weight="700" fill="#fff">Pointing command AZ / EL</text>
+  <!-- outputs -->
+  <path d="M216 372 V384 H62 V394" stroke="#0b1f3a" fill="none" marker-end="url(#a)"/>
+  <path d="M216 384 V394" stroke="#0b1f3a" marker-end="url(#a)"/>
+  <path d="M216 384 H370 V394" stroke="#0b1f3a" fill="none" marker-end="url(#a)"/>
+  <rect x="6" y="396" width="112" height="38" rx="7" fill="#f1f5f9" stroke="#475569"/>
+  <text x="62" y="411" font-weight="700" fill="#0b1f3a">Virtual viewport</text><text x="62" y="424" fill="#334155" font-size="9">+ telemetry → Console</text>
+  <rect x="160" y="396" width="112" height="38" rx="7" fill="#f1f5f9" stroke="#475569"/>
+  <text x="216" y="411" font-weight="700" fill="#0b1f3a">On-screen lock</text><text x="216" y="424" fill="#334155" font-size="9">AZ / EL · speed · vector</text>
+  <rect x="314" y="396" width="112" height="38" rx="7" fill="#f1f5f9" stroke="#475569"/>
+  <text x="370" y="411" font-weight="700" fill="#0b1f3a">Stepper gimbal</text><text x="370" y="424" fill="#334155" font-size="9">Web Serial → Arduino</text>
+  <!-- closed loop -->
+  <path d="M116 358 H24 V132 H112" stroke="#0e7c9a" stroke-width="1.8" fill="none" stroke-dasharray="5 3" marker-end="url(#ag)"/>
+  <text x="18" y="250" fill="#0e7c9a" font-weight="700" font-size="9.5" transform="rotate(-90 18 250)">closed optical loop: camera moves with the aim</text>
+  </g>
+</svg>
+    <div class="kpis">
+      <div class="kpi"><b>1.27 s</b><span>median acquisition · 64 runs</span></div>
+      <div class="kpi"><b>98.3 %</b><span>lock held · featured demo run</span></div>
+      <div class="kpi"><b>0 / 64</b><span>runs with a wrong-target lock</span></div>
+    </div>
+  </div>
+</div><div class="foot">Team ZeroDrift · SIH 2026 · PS 26169<b>2</b></div></div><div class="slide"><div class="oval">ZeroDrift</div><img class="sih" src="sih.png"><div class="ttl"><h1>TECHNICAL APPROACH</h1><div class="sub">From camera frame to laser command: the flowchart, the architecture and the stack behind it</div></div><div class="ptr">❖ Technologies to be used · Methodology and process for implementation (flow charts / images / working prototype)</div>
+<div style="position:absolute;left:14px;top:96px;width:596px">
+  <span class="tag" style="background:#0b1f3a;font-size:11.5px">SOFTWARE FLOWCHART · src/fsoc_pat (pipeline · detection · tracking · control)</span>
+  <div class="box" style="background:#fff;border-color:#0b1f3a;padding:3px"><svg viewBox="0 0 852 578" style="display:block;width:100%;height:auto">
+  <defs>
+    <marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0b1f3a"/></marker>
+    <marker id="br" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#b3261e"/></marker>
+    <marker id="bg" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#166534"/></marker>
+    <marker id="bb" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1d4ed8"/></marker>
+    <marker id="bo" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#c2410c"/></marker>
+    <marker id="bt" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0e7c9a"/></marker>
+  </defs>
+  <g font-size="11" text-anchor="middle">
+  <!-- lane backgrounds -->
+  <rect x="4" y="4" width="844" height="100" rx="8" fill="#f1f6fb" stroke="#c7d7ea" stroke-dasharray="4 3"/>
+  <text x="14" y="18" text-anchor="start" font-size="10" font-weight="700" fill="#475569">① SENSE: every frame</text>
+  <rect x="4" y="112" width="612" height="136" rx="8" fill="#fbf7ef" stroke="#ecdcbc" stroke-dasharray="4 3"/>
+  <text x="14" y="126" text-anchor="start" font-size="10" font-weight="700" fill="#475569">② DECIDE: identify the beacon</text>
+  <rect x="4" y="256" width="844" height="318" rx="8" fill="#f3faf5" stroke="#c6e3cf" stroke-dasharray="4 3"/>
+  <text x="14" y="270" text-anchor="start" font-size="10" font-weight="700" fill="#475569">③ ACT: state machine SEARCH → ACQUIRE → TRACK ⇄ COAST → REACQUIRE</text>
+
+  <!-- lane 1 -->
+  <path d="M38 36 L130 36 L150 58 L130 80 L38 80 Z" fill="#334155"/>
+  <text x="92" y="55" font-weight="700" fill="#fff">START</text><text x="92" y="69" fill="#e2e8f0" font-size="9.5">new frame (33 ms)</text>
+  <path d="M152 58 H176" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="178" y="32" width="150" height="52" rx="7" fill="#fff" stroke="#1665b8" stroke-width="1.4"/>
+  <text x="253" y="52" font-weight="700" fill="#0b1f3a">PREPROCESS</text><text x="253" y="66" fill="#334155" font-size="9.5">top-hat removes sky glow,</text><text x="253" y="78" fill="#334155" font-size="9.5">cloud, sun halo</text>
+  <path d="M328 58 H352" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="354" y="32" width="160" height="52" rx="7" fill="#fff" stroke="#1665b8" stroke-width="1.4"/>
+  <text x="434" y="52" font-weight="700" fill="#0b1f3a">DETECT</text><text x="434" y="66" fill="#334155" font-size="9.5">matched filter + CFAR</text><text x="434" y="78" fill="#334155" font-size="9.5">threshold (fixed false-alarm)</text>
+  <path d="M514 58 H538" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="540" y="32" width="146" height="52" rx="7" fill="#fff" stroke="#1665b8" stroke-width="1.4"/>
+  <text x="613" y="52" font-weight="700" fill="#0b1f3a">EXTRACT</text><text x="613" y="66" fill="#334155" font-size="9.5">sub-pixel centroid of</text><text x="613" y="78" fill="#334155" font-size="9.5">each point (~6 / frame)</text>
+  <path d="M686 58 H708" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <path d="M768 30 L832 58 L768 86 L704 58 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="768" y="55" font-weight="700" fill="#7c2d12">Any</text><text x="768" y="68" font-weight="700" fill="#7c2d12">candidate?</text>
+
+  <!-- NO candidate -> search -->
+  <path d="M832 58 H846 V546 H840" stroke="#1d4ed8" fill="none" marker-end="url(#bb)"/>
+  <text x="838" y="112" fill="#1d4ed8" font-weight="700" font-size="10" transform="rotate(90 838 112)">NO: nothing in view</text>
+
+  <!-- YES -> lane 2 -->
+  <path d="M768 86 V96 H74 V140" stroke="#166534" fill="none" marker-end="url(#bg)"/>
+  <text x="700" y="94" fill="#166534" font-weight="700" font-size="10">YES</text>
+  <rect x="14" y="142" width="120" height="58" rx="7" fill="#fff" stroke="#b45309" stroke-width="1.4"/>
+  <text x="74" y="162" font-weight="700" fill="#0b1f3a">TRACK ALL</text><text x="74" y="176" fill="#334155" font-size="9.5">one IMM Kalman</text><text x="74" y="188" fill="#334155" font-size="9.5">per light</text>
+  <path d="M134 171 H156" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="158" y="142" width="148" height="58" rx="7" fill="#fff" stroke="#b45309" stroke-width="1.4"/>
+  <text x="232" y="162" font-weight="700" fill="#0b1f3a">IDENTIFY</text><text x="232" y="176" fill="#334155" font-size="9.5">Goertzel 4 Hz blink power</text><text x="232" y="188" fill="#334155" font-size="9.5">+ neural verifier score</text>
+  <path d="M306 171 H330" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <path d="M396 140 L462 171 L396 202 L330 171 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="396" y="167" font-weight="700" fill="#7c2d12">Blink signature</text><text x="396" y="180" font-weight="700" fill="#7c2d12">matches?</text>
+  <path d="M462 171 H486" stroke="#b3261e" marker-end="url(#br)"/>
+  <text x="474" y="164" fill="#b3261e" font-weight="700" font-size="10">NO</text>
+  <rect x="488" y="146" width="120" height="50" rx="7" fill="#fdecea" stroke="#b3261e" stroke-width="1.4"/>
+  <text x="548" y="165" font-weight="700" fill="#b3261e">VETO</text><text x="548" y="179" fill="#7f1d1d" font-size="9.5">star · lamp · glint ·</text><text x="548" y="191" fill="#7f1d1d" font-size="9.5">wrong-rate strobe</text>
+  <path d="M548 146 V122 H232 V140" stroke="#b3261e" fill="none" stroke-dasharray="3 2" marker-end="url(#br)"/>
+  <text x="400" y="118" fill="#b3261e" font-size="9.5">next candidate</text>
+  <!-- YES -> lane 3 -->
+  <path d="M396 202 V222 H110 V288" stroke="#166534" fill="none" marker-end="url(#bg)"/>
+  <text x="408" y="216" text-anchor="start" fill="#166534" font-weight="700" font-size="10">YES: this is the beacon</text>
+
+  <!-- lane 3 : acquire decision -->
+  <path d="M110 290 L182 322 L110 354 L38 322 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="110" y="316" font-weight="700" fill="#7c2d12">Error small</text><text x="110" y="329" font-weight="700" fill="#7c2d12">for N frames?</text>
+  <path d="M110 354 V378" stroke="#b45309" marker-end="url(#b)"/>
+  <text x="122" y="370" text-anchor="start" fill="#b45309" font-weight="700" font-size="10">NO</text>
+  <rect x="38" y="380" width="144" height="46" rx="7" fill="#fff4d6" stroke="#b45309" stroke-width="1.4"/>
+  <text x="110" y="398" font-weight="700" fill="#92400e">ACQUIRE</text><text x="110" y="412" fill="#334155" font-size="9.5">steer toward it → next frame</text>
+  <path d="M182 322 H206" stroke="#166534" marker-end="url(#bg)"/>
+  <text x="194" y="315" fill="#166534" font-weight="700" font-size="10">YES</text>
+  <rect x="208" y="296" width="140" height="52" rx="7" fill="#dcfce7" stroke="#166534" stroke-width="1.8"/>
+  <text x="278" y="316" font-weight="700" fill="#14532d" font-size="12">TRACK</text><text x="278" y="331" fill="#334155" font-size="9.5">lock confirmed, error</text><text x="278" y="343" fill="#334155" font-size="9.5">measured on the image</text>
+  <path d="M348 322 H372" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="374" y="296" width="156" height="52" rx="7" fill="#fff" stroke="#166534" stroke-width="1.4"/>
+  <text x="452" y="316" font-weight="700" fill="#0b1f3a">PREDICT</text><text x="452" y="331" fill="#334155" font-size="9.5">Smith predictor + IMM</text><text x="452" y="343" fill="#334155" font-size="9.5">feed-forward cancel 40 ms</text>
+  <path d="M530 322 H554" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <rect x="556" y="296" width="150" height="52" rx="7" fill="#0b1f3a"/>
+  <text x="631" y="316" font-weight="700" fill="#fff">OUTPUT</text><text x="631" y="331" fill="#cbd5e1" font-size="9.5">AZ / EL command to the</text><text x="631" y="343" fill="#cbd5e1" font-size="9.5">gimbal or virtual viewport</text>
+  <!-- loop back to START -->
+  <path d="M706 322 H728 V108 H24 V58 H36" stroke="#0e7c9a" stroke-width="1.8" fill="none" stroke-dasharray="5 3" marker-end="url(#bt)"/>
+  <text x="738" y="215" fill="#0e7c9a" font-weight="700" font-size="9.5" transform="rotate(90 738 215)">camera moves with the aim → next frame</text>
+
+  <!-- dropout branch from TRACK -->
+  <path d="M278 348 V372" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <text x="272" y="366" text-anchor="end" fill="#475569" font-size="9">checked every frame</text>
+  <path d="M278 374 L346 400 L278 426 L210 400 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="278" y="397" font-weight="700" fill="#7c2d12">Beacon dark /</text><text x="278" y="410" font-weight="700" fill="#7c2d12">not detected?</text>
+  <path d="M346 400 H372" stroke="#c2410c" marker-end="url(#bo)"/>
+  <text x="358" y="393" fill="#c2410c" font-weight="700" font-size="10">YES</text>
+  <rect x="374" y="378" width="156" height="46" rx="7" fill="#ffedd5" stroke="#c2410c" stroke-width="1.4"/>
+  <text x="452" y="396" font-weight="700" fill="#9a3412">COAST</text><text x="452" y="410" fill="#334155" font-size="9.5">keep following the prediction</text>
+  <path d="M530 401 H554" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <path d="M614 376 L674 401 L614 426 L554 401 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="614" y="398" font-weight="700" fill="#7c2d12">Seen again in</text><text x="614" y="411" font-weight="700" fill="#7c2d12">coast window?</text>
+  <path d="M614 376 V362 H322 V352" stroke="#166534" fill="none" marker-end="url(#bg)"/>
+  <text x="630" y="372" text-anchor="start" fill="#166534" font-weight="700" font-size="10">YES → back to TRACK</text>
+  <path d="M614 426 V452" stroke="#b3261e" marker-end="url(#br)"/>
+  <text x="626" y="444" text-anchor="start" fill="#b3261e" font-weight="700" font-size="10">NO</text>
+  <rect x="540" y="454" width="148" height="48" rx="7" fill="#fdecea" stroke="#b3261e" stroke-width="1.4"/>
+  <text x="614" y="472" font-weight="700" fill="#b3261e">REACQUIRE</text><text x="614" y="486" fill="#334155" font-size="9.5">small spiral at the</text><text x="614" y="497" fill="#334155" font-size="9.5">last good position</text>
+  <path d="M688 478 H700" stroke="#0b1f3a" marker-end="url(#b)"/>
+  <path d="M746 456 L792 478 L746 500 L700 478 Z" fill="#fff7e6" stroke="#b45309" stroke-width="1.5"/>
+  <text x="746" y="482" font-weight="700" fill="#7c2d12">Found?</text>
+  <path d="M792 478 H816 V362 H620" stroke="#166534" fill="none"/>
+  <text x="820" y="470" text-anchor="start" fill="#166534" font-weight="700" font-size="9.5">YES</text>
+  <path d="M746 500 V522" stroke="#1d4ed8" marker-end="url(#bb)"/>
+  <text x="756" y="516" text-anchor="start" fill="#1d4ed8" font-weight="700" font-size="10">NO</text>
+  <!-- SEARCH -->
+  <rect x="660" y="524" width="178" height="46" rx="7" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.6"/>
+  <text x="749" y="540" font-weight="700" fill="#1e3a8a">SEARCH</text><text x="749" y="553" fill="#334155" font-size="9.5">spiral scan, widens ×1.5 per</text><text x="749" y="564" fill="#334155" font-size="9.5">empty cycle (≤ 25°) → next frame</text>
+
+  <!-- telemetry side output -->
+  <rect x="14" y="452" width="250" height="112" rx="8" fill="#f8fafc" stroke="#475569" stroke-dasharray="4 3"/>
+  <text x="139" y="470" font-weight="700" fill="#0b1f3a">EVERY FRAME → TELEMETRY LOG</text>
+  <text x="139" y="488" fill="#334155" font-size="9.8">state · error µrad · detections · blink score</text>
+  <text x="139" y="503" fill="#334155" font-size="9.8">slew rate · compute time (8–21 ms)</text>
+  <text x="139" y="524" fill="#0e5a8a" font-size="10" font-weight="700">→ Console replay + test record</text>
+  <text x="139" y="539" fill="#0e5a8a" font-size="10" font-weight="700">→ 64-run Monte-Carlo campaign</text>
+  <text x="139" y="554" fill="#0e5a8a" font-size="10" font-weight="700">→ acceptance tests (pytest, CI)</text>
+  </g>
+</svg></div>
+</div>
+<div style="position:absolute;left:630px;top:96px;width:636px">
+  <span class="tag" style="background:#1d5fb8;font-size:11.5px">SYSTEM ARCHITECTURE · WHAT HAPPENS TO EVERY FRAME</span>
+  <div class="box" style="background:#fff;border-color:#1d5fb8;padding:4px 5px"><svg viewBox="0 0 900 560" style="display:block;width:100%;height:auto" font-family="Liberation Sans,Arial,sans-serif">
+<defs><marker id="pa" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8z" fill="#1d5fb8"/></marker>
+<linearGradient id="hdr" x1="0" x2="1"><stop offset="0" stop-color="#0b1f3a"/><stop offset="1" stop-color="#1d5fb8"/></linearGradient></defs>
+<!-- orbital data & AI -->
+<rect x="4" y="18" width="138" height="300" rx="14" fill="#f97316"/>
+<text x="73" y="42" font-size="12.5" font-weight="800" fill="#fff" text-anchor="middle">ORBITAL DATA &amp; AI</text>
+<rect x="14" y="52" width="118" height="124" rx="10" fill="#fff7ed"/>
+<text x="24" y="70" font-size="11" font-weight="800" fill="#0b1f3a">ORBIT DATA</text><text x="24" y="83" font-size="8.6" fill="#7c2d12">real ISS TLEs + SGP4</text>
+<g transform="translate(24,90)"><rect width="98" height="78" rx="6" fill="#0b1f3a"/><path d="M0 64 q49 -30 98 -6 v20 h-98z" fill="#1d5fb8" opacity=".7"/>
+ <rect x="20" y="22" width="18" height="8" fill="#94a3b8"/><rect x="60" y="22" width="18" height="8" fill="#94a3b8"/><rect x="38" y="20" width="22" height="12" rx="2" fill="#e2e8f0"/>
+ <path d="M4 50 Q49 6 94 40" stroke="#fde68a" stroke-dasharray="3 3" fill="none"/></g>
+<rect x="14" y="184" width="118" height="124" rx="10" fill="#fff7ed"/>
+<text x="24" y="202" font-size="11" font-weight="800" fill="#0b1f3a">NEURAL VERIFIER</text><text x="24" y="215" font-size="8.6" fill="#7c2d12">rejects false candidates</text>
+<g transform="translate(24,222)" stroke="#ea580c" stroke-width=".7" opacity=".8">
+ <line x1="8" y1="8" x2="49" y2="8"/><line x1="8" y1="8" x2="49" y2="23"/><line x1="8" y1="8" x2="49" y2="38"/><line x1="8" y1="8" x2="49" y2="53"/><line x1="8" y1="8" x2="49" y2="68"/><line x1="8" y1="23" x2="49" y2="8"/><line x1="8" y1="23" x2="49" y2="23"/><line x1="8" y1="23" x2="49" y2="38"/><line x1="8" y1="23" x2="49" y2="53"/><line x1="8" y1="23" x2="49" y2="68"/><line x1="8" y1="38" x2="49" y2="8"/><line x1="8" y1="38" x2="49" y2="23"/><line x1="8" y1="38" x2="49" y2="38"/><line x1="8" y1="38" x2="49" y2="53"/><line x1="8" y1="38" x2="49" y2="68"/><line x1="8" y1="53" x2="49" y2="8"/><line x1="8" y1="53" x2="49" y2="23"/><line x1="8" y1="53" x2="49" y2="38"/><line x1="8" y1="53" x2="49" y2="53"/><line x1="8" y1="53" x2="49" y2="68"/><line x1="8" y1="68" x2="49" y2="8"/><line x1="8" y1="68" x2="49" y2="23"/><line x1="8" y1="68" x2="49" y2="38"/><line x1="8" y1="68" x2="49" y2="53"/><line x1="8" y1="68" x2="49" y2="68"/>
+ <line x1="49" y1="8" x2="90" y2="38"/><line x1="49" y1="23" x2="90" y2="38"/><line x1="49" y1="38" x2="90" y2="38"/><line x1="49" y1="53" x2="90" y2="38"/><line x1="49" y1="68" x2="90" y2="38"/>
+</g>
+<g fill="#f97316"><circle cx="32" cy="230" r="4"/><circle cx="73" cy="230" r="4"/><circle cx="32" cy="245" r="4"/><circle cx="73" cy="245" r="4"/><circle cx="32" cy="260" r="4"/><circle cx="73" cy="260" r="4"/><circle cx="32" cy="275" r="4"/><circle cx="73" cy="275" r="4"/><circle cx="32" cy="290" r="4"/><circle cx="73" cy="290" r="4"/><circle cx="114" cy="260" r="5"/></g>
+<!-- header -->
+<rect x="156" y="18" width="740" height="56" rx="14" fill="url(#hdr)"/>
+<g transform="translate(176,33)" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"><path d="M13 2 L26 9 L13 16 L0 9 Z"/><path d="M0 15 L13 22 L26 15"/></g>
+<text x="216" y="55" font-size="22" font-weight="800" fill="#fff" letter-spacing="1">CORE TRACKING PIPELINE</text>
+<text x="880" y="55" font-size="11" fill="#bfdbfe" text-anchor="end">one frame every 33 ms</text>
+<g transform="translate(156,92)">
+  <rect width="118" height="210" rx="10" fill="#fff" stroke="#1d5fb8" stroke-width="2"/>
+  <path d="M0 10 a10 10 0 0 1 10 -10 h98 a10 10 0 0 1 10 10 v20 h-118z" fill="#1d5fb8"/>
+  <circle cx="14" cy="15" r="9" fill="#fff"/><text x="14" y="19" font-size="11" font-weight="800" fill="#1d5fb8" text-anchor="middle">1</text>
+  <text x="27" y="19" font-size="8.6" font-weight="800" fill="#fff">VIRTUAL WORLD</text>
+  <g transform="translate(9,38)"><rect width="100" height="106" rx="7" fill="#050b16"/><g fill="#fff" opacity=".85"><circle cx="12" cy="14" r="1"/><circle cx="40" cy="30" r=".8"/><circle cx="80" cy="12" r="1.1"/><circle cx="66" cy="70" r=".9"/><circle cx="22" cy="86" r="1"/><circle cx="90" cy="92" r=".8"/><circle cx="54" cy="50" r=".7"/><circle cx="30" cy="60" r=".8"/><circle cx="88" cy="46" r="1"/></g><ellipse cx="50" cy="54" rx="34" ry="12" fill="#6d28d9" opacity=".45" transform="rotate(-20 50 54)"/><circle cx="50" cy="54" r="7" fill="#fde68a"/><circle cx="78" cy="28" r="3" fill="#ff5555"/><circle cx="24" cy="36" r="2.4" fill="#ff5555"/><text x="50" y="100" font-size="8" fill="#ff8a8a" text-anchor="middle">● decoys</text></g>
+  <text x="59" y="160" font-size="8.4" fill="#334155" text-anchor="middle">stars, clutter + decoys</text>
+  <rect x="7" y="170" width="104" height="30" rx="8" fill="#1d5fb8" fill-opacity=".12" stroke="#1d5fb8" stroke-opacity=".5"/>
+  <text x="59" y="189.5" font-size="10.5" font-weight="700" fill="#0b1f3a" text-anchor="middle">9.2 MPx / s</text>
+</g>
+<g transform="translate(304,92)">
+  <rect width="118" height="210" rx="10" fill="#fff" stroke="#0e7c9a" stroke-width="2"/>
+  <path d="M0 10 a10 10 0 0 1 10 -10 h98 a10 10 0 0 1 10 10 v20 h-118z" fill="#0e7c9a"/>
+  <circle cx="14" cy="15" r="9" fill="#fff"/><text x="14" y="19" font-size="11" font-weight="800" fill="#0e7c9a" text-anchor="middle">2</text>
+  <text x="27" y="19" font-size="8.6" font-weight="800" fill="#fff">VIRTUAL CAMERA</text>
+  <g transform="translate(9,38)"><rect width="100" height="106" rx="7" fill="#e8eef6"/><rect x="30" y="80" width="40" height="10" rx="3" fill="#475569"/><rect x="44" y="58" width="12" height="24" fill="#64748b"/><rect x="26" y="30" width="48" height="30" rx="6" fill="#1e293b"/><circle cx="50" cy="45" r="10" fill="#0b1220" stroke="#4FC7EA" stroke-width="2"/><circle cx="50" cy="45" r="4" fill="#4FC7EA"/><path d="M12 45 A38 38 0 0 1 20 20" stroke="#0e7c9a" stroke-width="2" fill="none" marker-end="url(#pa)"/><path d="M88 45 A38 38 0 0 0 80 20" stroke="#0e7c9a" stroke-width="2" fill="none"/></g>
+  <text x="59" y="160" font-size="8.4" fill="#334155" text-anchor="middle">gimbal limits · sensor noise</text>
+  <rect x="7" y="170" width="104" height="30" rx="8" fill="#0e7c9a" fill-opacity=".12" stroke="#0e7c9a" stroke-opacity=".5"/>
+  <text x="59" y="189.5" font-size="10.5" font-weight="700" fill="#0b1f3a" text-anchor="middle">30 fps · 40 ms lag</text>
+</g>
+<g transform="translate(452,92)">
+  <rect width="118" height="210" rx="10" fill="#fff" stroke="#7c3aed" stroke-width="2"/>
+  <path d="M0 10 a10 10 0 0 1 10 -10 h98 a10 10 0 0 1 10 10 v20 h-118z" fill="#7c3aed"/>
+  <circle cx="14" cy="15" r="9" fill="#fff"/><text x="14" y="19" font-size="11" font-weight="800" fill="#7c3aed" text-anchor="middle">3</text>
+  <text x="27" y="19" font-size="8.6" font-weight="800" fill="#fff">PERCEPTION</text>
+  <g transform="translate(9,38)"><rect width="100" height="106" rx="7" fill="#050b16"/><g fill="#fff" opacity=".85"><circle cx="12" cy="14" r="1"/><circle cx="40" cy="30" r=".8"/><circle cx="80" cy="12" r="1.1"/><circle cx="66" cy="70" r=".9"/><circle cx="22" cy="86" r="1"/><circle cx="90" cy="92" r=".8"/><circle cx="54" cy="50" r=".7"/><circle cx="30" cy="60" r=".8"/><circle cx="88" cy="46" r="1"/></g><rect x="16" y="18" width="10" height="10" fill="none" stroke="#4FC7EA" stroke-width="1.4"/><rect x="70" y="60" width="10" height="10" fill="none" stroke="#4FC7EA" stroke-width="1.4"/><rect x="44" y="40" width="12" height="12" fill="none" stroke="#4FC7EA" stroke-width="1.4"/><rect x="76" y="20" width="9" height="9" fill="none" stroke="#4FC7EA" stroke-width="1.4"/></g>
+  <text x="59" y="160" font-size="8.4" fill="#334155" text-anchor="middle">top-hat · matched filter · CFAR</text>
+  <rect x="7" y="170" width="104" height="30" rx="8" fill="#7c3aed" fill-opacity=".12" stroke="#7c3aed" stroke-opacity=".5"/>
+  <text x="59" y="189.5" font-size="10.5" font-weight="700" fill="#0b1f3a" text-anchor="middle">≈ 6 candidates / frame</text>
+</g>
+<g transform="translate(600,92)">
+  <rect width="118" height="210" rx="10" fill="#fff" stroke="#15803d" stroke-width="2"/>
+  <path d="M0 10 a10 10 0 0 1 10 -10 h98 a10 10 0 0 1 10 10 v20 h-118z" fill="#15803d"/>
+  <circle cx="14" cy="15" r="9" fill="#fff"/><text x="14" y="19" font-size="11" font-weight="800" fill="#15803d" text-anchor="middle">4</text>
+  <text x="27" y="19" font-size="8.6" font-weight="800" fill="#fff">DECISION</text>
+  <g transform="translate(9,38)"><rect width="100" height="106" rx="7" fill="#050b16"/><g fill="#fff" opacity=".85"><circle cx="12" cy="14" r="1"/><circle cx="40" cy="30" r=".8"/><circle cx="80" cy="12" r="1.1"/><circle cx="66" cy="70" r=".9"/><circle cx="22" cy="86" r="1"/><circle cx="90" cy="92" r=".8"/><circle cx="54" cy="50" r=".7"/><circle cx="30" cy="60" r=".8"/><circle cx="88" cy="46" r="1"/></g><circle cx="50" cy="50" r="3" fill="#ff6b6b"/><path d="M40 40 h-4 v4 M60 40 h4 v4 M40 60 h-4 v-4 M60 60 h4 v-4" stroke="#3BD68C" stroke-width="2" fill="none"/><text x="50" y="84" font-size="9" font-weight="700" fill="#3BD68C" text-anchor="middle">LOCK 4.0 Hz</text></g>
+  <text x="59" y="160" font-size="8.4" fill="#334155" text-anchor="middle">blink signature + IMM</text>
+  <rect x="7" y="170" width="104" height="30" rx="8" fill="#15803d" fill-opacity=".12" stroke="#15803d" stroke-opacity=".5"/>
+  <text x="59" y="189.5" font-size="10.5" font-weight="700" fill="#0b1f3a" text-anchor="middle">1 verified beacon</text>
+</g>
+<g transform="translate(748,92)">
+  <rect width="118" height="210" rx="10" fill="#fff" stroke="#b45309" stroke-width="2"/>
+  <path d="M0 10 a10 10 0 0 1 10 -10 h98 a10 10 0 0 1 10 10 v20 h-118z" fill="#b45309"/>
+  <circle cx="14" cy="15" r="9" fill="#fff"/><text x="14" y="19" font-size="11" font-weight="800" fill="#b45309" text-anchor="middle">5</text>
+  <text x="27" y="19" font-size="8.6" font-weight="800" fill="#fff">OPERATOR OUTPUTS</text>
+  <g transform="translate(9,38)"><rect width="100" height="106" rx="7" fill="#0b1220"/><rect x="6" y="8" width="58" height="46" rx="3" fill="#050b16" stroke="#18263a"/><path d="M10 44 q10 -20 20 -8 t22 -18" stroke="#4FC7EA" stroke-width="1.6" fill="none"/><rect x="68" y="8" width="26" height="9" rx="2" fill="#14532d"/><text x="81" y="15" font-size="6" fill="#3BD68C" text-anchor="middle" font-weight="700">TRACK</text><rect x="68" y="21" width="26" height="5" rx="2" fill="#18263a"/><rect x="68" y="30" width="20" height="5" rx="2" fill="#18263a"/><rect x="68" y="39" width="24" height="5" rx="2" fill="#18263a"/><rect x="6" y="60" width="88" height="38" rx="3" fill="#050b16" stroke="#18263a"/><path d="M10 90 L28 70 L46 84 L64 66 L90 78" stroke="#3BD68C" stroke-width="1.6" fill="none"/></g>
+  <text x="59" y="160" font-size="8.4" fill="#334155" text-anchor="middle">live status + telemetry</text>
+  <rect x="7" y="170" width="104" height="30" rx="8" fill="#b45309" fill-opacity=".12" stroke="#b45309" stroke-opacity=".5"/>
+  <text x="59" y="189.5" font-size="10.5" font-weight="700" fill="#0b1f3a" text-anchor="middle">Console + video</text>
+</g>
+<g fill="#1d5fb8"><path d="M274 185 h8 v-5 l10 10 l-10 10 v-5 h-8z"/><path d="M422 185 h8 v-5 l10 10 l-10 10 v-5 h-8z"/><path d="M570 185 h8 v-5 l10 10 l-10 10 v-5 h-8z"/><path d="M718 185 h8 v-5 l10 10 l-10 10 v-5 h-8z"/><path d="M142 190 l12 0" stroke="#1d5fb8" stroke-width="3"/><path d="M154 190 l-8 -6 v12z"/></g>
+<path d="M866 302 V326 Q866 334 858 334 H838" stroke="#1d5fb8" stroke-width="4" fill="none" marker-end="url(#pa)"/>
+<!-- control module -->
+<rect x="156" y="318" width="704" height="96" rx="14" fill="#0f9f84"/>
+<text x="176" y="338" font-size="13" font-weight="800" fill="#fff" letter-spacing=".6">⚙ CONTROL MODULE</text>
+<g transform="translate(164,346)"><rect width="166" height="56" rx="9" fill="#fff" stroke="#9fd9c9"/>
+  <circle cx="26" cy="28" r="17" fill="#1d5fb8"/><path d="M14 28 h4 l3 -7 l4 14 l4 -10 l3 3 h5" stroke="#fff" stroke-width="2" fill="none" transform="translate(0,0)"/>
+  <text x="50" y="24" font-size="10.5" font-weight="800" fill="#0b1f3a">SMITH PREDICTOR</text><text x="50" y="39" font-size="9.5" fill="#334155">cancels 40 ms delay</text></g>
+<g transform="translate(338,346)"><rect width="166" height="56" rx="9" fill="#fff" stroke="#9fd9c9"/>
+  <circle cx="26" cy="28" r="17" fill="#0b1f3a"/><path d="M15 33 a11 11 0 1 1 22 0" stroke="#fff" stroke-width="2" fill="none"/><path d="M26 33 l6 -8" stroke="#fff" stroke-width="2.2"/>
+  <text x="50" y="24" font-size="10.5" font-weight="800" fill="#0b1f3a">VELOCITY FEED-FWD</text><text x="50" y="39" font-size="9.5" fill="#334155">follows predicted motion</text></g>
+<g transform="translate(512,346)"><rect width="166" height="56" rx="9" fill="#fff" stroke="#9fd9c9"/>
+  <circle cx="26" cy="28" r="17" fill="#7c3aed"/><path d="M26 28 m0 0 a2 2 0 1 1 3 1 a5 5 0 1 1 -7 -4 a8 8 0 1 1 11 8" stroke="#fff" stroke-width="1.8" fill="none"/>
+  <text x="50" y="24" font-size="10.5" font-weight="800" fill="#0b1f3a">SPIRAL SEARCH</text><text x="50" y="39" font-size="9.5" fill="#334155">finds unseen targets</text></g>
+<g transform="translate(686,346)"><rect width="166" height="56" rx="9" fill="#fff" stroke="#9fd9c9"/>
+  <circle cx="26" cy="28" r="17" fill="#15803d"/><circle cx="26" cy="28" r="8" stroke="#fff" stroke-width="2" fill="none"/><path d="M26 16 v6 M26 34 v6 M14 28 h6 M32 28 h6" stroke="#fff" stroke-width="2"/>
+  <text x="50" y="24" font-size="10.5" font-weight="800" fill="#0b1f3a">CONTROL LOOP</text><text x="50" y="39" font-size="9.5" fill="#334155">≈ 30 commands / s</text></g>
+<!-- state machine -->
+<rect x="4" y="428" width="892" height="126" rx="14" fill="#eef5fd" stroke="#bfd7f2"/>
+<text x="20" y="452" font-size="13.5" font-weight="800" fill="#0b1f3a" letter-spacing=".4">◎ ACQUISITION STATE MACHINE</text>
+<g transform="translate(40,470)"><rect width="128" height="44" rx="8" fill="#fff" stroke="#1d5fb8" stroke-width="1.6"/>
+  <circle cx="20" cy="22" r="11" fill="#1d5fb8"/><circle cx="20" cy="22" r="4.5" fill="#fff"/>
+  <text x="38" y="19" font-size="11" font-weight="800" fill="#1d5fb8">SEARCH</text><text x="38" y="33" font-size="9" fill="#334155">scan predicted region</text></g>
+<g transform="translate(210,470)"><rect width="128" height="44" rx="8" fill="#fff" stroke="#b45309" stroke-width="1.6"/>
+  <circle cx="20" cy="22" r="11" fill="#b45309"/><circle cx="20" cy="22" r="4.5" fill="#fff"/>
+  <text x="38" y="19" font-size="11" font-weight="800" fill="#b45309">ACQUIRE</text><text x="38" y="33" font-size="9" fill="#334155">detect + validate</text></g>
+<g transform="translate(380,470)"><rect width="128" height="44" rx="8" fill="#fff" stroke="#15803d" stroke-width="1.6"/>
+  <circle cx="20" cy="22" r="11" fill="#15803d"/><circle cx="20" cy="22" r="4.5" fill="#fff"/>
+  <text x="38" y="19" font-size="11" font-weight="800" fill="#15803d">TRACK</text><text x="38" y="33" font-size="9" fill="#334155">hold lock</text></g>
+<g transform="translate(550,470)"><rect width="128" height="44" rx="8" fill="#fff" stroke="#c2410c" stroke-width="1.6"/>
+  <circle cx="20" cy="22" r="11" fill="#c2410c"/><circle cx="20" cy="22" r="4.5" fill="#fff"/>
+  <text x="38" y="19" font-size="11" font-weight="800" fill="#c2410c">COAST</text><text x="38" y="33" font-size="9" fill="#334155">ride the prediction</text></g>
+<g transform="translate(720,470)"><rect width="128" height="44" rx="8" fill="#fff" stroke="#b91c1c" stroke-width="1.6"/>
+  <circle cx="20" cy="22" r="11" fill="#b91c1c"/><circle cx="20" cy="22" r="4.5" fill="#fff"/>
+  <text x="38" y="19" font-size="11" font-weight="800" fill="#b91c1c">REACQUIRE</text><text x="38" y="33" font-size="9" fill="#334155">recover target</text></g>
+<g fill="#1d5fb8"><path d="M170 485 l10 7 l-10 7z"/><path d="M340 485 l10 7 l-10 7z"/><path d="M510 485 l10 7 l-10 7z"/><path d="M680 485 l10 7 l-10 7z"/></g>
+<path d="M848 514 V534 H24 V492 H38" stroke="#1d5fb8" stroke-width="2.2" fill="none" marker-end="url(#pa)"/>
+<rect x="358" y="524" width="184" height="20" rx="6" fill="#fff" stroke="#1d5fb8"/><text x="450" y="538" font-size="10.5" font-weight="700" fill="#0b1f3a" text-anchor="middle">target lost → SEARCH</text>
+</svg></div>
+</div>
+<div style="position:absolute;left:14px;top:524px;width:810px">
+  <span class="tag" style="background:#0b1f3a;font-size:11.5px">TECH STACK · every item used in the code</span>
+  <div class="box" style="background:#fff;border-color:#0b1f3a;padding:6px 8px 5px"><div class="stackrow"><div class="col"><h5 style="color:#1665b8">ENGINE</h5><div class="bds"><div class="bd"><i style="background:#1665b8">Py</i><span>Python 3.11</span></div><div class="bd"><i style="background:#1665b8">Np</i><span>NumPy</span></div><div class="bd"><i style="background:#1665b8">CV</i><span>OpenCV</span></div><div class="bd"><i style="background:#1665b8">Or</i><span>SGP4 · ISS TLEs</span></div><div class="bd"><i style="background:#1665b8">Ym</i><span>PyYAML scenes</span></div></div></div><div class="col"><h5 style="color:#b45309">AI / LOGIC</h5><div class="bds"><div class="bd"><i style="background:#b45309">Cf</i><span>CFAR detector</span></div><div class="bd"><i style="background:#b45309">Km</i><span>IMM Kalman</span></div><div class="bd"><i style="background:#b45309">Hz</i><span>Goertzel 4 Hz</span></div><div class="bd"><i style="background:#b45309">NN</i><span>Neural verifier</span></div><div class="bd"><i style="background:#b45309">Sp</i><span>Smith predictor</span></div></div></div><div class="col"><h5 style="color:#0e7c9a">APPS & WEB</h5><div class="bds"><div class="bd"><i style="background:#0e7c9a">Qt</i><span>PySide6 GUI</span></div><div class="bd"><i style="background:#0e7c9a">Pg</i><span>PyQtGraph</span></div><div class="bd"><i style="background:#0e7c9a">JS</i><span>JavaScript</span></div><div class="bd"><i style="background:#0e7c9a">3D</i><span>three.js twin</span></div><div class="bd"><i style="background:#0e7c9a">Rt</i><span>WebRTC camera</span></div><div class="bd"><i style="background:#0e7c9a">Se</i><span>Web Serial</span></div></div></div><div class="col"><h5 style="color:#166534">HARDWARE</h5><div class="bds"><div class="bd"><i style="background:#166534">Ar</i><span>Arduino C++</span></div><div class="bd"><i style="background:#166534">As</i><span>AccelStepper</span></div><div class="bd"><i style="background:#166534">St</i><span>A4988 + NEMA17</span></div><div class="bd"><i style="background:#166534">I2</i><span>AS5600 · I²C</span></div></div></div><div class="col"><h5 style="color:#6d28d9">QUALITY & DEPLOY</h5><div class="bds"><div class="bd"><i style="background:#6d28d9">Pt</i><span>pytest · 250 pass</span></div><div class="bd"><i style="background:#6d28d9">CI</i><span>GitHub Actions</span></div><div class="bd"><i style="background:#6d28d9">Ex</i><span>PyInstaller app</span></div><div class="bd"><i style="background:#6d28d9">Nf</i><span>Netlify site</span></div></div></div></div></div>
+</div>
+<div style="position:absolute;left:836px;top:524px;width:430px">
+  <span class="tag" style="background:#166534;font-size:11.5px">PROOF &gt; PROMISE · WORKING PROTOTYPE</span>
+  <div class="box" style="background:#f3fbf5;border-color:#a7d7b5;padding:6px">
+    <div class="proofrow">
+      <div class="shots" style="grid-template-columns:1fr 1fr 1fr;gap:4px">
+        <figure><img src="console_track.png" style="height:50px"><figcaption>Console replay</figcaption></figure>
+        <figure><img src="software_demo_poster.jpg" style="height:50px"><figcaption>Webcam lock 4 Hz</figcaption></figure>
+        <figure><img src="mk1_photo.jpg" style="height:50px"><figcaption>MK1 closed loop</figcaption></figure>
+      </div>
+      <div class="kp4">
+        <div><b>1.27 s</b><span>median lock · 64 runs</span></div>
+        <div><b>0 / 64</b><span>wrong-target locks</span></div>
+        <div><b>198 µrad</b><span>median error</span></div>
+        <div><b>8–21 ms</b><span>per 33 ms frame</span></div>
+      </div>
+    </div>
+  </div>
+</div><div class="foot">Team ZeroDrift · SIH 2026 · PS 26169<b>3</b></div></div></body></html>

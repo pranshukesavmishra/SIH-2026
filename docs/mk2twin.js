@@ -627,7 +627,14 @@ export function buildMk2Twin(v) {
   halo.scale.set(4, 4, 1); beam.add(halo);
   beam.traverse(o => o.layers.set(1));
   const apGlow = glow(0xff3322, 10, 0.9); apGlow.position.set(41, 14.8, 14.8); gTilt.add(apGlow);
-  const dot = glow(0xff3a2a, 9); const dotCore = glow(0xffd8cc, 2.8); model.add(dot, dotCore);
+  const dot = glow(0xff3a2a, 16); const dotCore = glow(0xffe4dc, 5); model.add(dot, dotCore);
+  // For the page viewer only (layer 1, the webcam never sees them): a wide
+  // halo and a pulsing ring, so the spot where the laser lands on the phone
+  // reads from across the bench.
+  const dotHalo = glow(0xff2a18, 70, 1); dotHalo.layers.set(1); model.add(dotHalo);
+  const dotRing = new THREE.Mesh(new THREE.RingGeometry(12, 16, 48),
+    new THREE.MeshBasicMaterial({ color: 0xff4a3a, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+  dotRing.layers.set(1); model.add(dotRing);
 
   /* ---------------- the breadboard and everything on it ---------------- */
   const bbTop = new THREE.MeshStandardMaterial({ map: breadboardTexture(), roughness: 0.75 });
@@ -955,8 +962,13 @@ export function buildMk2Twin(v) {
       }
     }
     beam.scale.z = len;
-    dot.visible = dotCore.visible = laserOn && !!hit;
-    if (hit) { dot.position.copy(hit); dotCore.position.copy(hit); }
+    dot.visible = dotCore.visible = dotHalo.visible = dotRing.visible = laserOn && !!hit;
+    if (hit) {
+      dot.position.copy(hit); dotCore.position.copy(hit); dotHalo.position.copy(hit);
+      dotRing.position.copy(hit).addScaledVector(n, 0.3); dotRing.lookAt(dotRing.position.clone().add(n));
+      const ph = (t * 1.6) % 1;                                       // ring grows and fades, 1.6 per second
+      dotRing.scale.setScalar(0.8 + ph * 1.6); dotRing.material.opacity = 0.9 * (1 - ph);
+    }
 
     // what the webcam sees, for the overlay
     model.updateMatrixWorld(true); headCam.updateMatrixWorld(true);
@@ -1023,5 +1035,25 @@ export function buildMk2Twin(v) {
     pipFrame.scale.set(pw + 2, ph + 2, 1); pipFrame.position.set(mx + pw / 2, my + ph / 2, -1);
     renderer.autoClear = false; renderer.clearDepth(); renderer.render(pipScene, pipCam); renderer.autoClear = true;
   }
-  return { step, render };
+  /* Named parts for the page's hover labels, in world coordinates. */
+  const at = (obj, p) => () => obj.localToWorld(V(p));
+  const HOT = [
+    ['Webcam', 'USB camera in the head: the tracker\'s eye', () => gTilt.localToWorld(LENS.clone())],
+    ['KY-008 laser', 'Rides with the camera; on while the beacon is locked', () => gTilt.localToWorld(LASER.clone())],
+    ['Laser dot', 'Where the beam lands: on the phone, every locked frame', () => (dot.visible ? model.localToWorld(dot.position.clone()) : null)],
+    ['Tilt motor · NEMA17', 'Nods the head, soft limit ±18°', at(gPan, [-28, PIVOT_Y, 0])],
+    ['Pan motor · NEMA17', 'Turns the whole top, soft limit ±90°', at(model, [0, 36, 0])],
+    ['AS5600 encoder', 'Magnetic angle sensor over the pan shaft: closes the loop', at(model, [0, 92, 0])],
+    ['Arduino Nano', 'Firmware: takes P / T moves over USB, drives STEP / DIR', at(model, [-53.4, 14, 149])],
+    ['2 × A4988 drivers', '1/16 microstepping, current set to Vref 0.55 V', at(model, [14, 18, 147.5])],
+    ['TCA9548A multiplexer', 'I²C switch: sensors share one bus (A4 / A5)', at(model, [61, 14, 147.5])],
+    ['12 V adapter', 'Motor power only, through the DC jack and kill switch', at(model, [175, 35, -160])],
+    ['Beacon · phone torch', 'Blinks at 4 Hz: the one light it must follow', () => phone.g.localToWorld(phone.torch.clone())],
+    ['Decoy', 'Steady red LED: seen, measured, ignored', () => decoy.g.localToWorld(decoy.led.clone())],
+    ['Laptop · /live page', 'Runs the tracker and shows what the webcam sees', at(laptop, [0, 113, -144])],
+  ];
+  function hotspots() {
+    return HOT.map(([name, text, get]) => ({ name, text, p: get() })).filter(h => h.p);
+  }
+  return { step, render, hotspots };
 }

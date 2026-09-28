@@ -182,6 +182,57 @@ function buildMk1(v) {
 }
 
 // ======================================================================
+
+/* Hover labels for the MK2 twin: every named part gets a small marker while
+   the pointer is over the view; the nearest one is named in a card. On touch,
+   a tap does the same. */
+function hoverLabels(canvas, v, twin) {
+  const host = canvas.parentElement;
+  if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+  if (!document.getElementById('hsStyle')) {
+    const st = document.createElement('style'); st.id = 'hsStyle';
+    st.textContent = `
+      .hs-layer{position:absolute;inset:0;pointer-events:none;z-index:3;transition:opacity .2s}
+      .hs-dot{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:rgba(79,199,234,.25);border:1.5px solid #4FC7EA;box-shadow:0 0 8px rgba(79,199,234,.6)}
+      .hs-dot.on{background:#4FC7EA;box-shadow:0 0 0 5px rgba(79,199,234,.25),0 0 14px #4FC7EA}
+      .hs-tip{position:absolute;left:0;top:0;max-width:230px;padding:7px 10px;border-radius:8px;background:rgba(5,11,22,.92);border:1px solid rgba(79,199,234,.55);box-shadow:0 8px 24px rgba(0,0,0,.5);font:12px/1.35 ui-monospace,Menlo,Consolas,monospace;color:#cfe3f3}
+      .hs-tip b{display:block;color:#fff;font-size:12.5px;margin-bottom:2px;letter-spacing:.3px}
+      .hs-hint{position:absolute;right:12px;bottom:34px;pointer-events:none;z-index:3;font:10.5px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.8px;color:#8fb3cf;background:rgba(5,11,22,.6);padding:3px 8px;border-radius:5px;border:1px solid rgba(79,199,234,.25)}`;
+    document.head.appendChild(st);
+  }
+  const hint = document.createElement('div'); hint.className = 'hs-hint'; hint.textContent = 'HOVER TO NAME THE PARTS';
+  const layer = document.createElement('div'); layer.className = 'hs-layer'; layer.style.opacity = 0;
+  const tip = document.createElement('div'); tip.className = 'hs-tip'; layer.appendChild(tip);
+  host.appendChild(layer); host.appendChild(hint);
+  let mouse = null; const dots = []; const p = new THREE.Vector3();
+  const at = e => { const r = canvas.getBoundingClientRect(); mouse = { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  canvas.addEventListener('pointermove', at);
+  canvas.addEventListener('pointerdown', at);
+  canvas.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') mouse = null; });
+  function update() {
+    layer.style.opacity = mouse ? 1 : 0; hint.style.display = mouse ? 'none' : 'block';
+    if (!mouse) return;
+    const w = canvas.clientWidth, h = canvas.clientHeight, hs = twin.hotspots();
+    while (dots.length < hs.length) { const d = document.createElement('i'); d.className = 'hs-dot'; layer.insertBefore(d, tip); dots.push(d); }
+    let best = null, bd = 44;
+    hs.forEach((s, i) => {
+      p.copy(s.p).project(v.camera);
+      const ok = p.z < 1 && Math.abs(p.x) < 1 && Math.abs(p.y) < 1, x = (p.x + 1) / 2 * w, y = (1 - p.y) / 2 * h;
+      dots[i].style.display = ok ? 'block' : 'none'; dots[i].style.transform = `translate(${x}px,${y}px)`;
+      s.x = x; s.y = y;
+      if (ok) { const d = Math.hypot(x - mouse.x, y - mouse.y); if (d < bd) { bd = d; best = s; } }
+    });
+    for (let i = hs.length; i < dots.length; i++) dots[i].style.display = 'none';
+    dots.forEach((d, i) => d.classList.toggle('on', hs[i] === best));
+    if (!best) { tip.style.display = 'none'; return; }
+    tip.style.display = 'block'; tip.innerHTML = `<b>${best.name}</b>${best.text}`;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    const tx = best.x + 16 + tw > w ? best.x - 16 - tw : best.x + 16, ty = Math.min(Math.max(best.y - th / 2, 6), h - th - 6);
+    tip.style.transform = `translate(${tx}px,${ty}px)`;
+  }
+  return { update };
+}
+
 function start() {
   const c1 = document.getElementById('rigMk1'), c2 = document.getElementById('rigMk2');
   if (!c1 || !c2) return;
@@ -193,7 +244,8 @@ function start() {
   const v2 = makeViewer(c2, { cam: [944, -163, 665], target: [-40, -10, 90], autoRotate: -0.3,
     fog: [2000, 4600], dist: [160, 2800], shadowR: 700, shadowMap: 2048 });
   const step1 = buildMk1(v1), mk2 = buildMk2Twin(v2);
-  window.__zdViewers = { v1, v2 };                                  // test hook (screenshots)
+  window.__zdViewers = { v1, v2, mk2 };                                // test hook (screenshots)
+  const labels = mk2.hotspots ? hoverLabels(c2, v2, mk2) : null;
   const view2 = c2.closest('.rig-view');
   const t0 = parseFloat(new URLSearchParams(location.search).get('mk2t')) || 0;   // start the MK2 run at a given second
   const out1 = document.getElementById('rigMk1Read'), out2 = document.getElementById('rigMk2Read');
@@ -213,6 +265,7 @@ function start() {
     if (!(view2 && view2.classList.contains('flat'))) {        // skip MK2 while its PHOTO / VIDEO tab is up
       const b = mk2.step(t + t0, dt);
       v2.controls.update(); mk2.render();
+      if (labels) labels.update();
       if (out2) { out2.textContent = `${b.state.padEnd(9)}  PAN ${deg(b.pan)}°  TILT ${deg(b.tilt)}°`; out2.dataset.state = b.state; }
     }
   }

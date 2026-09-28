@@ -3,122 +3,151 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ZeroDrift — Standard Operating Procedure</title>
-<meta name="description" content="ZD-SOP-001: standard operating procedure for the ZeroDrift FSOC pointing, acquisition and tracking system: simulation test, live tracking and MK2 terminal.">
+<title>ZeroDrift — Standard Operating Procedure (SOP)</title>
+<meta name="description" content="ZD-SOP-001: Standard Operating Procedure for the ZeroDrift Pointing, Acquisition and Tracking system for Free-Space Optical Communication: simulation test, live tracking and MK2 terminal, with proof for every step.">
 <link rel="icon" type="image/png" href="brand/zerodrift_mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#03070D; --panel:#0A111E; --panel2:#0d1728; --edge:#18263A; --ink:#E6F1FA; --ink2:#9fb1c8; --mute:#5b6d84;
-  --cyan:#4FC7EA; --green:#3BD68C; --amber:#FFC24D; --orange:#FF9D45; --red:#FF5555; --blue:#5B8DEF; --vio:#B48CFF;
-  --mono:ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,Consolas,monospace;
-  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --bg:#f4f7fb; --bg2:#eaf0f7; --card:#ffffff; --line:#dbe3ee; --line2:#c7d3e2;
+  --ink:#0f1b2d; --ink2:#3b4a60; --mute:#6b7a90;
+  --navy:#0b1f3a; --blue:#1d5fb8; --cyan:#0e7c9a; --cyanL:#e3f4f9; --green:#15803d; --greenL:#e7f6ec;
+  --amber:#b45309; --amberL:#fdf1e2; --orange:#c2410c; --red:#b91c1c; --redL:#fdecec; --vio:#6d28d9; --vioL:#f0eafd;
+  --head:"Space Grotesk","Segoe UI",system-ui,sans-serif;
+  --body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;overflow-x:hidden;scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--sans);
-  background-image:radial-gradient(circle at 50% -10%,rgba(14,35,65,.5) 0%,transparent 55%),
-  linear-gradient(rgba(24,38,58,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(24,38,58,.13) 1px,transparent 1px);
-  background-size:100% 100%,32px 32px,32px 32px}
-a{color:var(--cyan);text-decoration:none}
-svg text{font-family:var(--sans)}
-/* header (same as the other public pages) */
-.top{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--edge);background:rgba(6,11,20,.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;font-family:var(--mono)}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--body);
+  background-image:radial-gradient(circle at 85% -5%,rgba(14,124,154,.10),transparent 40%),radial-gradient(circle at 0% 30%,rgba(29,95,184,.06),transparent 35%)}
+a{color:var(--blue);text-decoration:none}
+b,strong{font-weight:700;color:var(--ink)}
+svg text{font-family:var(--body)}
+/* site header stays dark, same as every other page */
+.top{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid #18263A;background:rgba(6,11,20,.96);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
 .brand-logo-full{height:42px;width:auto;display:block;margin:-4px 0}
 .nav-links{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px}
-.nav-link{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:5px;color:var(--ink2);font-size:11px;letter-spacing:1px;transition:all .2s;border:1px solid transparent}
+.nav-link{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:5px;color:#9fb1c8;font-size:11px;letter-spacing:1px;transition:all .2s;border:1px solid transparent}
 .nav-link svg{width:13px;height:13px;fill:currentColor;opacity:.85}
-.nav-link:hover{color:var(--cyan);background:rgba(79,199,234,.08)}
-.nav-link.active{color:var(--cyan);background:rgba(79,199,234,.14);border-color:rgba(79,199,234,.3)}
-.github-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:5px;background:var(--panel);border:1px solid var(--edge);color:var(--ink2)}
+.nav-link:hover{color:#4FC7EA;background:rgba(79,199,234,.08)}
+.nav-link.active{color:#4FC7EA;background:rgba(79,199,234,.14);border-color:rgba(79,199,234,.3)}
+.github-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:5px;background:#0A111E;border:1px solid #18263A;color:#9fb1c8}
 .github-icon-btn svg{width:16px;height:16px;fill:currentColor}
-.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:rgba(6,11,20,.95);backdrop-filter:blur(16px);border-top:1px solid var(--edge);z-index:200;justify-content:space-around;align-items:center;padding:0 10px;font-family:var(--mono)}
-.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink2);font-size:10px;flex:1;padding:6px 0}
+.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:rgba(6,11,20,.96);backdrop-filter:blur(16px);border-top:1px solid #18263A;z-index:200;justify-content:space-around;align-items:center;padding:0 10px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;color:#9fb1c8;font-size:10px;flex:1;padding:6px 0}
 .mobile-nav-item svg{width:18px;height:18px;fill:currentColor}
-.mobile-nav-item.active{color:var(--cyan)}
+.mobile-nav-item.active{color:#4FC7EA}
 @media (max-width:900px){.nav-links{display:none}.mobile-bottom-nav{display:flex}body{padding-bottom:70px}}
 
+/* type system */
+.doc{max-width:1180px;margin:0 auto;padding:34px 20px 70px}
+.eyebrow{font:700 12px var(--mono);letter-spacing:2.2px;color:var(--cyan);text-transform:uppercase}
+h1{font:700 46px/1.05 var(--head);letter-spacing:-1.2px;margin:12px 0 10px;color:var(--navy)}
+h1 em{font-style:normal;color:var(--cyan)}
+.lede{font-size:18px;color:var(--ink2);max-width:560px}
+.lede b{color:var(--navy)}
+h2{font:700 30px/1.1 var(--head);letter-spacing:-.6px;color:var(--navy)}
+h3{font:600 19px/1.25 var(--head);color:var(--navy);margin-bottom:6px}
+.small{font-size:13.5px;color:var(--mute)}
+.code{font:600 13px var(--mono);color:var(--navy);background:var(--bg2);border:1px solid var(--line2);padding:2px 7px;border-radius:6px;white-space:nowrap}
+.hl{background:linear-gradient(transparent 58%,rgba(14,124,154,.18) 58%);font-weight:700;color:var(--navy)}
+.abbr{border-bottom:1.5px dotted var(--cyan);cursor:help}
+
 /* layout */
-.doc{max-width:1180px;margin:0 auto;padding:30px 18px 60px}
-.kicker{font:700 11px var(--mono);letter-spacing:2.4px;color:var(--cyan)}
-h1{font-size:40px;line-height:1.1;letter-spacing:-.8px;margin:10px 0 8px}
-h1 span{color:var(--cyan)}
-.lede{color:var(--ink2);max-width:560px;font-size:16px}
-.hero{display:grid;grid-template-columns:1fr 1.15fr;gap:26px;align-items:center}
-.hero-art{border:1px solid var(--edge);border-radius:16px;background:linear-gradient(180deg,#07101f,#040912);overflow:hidden}
-.ctrl{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--edge);border:1px solid var(--edge);border-radius:12px;overflow:hidden;margin-top:18px}
-.ctrl div{background:var(--panel);padding:10px 13px}
+.hero{display:grid;grid-template-columns:1fr 1.1fr;gap:30px;align-items:center}
+.hero-art{border-radius:18px;background:linear-gradient(180deg,#07101f,#040912);overflow:hidden;box-shadow:0 24px 60px rgba(11,31,58,.28)}
+.ctrl{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:20px}
+.ctrl div{background:var(--card);padding:10px 13px}
 .ctrl span{display:block;font:700 9.5px var(--mono);letter-spacing:1.3px;color:var(--mute)}
-.ctrl b{font:700 12.5px var(--mono);color:var(--ink)}
-.toc{display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 4px}
-.toc a{display:inline-flex;align-items:center;gap:7px;font:600 12px var(--sans);color:var(--ink2);border:1px solid var(--edge);border-radius:999px;padding:6px 12px 6px 7px;background:rgba(10,17,30,.8)}
-.toc a i{font:700 10.5px var(--mono);font-style:normal;color:#06101c;background:var(--cyan);border-radius:999px;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center}
-.toc a:hover{color:#fff;border-color:rgba(79,199,234,.5)}
-section{margin-top:54px;scroll-margin-top:80px}
-.sh{display:flex;align-items:center;gap:14px;margin-bottom:18px}
-.sh .n{font:800 13px var(--mono);color:#06101c;background:var(--cyan);width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}
-.sh h2{font-size:24px;letter-spacing:-.3px;line-height:1.1}
-.sh p{color:var(--mute);font:12px var(--mono);letter-spacing:.6px;margin-top:3px}
-.grid{display:grid;gap:14px}
-.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:1fr 1fr}
-.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--edge);border-radius:14px;padding:16px}
-.card h3{font-size:15.5px;margin:10px 0 4px}
-.card p{color:var(--ink2);font-size:13.5px;line-height:1.45}
-.pill{display:inline-block;font:700 10px var(--mono);letter-spacing:1px;padding:3px 8px;border-radius:5px;border:1px solid}
-.ico{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.ctrl b{font:700 13px var(--mono);color:var(--navy)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--cyan))}
+.stat b{display:block;font:700 32px/1 var(--head);color:var(--c,var(--cyan));letter-spacing:-.5px}
+.stat span{display:block;font-size:13.5px;color:var(--ink2);margin-top:6px;line-height:1.35}
+.stat a{display:inline-block;margin-top:8px;font:700 11px var(--mono);letter-spacing:.8px;color:var(--c,var(--cyan))}
+.toc{display:flex;flex-wrap:wrap;gap:7px;margin:26px 0 4px}
+.toc a{display:inline-flex;align-items:center;gap:8px;font:600 13px var(--body);color:var(--ink2);border:1px solid var(--line);border-radius:999px;padding:6px 13px 6px 6px;background:var(--card)}
+.toc a i{font:700 11px var(--mono);font-style:normal;color:#fff;background:var(--navy);border-radius:999px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center}
+.toc a:hover{border-color:var(--cyan);color:var(--navy)}
+section{margin-top:64px;scroll-margin-top:84px}
+.sh{display:flex;align-items:flex-start;gap:16px;margin-bottom:22px}
+.sh .n{font:700 15px var(--mono);color:#fff;background:var(--navy);width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:2px}
+.sh p{font-size:15.5px;color:var(--ink2);margin-top:5px;max-width:760px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.split{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 1px 2px rgba(15,27,45,.04)}
+.card p{color:var(--ink2);font-size:14.5px;line-height:1.5}
+.ico{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 .ico svg{width:26px;height:26px}
-/* figure panel for the flowchart */
-.fig{background:#fff;border-radius:16px;padding:10px;border:1px solid #cbd5e1;box-shadow:0 20px 50px rgba(0,0,0,.45)}
-.fig svg{width:100%;height:auto;display:block}
-.figcap{font:11.5px var(--mono);color:var(--mute);margin-top:8px;text-align:center}
-.scroller{overflow-x:auto}
-.scroller .fig{min-width:760px}
-/* state strip */
-.states{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--edge);border-radius:14px;overflow:hidden}
-.states div{padding:14px 12px;background:var(--panel);border-right:1px solid var(--edge);position:relative}
+.pill{display:inline-block;font:700 10.5px var(--mono);letter-spacing:.8px;padding:4px 9px;border-radius:6px;margin-top:10px}
+.mode img{width:100%;height:150px;object-fit:cover;border-radius:10px;border:1px solid var(--line);margin-top:12px;display:block}
+.mode .src{font:600 11px var(--mono);color:var(--mute);margin-top:6px;display:block}
+
+/* proof blocks */
+.proof{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(11,31,58,.08)}
+.proof .ph{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,var(--greenL),#fff)}
+.proof .ph b{font:700 11px var(--mono);letter-spacing:1.6px;color:var(--green)}
+.proof .ph span{font-size:13px;color:var(--ink2)}
+.proof .ph svg{width:18px;height:18px;flex:none}
+.proof img,.proof video{display:block;width:100%;height:auto;background:#020610}
+.proof .pc{padding:11px 14px;font-size:13.5px;color:var(--ink2);line-height:1.45;border-top:1px solid var(--line)}
+.proof .pc b{color:var(--navy)}
+.proof .svgw{padding:12px 12px 4px;background:#fff}
+.proof .svgw svg{width:100%;height:auto;display:block}
+
+/* steps */
+.steps{display:grid;gap:12px}
+.step{display:grid;grid-template-columns:46px 1fr;gap:14px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.step .d{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font:700 14px var(--mono);color:#fff;background:var(--c,var(--navy))}
+.step h4{font:600 16.5px var(--head);color:var(--navy)}
+.step p{font-size:14.5px;color:var(--ink2);margin-top:2px}
+.ok{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font:700 12px var(--mono);color:var(--green);background:var(--greenL);border:1px solid #b9e2c6;padding:4px 9px;border-radius:7px}
+.why{display:block;margin-top:6px;font-size:13px;color:var(--mute);font-style:italic}
+
+/* states, tables, safety */
+.states{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card)}
+.states div{padding:16px 14px;border-right:1px solid var(--line);position:relative}
 .states div:last-child{border-right:0}
-.states b{display:block;font:800 13px var(--mono);letter-spacing:1px}
-.states span{display:block;color:var(--ink2);font-size:12.5px;margin-top:4px;line-height:1.35}
-.states i{position:absolute;left:0;right:0;top:0;height:3px}
-/* stepper */
-.stepper{display:grid;gap:12px;counter-reset:st}
-.step{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:10px 14px;position:relative}
-.step .d{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 13px var(--mono);color:#06101c}
-.step b{font-size:14.5px}
-.step small{display:block;color:var(--ink2);font-size:12.5px}
-.step .v{font:700 10.5px var(--mono);letter-spacing:.6px;color:var(--green);border:1px solid rgba(59,214,140,.4);background:rgba(59,214,140,.08);padding:5px 9px;border-radius:6px;white-space:nowrap}
-.flowline{display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;overflow-x:auto}
-.fl{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--edge);padding:14px 12px;position:relative}
-.fl:first-child{border-radius:12px 0 0 12px}.fl:last-child{border-radius:0 12px 12px 0}
-.fl + .fl{border-left:0}
-.fl .k{font:800 22px var(--mono);color:var(--cyan)}
-.fl b{display:block;font-size:14px;margin-top:4px}
-.fl small{color:var(--ink2);font-size:12px;display:block;line-height:1.35;margin-top:2px}
-.fl .ok{display:inline-block;margin-top:8px;font:700 10px var(--mono);color:var(--green)}
-/* tables */
-.tbl{overflow-x:auto;border:1px solid var(--edge);border-radius:14px;background:var(--panel)}
-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:640px}
-th{text-align:left;font:700 10px var(--mono);letter-spacing:1.3px;color:var(--mute);padding:11px 14px;border-bottom:1px solid var(--edge);background:rgba(3,8,18,.6)}
-td{padding:10px 14px;border-bottom:1px solid rgba(24,38,58,.75);color:#c9d6e6;vertical-align:middle}
+.states i{position:absolute;left:0;right:0;top:0;height:4px}
+.states b{display:block;font:700 14px var(--mono);letter-spacing:1px}
+.states span{display:block;color:var(--ink2);font-size:13.5px;margin-top:6px;line-height:1.4}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:620px}
+th{text-align:left;font:700 10.5px var(--mono);letter-spacing:1.4px;color:var(--mute);padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg)}
+td{padding:11px 16px;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:middle}
 tr:last-child td{border-bottom:0}
-td.k{font:700 12.5px var(--mono);color:#fff;white-space:nowrap}
-td code,.code{font:12.5px var(--mono);color:#bfeaf7;background:rgba(79,199,234,.08);border:1px solid rgba(79,199,234,.2);padding:2px 7px;border-radius:5px}
-.bar{height:6px;border-radius:3px;background:rgba(79,199,234,.12);overflow:hidden;min-width:90px}
-.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--green))}
-/* safety */
-.haz{display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:center;border:1px solid rgba(255,85,85,.35);background:linear-gradient(90deg,rgba(255,85,85,.09),rgba(255,85,85,.02));border-radius:14px;padding:14px}
-.haz b{font-size:15px}
-.haz p{color:var(--ink2);font-size:13px;line-height:1.4}
-.seq{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.chip{font:700 12px var(--mono);padding:8px 12px;border-radius:8px;border:1px solid;letter-spacing:.5px}
-.arrow{color:var(--mute);font:700 14px var(--mono)}
-.foot{border-top:1px solid var(--edge);margin-top:56px;padding-top:16px;font:11px var(--mono);color:var(--mute);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-@media (max-width:900px){.hero{grid-template-columns:1fr}.g4{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr}.states{grid-template-columns:1fr 1fr}.states div{border-bottom:1px solid var(--edge)}}
-@media (max-width:560px){h1{font-size:30px}.ctrl{grid-template-columns:1fr 1fr}.g2,.g4{grid-template-columns:1fr}.step{grid-template-columns:40px 1fr}.step .v{grid-column:2;justify-self:start}.states{grid-template-columns:1fr}}
-@media print{.top,.mobile-bottom-nav,.toc{display:none}}
+td.k{font:700 13.5px var(--mono);color:var(--navy);white-space:nowrap}
+td.full{color:var(--ink)}
+.dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--navy)}
+.dot.no{background:transparent;border:1.5px solid var(--line2)}
+.bar{height:8px;border-radius:4px;background:var(--bg2);overflow:hidden;min-width:110px}
+.bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.pass{font:700 11px var(--mono);letter-spacing:1px;color:#fff;background:var(--green);padding:3px 8px;border-radius:5px}
+.haz{display:grid;grid-template-columns:58px 1fr;gap:14px;align-items:center;border:1px solid #f2c4c4;background:linear-gradient(90deg,var(--redL),#fff);border-radius:16px;padding:16px}
+.haz h3{color:var(--red);margin:0}
+.haz p{color:var(--ink2);font-size:14px;line-height:1.45}
+.seq{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+.chip{font:700 13px var(--mono);padding:9px 13px;border-radius:9px;border:1.5px solid}
+.arrow{color:var(--mute);font:700 16px var(--mono)}
+.gloss{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.gl{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+.gl b{display:block;font:700 15px var(--mono);color:var(--cyan)}
+.gl span{font-size:13.5px;color:var(--ink2);line-height:1.35;display:block;margin-top:2px}
+.fig{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:0 14px 40px rgba(11,31,58,.10)}
+.fig svg{width:100%;height:auto;display:block}
+.scroller{overflow-x:auto}.scroller .fig{min-width:760px}
+.figcap{font-size:13.5px;color:var(--mute);margin-top:10px;text-align:center}
+.foot{border-top:1px solid var(--line);margin-top:60px;padding-top:18px;font:12px var(--mono);color:var(--mute);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (max-width:980px){.hero,.split{grid-template-columns:1fr}.stats,.g4{grid-template-columns:1fr 1fr}.g3,.gloss{grid-template-columns:1fr 1fr}.states{grid-template-columns:1fr 1fr}.states div{border-bottom:1px solid var(--line)}}
+@media (max-width:600px){h1{font-size:34px}h2{font-size:25px}.ctrl{grid-template-columns:1fr 1fr}.g2,.g3,.gloss{grid-template-columns:1fr}.states{grid-template-columns:1fr}.stat b{font-size:27px}}
+@media print{.top,.mobile-bottom-nav,.toc{display:none}body{background:#fff}.proof,.fig{box-shadow:none}}
 </style>
 </head>
 <body>
-
 <div class="top">
   <a href="index.html"><img src="brand/zerodrift_logo.png" alt="ZeroDrift" class="brand-logo-full"></a>
   <div class="nav-links">
@@ -131,23 +160,23 @@ td code,.code{font:12.5px var(--mono);color:#bfeaf7;background:rgba(79,199,234,.
   <a href="https://github.com/pranshukesavmishra/SIH-2026" class="github-icon-btn" title="View Source on GitHub" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg></a>
 </div>
 
+
 <main class="doc">
-  <!-- ================= HERO ================= -->
-  <div class="hero">
-    <div>
-      <div class="kicker">STANDARD OPERATING PROCEDURE</div>
-      <h1>ZeroDrift PAT system: <span>operation &amp; test</span></h1>
-      <p class="lede">Run, verify and shut down the pointing, acquisition and tracking system the same way every time, in all three modes.</p>
-      <div class="ctrl">
-        <div><span>DOC NO.</span><b>ZD-SOP-001</b></div>
-        <div><span>REVISION</span><b>1.1 · 28 Sep 26</b></div>
-        <div><span>PROBLEM</span><b>PS26169 · ISRO</b></div>
-        <div><span>OWNER</span><b>Team ZeroDrift</b></div>
-      </div>
+
+<!-- ======================= HERO ======================= -->
+<div class="hero">
+  <div>
+    <div class="eyebrow">ZD-SOP-001 · Standard Operating Procedure (SOP)</div>
+    <h1>How to run, test and trust <em>ZeroDrift</em></h1>
+    <p class="lede">ZeroDrift is a <b>Pointing, Acquisition and Tracking (PAT)</b> system for <b>Free-Space Optical Communication (FSOC)</b>. It finds a partner's blinking beacon with a camera, ignores every other light, and keeps the laser aimed at it. This page is the exact routine our team follows, and every claim links to its proof.</p>
+    <div class="ctrl">
+      <div><span>DOCUMENT</span><b>ZD-SOP-001</b></div>
+      <div><span>REVISION</span><b>2.0 · 28 Sep 26</b></div>
+      <div><span>PROBLEM STATEMENT</span><b>PS26169 · ISRO</b></div>
+      <div><span>OWNER</span><b>Team ZeroDrift</b></div>
     </div>
-    <div class="hero-art">
-      <!-- the whole system in one picture: beacon, decoy, camera, lock, gimbal, laptop -->
-      <svg viewBox="0 0 560 330" role="img" aria-label="ZeroDrift locks on the blinking beacon and ignores a steady decoy">
+  </div>
+  <div class="hero-art"><svg viewBox="0 0 560 330" role="img" aria-label="ZeroDrift locks on the blinking beacon and ignores a steady decoy">
         <defs>
           <radialGradient id="hb" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="#ff6b6b"/><stop offset="1" stop-color="#ff3b3b" stop-opacity="0"/></radialGradient>
           <radialGradient id="hd" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd0d0"/><stop offset=".3" stop-color="#d94646"/><stop offset="1" stop-color="#d94646" stop-opacity="0"/></radialGradient>
@@ -186,42 +215,73 @@ td code,.code{font:12.5px var(--mono);color:#bfeaf7;background:rgba(79,199,234,.
         <!-- usb link -->
         <path d="M178 262 C 220 262, 230 300, 262 306" stroke="#4FC7EA" stroke-width="1.6" fill="none" stroke-dasharray="4 3"/>
         <text x="214" y="258" fill="#4FC7EA" font-size="9.5" font-weight="700">USB · Web Serial</text>
-      </svg>
-    </div>
+      </svg></div>
+</div>
+
+<div class="stats">
+  <div class="stat" style="--c:#0e7c9a"><b>1.27 s</b><span><strong>median time to lock</strong> across 64 simulated satellite passes</span><a href="#p-accept">SEE PROOF ↓</a></div>
+  <div class="stat" style="--c:#15803d"><b>0 / 64</b><span>runs that <strong>ever locked onto a decoy</strong> light</span><a href="#p-decoy">SEE PROOF ↓</a></div>
+  <div class="stat" style="--c:#1d5fb8"><b>198 µrad</b><span><strong>median pointing error</strong> on the ISS (International Space Station) pass</span><a href="#p-accept">SEE PROOF ↓</a></div>
+  <div class="stat" style="--c:#6d28d9"><b>250 / 251</b><span>automated <strong>tests passing</strong> (1 skipped), re-run 28 Sep</span><a href="#p-tests">SEE PROOF ↓</a></div>
+</div>
+
+<nav class="toc">
+  <a href="#modes"><i>1</i>Modes</a><a href="#gloss"><i>2</i>Full forms</a><a href="#flow"><i>3</i>How it decides</a><a href="#states"><i>4</i>States</a>
+  <a href="#kit"><i>5</i>Equipment</a><a href="#safety"><i>6</i>Safety</a><a href="#a"><i>A</i>Simulation</a><a href="#b"><i>B</i>Live</a>
+  <a href="#c"><i>C</i>MK2 terminal</a><a href="#off"><i>D</i>Shutdown</a><a href="#accept"><i>7</i>Acceptance</a><a href="#faults"><i>8</i>Faults</a><a href="#records"><i>9</i>Records</a>
+</nav>
+
+<!-- ======================= 1 MODES ======================= -->
+<section id="modes">
+  <div class="sh"><div class="n">1</div><div><h2>Purpose &amp; scope</h2><p>One tracking engine, <b>three ways to run it</b>. Whichever you use, you follow the same steps and write the same record, so results can be compared.</p></div></div>
+  <div class="grid g3">
+    <a class="card mode" href="#a">
+      <div class="ico" style="background:#e6eefb"><svg viewBox="0 0 24 24" fill="none" stroke="#1d5fb8" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-25 12 12)"/><circle cx="20" cy="8" r="1.4" fill="#1d5fb8"/></svg></div>
+      <h3>A · Simulation test</h3><p>Replays real engine runs in the <b>Console</b> and grades them automatically. <b>No hardware needed.</b></p>
+      <img src="media/sop/console.jpg" alt="Console replaying a logged run" loading="lazy"><span class="src">▲ real Console screenshot</span>
+    </a>
+    <a class="card mode" href="#b">
+      <div class="ico" style="background:var(--cyanL)"><svg viewBox="0 0 24 24" fill="none" stroke="#0e7c9a" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="12" cy="10" r="2.4"/></svg></div>
+      <h3>B · Live optical tracking</h3><p>Your <b>laptop webcam</b> locks the 4 Hz beacon inside the browser, live.</p>
+      <img src="media/software_demo_poster.jpg" alt="Live demo locked on the beacon" loading="lazy"><span class="src">▲ frame from our unedited recording</span>
+    </a>
+    <a class="card mode" href="#c">
+      <div class="ico" style="background:var(--greenL)"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="1.9" stroke-linecap="round"><path d="M5 20h14M9 20v-5h6v5"/><rect x="7" y="6" width="10" height="7" rx="2"/><path d="M17 9.5h4M12 13v2"/></svg></div>
+      <h3>C · MK2 terminal</h3><p>A two-axis <b>stepper-motor gimbal</b> closes the loop on real hardware.</p>
+      <img src="media/sop/mk2_twin.jpg" alt="MK2 digital twin" loading="lazy"><span class="src">▲ 3D digital twin of the build</span>
+    </a>
   </div>
+</section>
 
-  <nav class="toc">
-    <a href="#modes"><i>1</i>Modes</a><a href="#flow"><i>2</i>Flowchart</a><a href="#states"><i>3</i>States</a><a href="#kit"><i>4</i>Equipment</a>
-    <a href="#safety"><i>5</i>Safety</a><a href="#a"><i>A</i>Simulation</a><a href="#b"><i>B</i>Live</a><a href="#c"><i>C</i>MK2</a>
-    <a href="#off"><i>D</i>Shutdown</a><a href="#accept"><i>6</i>Acceptance</a><a href="#faults"><i>7</i>Faults</a><a href="#records"><i>8</i>Records</a>
-  </nav>
+<!-- ======================= 2 GLOSSARY ======================= -->
+<section id="gloss">
+  <div class="sh"><div class="n">2</div><div><h2>Full forms used on this page</h2><p>Every short form, written out once, so nobody has to guess.</p></div></div>
+  <div class="gloss">
+    <div class="gl"><b>SOP</b><span>Standard Operating Procedure</span></div>
+    <div class="gl"><b>PAT</b><span>Pointing, Acquisition and Tracking</span></div>
+    <div class="gl"><b>FSOC</b><span>Free-Space Optical Communication: data sent by laser through open air</span></div>
+    <div class="gl"><b>FOV</b><span>Field of View: how much the camera sees (simulation: 6°)</span></div>
+    <div class="gl"><b>µrad</b><span>Microradian: 1 µrad ≈ 1 mm of error at 1 km</span></div>
+    <div class="gl"><b>AZ / EL</b><span>Azimuth / Elevation: left-right and up-down angle</span></div>
+    <div class="gl"><b>CFAR</b><span>Constant False Alarm Rate: a detector threshold that adapts to background glare</span></div>
+    <div class="gl"><b>IMM</b><span>Interacting Multiple Model: Kalman filter that switches between steady and manoeuvring motion</span></div>
+    <div class="gl"><b>SGP4 · TLE</b><span>Simplified General Perturbations 4 · Two-Line Element set: real satellite orbit data</span></div>
+    <div class="gl"><b>ISS</b><span>International Space Station, used as the realistic test target</span></div>
+    <div class="gl"><b>NN</b><span>Neural Network: our small learned verifier that double-checks the beacon</span></div>
+    <div class="gl"><b>USB · I²C</b><span>Universal Serial Bus · Inter-Integrated Circuit (sensor bus)</span></div>
+    <div class="gl"><b>NEMA17</b><span>National Electrical Manufacturers Association size-17 stepper motor (1.7-inch frame)</span></div>
+    <div class="gl"><b>Vref</b><span>Reference Voltage on the driver: sets the motor current limit</span></div>
+    <div class="gl"><b>LED · GND</b><span>Light-Emitting Diode · Ground (0 V)</span></div>
+    <div class="gl"><b>fps · Hz · ms</b><span>frames per second · hertz (per second) · millisecond</span></div>
+    <div class="gl"><b>CI</b><span>Continuous Integration: tests run on every code change</span></div>
+    <div class="gl"><b>ISRO · SIH</b><span>Indian Space Research Organisation · Smart India Hackathon</span></div>
+  </div>
+</section>
 
-  <!-- ================= 1 MODES ================= -->
-  <section id="modes">
-    <div class="sh"><div class="n">1</div><div><h2>Purpose &amp; scope</h2><p>ONE ENGINE · THREE WAYS TO RUN IT · SAME RESULTS, SAME RECORD</p></div></div>
-    <div class="grid g3">
-      <a class="card" href="#a">
-        <div class="ico" style="background:rgba(91,141,239,.15)"><svg viewBox="0 0 24 24" fill="none" stroke="#5B8DEF" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-25 12 12)"/><circle cx="20" cy="8" r="1.4" fill="#5B8DEF"/></svg></div>
-        <h3>A · Simulation test</h3><p>Replay of logged engine runs in the Console, auto-graded.</p>
-        <div style="margin-top:10px"><span class="pill" style="color:#5B8DEF;border-color:rgba(91,141,239,.5)">NO HARDWARE</span></div>
-      </a>
-      <a class="card" href="#b">
-        <div class="ico" style="background:rgba(79,199,234,.15)"><svg viewBox="0 0 24 24" fill="none" stroke="#4FC7EA" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="12" cy="10" r="2.4"/></svg></div>
-        <h3>B · Live optical tracking</h3><p>Laptop webcam locks the 4 Hz beacon in the browser.</p>
-        <div style="margin-top:10px"><span class="pill" style="color:#4FC7EA;border-color:rgba(79,199,234,.5)">WEBCAM + BEACON</span></div>
-      </a>
-      <a class="card" href="#c">
-        <div class="ico" style="background:rgba(59,214,140,.15)"><svg viewBox="0 0 24 24" fill="none" stroke="#3BD68C" stroke-width="1.8" stroke-linecap="round"><path d="M5 20h14M9 20v-5h6v5"/><rect x="7" y="6" width="10" height="7" rx="2"/><path d="M17 9.5h4"/><path d="M12 13v2"/></svg></div>
-        <h3>C · MK2 terminal</h3><p>Two-axis stepper gimbal closes the loop on real hardware.</p>
-        <div style="margin-top:10px"><span class="pill" style="color:#3BD68C;border-color:rgba(59,214,140,.5)">12 V · STEPPERS · LASER</span></div>
-      </a>
-    </div>
-  </section>
-
-  <!-- ================= 2 FLOWCHART ================= -->
-  <section id="flow">
-    <div class="sh"><div class="n">2</div><div><h2>How the software decides</h2><p>ENGINE STATE MACHINE · src/fsoc_pat/pipeline.py · ONE PASS EVERY 33 ms</p></div></div>
-    <div class="scroller"><div class="fig"><svg viewBox="0 0 852 578" role="img" aria-label="ZeroDrift engine flowchart">
+<!-- ======================= 3 FLOW ======================= -->
+<section id="flow">
+  <div class="sh"><div class="n">3</div><div><h2>How the software decides</h2><p>Every <b>33 milliseconds</b> the engine runs this loop once. Every box is real code in <span class="code">src/fsoc_pat/pipeline.py</span>, and every YES / NO is a decision it actually makes.</p></div></div>
+  <div class="scroller"><div class="fig"><svg viewBox="0 0 852 578" role="img" aria-label="ZeroDrift engine flowchart">
   <defs>
     <marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0b1f3a"/></marker>
     <marker id="br" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#b3261e"/></marker>
@@ -340,190 +400,291 @@ td code,.code{font:12.5px var(--mono);color:#bfeaf7;background:rgba(79,199,234,.
   <text x="139" y="554" fill="#0e5a8a" font-size="10" font-weight="700">→ acceptance tests (pytest, CI)</text>
   </g>
 </svg></div></div>
-    <div class="figcap">Every box exists in the engine. YES / NO branches are the real decisions made on each camera frame.</div>
-  </section>
-
-  <!-- ================= 3 STATES ================= -->
-  <section id="states">
-    <div class="sh"><div class="n">3</div><div><h2>Tracker states</h2><p>WHAT THE STATUS LIGHT MEANS</p></div></div>
-    <div class="states">
-      <div><i style="background:#5B8DEF"></i><b style="color:#5B8DEF">SEARCH</b><span>Spiral scan, widens until something is seen</span></div>
-      <div><i style="background:#FFC24D"></i><b style="color:#FFC24D">ACQUIRE</b><span>Beacon identified, steering onto it</span></div>
-      <div><i style="background:#3BD68C"></i><b style="color:#3BD68C">TRACK</b><span>Locked; error measured on the image</span></div>
-      <div><i style="background:#FF9D45"></i><b style="color:#FF9D45">COAST</b><span>Beacon dark (blink / cloud): follow the prediction. Normal</span></div>
-      <div><i style="background:#FF5555"></i><b style="color:#FF5555">REACQUIRE</b><span>Small spiral at the last good position</span></div>
-    </div>
-  </section>
-
-  <!-- ================= 4 EQUIPMENT ================= -->
-  <section id="kit">
-    <div class="sh"><div class="n">4</div><div><h2>Equipment</h2><p>WHAT EACH MODE NEEDS</p></div></div>
-    <div class="tbl"><table>
-      <tr><th>ITEM</th><th>ROLE</th><th style="text-align:center">A</th><th style="text-align:center">B</th><th style="text-align:center">C</th></tr>
-      <tr><td class="k">💻 Laptop · Chrome / Edge</td><td>Runs everything; Web Serial for the rig</td><td align="center">●</td><td align="center">●</td><td align="center">●</td></tr>
-      <tr><td class="k">📷 Webcam</td><td>Built-in (B) or USB on the head (C)</td><td align="center">·</td><td align="center">●</td><td align="center">●</td></tr>
-      <tr><td class="k">🔴 Beacon</td><td>Red LED on a Nano, 4 Hz, or phone torch</td><td align="center">·</td><td align="center">●</td><td align="center">●</td></tr>
-      <tr><td class="k">⭕ Decoy</td><td>Steady red LED: must be ignored</td><td align="center">·</td><td align="center">●</td><td align="center">●</td></tr>
-      <tr><td class="k">⚙ MK2 terminal</td><td>Nano · 2× A4988 + NEMA17 · AS5600 · laser</td><td align="center">·</td><td align="center">·</td><td align="center">●</td></tr>
-      <tr><td class="k">🔌 12 V 2 A adapter</td><td>Motors only, through the kill switch</td><td align="center">·</td><td align="center">·</td><td align="center">●</td></tr>
-      <tr><td class="k">📏 Multimeter</td><td>Rail checks, Vref</td><td align="center">·</td><td align="center">·</td><td align="center">●</td></tr>
-    </table></div>
-  </section>
-
-  <!-- ================= 5 SAFETY ================= -->
-  <section id="safety">
-    <div class="sh"><div class="n">5</div><div><h2>Safety</h2><p>READ BEFORE PROCEDURE C</p></div></div>
-    <div class="grid g3">
-      <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="rgba(255,85,85,.15)" stroke="#FF5555" stroke-width="2.5" stroke-linejoin="round"/><circle cx="30" cy="36" r="5" fill="#FF5555"/><path d="M30 36 L46 22" stroke="#FF5555" stroke-width="2.5"/></svg><div><b>Laser</b><p>Never at eyes, people or mirrors. Off (<span class="code">L0</span>) unless needed.</p></div></div>
-      <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="rgba(255,85,85,.15)" stroke="#FF5555" stroke-width="2.5" stroke-linejoin="round"/><path d="M32 20 L24 36 H31 L27 46 L38 30 H31 Z" fill="#FF5555"/></svg><div><b>Electrical</b><p>12 V only to the motor rail. Wire unplugged. No motor swaps while powered.</p></div></div>
-      <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="rgba(255,85,85,.15)" stroke="#FF5555" stroke-width="2.5" stroke-linejoin="round"/><circle cx="30" cy="36" r="8" fill="none" stroke="#FF5555" stroke-width="2.5"/><path d="M30 24v4M30 44v4M18 36h4M38 36h4" stroke="#FF5555" stroke-width="2.5"/></svg><div><b>Moving head</b><p>Hands and cables clear. Kill switch on any noise, smell or heat.</p></div></div>
-    </div>
-    <div class="grid g2" style="margin-top:14px">
-      <div class="card"><div class="kicker" style="color:var(--green)">POWER ON</div><div class="seq" style="margin-top:10px"><span class="chip" style="color:#4FC7EA;border-color:rgba(79,199,234,.5)">① USB</span><span class="arrow">→</span><span class="chip" style="color:#3BD68C;border-color:rgba(59,214,140,.5)">② 12 V switch ON</span></div></div>
-      <div class="card"><div class="kicker" style="color:var(--red)">POWER OFF</div><div class="seq" style="margin-top:10px"><span class="chip" style="color:#FF5555;border-color:rgba(255,85,85,.5)">① 12 V switch OFF</span><span class="arrow">→</span><span class="chip" style="color:#9fb1c8;border-color:var(--edge)">② USB out</span></div></div>
-    </div>
-  </section>
-
-  <!-- ================= A SIMULATION ================= -->
-  <section id="a">
-    <div class="sh"><div class="n" style="background:#5B8DEF">A</div><div><h2>Procedure A · Simulation test</h2><p>CONSOLE · NO HARDWARE · 3 SCENARIOS</p></div></div>
-    <div class="flowline">
-      <div class="fl"><div class="k">01</div><b>Open Console</b><small>desktop browser</small><span class="ok">✓ run starts playing</span></div>
-      <div class="fl"><div class="k">02</div><b>Pick scenario</b><small>decoy field · ISS pass · turbulence</small></div>
-      <div class="fl"><div class="k">03</div><b>Watch the lock</b><small>SEARCH → ACQUIRE → TRACK</small><span class="ok">✓ decoys never bracketed</span></div>
-      <div class="fl"><div class="k">04</div><b>Read test record</b><small>auto-opens at the end</small><span class="ok">✓ 8 / 8 PASS</span></div>
-      <div class="fl"><div class="k">05</div><b>Log it</b><small>record ID + score + date</small></div>
-    </div>
-    <div class="tbl" style="margin-top:14px"><table>
-      <tr><th>SCENARIO</th><th>WHAT IT STRESSES</th><th>LENGTH</th><th>RECORD ID</th></tr>
-      <tr><td class="k">Decoy field</td><td>3 moving decoys + glints</td><td>130 s</td><td><span class="code">ZD-SIM-DECOYS</span></td></tr>
-      <tr><td class="k">ISS pass</td><td>Real SGP4 orbit over Bengaluru</td><td>45 s</td><td><span class="code">ZD-SIM-RUN</span></td></tr>
-      <tr><td class="k">Hard turbulence</td><td>400 µrad tilt</td><td>30 s</td><td><span class="code">ZD-SIM-TURBULENCE</span></td></tr>
-    </table></div>
-  </section>
-
-  <!-- ================= B LIVE ================= -->
-  <section id="b">
-    <div class="sh"><div class="n">B</div><div><h2>Procedure B · Live optical tracking</h2><p>LIVE DEMO PAGE · DIM ROOM · BEACON + DECOY IN VIEW</p></div></div>
-    <div class="stepper">
-      <div class="step"><div class="d" style="background:#4FC7EA">B1</div><div><b>Set the scene</b><small>Dim room · beacon at 4 Hz · steady decoy in the same view</small></div><span class="v">✓ both visible</span></div>
-      <div class="step"><div class="d" style="background:#4FC7EA">B2</div><div><b>START CAMERA</b><small>Allow camera access</small></div><span class="v">✓ SEARCHING · ≥ 25 fps</span></div>
-      <div class="step"><div class="d" style="background:#4FC7EA">B3</div><div><b>Show the beacon</b><small>Hold it anywhere in view</small></div><span class="v">✓ LOCKED · 4.0 Hz · ≈ 2 s</span></div>
-      <div class="step"><div class="d" style="background:#4FC7EA">B4</div><div><b>Move it</b><small>Slow, then fast, across the whole view</small></div><span class="v">✓ lock follows · decoy ignored</span></div>
-      <div class="step"><div class="d" style="background:#4FC7EA">B5</div><div><b>Cover it 1 s</b><small>Then uncover</small></div><span class="v">✓ coasts, relocks alone</span></div>
-    </div>
-    <p style="color:var(--mute);font-size:12.5px;margin-top:10px">Red LED in a bright room: Settings → <b style="color:var(--ink)">RED BEACON FILTER</b>.</p>
-  </section>
-
-  <!-- ================= C MK2 ================= -->
-  <section id="c">
-    <div class="sh"><div class="n" style="background:#3BD68C">C</div><div><h2>Procedure C · MK2 terminal</h2><p>PRE-POWER CHECK → COMMISSION → CLOSED LOOP</p></div></div>
-    <div class="grid g2">
-      <div>
-        <div class="kicker" style="margin-bottom:8px">C.1 · PRE-POWER CHECK (UNPLUGGED)</div>
-        <div class="tbl"><table style="min-width:0">
-          <tr><th>CHECK</th><th>EXPECT</th></tr>
-          <tr><td class="k">12 V rail ↔ 5 V rail</td><td>no beep</td></tr>
-          <tr><td class="k">12 V rail ↔ GND</td><td>no beep (short chirp = capacitor, OK)</td></tr>
-          <tr><td class="k">A4988 VMOT / VDD</td><td>12 V / 5 V</td></tr>
-          <tr><td class="k">EN · MS1-3 · RST-SLP</td><td>GND · 5 V · joined</td></tr>
-          <tr><td class="k">STEP / DIR</td><td>pan D2 / D3 · tilt D4 / D5</td></tr>
-          <tr><td class="k">Laser · sensor bus</td><td>D7 · A4 / A5 via mux</td></tr>
-          <tr><td class="k">Turn by hand</td><td>no cable tight at the limits</td></tr>
-        </table></div>
+  <div class="grid g2" style="margin-top:22px">
+    <div class="proof" id="p-blink">
+      <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Why a steady light can never win</span></div>
+      <div class="svgw">
+        <svg viewBox="0 0 520 220" role="img" aria-label="Beacon blinks at 4 Hz, decoy is steady; only the beacon has power at 4 Hz">
+          <text x="10" y="20" font-size="12" font-weight="700" fill="#0b1f3a">Brightness over 1 second, as the camera measures it</text>
+          <text x="10" y="54" font-size="11" font-weight="700" fill="#15803d">BEACON</text>
+          <path d="M70 70 V40 H100 V70 H130 V40 H160 V70 H190 V40 H220 V70 H250 V40 H280 V70 H310 V40" fill="none" stroke="#15803d" stroke-width="3"/>
+          <text x="10" y="112" font-size="11" font-weight="700" fill="#b91c1c">DECOY</text>
+          <path d="M70 108 H310" stroke="#b91c1c" stroke-width="3"/>
+          <path d="M70 128 H310" stroke="#c7d3e2"/><text x="70" y="142" font-size="10" fill="#6b7a90">0 s</text><text x="296" y="142" font-size="10" fill="#6b7a90">1 s</text>
+          <text x="190" y="142" font-size="10" fill="#6b7a90" text-anchor="middle">4 on / off cycles = 4 Hz</text>
+          <text x="345" y="40" font-size="11.5" font-weight="700" fill="#0b1f3a">Signal strength at 4 Hz</text>
+          <rect x="345" y="52" width="150" height="22" rx="4" fill="#e7f6ec"/><rect x="345" y="52" width="142" height="22" rx="4" fill="#15803d"/>
+          <text x="352" y="67" font-size="11" font-weight="700" fill="#fff">beacon: strong ✓ lock</text>
+          <rect x="345" y="92" width="150" height="22" rx="4" fill="#fdecec"/><rect x="345" y="92" width="6" height="22" rx="2" fill="#b91c1c"/>
+          <text x="358" y="107" font-size="11" font-weight="700" fill="#b91c1c">decoy: ≈ 0 ✕ veto</text>
+          <text x="10" y="178" font-size="12" fill="#3b4a60">The engine listens for the beacon's <tspan font-weight="700">4 Hz rhythm</tspan> (a Goertzel filter in</text>
+          <text x="10" y="196" font-size="12" fill="#3b4a60"><tspan font-family="JetBrains Mono,monospace" font-size="11">tracking.py</tspan>). Brightness alone never decides: a lamp, star or glint</text>
+          <text x="10" y="214" font-size="12" fill="#3b4a60">has no 4 Hz rhythm, so it is <tspan font-weight="700">vetoed</tspan> however bright it is.</text>
+        </svg>
       </div>
-      <div>
-        <div class="kicker" style="margin-bottom:8px">C.2 · SERIAL COMMISSIONING (115200)</div>
-        <div class="tbl"><table style="min-width:0">
-          <tr><th>SEND</th><th>EXPECT</th></tr>
-          <tr><td><span class="code">?</span></td><td>status line · encoders found</td></tr>
-          <tr><td><span class="code">P200 T0</span></td><td>pan turns ≈ 22.5°</td></tr>
-          <tr><td><span class="code">P0 T100</span></td><td>tilt nods ≈ 11°</td></tr>
-          <tr><td><span class="code">C</span></td><td>both back to centre</td></tr>
-          <tr><td><span class="code">L1</span> / <span class="code">L0</span></td><td>laser on / off</td></tr>
-        </table></div>
-        <div class="card" style="margin-top:12px;padding:12px 14px">
-          <div class="seq"><span class="chip" style="color:#FFC24D;border-color:rgba(255,194,77,.5)">Vref 0.55 V</span><span class="chip" style="color:#9fb1c8;border-color:var(--edge)">pan ±90°</span><span class="chip" style="color:#9fb1c8;border-color:var(--edge)">tilt ±18°</span><span class="chip" style="color:#9fb1c8;border-color:var(--edge)">1/16 step</span></div>
+      <div class="pc">Diagram of the check the code runs, <b>not a mock result</b>: see the live recording in Procedure B for the same check on a real webcam.</div>
+    </div>
+    <div class="proof" id="p-decoy">
+      <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>64 runs, 0 wrong-target locks</span></div>
+      <div class="svgw">
+        <svg viewBox="0 0 520 220" role="img" aria-label="64 simulated passes, none locked onto a decoy">
+          <text x="10" y="20" font-size="12" font-weight="700" fill="#0b1f3a">Monte-Carlo campaign: 64 randomised passes</text>
+          <g id="g64"></g>
+          <text x="330" y="70" font-size="40" font-weight="700" fill="#15803d" font-family="Space Grotesk,sans-serif">0 / 64</text>
+          <text x="330" y="92" font-size="12" fill="#3b4a60">runs with <tspan font-weight="700">any</tspan> decoy lock</text>
+          <text x="330" y="126" font-size="26" font-weight="700" fill="#0e7c9a" font-family="Space Grotesk,sans-serif">100 %</text>
+          <text x="330" y="146" font-size="12" fill="#3b4a60">of runs acquired the beacon</text>
+          <text x="10" y="200" font-size="12" fill="#3b4a60">Each square is one full pass with turbulence, vibration, stars and decoys.</text>
+          <text x="10" y="216" font-size="12" fill="#3b4a60">Source: <tspan font-family="JetBrains Mono,monospace" font-size="11">runs/mc-leo/summary.json</tspan> (canonical table, PROJECT_STATE §2).</text>
+        </svg>
+      </div>
+      <div class="pc"><b>Green = locked the real beacon, never a decoy.</b> Same numbers as the project's canonical results table.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 4 STATES ======================= -->
+<section id="states">
+  <div class="sh"><div class="n">4</div><div><h2>What the status light means</h2><p>The tracker is always in exactly <b>one</b> of these five states. <b>COAST is normal</b>: it happens every time the beacon blinks off.</p></div></div>
+  <div class="states">
+    <div><i style="background:#1d5fb8"></i><b style="color:#1d5fb8">SEARCH</b><span>Spiral scan; widens until something is seen</span></div>
+    <div><i style="background:#b45309"></i><b style="color:#b45309">ACQUIRE</b><span>Beacon identified; steering onto it</span></div>
+    <div><i style="background:#15803d"></i><b style="color:#15803d">TRACK</b><span><strong>Locked.</strong> Error measured on the image itself</span></div>
+    <div><i style="background:#c2410c"></i><b style="color:#c2410c">COAST</b><span>Beacon dark for a moment; follows the prediction</span></div>
+    <div><i style="background:#b91c1c"></i><b style="color:#b91c1c">REACQUIRE</b><span>Small spiral at the last good position</span></div>
+  </div>
+</section>
+
+<!-- ======================= 5 EQUIPMENT ======================= -->
+<section id="kit">
+  <div class="sh"><div class="n">5</div><div><h2>Equipment</h2><p>What you need for each mode. <span class="dot" style="vertical-align:-1px"></span> needed · <span class="dot no" style="vertical-align:-1px"></span> not needed</p></div></div>
+  <div class="tbl"><table>
+    <tr><th>ITEM</th><th>WHAT IT DOES</th><th style="text-align:center">A · SIM</th><th style="text-align:center">B · LIVE</th><th style="text-align:center">C · MK2</th></tr>
+    <tr><td class="k">Laptop + Chrome / Edge</td><td>Runs everything; <b>Web Serial</b> talks to the rig over USB</td><td align="center"><span class="dot"></span></td><td align="center"><span class="dot"></span></td><td align="center"><span class="dot"></span></td></tr>
+    <tr><td class="k">Webcam</td><td>Built-in camera (B) or the USB camera on the head (C)</td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td><td align="center"><span class="dot"></span></td></tr>
+    <tr><td class="k">Beacon</td><td>Red LED on an Arduino Nano blinking at <b>4 Hz</b>, or a phone torch</td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td><td align="center"><span class="dot"></span></td></tr>
+    <tr><td class="k">Decoy</td><td>Steady red LED. <b>Must be ignored</b></td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td><td align="center"><span class="dot"></span></td></tr>
+    <tr><td class="k">MK2 terminal</td><td>Nano · 2 × A4988 drivers + NEMA17 motors · AS5600 encoder · KY-008 laser</td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td></tr>
+    <tr><td class="k">12 V 2 A adapter</td><td>Motor power only, through the DC jack and kill switch</td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td></tr>
+    <tr><td class="k">Multimeter</td><td>Rail checks and setting Vref</td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot no"></span></td><td align="center"><span class="dot"></span></td></tr>
+  </table></div>
+</section>
+
+<!-- ======================= 6 SAFETY ======================= -->
+<section id="safety">
+  <div class="sh"><div class="n">6</div><div><h2>Safety first</h2><p>Read before Procedure C. <b>The person holding the 12 V switch can stop everything instantly.</b></p></div></div>
+  <div class="grid g3">
+    <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="#fdecec" stroke="#b91c1c" stroke-width="2.6" stroke-linejoin="round"/><circle cx="30" cy="36" r="5" fill="#b91c1c"/><path d="M30 36 L46 22" stroke="#b91c1c" stroke-width="2.6"/></svg><div><h3>Laser</h3><p><b>Never</b> at eyes, people or mirrors. Keep it off (<span class="code">L0</span>) unless a step needs it.</p></div></div>
+    <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="#fdecec" stroke="#b91c1c" stroke-width="2.6" stroke-linejoin="round"/><path d="M32 20 L24 36 H31 L27 46 L38 30 H31 Z" fill="#b91c1c"/></svg><div><h3>Electrical</h3><p>12 V goes <b>only</b> to the motor rail. Wire with everything unplugged. Never swap a motor while powered.</p></div></div>
+    <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="#fdecec" stroke="#b91c1c" stroke-width="2.6" stroke-linejoin="round"/><circle cx="30" cy="36" r="8" fill="none" stroke="#b91c1c" stroke-width="2.6"/><path d="M30 24v4M30 44v4M18 36h4M38 36h4" stroke="#b91c1c" stroke-width="2.6"/></svg><div><h3>Moving head</h3><p>Hands and cables clear. <b>Switch off</b> at any grinding, smell or heat.</p></div></div>
+  </div>
+  <div class="split" style="margin-top:18px">
+    <div class="grid" style="gap:14px">
+      <div class="card"><div class="eyebrow" style="color:var(--green)">Power on</div><div class="seq"><span class="chip" style="color:#0e7c9a;border-color:#9fd3e3;background:var(--cyanL)">① USB</span><span class="arrow">→</span><span class="chip" style="color:#15803d;border-color:#b9e2c6;background:var(--greenL)">② 12 V switch ON</span></div><span class="why">The Arduino must be awake before the motors get power.</span></div>
+      <div class="card"><div class="eyebrow" style="color:var(--red)">Power off</div><div class="seq"><span class="chip" style="color:#b91c1c;border-color:#f2c4c4;background:var(--redL)">① 12 V switch OFF</span><span class="arrow">→</span><span class="chip" style="color:#3b4a60;border-color:var(--line2);background:var(--bg)">② USB out</span></div><span class="why">Motors lose power first, so nothing moves unexpectedly.</span></div>
+    </div>
+    <div class="proof">
+      <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Where the 12 V can and cannot go</span></div>
+      <div class="svgw">
+        <svg viewBox="0 0 520 190" role="img" aria-label="12 V path: adapter, DC jack, kill switch, top red rail, driver VMOT only">
+          <rect x="8" y="24" width="84" height="46" rx="8" fill="#1b2230"/><text x="50" y="44" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">12 V</text><text x="50" y="60" fill="#9fb1c8" font-size="10" text-anchor="middle">adapter</text>
+          <path d="M92 47 H124" stroke="#1b2230" stroke-width="4"/>
+          <rect x="124" y="28" width="66" height="38" rx="6" fill="#2b3444"/><text x="157" y="51" fill="#fff" font-size="11" font-weight="700" text-anchor="middle">DC jack</text>
+          <path d="M190 40 H232" stroke="#b91c1c" stroke-width="4"/><text x="211" y="33" font-size="10" fill="#b91c1c" font-weight="700" text-anchor="middle">+</text>
+          <rect x="232" y="26" width="70" height="42" rx="6" fill="#ef6b4a"/><text x="267" y="44" fill="#fff" font-size="10.5" font-weight="700" text-anchor="middle">KILL</text><text x="267" y="58" fill="#fff" font-size="10.5" font-weight="700" text-anchor="middle">SWITCH</text>
+          <path d="M302 47 H336" stroke="#b91c1c" stroke-width="4"/>
+          <rect x="336" y="30" width="176" height="34" rx="6" fill="#fdecec" stroke="#b91c1c" stroke-width="1.5"/><text x="424" y="51" font-size="11.5" font-weight="700" fill="#b91c1c" text-anchor="middle">TOP red rail → VMOT only</text>
+          <path d="M157 66 V104 H336" fill="none" stroke="#1b2230" stroke-width="3"/><text x="160" y="92" font-size="10" fill="#3b4a60" font-weight="700">−</text>
+          <rect x="336" y="88" width="176" height="30" rx="6" fill="#eef3f9" stroke="#3b4a60"/><text x="424" y="107" font-size="11.5" font-weight="700" fill="#3b4a60" text-anchor="middle">TOP blue rail = GND</text>
+          <rect x="8" y="136" width="504" height="44" rx="8" fill="#e7f6ec" stroke="#b9e2c6"/>
+          <text x="20" y="155" font-size="11.5" fill="#15803d" font-weight="700">✓ 12 V never touches: the Nano · the 5 V rail · driver VDD · sensors · laser</text>
+          <text x="20" y="171" font-size="11" fill="#3b4a60">Beep test: 12 V rail ↔ 5 V rail must be silent before every power-up.</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= A SIMULATION ======================= -->
+<section id="a">
+  <div class="sh"><div class="n" style="background:#1d5fb8">A</div><div><h2>Procedure A · Simulation test</h2><p>No hardware. About <b>5 minutes</b> per scenario. The Console grades the run for you.</p></div></div>
+  <div class="split">
+    <div class="steps">
+      <div class="step" style="--c:#1d5fb8"><div class="d">A1</div><div><h4>Open the Console</h4><p>Any desktop browser: <a href="console.html">zerodrift…/console</a>.</p><span class="ok">✓ the run starts playing</span></div></div>
+      <div class="step" style="--c:#1d5fb8"><div class="d">A2</div><div><h4>Choose a scenario</h4><p><b>Decoy field</b> (130 s) · <b>ISS pass</b> over Bengaluru (45 s) · <b>Hard turbulence</b> (30 s).</p></div></div>
+      <div class="step" style="--c:#1d5fb8"><div class="d">A3</div><div><h4>Watch the lock</h4><p>State goes <b>SEARCH → ACQUIRE → TRACK</b>; the error number drops.</p><span class="ok">✓ green brackets stay on the beacon, never on a red ◇ decoy</span></div></div>
+      <div class="step" style="--c:#1d5fb8"><div class="d">A4</div><div><h4>Read the Test Record</h4><p>Opens by itself at the end: <b>nine test cases</b>, each graded PASS / FAIL.</p><span class="ok">✓ 8 / 8 PASSED</span></div></div>
+      <div class="step" style="--c:#1d5fb8"><div class="d">A5</div><div><h4>Log it</h4><p>Write the record ID, score and date in the log (Section 9).</p></div></div>
+    </div>
+    <div class="grid" style="gap:16px">
+      <div class="proof">
+        <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Real Test Record from the Console</span></div>
+        <img src="media/sop/test_record.jpg" alt="Console test record, 8 of 8 passed" loading="lazy">
+        <div class="pc">Decoy-field run: <b>8 / 8 PASSED</b>. Values are computed from the logged frames in your browser, <b>not typed in</b>.</div>
+      </div>
+      <div class="proof" id="p-tests">
+        <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>The engine's own test suite</span></div>
+        <div class="svgw" style="background:#0b1220;padding:14px">
+          <svg viewBox="0 0 520 112" role="img" aria-label="pytest: 250 passed, 1 skipped">
+            <text x="0" y="16" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#7fe0f8">$ pytest -q</text>
+            <text x="0" y="40" font-family="JetBrains Mono,monospace" font-size="12" fill="#3bd68c">........................................ [ 28%]</text>
+            <text x="0" y="58" font-family="JetBrains Mono,monospace" font-size="12" fill="#3bd68c">........................................ [ 86%]</text>
+            <text x="0" y="76" font-family="JetBrains Mono,monospace" font-size="12" fill="#3bd68c">...................                      [100%]</text>
+            <text x="0" y="102" font-family="JetBrains Mono,monospace" font-size="13" font-weight="700" fill="#fff">250 passed, 1 skipped</text>
+          </svg>
         </div>
+        <div class="pc">Run on <b>28 September 2026</b>. Anyone can repeat it: <span class="code">pip install -e ".[dev]"</span> then <span class="code">pytest</span>.</div>
       </div>
     </div>
-    <div class="kicker" style="margin:18px 0 8px">C.3 · CLOSED LOOP</div>
-    <div class="flowline">
-      <div class="fl"><div class="k">C1</div><b>CONNECT RIG</b><small>pick the Nano's port</small></div>
-      <div class="fl"><div class="k">C2</div><b>MK2 CAMERA</b><small>USB camera on the head</small></div>
-      <div class="fl"><div class="k">C3</div><b>TEST MOTION</b><small>short self-move</small><span class="ok">✓ both axes move</span></div>
-      <div class="fl"><div class="k">C4</div><b>Show beacon</b><small>move it around</small><span class="ok">✓ head follows · decoy ignored</span></div>
+  </div>
+</section>
+
+<!-- ======================= B LIVE ======================= -->
+<section id="b">
+  <div class="sh"><div class="n" style="background:#0e7c9a">B</div><div><h2>Procedure B · Live optical tracking</h2><p>Just a laptop, a beacon and a steady decoy. <b>Dim the room</b> for best results.</p></div></div>
+  <div class="split">
+    <div class="steps">
+      <div class="step" style="--c:#0e7c9a"><div class="d">B1</div><div><h4>Set the scene</h4><p>Beacon on (<b>4 Hz</b>) and the steady decoy, both in view.</p></div></div>
+      <div class="step" style="--c:#0e7c9a"><div class="d">B2</div><div><h4>Press START CAMERA</h4><p>On the <a href="live.html">Live Demo</a> page; allow camera access.</p><span class="ok">✓ SEARCHING at 25 fps or more</span></div></div>
+      <div class="step" style="--c:#0e7c9a"><div class="d">B3</div><div><h4>Show the beacon</h4><p>Hold it anywhere in the picture.</p><span class="ok">✓ LOCKED · 4.0 Hz · in about 2 s</span></div></div>
+      <div class="step" style="--c:#0e7c9a"><div class="d">B4</div><div><h4>Move it around</h4><p>Slowly, then fast, across the whole view.</p><span class="ok">✓ lock follows · decoy is never boxed</span></div></div>
+      <div class="step" style="--c:#0e7c9a"><div class="d">B5</div><div><h4>Cover it for 1 second</h4><p>Then uncover it.</p><span class="ok">✓ COAST, then relocks by itself</span><span class="why">Bright room and a red LED? Turn on <b>RED BEACON FILTER</b> in Settings.</span></div></div>
     </div>
-  </section>
-
-  <!-- ================= D SHUTDOWN ================= -->
-  <section id="off">
-    <div class="sh"><div class="n" style="background:#FF5555">D</div><div><h2>Shutdown</h2><p>ALWAYS IN THIS ORDER</p></div></div>
-    <div class="flowline">
-      <div class="fl"><div class="k" style="color:var(--amber)">1</div><b>Centre + laser off</b><small><span class="code">C</span> then <span class="code">L0</span></small></div>
-      <div class="fl"><div class="k" style="color:var(--red)">2</div><b>12 V OFF</b><small>kill switch</small></div>
-      <div class="fl"><div class="k" style="color:var(--ink2)">3</div><b>USB out</b><small>then adapter from the wall</small></div>
-      <div class="fl"><div class="k" style="color:var(--ink2)">4</div><b>Beacon · decoy off</b><small>batteries out for storage</small></div>
+    <div class="proof">
+      <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Unedited screen recording, laptop webcam</span></div>
+      <video src="media/software_demo_720.mp4" poster="media/software_demo_poster.jpg" controls muted playsinline preload="none"></video>
+      <div class="pc">Press play: the lock box appears on the blinking LED, reads <b>4.0 Hz</b>, and follows it as it moves by hand. <b>Nothing is edited or simulated.</b></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ================= 6 ACCEPTANCE ================= -->
-  <section id="accept">
-    <div class="sh"><div class="n">6</div><div><h2>Acceptance criteria</h2><p>GRADED AUTOMATICALLY BY THE CONSOLE TEST RECORD · SAME FOR EVERY SCENARIO</p></div></div>
-    <div class="tbl"><table>
-      <tr><th>ID</th><th>PARAMETER</th><th>PASS IF</th><th>DEMO RUN (ISS PASS)</th><th></th></tr>
-      <tr><td class="k">TC-01</td><td>Acquisition time</td><td>≤ 3.0 s</td><td><b>1.27 s</b></td><td><div class="bar"><i style="width:42%"></i></div></td></tr>
-      <tr><td class="k">TC-02</td><td>Lock retention</td><td>≥ 90 %</td><td><b>98.3 %</b></td><td><div class="bar"><i style="width:98%"></i></div></td></tr>
-      <tr><td class="k">TC-03</td><td>Median pointing error</td><td>≤ 1,047 µrad (2 % FOV)</td><td><b>198 µrad</b></td><td><div class="bar"><i style="width:19%"></i></div></td></tr>
-      <tr><td class="k">TC-04</td><td>95th-percentile error</td><td>≤ 2,618 µrad (5 % FOV)</td><td><b>692 µrad</b></td><td><div class="bar"><i style="width:26%"></i></div></td></tr>
-      <tr><td class="k">TC-05</td><td>Beacon in field of view</td><td>≥ 95 %</td><td><b>100 %</b></td><td><div class="bar"><i style="width:100%"></i></div></td></tr>
-      <tr><td class="k">TC-06</td><td>Frames locked on a decoy</td><td>≤ 1 %</td><td><b>0 %</b></td><td><div class="bar"><i style="width:0%"></i></div></td></tr>
-      <tr><td class="k">TC-07</td><td>p95 compute per frame</td><td>≤ 33.3 ms</td><td><b>19.1 ms</b></td><td><div class="bar"><i style="width:57%"></i></div></td></tr>
-      <tr><td class="k">TC-08</td><td>Frames over budget</td><td>≤ 1 %</td><td><b>0.07 %</b></td><td><div class="bar"><i style="width:7%"></i></div></td></tr>
-      <tr><td class="k">TC-09</td><td>Re-acquisitions</td><td>recorded</td><td><b>4</b></td><td><span class="pill" style="color:var(--ink2);border-color:var(--edge)">INFO</span></td></tr>
-    </table></div>
-    <p style="color:var(--mute);font-size:12px;margin-top:8px">Bars show the measured value against its limit. B and C pass when every ✓ check is met.</p>
-  </section>
-
-  <!-- ================= 7 FAULTS ================= -->
-  <section id="faults">
-    <div class="sh"><div class="n">7</div><div><h2>Fault finding</h2><p>SYMPTOM → CAUSE → FIX</p></div></div>
-    <div class="tbl"><table>
-      <tr><th>SYMPTOM</th><th>LIKELY CAUSE</th><th>FIX</th></tr>
-      <tr><td class="k">Never locks</td><td>Room too bright · beacon not 4 Hz</td><td>Dim room · RED BEACON FILTER · check beacon code</td></tr>
-      <tr><td class="k">Locks a lamp</td><td>Flicker near 4 Hz · strong reflection</td><td>Remove from view · no windows in frame</td></tr>
-      <tr><td class="k">Motor buzzes</td><td>Coil pair split</td><td>Re-pair with meter (2–4 Ω)</td></tr>
-      <tr><td class="k">No holding torque</td><td>No 12 V · EN not GND · RST-SLP open</td><td>Switch on · check the three links</td></tr>
-      <tr><td class="k">Moves 16× wrong</td><td>MS1-3 not all at 5 V</td><td>All three to the 5 V rail</td></tr>
-      <tr><td class="k">Driver hot</td><td>Vref high · no heat sink</td><td>Vref 0.55 V · fit heat sink</td></tr>
-      <tr><td class="k">Encoder silent</td><td>Axial magnet · off-axis · big gap</td><td>Diametric · centred · 1–2 mm</td></tr>
-      <tr><td class="k">CONNECT RIG dead</td><td>No Web Serial · port busy</td><td>Chrome / Edge · close serial monitors</td></tr>
-    </table></div>
-  </section>
-
-  <!-- ================= 8 RECORDS ================= -->
-  <section id="records">
-    <div class="sh"><div class="n">8</div><div><h2>Records &amp; roles</h2><p>ONE LINE PER RUN · SIGNED BY THE REVIEWER</p></div></div>
-    <div class="grid g3" style="margin-bottom:14px">
-      <div class="card"><div class="kicker">OPERATOR</div><p style="margin-top:6px">Runs the steps, fills the log.</p></div>
-      <div class="card"><div class="kicker" style="color:var(--red)">SAFETY OFFICER</div><p style="margin-top:6px">Holds the 12 V kill switch in C.</p></div>
-      <div class="card"><div class="kicker" style="color:var(--green)">REVIEWER</div><p style="margin-top:6px">Checks against Section 6, signs.</p></div>
+<!-- ======================= C MK2 ======================= -->
+<section id="c">
+  <div class="sh"><div class="n" style="background:#15803d">C</div><div><h2>Procedure C · MK2 terminal</h2><p>Three stages: <b>check it unplugged</b>, <b>commission it over USB</b>, then <b>close the loop</b> on the beacon.</p></div></div>
+  <div class="grid g2">
+    <div>
+      <h3>C.1 · Pre-power check (everything unplugged)</h3>
+      <div class="tbl"><table style="min-width:0">
+        <tr><th>CHECK</th><th>EXPECT</th></tr>
+        <tr><td class="k">12 V rail ↔ 5 V rail</td><td><b>no beep</b></td></tr>
+        <tr><td class="k">12 V rail ↔ GND</td><td>no beep <span class="small">(a short chirp is the capacitor: OK)</span></td></tr>
+        <tr><td class="k">A4988 VMOT / VDD</td><td>12 V / <b>5 V</b></td></tr>
+        <tr><td class="k">EN · MS1–3 · RST–SLP</td><td>GND · 5 V · joined</td></tr>
+        <tr><td class="k">STEP / DIR</td><td>pan D2 / D3 · tilt D4 / D5</td></tr>
+        <tr><td class="k">Laser · sensor bus</td><td>D7 · A4 / A5 through the multiplexer</td></tr>
+        <tr><td class="k">Turn by hand</td><td>no cable tight at the limits</td></tr>
+      </table></div>
     </div>
-    <div class="tbl"><table>
-      <tr><th>DATE</th><th>PROC.</th><th>RECORD ID</th><th>RESULT</th><th>OPERATOR</th><th>REVIEWER</th></tr>
-      <tr><td>28-09-26</td><td>A</td><td><span class="code">ZD-SIM-DECOYS</span></td><td><b style="color:var(--green)">8 / 8 PASS</b></td><td>&nbsp;</td><td>&nbsp;</td></tr>
-      <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
-    </table></div>
-    <div class="tbl" style="margin-top:12px"><table>
-      <tr><th>REV</th><th>DATE</th><th>CHANGE</th></tr>
-      <tr><td class="k">1.0</td><td>28 Sep 2026</td><td>First release</td></tr>
-      <tr><td class="k">1.1</td><td>28 Sep 2026</td><td>Graphic layout · engine flowchart · acceptance bars</td></tr>
-    </table></div>
-  </section>
+    <div>
+      <h3>C.2 · Commissioning over USB serial (115200 baud)</h3>
+      <div class="tbl"><table style="min-width:0">
+        <tr><th>TYPE</th><th>YOU SHOULD SEE</th></tr>
+        <tr><td><span class="code">?</span></td><td>status line · encoders found</td></tr>
+        <tr><td><span class="code">P200 T0</span></td><td>pan turns <b>≈ 22.5°</b></td></tr>
+        <tr><td><span class="code">P0 T100</span></td><td>tilt nods <b>≈ 11°</b></td></tr>
+        <tr><td><span class="code">C</span></td><td>both return to centre</td></tr>
+        <tr><td><span class="code">L1</span> / <span class="code">L0</span></td><td>laser on / off</td></tr>
+      </table></div>
+      <div class="seq"><span class="chip" style="color:#b45309;border-color:#f1d2a8;background:var(--amberL)">Vref 0.55 V</span><span class="chip" style="color:#3b4a60;border-color:var(--line2);background:#fff">pan ±90°</span><span class="chip" style="color:#3b4a60;border-color:var(--line2);background:#fff">tilt ±18°</span><span class="chip" style="color:#3b4a60;border-color:var(--line2);background:#fff">1/16 step</span></div>
+    </div>
+  </div>
+  <div class="split" style="margin-top:22px">
+    <div>
+      <h3>C.3 · Closed loop</h3>
+      <div class="steps">
+        <div class="step" style="--c:#15803d"><div class="d">C1</div><div><h4>CONNECT RIG</h4><p>Pick the Nano's port in the browser.</p></div></div>
+        <div class="step" style="--c:#15803d"><div class="d">C2</div><div><h4>MK2 CAMERA (USB)</h4><p>Switch to the camera on the head.</p></div></div>
+        <div class="step" style="--c:#15803d"><div class="d">C3</div><div><h4>TEST MOTION</h4><p>A short self-move on both axes.</p><span class="ok">✓ both axes move and return</span></div></div>
+        <div class="step" style="--c:#15803d"><div class="d">C4</div><div><h4>Show the beacon</h4><p>Walk it around the room.</p><span class="ok">✓ head follows · laser stays on it · decoy ignored</span></div></div>
+      </div>
+    </div>
+    <div class="grid" style="gap:16px">
+      <div class="proof">
+        <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Hardware closed loop already done on MK1</span></div>
+        <img src="media/mk1_photo.jpg" alt="MK1 rig tracking" loading="lazy">
+        <div class="pc">Our first rig (<b>MK1</b>) already tracked the beacon on hardware. MK2 replaces its servos with <b>stepper motors and an angle sensor</b> for precision.</div>
+      </div>
+      <div class="proof">
+        <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>How the angle sensor is mounted</span></div>
+        <img src="media/sop/encoder_card.jpg" alt="AS5600 mounted over the magnet" loading="lazy" style="max-height:360px;object-fit:contain;background:#fff">
+        <div class="pc">AS5600 chip <b>centred over the shaft magnet, 1–2 mm gap</b>: the build card our team follows.</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <div class="foot"><span>ZeroDrift · Jabalpur Engineering College · SIH 2026 PS26169</span><span>ZD-SOP-001 rev 1.1</span></div>
+<!-- ======================= D SHUTDOWN ======================= -->
+<section id="off">
+  <div class="sh"><div class="n" style="background:#b91c1c">D</div><div><h2>Shutdown, always in this order</h2></div></div>
+  <div class="grid g4">
+    <div class="card"><div class="eyebrow" style="color:var(--amber)">Step 1</div><h3 style="margin-top:6px">Centre + laser off</h3><p><span class="code">C</span> then <span class="code">L0</span></p></div>
+    <div class="card"><div class="eyebrow" style="color:var(--red)">Step 2</div><h3 style="margin-top:6px">12 V OFF</h3><p>Flip the kill switch.</p></div>
+    <div class="card"><div class="eyebrow">Step 3</div><h3 style="margin-top:6px">USB out</h3><p>Then the adapter from the wall.</p></div>
+    <div class="card"><div class="eyebrow">Step 4</div><h3 style="margin-top:6px">Beacon &amp; decoy off</h3><p>Batteries out for storage.</p></div>
+  </div>
+</section>
+
+<!-- ======================= 7 ACCEPTANCE ======================= -->
+<section id="accept">
+  <div class="sh"><div class="n">7</div><div><h2>Acceptance criteria</h2><p>The limits are <b>fixed before a run</b> and the same for every scenario. The bar shows how much of each limit the ISS-pass run actually used.</p></div></div>
+  <div class="tbl"><table>
+    <tr><th>ID</th><th>PARAMETER</th><th>PASS IF</th><th>ISS PASS RUN</th><th>USE OF LIMIT</th><th></th></tr>
+    <tr><td class="k">TC-01</td><td class="full">Time to first lock</td><td>≤ 3.0 s</td><td><b>1.27 s</b></td><td><div class="bar"><i style="width:42%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-02</td><td class="full">Lock held after first lock</td><td>≥ 90 %</td><td><b>98.3 %</b></td><td><div class="bar"><i style="width:98%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-03</td><td class="full">Median pointing error</td><td>≤ 1,047 µrad</td><td><b>198 µrad</b></td><td><div class="bar"><i style="width:19%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-04</td><td class="full">95th-percentile error</td><td>≤ 2,618 µrad</td><td><b>692 µrad</b></td><td><div class="bar"><i style="width:26%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-05</td><td class="full">Beacon kept in view</td><td>≥ 95 %</td><td><b>100 %</b></td><td><div class="bar"><i style="width:100%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-06</td><td class="full">Frames locked on a decoy</td><td>≤ 1 %</td><td><b>0 %</b></td><td><div class="bar"><i style="width:0"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-07</td><td class="full">Compute time per frame (95th %)</td><td>≤ 33.3 ms</td><td><b>19.1 ms</b></td><td><div class="bar"><i style="width:57%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-08</td><td class="full">Frames over the time budget</td><td>≤ 1 %</td><td><b>0.07 %</b></td><td><div class="bar"><i style="width:7%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-09</td><td class="full">Re-acquisitions</td><td>recorded only</td><td><b>4</b></td><td></td><td><span class="small">INFO</span></td></tr>
+  </table></div>
+  <div class="proof" id="p-accept" style="margin-top:18px">
+    <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>The ISS pass, second by second</span></div>
+    <img src="media/chart_convergence.png" alt="Pointing error falls below the field-of-view edge and locks at 1.3 s; median 198 µrad" loading="lazy" style="background:#fff">
+    <div class="pc">Pointing error (log scale) through a real ISS orbit over Bengaluru with every disturbance switched on. <b>Locked at 1.3 s</b>, then held at a <b>median of 198 µrad</b>, far below the field-of-view edge (dashed line). This exact run replays in the Console.</div>
+  </div>
+</section>
+
+<!-- ======================= 8 FAULTS ======================= -->
+<section id="faults">
+  <div class="sh"><div class="n">8</div><div><h2>If something goes wrong</h2><p>Find the symptom, check the cause, apply the fix.</p></div></div>
+  <div class="tbl"><table>
+    <tr><th>SYMPTOM</th><th>LIKELY CAUSE</th><th>FIX</th></tr>
+    <tr><td class="k">Never locks</td><td>Room too bright · beacon not at 4 Hz</td><td>Dim the room · <b>RED BEACON FILTER</b> · check the beacon code</td></tr>
+    <tr><td class="k">Locks a lamp</td><td>Flicker near 4 Hz · strong reflection</td><td>Take it out of view · keep windows out of frame</td></tr>
+    <tr><td class="k">Motor only buzzes</td><td>Coil pair split across 1A/1B and 2A/2B</td><td>Re-pair with the meter (<b>2–4 Ω</b> per pair)</td></tr>
+    <tr><td class="k">No holding torque</td><td>No 12 V · EN not at GND · RST–SLP open</td><td>Switch on · check the three links</td></tr>
+    <tr><td class="k">Moves 16× wrong</td><td>MS1–MS3 not all at 5 V</td><td>All three to the 5 V rail</td></tr>
+    <tr><td class="k">Driver gets hot</td><td>Vref too high · no heat sink</td><td>Set <b>0.55 V</b> · fit the heat sink</td></tr>
+    <tr><td class="k">Encoder reads nothing</td><td>Axial magnet · chip off-centre · gap too big</td><td>Diametric magnet · centred · <b>1–2 mm</b></td></tr>
+    <tr><td class="k">CONNECT RIG does nothing</td><td>Browser without Web Serial · port busy</td><td><b>Chrome / Edge</b> · close other serial monitors</td></tr>
+  </table></div>
+</section>
+
+<!-- ======================= 9 RECORDS ======================= -->
+<section id="records">
+  <div class="sh"><div class="n">9</div><div><h2>Records &amp; roles</h2><p>One line per run, signed by the reviewer. <b>No record, no result.</b></p></div></div>
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card"><div class="eyebrow">Operator</div><h3 style="margin-top:6px">Runs the steps</h3><p>Follows this page and fills in the log.</p></div>
+    <div class="card"><div class="eyebrow" style="color:var(--red)">Safety officer</div><h3 style="margin-top:6px">Holds the switch</h3><p>Hand on the 12 V kill switch in Procedure C.</p></div>
+    <div class="card"><div class="eyebrow" style="color:var(--green)">Reviewer</div><h3 style="margin-top:6px">Signs off</h3><p>Checks every run against Section 7.</p></div>
+  </div>
+  <div class="tbl"><table>
+    <tr><th>DATE</th><th>PROCEDURE</th><th>RECORD ID</th><th>RESULT</th><th>OPERATOR</th><th>REVIEWER</th></tr>
+    <tr><td>28-09-26</td><td>A</td><td><span class="code">ZD-SIM-DECOYS</span></td><td><b style="color:var(--green)">8 / 8 PASS</b></td><td>&nbsp;</td><td>&nbsp;</td></tr>
+    <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+  </table></div>
+  <div class="tbl" style="margin-top:14px"><table>
+    <tr><th>REV</th><th>DATE</th><th>CHANGE</th></tr>
+    <tr><td class="k">1.0</td><td>28 Sep 2026</td><td>First release</td></tr>
+    <tr><td class="k">1.1</td><td>28 Sep 2026</td><td>Graphic layout, engine flowchart, acceptance bars</td></tr>
+    <tr><td class="k">2.0</td><td>28 Sep 2026</td><td>Light theme, full forms, proof beside every claim</td></tr>
+  </table></div>
+</section>
+
+<div class="foot"><span>ZeroDrift · Jabalpur Engineering College · SIH 2026 · PS26169</span><span>ZD-SOP-001 rev 2.0</span></div>
 </main>
-
 <nav class="mobile-bottom-nav">
   <a href="index.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a>
   <a href="console.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg><span>Console</span></a>
@@ -531,5 +692,18 @@ td code,.code{font:12.5px var(--mono);color:#bfeaf7;background:rgba(79,199,234,.
   <a href="about.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>About</span></a>
   <a href="sop.html" class="mobile-nav-item active"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg><span>SOP</span></a>
 </nav>
+<script>
+// the 64-run grid in the decoy proof
+(function () {
+  const g = document.getElementById('g64'); if (!g) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  for (let i = 0; i < 64; i++) {
+    const r = document.createElementNS(NS, 'rect');
+    r.setAttribute('x', 12 + (i % 16) * 18); r.setAttribute('y', 40 + Math.floor(i / 16) * 34);
+    r.setAttribute('width', 14); r.setAttribute('height', 28); r.setAttribute('rx', 3); r.setAttribute('fill', '#15803d');
+    g.appendChild(r);
+  }
+})();
+</script>
 </body>
 </html>

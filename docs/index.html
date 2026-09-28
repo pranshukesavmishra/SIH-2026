@@ -748,7 +748,7 @@ body {
 .rig-legend { position: absolute; top: 12px; right: 12px; font: 11px/1.7 ui-monospace, monospace; color: #cdd8e6;
   background: rgba(4,9,21,.72); padding: 6px 10px; border-radius: 7px; border: 1px solid #15263F; }
 .rig-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: 0; }
-.lg-b { background: #ff3b3b; box-shadow: 0 0 8px #ff3b3b; }
+.lg-b { background: #fff3dc; box-shadow: 0 0 8px #fff3dc; }
 .lg-d { background: #ff5a48; box-shadow: 0 0 8px #ff5a48; }
 .rig-diff { width: 100%; margin-top: 16px; border: 1px solid #15263F; border-radius: 12px; overflow: hidden; background: rgba(8,16,32,.85); }
 .rd-row { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 12px; padding: 10px 16px; border-top: 1px solid #15263F;
@@ -788,6 +788,8 @@ body {
 @media (max-width: 560px) { .rig-legend { top: 50px !important; right: auto !important; left: 12px; } }
 .rig-read { position: absolute; right: 12px; bottom: 10px; font: 11px ui-monospace, monospace; color: #8EA4C4;
   background: rgba(4,9,21,.7); padding: 4px 8px; border-radius: 6px; white-space: pre; }
+.rig-read[data-state="LOCKED"] { color: #3BD68C; }
+.rig-read[data-state="COASTING"] { color: #FFC24D; }
 .rig-meta { padding: 14px 16px 16px; }
 .rig-name { font: 700 15px/1.3 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #EAF4FD; }
 .rig-name em { font: 400 11px ui-monospace, monospace; color: #536988; letter-spacing: .08em; margin-left: 8px; font-style: normal; }
@@ -995,12 +997,12 @@ body {
           <img class="rig-media" data-kind="photo" data-src="media/mk2_photo.jpg" alt="MK2 rig, photo">
           <video class="rig-media" data-kind="video" data-src="demo-mk2.mp4" muted loop playsinline controls preload="none"></video>
           <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Recorded after tonight's build.</div></div>
-          <span class="rig-legend"><i class="lg-b"></i>Beacon · 4 Hz · tracked<br><i class="lg-d"></i>Decoy · steady, no blink · ignored</span>
+          <span class="rig-legend"><i class="lg-b"></i>Phone torch · blinks 4 Hz · tracked<br><i class="lg-d"></i>Decoy · steady red LED · ignored</span>
           <span class="rig-read" id="rigMk2Read"></span>
         </div>
         <div class="rig-meta">
           <div class="rig-name">Stepper terminal <em>building now · ₹6,709</em></div>
-          <div class="rig-chips"><span>2× NEMA17 + A4988</span><span>Camera on gimbal</span><span>AS5600 closed loop</span><span>3S battery</span></div>
+          <div class="rig-chips"><span>2× NEMA17 + A4988</span><span>Webcam + laser on the tilt</span><span>AS5600 pan feedback</span><span>12 V adapter</span></div>
         </div>
       </div>
     </div>

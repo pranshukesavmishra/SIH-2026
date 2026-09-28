@@ -2,19 +2,19 @@
 //
 // MK1 is the servo rig in the Mk1 demo video, modelled from primitives:
 // grey carton, black pan-tilt kit, two blue SG90s, KY-008 laser, jumper
-// wires, laptop. MK2 is the stepper terminal, loaded from the project's own
-// CAD meshes (docs/cad/web, the same files as the 3D assembly page).
+// wires, laptop. MK2 is the stepper terminal as it is built, every part and
+// every wire, tracking a phone torch (mk2twin.js).
 //
 // Both track a beacon blinking at 4 Hz. Drag to rotate; click the view,
 // then scroll to zoom. Nothing renders while the section is off screen.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { buildMk2Twin } from './mk2twin.js';
 
 const BLINK_HZ = 4;
 const std = (c, m = 0.1, r = 0.6, extra = {}) => new THREE.MeshStandardMaterial({ color: c, metalness: m, roughness: r, ...extra });
 
-function makeViewer(canvas, { cam, target, autoRotate = 0.55 }) {
+function makeViewer(canvas, { cam, target, autoRotate = 0.55, fog = [900, 2200], dist = [180, 1400], shadowR = 420, shadowMap = 1024 }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'low-power' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
   renderer.shadowMap.enabled = true;
@@ -23,7 +23,7 @@ function makeViewer(canvas, { cam, target, autoRotate = 0.55 }) {
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x050a14);
-  scene.fog = new THREE.Fog(0x050a14, 900, 2200);
+  scene.fog = new THREE.Fog(0x050a14, fog[0], fog[1]);
 
   const camera = new THREE.PerspectiveCamera(34, 1, 1, 4000);
   camera.up.set(0, 0, 1);
@@ -34,7 +34,7 @@ function makeViewer(canvas, { cam, target, autoRotate = 0.55 }) {
   controls.enableDamping = true; controls.dampingFactor = 0.08;
   controls.enablePan = false;
   controls.autoRotate = true; controls.autoRotateSpeed = autoRotate;
-  controls.minDistance = 180; controls.maxDistance = 1400;
+  controls.minDistance = dist[0]; controls.maxDistance = dist[1];
   controls.maxPolarAngle = Math.PI * 0.49;
   // Scroll-to-zoom only after the view is clicked, so the page still
   // scrolls normally past it.
@@ -46,8 +46,8 @@ function makeViewer(canvas, { cam, target, autoRotate = 0.55 }) {
   scene.add(new THREE.HemisphereLight(0x9fc3e6, 0x0a1020, 1.05));
   const key = new THREE.DirectionalLight(0xffffff, 1.6);
   key.position.set(260, -300, 520); key.castShadow = true;
-  key.shadow.mapSize.set(1024, 1024);
-  Object.assign(key.shadow.camera, { left: -420, right: 420, top: 420, bottom: -420, near: 10, far: 1600 });
+  key.shadow.mapSize.set(shadowMap, shadowMap);
+  Object.assign(key.shadow.camera, { left: -shadowR, right: shadowR, top: shadowR, bottom: -shadowR, near: 10, far: 1800 });
   scene.add(key);
   const rim = new THREE.DirectionalLight(0x4FC7EA, 0.55); rim.position.set(-300, 260, 200); scene.add(rim);
 
@@ -63,7 +63,7 @@ function makeViewer(canvas, { cam, target, autoRotate = 0.55 }) {
     camera.aspect = r.width / r.height; camera.updateProjectionMatrix();
   }
   new ResizeObserver(resize).observe(canvas); resize();
-  return { renderer, scene, camera, controls };
+  return { renderer, scene, camera, controls, grid };
 }
 
 /* A beam from a point along a direction: thin additive cylinder. */
@@ -182,153 +182,17 @@ function buildMk1(v) {
 }
 
 // ======================================================================
-// MK2 — stepper terminal, from the CAD meshes
-// ======================================================================
-// The picture-guide build (docs/cad/geometry.scad): no coupler, both discs
-// glued onto the shafts with M-Seal, the magnet on the pan shaft tip,
-// three M3 x 40 stilts under the L-bracket, and the head box flat and
-// centred on the small disc, so the tilt axis runs through the head.
-const TILT_PIVOT = new THREE.Vector3(0, 0, 73.35);
-const ACRYLIC = { c: 0xa8d8ef, m: 0, r: .15, o: .55 }, STEEL = { c: 0xb4bcc6, m: .85, r: .3 };
-const MOTOR = { c: 0x2b2f36, m: .85, r: .42 }, PUTTY = { c: 0x9a9d78, m: 0, r: .9 };
-const MK2_PARTS = {
-  base: ['fixed', ACRYLIC], base_legs: ['fixed', { c: 0xc79e6e, m: 0, r: .8 }],
-  pan_motor: ['fixed', MOTOR], pan_motor_screws: ['fixed', STEEL],
-  pan_post: ['fixed', STEEL], pan_strip: ['fixed', ACRYLIC], pan_sensor: ['fixed', { c: 0x7c4ddb, m: .2, r: .5 }],
-  platform: ['pan', ACRYLIC], platform_glue: ['pan', PUTTY],
-  pan_magnet_n: ['pan', { c: 0xe23b3b, m: .3, r: .4 }], pan_magnet_s: ['pan', { c: 0x2f6fe0, m: .3, r: .4 }],
-  stilts: ['pan', STEEL], bracket: ['pan', { c: 0x9aa3ae, m: .8, r: .35 }],
-  tilt_motor: ['pan', MOTOR], tilt_motor_screws: ['pan', STEEL],
-  tilt_disc: ['tilt', ACRYLIC], tilt_glue: ['tilt', PUTTY],
-  head_box: ['tilt', { c: 0xe8dcc8, m: .1, r: .6, o: .5 }], head_camera: ['tilt', { c: 0x2a8a5a, m: .3, r: .5 }],
-  head_laser: ['tilt', { c: 0xc9a227, m: .9, r: .25 }],
-};
-
-/* Soft additive glow, for LEDs that are lit. */
-function glowSprite(color, size) {
-  const c = document.createElement('canvas'); c.width = c.height = 64;
-  const g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(255,255,255,0.55)'); r.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = r; g.fillRect(0, 0, 64, 64);
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), color,
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
-  sp.scale.setScalar(size); return sp;
-}
-
-/* A mesh plus its hard edges drawn in dark lines: the CAD look. */
-function cadMesh(geo, mat, edgeOpacity = 0.32) {
-  const m = new THREE.Mesh(geo, mat);
-  m.castShadow = m.receiveShadow = true;
-  const e = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 28),
-    new THREE.LineBasicMaterial({ color: 0x06101c, transparent: true, opacity: edgeOpacity }));
-  m.add(e);
-  return m;
-}
-
-/* One of the stage targets, loaded from its CAD parts, turned to face the
-   gimbal (its LED looks along +Z in the model; the gimbal is at +Y). */
-function loadUnit(loader, parts, centre, onMesh) {
-  const g = new THREE.Group(), inner = new THREE.Group();
-  inner.rotation.x = -Math.PI / 2;                 // model +Z -> world +Y
-  inner.position.set(0, 0, 0);
-  g.add(inner);
-  for (const [name, mat] of parts) {
-    loader.load(`cad/web/${name}.stl`, geo => {
-      geo.computeVertexNormals();
-      geo.translate(-centre[0], -centre[1], -centre[2]);
-      const m = cadMesh(geo, mat, 0.25);
-      inner.add(m); if (onMesh) onMesh(name, m);
-    });
-  }
-  return g;
-}
-
-function buildMk2(v, onLoaded) {
-  const { scene } = v;
-  // The pan motor hangs under the base plate, so the plate stands on four
-  // 60 mm legs (base_legs.stl); everything is lifted by their height.
-  const LEG = 63, K = 1.7;
-  const root = new THREE.Group(); root.scale.setScalar(K); root.position.z = LEG * K; scene.add(root);
-  const gFixed = new THREE.Group(), gPan = new THREE.Group(), gTilt = new THREE.Group();
-  gTilt.position.copy(TILT_PIVOT); gPan.add(gTilt); root.add(gFixed, gPan);
-  const G = { fixed: gFixed, pan: gPan, tilt: gTilt };
-  const loader = new STLLoader();
-  let n = 0;
-  for (const [name, [grp, sp]] of Object.entries(MK2_PARTS)) {
-    loader.load(`cad/web/${name}.stl`, geo => {
-      geo.computeVertexNormals();
-      if (grp === 'tilt') geo.translate(-TILT_PIVOT.x, -TILT_PIVOT.y, -TILT_PIVOT.z);
-      G[grp].add(cadMesh(geo, std(sp.c, sp.m, sp.r, sp.o ? { transparent: true, opacity: sp.o } : {})));
-      if (++n === Object.keys(MK2_PARTS).length && onLoaded) onLoaded();
-    });
-  }
-
-  // Head front face (y = -23 from the tilt pivot): the webcam lens behind
-  // the clear window at x = 32, and the KY-008 laser 2 cm beside it at
-  // x = 52 -- boresighted, both on the tilt axis height.
-  const glass = new THREE.Mesh(new THREE.CircleGeometry(4.2, 24), std(0x1a2a44, 0.9, 0.05));
-  glass.rotation.x = Math.PI / 2; glass.position.set(32, -24.8, 0); gTilt.add(glass);
-  const aperture = new THREE.Mesh(new THREE.CircleGeometry(1.6, 16), new THREE.MeshBasicMaterial({ color: 0xff2020 }));
-  aperture.rotation.x = Math.PI / 2; aperture.position.set(52, -23.1, 0); gTilt.add(aperture);
-
-  // the laser, modulated at 7 Hz so the camera can tell its own dot apart
-  const beam = makeBeam(400); beam.position.set(52, -23.2, 0); gTilt.add(beam);
-
-  // ---- the beacon: ABS box, red LED under a ping-pong diffuser, a Nano ----
-  const beacon = loadUnit(loader, [
-    ['beacon_case', std(0xd9c3a6, 0.05, 0.7, { transparent: true, opacity: 0.6 })],
-    ['beacon_led', new THREE.MeshStandardMaterial({ color: 0xff4040, emissive: 0xff1a1a, emissiveIntensity: 1, roughness: 0.5 })],
-    ['beacon_nano', std(0x2b5c8a, 0.4, 0.5)],
-    ['beacon_switch', std(0x8892a0, 0.8, 0.35)],
-  ], [45, 30, 21], (name, m) => { if (name === 'beacon_led') beacon.userData.led = m; });
-  beacon.scale.setScalar(K); scene.add(beacon);
-  // glow at the diffuser, which sits ~45 mm in front of the box centre
-  const bGlow = glowSprite(0xff3030, 90); bGlow.position.set(0, 45, 0); beacon.add(bGlow);
-  const bLight = new THREE.PointLight(0xff3030, 0, 380); bLight.position.set(0, 60, 0); beacon.add(bLight);
-
-  // ---- the decoy: same red light, steady (never blinks) -- and ignored ----
-  const decoy = loadUnit(loader, [
-    ['decoy_case', std(0xc9cdd2, 0.05, 0.7, { transparent: true, opacity: 0.6 })],
-    ['decoy_led', new THREE.MeshStandardMaterial({ color: 0xff5a48, emissive: 0xff4a38, emissiveIntensity: 1 })],
-    ['decoy_cells', std(0x6b7f94, 0.5, 0.5)],
-    ['decoy_switch', std(0x8892a0, 0.8, 0.35)],
-  ], [35, 27, 14]);
-  decoy.scale.setScalar(K); decoy.position.set(-300, -660, 150); scene.add(decoy);
-  const dGlow = glowSprite(0xff5a48, 110); dGlow.position.set(0, 26, 0); decoy.add(dGlow);
-  const dLight = new THREE.PointLight(0xff5a48, 3.5e4, 420); dLight.position.set(0, 60, 0); decoy.add(dLight);
-  const post = (x, y, z, h) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, h, 12), std(0x2a3446, 0.6, 0.4));
-    m.rotation.x = Math.PI / 2; m.position.set(x, y, h / 2); m.castShadow = true; scene.add(m); };
-  post(-300, -660, 150 - 30);
-
-  // steppers: fast and fine
-  const aim = aimer(THREE.MathUtils.degToRad(600), 14);
-  return (t, dt) => {
-    const bx = 60 + 170 * Math.sin(2 * Math.PI * 0.08 * t), bz = 170 + 70 * Math.sin(2 * Math.PI * 0.16 * t + 0.5);
-    const by = -640;
-    beacon.position.set(bx, by, bz);
-    const lit = (t * BLINK_HZ) % 1 < 0.5;
-    const led = beacon.userData.led;
-    if (led) { led.material.emissiveIntensity = lit ? 1.4 : 0.02; led.material.color.setHex(lit ? 0xff4040 : 0x4a1414); }
-    bGlow.visible = lit; bLight.intensity = lit ? 3e4 : 0;
-    const P = TILT_PIVOT.clone().multiplyScalar(K).add(new THREE.Vector3(0, 0, LEG * K));
-    const tx = bx - P.x, ty = by - P.y, tz = bz - P.z;
-    const s = aim(Math.atan2(tx, -ty), -Math.atan2(tz, Math.hypot(tx, ty)), dt);
-    gPan.rotation.z = s.pan; gTilt.rotation.x = s.tilt;
-    beam.scale.y = Math.hypot(tx, ty, tz) / K / 400;
-    beam.material.opacity = (t * 7) % 1 < 0.5 ? 0.6 : 0.18;
-    return { pan: s.pan, tilt: -s.tilt };
-  };
-}
-
-// ======================================================================
 function start() {
   const c1 = document.getElementById('rigMk1'), c2 = document.getElementById('rigMk2');
   if (!c1 || !c2) return;
   // Both framed from the side, so the mechanism, the beam and the beacon
   // it is chasing are all in view.
   const v1 = makeViewer(c1, { cam: [820, -300, 520], target: [0, -120, 130] });
-  const v2 = makeViewer(c2, { cam: [760, 520, 560], target: [-40, -290, 150], autoRotate: -0.45 });
-  const step1 = buildMk1(v1), step2 = buildMk2(v2);
+  const v2 = makeViewer(c2, { cam: [780, -340, 520], target: [-20, -215, 90], autoRotate: -0.3,
+    fog: [1500, 3400], dist: [160, 2200], shadowR: 650, shadowMap: 2048 });
+  const step1 = buildMk1(v1), mk2 = buildMk2Twin(v2);
+  const view2 = c2.closest('.rig-view');
+  const t0 = parseFloat(new URLSearchParams(location.search).get('mk2t')) || 0;   // start the MK2 run at a given second
   const out1 = document.getElementById('rigMk1Read'), out2 = document.getElementById('rigMk2Read');
   const deg = r => (r * 180 / Math.PI).toFixed(1).padStart(6);
 
@@ -340,11 +204,14 @@ function start() {
     const now = performance.now() / 1000, dt = Math.min(0.05, now - last); last = now;
     if (!visible || document.hidden) return;
     t += dt;
-    const a = step1(t, dt), b = step2(t, dt);
-    v1.controls.update(); v2.controls.update();
-    v1.renderer.render(v1.scene, v1.camera); v2.renderer.render(v2.scene, v2.camera);
+    const a = step1(t, dt);
+    v1.controls.update(); v1.renderer.render(v1.scene, v1.camera);
     if (out1) out1.textContent = `PAN ${deg(a.pan)}°  TILT ${deg(a.tilt)}°`;
-    if (out2) out2.textContent = `PAN ${deg(b.pan)}°  TILT ${deg(b.tilt)}°`;
+    if (!(view2 && view2.classList.contains('flat'))) {        // skip MK2 while its PHOTO / VIDEO tab is up
+      const b = mk2.step(t + t0, dt);
+      v2.controls.update(); mk2.render();
+      if (out2) { out2.textContent = `${b.state.padEnd(9)}  PAN ${deg(b.pan)}°  TILT ${deg(b.tilt)}°`; out2.dataset.state = b.state; }
+    }
   }
   frame();
 }

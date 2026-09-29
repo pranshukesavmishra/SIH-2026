@@ -15,7 +15,7 @@
 (function (root) {
   const C = {
     v12: '#e53935', v5: '#f59e0b', gnd: '#2b2f36', step: '#8b5cf6', dir: '#ec4899',
-    sda: '#2f7bff', scl: '#d4a800', las: '#0d9488', link: '#64748b', usb: '#9aa3ad',
+    sda: '#2f7bff', scl: '#d4a800', las: '#0d9488', vib: '#f97316', link: '#64748b', usb: '#9aa3ad',
     mBlack: '#15171a', mGreen: '#16a34a', mRed: '#dc2626', mBlue: '#2563eb',
   };
   const ROWS = 'abcdefghij';
@@ -47,9 +47,15 @@
     as: { label: 'AS5600', note: 'pan sensor · on the rig', pins: ['VCC', 'GND', 'DIR', 'SDA', 'SCL'] },
     las: { label: 'LASER', note: 'KY-008 · on the head', pins: ['-', 'mid', 'S'] },
     usb: { label: 'USB', pins: ['NANO'] }, laptop: { label: 'LAPTOP', pins: ['USB'] },
+    vm: { label: 'VIBRATION MOTOR', note: 'small 3-5 V coin / pager motor · on the rig base', pins: ['+', '-'] },
   };
   // 100 uF electrolytics: long leg (+) in TOP red, striped leg (-) in TOP blue, same column
   const caps = [{ id: 'C1', col: 25, step: 4, near: 'pan' }, { id: 'C2', col: 37, step: 5, near: 'tilt' }];
+  // vibration injector (firmware: V1 / V0 on D8). Small parts right of the Nano, columns 19-24.
+  //   R1 1 kOhm: e20 - f20, straight across the middle gap (D8 side on top, base side below)
+  //   Q1 2N2222 (PN2222A): legs in the bottom row, left to right E B C  -> j19 j20 j21 (flat face toward you)
+  //   D1 1N4148: anode f21, black stripe (cathode) f24
+  const vib = { q: { E: 'j19', B: 'j20', C: 'j21' }, r: ['e20', 'f20'], d: { A: 'f21', K: 'f24' }, step: 10 };
 
   // [number, step, from, to, colour, from-label, to-label]
   const W = [
@@ -103,7 +109,12 @@
     [48, 8, 'as:DIR', 'B-53', C.gnd, 'AS5600  DIR (if your board has it)', 'BOTTOM blue rail  (GND)'],
     [49, 9, 'las:S', 'a9', C.las, 'laser  S', 'Nano  D7'],
     [50, 9, 'las:-', 'T-7', C.gnd, 'laser  −', 'TOP blue rail  (GND)'],
-    [51, 10, 'usb:NANO', 'laptop:USB', C.usb, 'Nano  USB-C', 'laptop  (through the hub)'],
+    [51, 10, 'c8', 'b20', C.vib, 'Nano  D8', 'hole b20  (top of resistor R1)'],
+    [52, 10, 'g19', 'B-19', C.gnd, 'transistor  E (emitter)', 'BOTTOM blue rail  (GND)'],
+    [53, 10, 'j24', 'B+24', C.v5, 'diode stripe + motor red strip', 'BOTTOM red rail  (+5 V)'],
+    [54, 10, 'vm:+', 'g24', C.mRed, 'vibration motor  red (+)', 'hole g24  (+5 V strip)'],
+    [55, 10, 'vm:-', 'g21', C.mBlue, 'vibration motor  blue / black (−)', 'hole g21  (transistor C)'],
+    [56, 11, 'usb:NANO', 'laptop:USB', C.usb, 'Nano  USB-C', 'laptop  (through the hub)'],
   );
   const wires = W.map(([n, step, from, to, color, a, b]) => ({ n, step, from, to, color, a, b }));
 
@@ -162,6 +173,9 @@
     { title: 'Laser', short: 'S → D7, − → GND', parts: ['las'],
       text: 'Laser board (KY-008): S to hole a9 (Nano D7). − to the TOP blue rail. The middle pin connects to nothing.',
       tip: 'S → D7 · − → GND · middle → nothing' },
+    { title: 'Vibration motor', short: 'D8 → 1 kΩ → 2N2222 → motor', parts: ['vm'],
+      text: 'Resistor R1 (1 kΩ, brown-black-red) from e20 to f20, straight across the middle gap. Transistor Q1 (2N2222 / PN2222A) legs in j19 j20 j21, flat face toward you: left leg E, middle B, right C. Diode D1 1N4148 from f21 to f24, the black stripe at f24. Wire 51: Nano D8 (c8) to b20. Wire 52: g19 to the BOTTOM blue rail. Wire 53: j24 to the BOTTOM red rail. Motor red wire into g24, its other wire into g21. Never connect the motor straight to D8: the pin cannot give that much current. Test: serial V1 = buzz, V0 = stop.',
+      tip: 'D8 → 1 kΩ → B · E → GND · C → motor − · motor + → 5 V · diode stripe → 5 V' },
     { title: 'USB', short: 'Nano to the laptop',
       text: 'The Nano\'s USB-C to the laptop (through the hub). The webcam\'s USB goes to the laptop too: it never touches the breadboard. Upload the rig code now: tools/rig/flash.sh rig.',
       tip: 'USB 1 = Nano · USB 2 = webcam' },
@@ -172,5 +186,5 @@
       text: 'Everything unplugged: beep-test TOP red to BOTTOM red, and TOP red to TOP blue. Neither may beep (a short chirp is the capacitor charging, that is fine). USB in: BOTTOM red reads about 5 V. Switch OFF, adapter in, switch ON: TOP red reads about 12 V, both motor shafts go stiff, nothing gets hot. Live page: CONNECT RIG, then TEST MOTION. To stop: 12 V off first, then USB.',
       tip: 'on: USB, then 12 V · off: 12 V, then USB' },
   ];
-  root.ZD_WIRING = { C, ROWS, RAIL_COLS, RAILS, parts, devices, caps, wires, steps, parse, stripPin, where };
+  root.ZD_WIRING = { C, ROWS, RAIL_COLS, RAILS, parts, devices, caps, vib, wires, steps, parse, stripPin, where };
 })(typeof window !== 'undefined' ? window : globalThis);

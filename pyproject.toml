@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "fsoc-pat"
 version = "0.1.0"
 description = "Virtual camera tracking testbed for coarse alignment of mobile FSOC terminals (SIH 2026, PS SIH26169)"
+license = { text = "MIT" }
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.26", "opencv-python>=4.9", "PyYAML>=6.0"]
 

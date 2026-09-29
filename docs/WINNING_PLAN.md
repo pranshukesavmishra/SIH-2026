@@ -43,7 +43,7 @@ And against the five mandatory deliverables:
 | Deliverable | Status | Gap |
 |---|---|---|
 | **Software Application** (standalone executable) | ❌ **BROKEN** | `packaging/fsoc-pat.spec` referenced by both build scripts **does not exist** |
-| **Source Code** (documented, modular) | ✅ | 36 modules, 12 test files, 73 tests |
+| **Source Code** (documented, modular) | ✅ | 36 modules, test suite: 250 passing (1 skipped) |
 | **Technical Report** (10–15 pages) | ⚠️ | ~2,491 words ≈ 6–8 pages. Likely **short of the floor** |
 | **User Manual** (install, operate, configure, GUI) | ⚠️ | ~957 words. Thin against what the PS enumerates |
 | **Performance Log** (auto-generated) | ✅ | `PerformanceReport` mirrors the PS list field-for-field |

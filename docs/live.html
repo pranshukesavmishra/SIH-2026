@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ZeroDrift — Live Camera Demo · ISRO SIH26169</title>
+<meta name="description" content="Try ZeroDrift live: your webcam locks onto a light blinking at 4 Hz and ignores everything else. Runs in the browser. SIH 2026, PS26169.">
+<meta property="og:title" content="ZeroDrift · SIH 2026 · PS26169">
+<meta property="og:description" content="Try ZeroDrift live: your webcam locks onto a light blinking at 4 Hz and ignores everything else. Runs in the browser. SIH 2026, PS26169.">
+<meta property="og:image" content="brand/logo_banner.png">
 <link rel="icon" type="image/png" href="brand/zerodrift_mark.png">
 <style>
 :root {
@@ -162,6 +166,13 @@ details[open] summary::before { content: '− '; }
 /* Brand logo (transparent PNG, drawn for a dark background). */
 .brand-logo-full { height: 52px; width: auto; display: block; margin: -6px 0; }
 @media (max-width: 720px) { .brand-logo-full { height: 42px; } }
+
+/* phone: same bottom bar as every other page, and the header links move down into it */
+.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:rgba(6,11,20,.96);backdrop-filter:blur(16px);border-top:1px solid #18263A;z-index:200;justify-content:space-around;align-items:center;padding:0 10px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;color:#9fb1c8;font-size:10px;flex:1;padding:6px 0;text-decoration:none}
+.mobile-nav-item svg{width:18px;height:18px;fill:currentColor}
+.mobile-nav-item.active{color:#4FC7EA}
+@media (max-width:900px){.nav-links{display:none!important}.mobile-bottom-nav{display:flex}body{padding-bottom:70px}}
 </style>
 </head>
 <body>
@@ -466,7 +477,7 @@ loadCal(store.get('zd_rigType', 'auto') === 'mk2' ? 'mk2' : 'mk1');
 const VIDEOS = {
   mk1: { src: 'demo-video.mp4', alt: 'demo-video.webm', tag: 'MK1 · SERVO RIG, LAPTOP CAMERA' },
   mk2: { src: 'demo-mk2.mp4', tag: 'MK2 DEMO',
-         missing: '<b>MK2 DEMO</b>Recording follows the Mk2 build.<br>Save it as <span style="color:#fff">docs/demo-mk2.mp4</span> and this button plays it.' },
+         missing: '<b>MK2 DEMO</b>Coming soon: recorded once the MK2 build is running.' },
 };
 const CANT_PLAY = '<b>VIDEO</b>This browser could not play the file.<br>Open it directly: ';
 function openDemoVideo(which) {
@@ -1169,6 +1180,8 @@ els.centre.onclick = rigCentre;
 /* ---------------- desktop engine (python -m fsoc_pat.hil.serve) ---------------- */
 const ENGINE_URL = 'http://localhost:8765';
 async function probeEngine(quiet) {
+  // the desktop engine only exists on the developer's own machine: do not probe from the public site
+  if (quiet && !['localhost', '127.0.0.1', ''].includes(location.hostname)) return false;
   try {
     const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 1500);
     const r = await fetch(ENGINE_URL + '/live/meta', { signal: ctl.signal }); clearTimeout(tm);
@@ -1206,5 +1219,12 @@ if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
   note('Opened as a file, so the camera is blocked. Use the website, or run <b>python -m http.server</b> in docs/.', true);
 }
 </script>
+<nav class="mobile-bottom-nav">
+  <a href="index.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a>
+  <a href="console.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg><span>Console</span></a>
+  <a href="live.html" class="mobile-nav-item active"><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Live</span></a>
+  <a href="about.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>About</span></a>
+  <a href="sop.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg><span>SOP</span></a>
+</nav>
 </body>
 </html>

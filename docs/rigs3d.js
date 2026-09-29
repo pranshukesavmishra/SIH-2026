@@ -235,15 +235,15 @@ function hoverLabels(canvas, v, twin) {
 
 function start() {
   const c1 = document.getElementById('rigMk1'), c2 = document.getElementById('rigMk2');
-  if (!c1 || !c2) return;
+  if (!c2) return;                                   // the SOP page shows MK2 only
   // Both framed from the side, so the mechanism, the beam and the beacon
   // it is chasing are all in view.
-  const v1 = makeViewer(c1, { cam: [820, -300, 520], target: [0, -120, 130] });
+  const v1 = c1 ? makeViewer(c1, { cam: [820, -300, 520], target: [0, -120, 130] }) : null;
   // MK2 orbits the centre of the whole bench -- rig, phone, decoy, laptop and
   // adapter -- from far enough out that the laptop never leaves the frame.
   const v2 = makeViewer(c2, { cam: [944, -163, 665], target: [-40, -10, 90], autoRotate: -0.3,
     fog: [2000, 4600], dist: [160, 2800], shadowR: 700, shadowMap: 2048 });
-  const step1 = buildMk1(v1), mk2 = buildMk2Twin(v2);
+  const step1 = v1 ? buildMk1(v1) : null, mk2 = buildMk2Twin(v2);
   window.__zdViewers = { v1, v2, mk2 };                                // test hook (screenshots)
   const labels = mk2.hotspots ? hoverLabels(c2, v2, mk2) : null;
   const view2 = c2.closest('.rig-view');
@@ -253,15 +253,17 @@ function start() {
 
   let visible = false, last = performance.now() / 1000, t = 0;
   new IntersectionObserver(es => { visible = es.some(e => e.isIntersecting); }, { threshold: 0.05 })
-    .observe(c1.closest('section') || c1);
+    .observe((c1 || c2).closest('section') || c2);
   function frame() {
     requestAnimationFrame(frame);
     const now = performance.now() / 1000, dt = Math.min(0.05, now - last); last = now;
     if (!visible || document.hidden) return;
     t += dt;
-    const a = step1(t, dt);
-    v1.controls.update(); v1.renderer.render(v1.scene, v1.camera);
-    if (out1) out1.textContent = `PAN ${deg(a.pan)}°  TILT ${deg(a.tilt)}°`;
+    if (step1) {
+      const a = step1(t, dt);
+      v1.controls.update(); v1.renderer.render(v1.scene, v1.camera);
+      if (out1) out1.textContent = `PAN ${deg(a.pan)}°  TILT ${deg(a.tilt)}°`;
+    }
     if (!(view2 && view2.classList.contains('flat'))) {        // skip MK2 while its PHOTO / VIDEO tab is up
       const b = mk2.step(t + t0, dt);
       v2.controls.update(); mk2.render();

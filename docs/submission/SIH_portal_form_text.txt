@@ -1,0 +1,55 @@
+SIH PORTAL: IDEA SUBMISSION FORM. Copy each block into the matching box.
+(No changes are possible after final submission. Read every line once.)
+
+=== IDEA TITLE (max 100 characters; this one is 89) ===
+ZeroDrift: AI-Based Virtual Camera Tracking for Coarse Alignment of Mobile FSOC Terminals
+
+=== IDEA DESCRIPTION (max 50000 characters; this is about 3,300) ===
+PROBLEM
+Free-space optical communication (FSOC) links between moving terminals (vehicles, drones, masts) only work if each terminal keeps its laser pointed at the partner's beacon to within micro-radians. Before the fine pointing stage can help, the coarse stage must (1) find the right light, (2) not lock onto stars, glints or lamps, and (3) keep the aim through command delay and beacon blink gaps. Today this is done with special sensors or slow manual realignment.
+
+OUR IDEA: ZEROdrift
+ZeroDrift is software that finds the partner terminal's 4 Hz blinking beacon in an ordinary camera image, proves it is the right light, and steers the terminal to keep it centred. It answers PS SIH26169 with a camera and a pointing mount, and no special sensor.
+
+HOW IT WORKS (one engine, one closed loop)
+1. Detect: top-hat filter, matched filter, CFAR thresholding and a sub-pixel centroid find every point light in each frame (30 fps).
+2. Identify: every light is followed over time. It is accepted only if it blinks at the 4 Hz signature (blink test) and a small neural verifier agrees. Steady lights, stars and glints are vetoed.
+3. Track and predict: an IMM Kalman filter holds the lock through blink gaps, and a Smith predictor cancels the roughly 40 ms command delay. The error is measured on the camera image itself, so it is a closed optical loop: the camera moves with the aim.
+4. Point: azimuth / elevation commands go to the gimbal (Web Serial to an Arduino driving stepper motors) or to a virtual viewport.
+A state machine (search, acquire, track, coast, re-acquire) with a spiral search handles loss of the beacon.
+
+ONE ENGINE, THREE INPUTS
+The same code runs on (a) a physics-true virtual camera (real ISS orbits with SGP4, turbulence, decoys), (b) a live laptop webcam in the browser, and (c) a physical terminal. We built and tested in software first, then on hardware. MK1 (servo rig) is built and demonstrated in our video. MK2 (stepper gimbal, closed loop with an angle sensor) is in build.
+
+RESULTS (all from logged runs; sources in the repository)
+- 64 randomised ISS-like passes: 100% acquired; median time to lock 1.27 s, p95 2.77 s, worst 4.0 s.
+- Lock retention 97.5% (campaign median).
+- 0 of 64 runs ever locked a wrong light (decoy rejection).
+- Median pointing error 198 microradians in lock on the featured demo run; median of per-run p95 error 768 microradians.
+- Link closure (modelled, with a fine stage): 99.3%, against 14.7% with the coarse stage alone; mean link margin 3.1 dB.
+- Neural verifier AUC 0.957 against 0.900 for the classical test, on a short window.
+- Runs in real time: 8 to 21 ms of processing per 33 ms frame on 2 CPU cores.
+- 250 of 251 automated tests pass (1 skipped).
+- Running the full 64-run campaign in software costs about Rs 0.22 of electricity and runs about 207 times faster than a hardware bench.
+
+WHAT IS NOVEL
+Identify, not brightness: the lock depends on the blink signature, not on how bright a light is. A delay-cancelled loop measured on the image. One engine that goes from simulation to webcam to terminal without code changes. Every number is measured and reproducible, not claimed.
+
+LINKS
+Live demo and replay console: https://zerodrift-fsoc-pat.netlify.app
+Source code (open source): https://github.com/pranshukesavmishra/SIH-2026
+
+TEAM
+ZeroDrift, Jabalpur Engineering College. Six members. 2nd Runner-Up, JEC internal SIH round, 11 September 2026.
+
+=== ABSTRACT / SUMMARY (max 10000 characters; this is about 900) ===
+ZeroDrift is an AI-assisted software system for the coarse alignment stage of mobile free-space optical communication terminals (PS SIH26169, ISRO). Using only a camera image, it detects candidate lights (top-hat, matched filter, CFAR, sub-pixel centroid), identifies the partner beacon by its 4 Hz blink signature confirmed by a neural verifier, rejects stars, glints and lamps, and keeps the lock through blink gaps and about 40 ms of command delay with an IMM Kalman filter and a Smith predictor. Pointing commands drive a gimbal or a virtual viewport in a closed optical loop. The same engine runs on a physics-true virtual camera (SGP4 orbits, turbulence, decoys), a live webcam and a physical terminal. Over 64 simulated passes it acquired 100% of the time (median 1.27 s), retained lock 97.5% (median), and never locked a wrong light (0 / 64). A modelled link-closure analysis gives 99.3% against 14.7% for the coarse stage alone. The code is open source, 250 of 251 tests pass, and a live demo runs in the browser.
+
+=== TECHNOLOGY BUCKET ===
+Choose the option closest to "Smart Automation" (your theme). If the list has "Space Technology" it also fits. Tell me the options and I will pick one.
+
+=== YOUTUBE LINK (optional) ===
+Paste the Unlisted YouTube link of the demo video (MK1 + simulation + software).
+
+=== IDEA TEMPLATE (PDF, up to 10 MB) ===
+Upload the final slide PDF after the slide fixes. Current file: docs/submission/ZeroDrift_SIH26169.pdf (2.3 MB).

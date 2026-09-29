@@ -34,6 +34,8 @@ The median lock retention was 97.5%.
 
 We also tested false-target rejection: in 0 of the 64 runs did the system lock onto a wrong light.
 
+We also ran a dedicated decoy-field test: one logged run of 3,900 frames (about 130 s at 30 fps) with a steady decoy light crossing the view. In that run the system locked in 1.07 s, held lock for 99.3% of frames, kept the beacon in view 100% of the time, with a median pointing error of 178 microradians. The decoy held the lock for only 1 frame out of 3,900, and the system re-acquired 9 times after beacon dropouts. Median processing time was 15.2 ms per frame. (This 99.3% is lock retention in this one run; it is a different metric from the 99.3% modelled link closure below.)
+
 On the demonstration run, the median pointing error in lock was 198 microradians. The median per-run 95th-percentile pointing error was 768 microradians.
 
 A modelled link-closure analysis, including a fine-pointing stage, gives 99.3% link closure, compared with 14.7% for the coarse stage alone, with a mean modelled link margin of 3.1 dB. These numbers come from the model and are not a measured end-to-end result of an optical communication system.

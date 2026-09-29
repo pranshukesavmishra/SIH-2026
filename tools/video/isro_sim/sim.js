@@ -479,7 +479,7 @@ function seek(t) {
       const sp = proj(sw, camS), fc = ss(76.8, 78.2, t) * (1 - ss(84.8, 85.6, t));
       if (sp.ok && fc > 0) { hud.save(); hud.globalAlpha = fc; hud.strokeStyle = GR; hud.shadowColor = GR; hud.shadowBlur = 10; hud.lineWidth = 2;
         const r0 = lerp(140, 34, ease(ss(76.8, 78.2, t))); for (const m of [1, 1.5]) { hud.beginPath(); hud.arc(sp.x, sp.y, r0 * m, 0, 7); hud.stroke(); } hud.restore();
-        T2('FINE STAGE · CAPTURED', sp.x - 70, sp.y + 90, 18, GR, { w: 700, f: FM, ls: 2, al: 'right', a: fc * ss(78, 78.6, t), glow: 8 }); }
+        T2('FINE STAGE · CAPTURED', sp.x - 190, sp.y + 132, 18, GR, { w: 700, f: FM, ls: 2, al: 'right', a: fc * ss(78, 78.6, t), glow: 8 }); }
       label(sw, camS, 'Satellite optical terminal', null, win(t, 76.5, 85.6), -140, 90, GR); label(pw, camS, 'Ground terminal', null, win(t, 76.5, 85.6), 150, -170, GR);
       stat(W - 560, 150, '99.3%', 'link closure with the modelled fine stage', ss(78.2, 79, t) * (1 - ss(85.4, 86, t)));
       stat(W - 560, 272, '14.7%', 'with the coarse stage alone', ss(79.2, 80, t) * (1 - ss(85.4, 86, t)), AM);

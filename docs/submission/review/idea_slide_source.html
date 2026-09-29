@@ -1,0 +1,176 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:SG;src:url(space-grotesk-latin-700-normal.woff2);font-weight:700}
+@font-face{font-family:SG;src:url(space-grotesk-latin-500-normal.woff2);font-weight:500}
+@font-face{font-family:IN;src:url(inter-latin-400-normal.woff2);font-weight:400}
+@font-face{font-family:IN;src:url(inter-latin-600-normal.woff2);font-weight:600}
+:root{--red:#d61f26;--blue:#0b4ea2;--green:#178a3c;--navy:#0a1a3a;--ink:#14213d;--mute:#4b5d78}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:2000px;height:1130px;overflow:hidden;background:#eef3f9;font-family:IN,sans-serif;color:var(--ink)}
+.abs{position:absolute}
+.hdr{left:0;top:0;width:2000px;height:150px;background:linear-gradient(180deg,#fff,#eef3f9)}
+.pill{left:44px;top:26px;width:270px;height:100px;border-radius:50px;background:radial-gradient(120% 140% at 30% 20%,#12306b,#071431);border:3px solid #b9a8f0;display:flex;align-items:center;justify-content:center}
+.pill img{width:210px}
+.title{left:330px;top:10px;width:1230px;text-align:center}
+.title h1{font:700 43px/1.1 SG;color:var(--navy);letter-spacing:-.5px}
+.title h1 em{font-style:normal;color:#1a6fd6}
+.title p{font:600 19px/1.4 IN;color:var(--mute);margin-top:8px}
+.title p b{color:var(--navy)}
+.logos{right:40px;top:22px;display:flex;gap:26px;align-items:center;height:108px}
+.logos img{height:96px}
+.sec{left:50px;width:1240px}
+.tab{position:absolute;left:0;top:0;height:38px;padding:0 22px;border-radius:12px 12px 0 0;color:#fff;font:700 24px/38px SG;letter-spacing:.3px}
+.box{position:absolute;left:0;right:0;top:38px;bottom:0;border:3px solid;border-radius:0 14px 14px 14px;background:#fff;padding:12px}
+.red .tab{background:var(--red)} .red .box{border-color:var(--red);background:#fff4f4}
+.blu .tab{background:var(--blue)} .blu .box{border-color:var(--blue);background:#f1f7ff}
+.grn .tab{background:var(--green)} .grn .box{border-color:var(--green);background:#f1fbf4}
+.row{display:flex;gap:12px;height:100%}
+.card{flex:1;background:#fff;border:2px solid #d5deea;border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:center}
+.red .card{border-color:#f1b5b8}.grn .card{border-color:#a9dcb9}
+.card svg.ic{flex:0 0 66px;width:66px;height:66px}
+.card h4{font:700 23px/1.1 SG;letter-spacing:.2px}
+.red h4{color:var(--red)}
+.card p{font:400 18.5px/1.32 IN;color:#243550;margin-top:5px}
+.para{font:400 20.5px/1.32 IN;color:#1c2c4a;padding:0 6px 8px}
+.para b{color:var(--blue)}
+.g22{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;height:calc(100% - 64px)}
+.g22 .card{border-color:#b6cdf0;padding:8px 14px}
+.g22 svg.ic{flex:0 0 54px;width:54px;height:54px}
+.g22 h4{color:var(--blue);font-size:22px}
+.g22 p{font-size:18.5px}
+.uvp .card{padding:6px 10px}
+.uvp .card svg.ic{width:58px;height:58px;flex:0 0 58px}
+.uvp h4{color:var(--green);font-size:19.5px}
+.uvp p{font-size:16.5px;line-height:1.28;margin-top:3px}
+/* architecture */
+.arch{left:1310px;top:156px;width:665px;height:724px;border-radius:16px;background:#e3ecf8;border:2px solid #c3d3ea}
+.arch .ah{position:absolute;left:20px;top:10px;font:700 25px/1 SG;color:var(--navy)}
+.arch .ah small{font:600 15px IN;color:var(--mute);margin-left:10px}
+.n{position:absolute;border-radius:12px;border:3px solid;background:#fff;text-align:center;display:flex;flex-direction:column;justify-content:center}
+.n b{font:700 21px/1.1 SG;letter-spacing:.3px}
+.n span{font:400 15.5px/1.25 IN;color:#33455f;margin-top:3px}
+.in{border-color:#1a7fd0}.in b{color:#0d5fae}
+.in2{border-color:#8a4fe0}.in2 b{color:#6a2fc0}
+.cam{background:#12264f;border-color:#12264f}.cam b{color:#fff}.cam span{color:#b9c9e6}
+.det{border-color:#1a7fd0}.det b{color:#0d5fae}
+.idn{border-color:#8a4fe0;background:#f6f1ff}.idn b{color:#6a2fc0}
+.trk{border-color:#2fa04f;background:#f0fbf3}.trk b{color:#178a3c}
+.ptr{border-color:#1a7fd0}.ptr b{color:#0d5fae}
+.veto{border-color:var(--red);background:#fff2f2}.veto b{color:var(--red)}
+.out{border-color:#1a7fd0;background:#f4f9ff;padding:0 6px}.out b{font-size:17.5px;color:#0d5fae}.out span{font-size:14.5px}
+.dia{position:absolute}
+.lbl{position:absolute;font:700 14px/1 SG;color:var(--red)}
+.lbl.y{color:#178a3c}
+.loop{position:absolute;font:700 13px/1.15 SG;color:#0d5fae;text-align:center;background:#e3ecf8;width:92px;padding:4px 0}
+.loop small{display:block;font:400 11.5px/1.2 IN;color:#3b5070;margin-top:3px}
+/* bottom strip */
+.strip{left:50px;top:894px;width:1240px;height:214px}
+.strip .cap{position:absolute;left:0;top:0;font:700 22px/1 SG;color:var(--navy)}
+.strip .cap i{font-style:normal;color:#1a6fd6}
+.cards{position:absolute;left:0;top:30px;height:184px;border-radius:14px;box-shadow:0 3px 10px rgba(10,26,58,.25)}
+.shot{position:absolute;left:376px;top:30px;width:480px;height:184px;border-radius:12px;object-fit:cover;object-position:top left;border:3px solid #12264f;box-shadow:0 3px 10px rgba(10,26,58,.25)}
+.tiles{position:absolute;left:872px;top:30px;width:368px;height:184px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:8px}
+.tile{background:#0d1f45;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;justify-content:center;border:2px solid #234a92}
+.tile b{font:700 34px/1 SG;color:#6fe08c}
+.tile b small{font-size:19px;color:#9fd3ff}
+.tile span{font:400 14.5px/1.22 IN;color:#c7d8f2;margin-top:4px}
+.chart{left:1310px;top:894px;width:665px;height:216px;background:#fff;border-radius:12px;border:2px solid #c3d3ea}
+.chart img{position:absolute;left:8px;top:6px;width:649px;height:143px;object-fit:fill}
+.chart p{position:absolute;left:12px;right:12px;top:152px;font:400 15.5px/1.32 IN;color:#243550}
+.chart p b{color:#0d5fae}
+.foot{left:0;top:1112px;width:2000px;text-align:center;font:400 13px/1 IN;color:#6b7f99}
+</style></head><body data-ready="1">
+
+<div class="abs hdr"></div>
+<div class="abs pill"><img src="zerodrift_logo.png" alt="ZeroDrift"></div>
+<div class="abs title">
+  <h1>AI-Based <em>Virtual Camera Tracking</em><br>for Coarse Alignment of Mobile FSOC Terminals</h1>
+  <p><b>PS SIH26169</b> · ISRO · Smart Automation / Software · Team ZeroDrift, Jabalpur Engineering College</p>
+</div>
+<div class="abs logos"><img src="isro.png" alt="ISRO"><img src="sih2026.png" alt="Smart India Hackathon 2026"></div>
+
+<!-- PROBLEM -->
+<div class="abs sec red" style="top:166px;height:178px">
+  <div class="tab">PROBLEM EXISTING</div>
+  <div class="box"><div class="row">
+    <div class="card"><svg class="ic" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fde3e4"/><circle cx="32" cy="32" r="14" fill="none" stroke="#d61f26" stroke-width="4"/><circle cx="32" cy="32" r="4" fill="#d61f26"/><path d="M32 6v14M32 44v14M6 32h14M44 32h14" stroke="#d61f26" stroke-width="4" stroke-linecap="round"/></svg>
+      <div><h4>MICRO-RADIAN AIM</h4><p>A laser link must stay on target while vehicles, drones and masts move.</p></div></div>
+    <div class="card"><svg class="ic" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fde3e4"/><path d="M20 20l24 24M44 20L20 44" stroke="#d61f26" stroke-width="7" stroke-linecap="round"/></svg>
+      <div><h4>WRONG-TARGET LOCK</h4><p>Stars, glints and lamps look like the beacon, so trackers lock the wrong light.</p></div></div>
+    <div class="card"><svg class="ic" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#fde3e4"/><circle cx="32" cy="36" r="17" fill="none" stroke="#d61f26" stroke-width="4"/><path d="M32 36V25M26 12h12M32 12v7M47 20l4-4" stroke="#d61f26" stroke-width="4" stroke-linecap="round"/></svg>
+      <div><h4>DELAY &amp; DROPOUTS</h4><p>About 40 ms of lag plus beacon blink gaps drop the beam and force manual realignment.</p></div></div>
+  </div></div>
+</div>
+
+<!-- SOLUTION -->
+<div class="abs sec blu" style="top:352px;height:326px">
+  <div class="tab">PROPOSED SOLUTION</div>
+  <div class="box">
+    <p class="para">We propose <b>ZeroDrift</b>: software that finds the partner terminal’s <b>4 Hz beacon</b> in a camera image, proves it is the right light, and steers the terminal to keep it centred. It answers PS SIH26169 with an ordinary camera and no special sensor.</p>
+    <div class="g22">
+      <div class="card"><svg class="ic" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#dbeaff"/><ellipse cx="32" cy="32" rx="22" ry="10" fill="none" stroke="#0b4ea2" stroke-width="4" transform="rotate(-25 32 32)"/><circle cx="32" cy="32" r="7" fill="#0b4ea2"/></svg><div><h4>PHYSICS-TRUE VIRTUAL CAMERA</h4><p>SGP4 orbits, turbulence and decoys, tested before hardware.</p></div></div>
+      <div class="card"><svg class="ic" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#dbeaff"/><circle cx="32" cy="32" r="15" fill="none" stroke="#0b4ea2" stroke-width="4"/><circle cx="32" cy="32" r="4" fill="#0b4ea2"/><path d="M32 8v10M32 46v10M8 32h10M46 32h10" stroke="#0b4ea2" stroke-width="4" stroke-linecap="round"/></svg><div><h4>DETECT</h4><p>Top-hat, matched filter, CFAR, sub-pixel centroid.</p></div></div>
+      <div class="card"><svg class="ic" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#dbeaff"/><path d="M8 34h12l5-16 8 30 6-22 4 8h13" fill="none" stroke="#0b4ea2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h4>IDENTIFY</h4><p>4 Hz blink test + neural verifier: 0 / 64 wrong-light locks.</p></div></div>
+      <div class="card"><svg class="ic" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#dbeaff"/><path d="M10 46l14-14 10 8 20-22" fill="none" stroke="#0b4ea2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M42 18h12v12" fill="none" stroke="#0b4ea2" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h4>TRACK &amp; COAST</h4><p>IMM Kalman filter holds through blinks: 97.5% median lock retention.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- UVP -->
+<div class="abs sec grn uvp" style="top:688px;height:192px">
+  <div class="tab">UVP · UNIQUE VALUE PROPOSITION</div>
+  <div class="box"><div class="row">
+    <div class="card"><svg class="ic" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#d3f2dc"/><path d="M32 10l18 6v14c0 12-8 20-18 24-10-4-18-12-18-24V16z" fill="#178a3c"/><path d="M23 32l7 7 12-14" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h4>IDENTIFY, NOT BRIGHTNESS</h4><p>Locks only on the 4 Hz blink signature.</p></div></div>
+    <div class="card"><svg class="ic" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#d3f2dc"/><path d="M46 24a16 16 0 0 0-28-4M18 40a16 16 0 0 0 28 4" fill="none" stroke="#178a3c" stroke-width="5" stroke-linecap="round"/><path d="M18 12v10h10M46 52V42H36" fill="none" stroke="#178a3c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h4>DELAY-CANCELLED LOOP</h4><p>Error is read from the image; a Smith predictor cancels the lag.</p></div></div>
+    <div class="card"><svg class="ic" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#d3f2dc"/><circle cx="32" cy="32" r="10" fill="none" stroke="#178a3c" stroke-width="6"/><path d="M32 8v10M32 46v10M8 32h10M46 32h10M15 15l7 7M42 42l7 7M49 15l-7 7M22 42l-7 7" stroke="#178a3c" stroke-width="6" stroke-linecap="round"/></svg><div><h4>ONE ENGINE, THREE INPUTS</h4><p>Simulation, webcam and terminal run the same code.</p></div></div>
+    <div class="card"><svg class="ic" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#d3f2dc"/><rect x="14" y="36" width="9" height="16" rx="2" fill="#178a3c"/><rect x="27" y="26" width="9" height="26" rx="2" fill="#178a3c"/><rect x="40" y="14" width="9" height="38" rx="2" fill="#178a3c"/></svg><div><h4>MEASURED, NOT CLAIMED</h4><p>Every number is from a logged run. 250 / 251 tests pass.</p></div></div>
+  </div></div>
+</div>
+
+<!-- ARCHITECTURE -->
+<div class="abs arch">
+  <div class="ah">ARCHITECTURE <small>one engine, three inputs, one closed loop</small></div>
+  <svg class="abs" style="left:0;top:0" width="665" height="724" viewBox="0 0 665 724">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#12264f"/></marker>
+    <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#d61f26"/></marker>
+    <marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0d5fae"/></marker></defs>
+    <g fill="none" stroke="#12264f" stroke-width="3" marker-end="url(#ar)">
+      <path d="M122 102v14h208v14"/><path d="M332 102v28"/><path d="M542 102v14H332v14" />
+      <path d="M332 172v26"/><path d="M332 262v28"/><path d="M332 352v25"/>
+      <path d="M332 462v30"/><path d="M332 558v22"/>
+      <path d="M332 632v18"/><path d="M332 632v10H122v8"/><path d="M332 632v10h210v8"/>
+    </g>
+    <path d="M419 420h60" fill="none" stroke="#d61f26" stroke-width="3" marker-end="url(#ar2)"/>
+    <path d="M132 607H50V152H190" fill="none" stroke="#0d5fae" stroke-width="3.5" stroke-dasharray="9 5" marker-end="url(#ar3)"/>
+  </svg>
+  <div class="n in" style="left:22px;top:52px;width:200px;height:50px"><b>SIMULATION</b><span>virtual sky · SGP4</span></div>
+  <div class="n in2" style="left:232px;top:52px;width:200px;height:50px"><b>LIVE WEBCAM</b><span>browser · laptop camera</span></div>
+  <div class="n in" style="left:442px;top:52px;width:200px;height:50px"><b>TERMINAL</b><span>MK1 built · MK2 in build</span></div>
+  <div class="n cam" style="left:192px;top:132px;width:280px;height:40px;flex-direction:row;gap:10px;align-items:center;white-space:nowrap"><b>CAMERA FRAME</b><span style="margin:0">30 fps</span></div>
+  <div class="n det" style="left:102px;top:198px;width:460px;height:64px"><b>DETECT</b><span>top-hat · matched filter · CFAR · sub-pixel centroid</span></div>
+  <div class="n idn" style="left:102px;top:290px;width:460px;height:64px"><b>IDENTIFY</b><span>follow every light · 4 Hz blink test · neural verifier</span></div>
+  <svg class="dia" style="left:237px;top:378px" width="190" height="84" viewBox="0 0 190 84"><path d="M95 3L187 42L95 81L3 42z" fill="#fff4dc" stroke="#e39a1a" stroke-width="3"/><text x="95" y="38" text-anchor="middle" font-family="SG" font-weight="700" font-size="17" fill="#8a5a00">Beacon</text><text x="95" y="58" text-anchor="middle" font-family="SG" font-weight="700" font-size="17" fill="#8a5a00">verified?</text></svg>
+  <div class="lbl" style="left:432px;top:405px">NO</div>
+  <div class="lbl y" style="left:348px;top:464px">YES</div>
+  <div class="n veto" style="left:482px;top:392px;width:160px;height:56px"><b>VETO DECOY</b><span>star · lamp · glint</span></div>
+  <div class="n trk" style="left:102px;top:494px;width:460px;height:64px"><b>TRACK &amp; PREDICT</b><span>IMM Kalman · coast through blinks · Smith predictor</span></div>
+  <div class="n ptr" style="left:132px;top:582px;width:400px;height:50px"><b>POINTER COMMAND</b><span>azimuth / elevation to the gimbal or virtual viewport</span></div>
+  <div class="n out" style="left:22px;top:652px;width:200px;height:56px"><b>VIRTUAL VIEWPORT</b><span>live view + telemetry</span></div>
+  <div class="n out" style="left:232px;top:652px;width:200px;height:56px"><b>ON-SCREEN LOCK</b><span>lock visualisation</span></div>
+  <div class="n out" style="left:442px;top:652px;width:200px;height:56px"><b>STEPPER GIMBAL</b><span>Web Serial → Arduino</span></div>
+  <div class="loop" style="left:4px;top:330px">CLOSED OPTICAL LOOP<small>the camera moves with the aim</small></div>
+</div>
+
+<!-- BOTTOM STRIP -->
+<div class="abs strip">
+  <div class="cap">The eyes and neck of a <i>laser communication terminal</i></div>
+  <img class="cards" src="c2_cards.jpg" style="width:367px" alt="Simulate, Verify, Track and Predict">
+  <img class="shot" src="shot_crop.png" alt="ZeroDrift console">
+  <div class="tiles">
+    <div class="tile"><b>1.27<small> s</small></b><span>median time to lock</span></div>
+    <div class="tile"><b>97.5<small> %</small></b><span>lock retention, 64-run median</span></div>
+    <div class="tile"><b>0 / 64</b><span>runs locked a wrong light</span></div>
+    <div class="tile"><b>99.3<small> %</small></b><span>link closure (modelled) vs 14.7% coarse only</span></div>
+  </div>
+</div>
+<div class="abs chart"><img src="chart_convergence.png" alt="Pointing error vs time"><p><b>Console replay of a simulated ISS pass over Bengaluru:</b> locked at 1.3 s, median <b>198 µrad</b> in lock, beacon in view 100% of frames (featured demo run).</p></div>
+</body></html>

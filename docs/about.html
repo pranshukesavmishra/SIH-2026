@@ -533,6 +533,12 @@ body {
 }
 
 /* SECTION 2: VERTICAL CONNECTED LINE ARCHITECTURE */
+.rec-text { max-width: 760px; text-align: center; color: #b7c7de; font-size: 16px; line-height: 1.65; margin: 0 0 22px; }
+.rec-text b { color: #eaf4fd; }
+.rec-grid { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; width: min(1060px, 100%); }
+.rec-grid figure { flex: 1 1 280px; max-width: 340px; margin: 0; background: rgba(8,16,32,.85); border: 1px solid #15263F; border-radius: 12px; overflow: hidden; }
+.rec-grid img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+.rec-grid figcaption { padding: 8px 12px; font-size: 12px; color: #8ea4c4; letter-spacing: .04em; }
 .points-section-header {
   text-align: center;
   margin-bottom: 24px;
@@ -881,12 +887,16 @@ body {
     <span class="dot-label">01 TEAM</span>
     <span class="dot-circle"></span>
   </a>
+  <a href="#sec-recognition" class="dot-item" id="dot-sec-recognition" title="Recognition">
+    <span class="dot-label">02 AWARD</span>
+    <span class="dot-circle"></span>
+  </a>
   <a href="#sec-architecture" class="dot-item" id="dot-sec-architecture" title="System Capabilities">
-    <span class="dot-label">02 SPECS</span>
+    <span class="dot-label">03 SPECS</span>
     <span class="dot-circle"></span>
   </a>
   <a href="#sec-replay" class="dot-item" id="dot-sec-replay" title="Live Telemetry">
-    <span class="dot-label">03 REPLAY</span>
+    <span class="dot-label">04 REPLAY</span>
     <span class="dot-circle"></span>
   </a>
 </nav>
@@ -939,7 +949,7 @@ body {
     <div class="org-strip">
       <span class="org-chip"><img src="brand/isro.png" alt="ISRO"></span>
       <span class="org-chip"><img src="brand/sih2026.png" alt="Smart India Hackathon 2026"></span>
-      <span class="org-txt"><b>PS SIH26169</b><br>ISRO · FSOC PAT</span>
+      <span class="org-txt"><b>PS SIH26169</b><br>ISRO · FSOC PAT<br>2ND RUNNER-UP · SIH INTERNAL ROUND 2026</span>
     </div>
 
     <div class="team-layout">
@@ -980,6 +990,24 @@ body {
       </div>
     </div>
 
+    <button class="scroll-nav-btn" data-target="#sec-recognition">
+      RECOGNITION
+      <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+    </button>
+  </section>
+
+  <!-- SECTION 1b: RECOGNITION -->
+  <section class="section-view" id="sec-recognition">
+    <div class="points-section-header">
+      <div class="section-tag">RECOGNITION</div>
+      <h2 class="section-title">2nd Runner-Up, SIH 2026 Internal Round</h2>
+    </div>
+    <p class="rec-text">Smart India Hackathon 2026, internal round, organised by Jabalpur Engineering College on 11 September 2026. ZeroDrift was placed <b>2nd Runner-Up</b> and was nominated to take PS SIH26169 (ISRO) forward.</p>
+    <div class="rec-grid">
+      <figure><img src="media/award_team.jpg" alt="Team ZeroDrift with the trophy at the SIH 2026 internal round" loading="lazy" onerror="this.parentNode.remove()"><figcaption>Team ZeroDrift, JEC, 11 Sept 2026</figcaption></figure>
+      <figure><img src="media/award_trophy.jpg" alt="The 2nd Runner-Up trophy" loading="lazy" onerror="this.parentNode.remove()"><figcaption>The 2nd Runner-Up trophy</figcaption></figure>
+      <figure><img src="media/award_stage.jpg" alt="Receiving the trophy on stage" loading="lazy" onerror="this.parentNode.remove()"><figcaption>Receiving the trophy on stage</figcaption></figure>
+    </div>
     <button class="scroll-nav-btn" data-target="#sec-architecture">
       CAPABILITIES
       <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
@@ -1183,6 +1211,7 @@ body {
     // Update active nav dot immediately
     const navDots = {
       'sec-team': document.getElementById('dot-sec-team'),
+      'sec-recognition': document.getElementById('dot-sec-recognition'),
       'sec-architecture': document.getElementById('dot-sec-architecture'),
       'sec-replay': document.getElementById('dot-sec-replay')
     };
@@ -1440,6 +1469,7 @@ setTimeout(() => {
   const sections = document.querySelectorAll('.section-view');
   const navDots = {
     'sec-team': document.getElementById('dot-sec-team'),
+      'sec-recognition': document.getElementById('dot-sec-recognition'),
     'sec-architecture': document.getElementById('dot-sec-architecture'),
     'sec-replay': document.getElementById('dot-sec-replay')
   };

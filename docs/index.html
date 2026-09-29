@@ -802,7 +802,42 @@ body {
   border: 1px solid #15263F; background: rgba(255,255,255,.03); }
 .rig-hint { margin-top: 12px; font: 11px ui-monospace, monospace; color: #536988; letter-spacing: .08em; text-align: center; }
 /* ---------- Software demo video: video left, brief right ---------- */
-.film-wrap { width: min(980px, 100%); }
+.theater { --sx: 17%; --sw: 66%; --st: 13.4%; --open: .36; position: relative; width: min(1120px, 100%, calc((100vh - 250px) * 1.5385)); aspect-ratio: 16 / 10.4;
+  border-radius: 18px; overflow: hidden; background: #03050b; box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 1px #1a2438; isolation: isolate; }
+.th-wall { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.th-foot circle { fill: #ffd27a; filter: drop-shadow(0 0 6px #ffb347); opacity: .85; }
+.th-beam { mix-blend-mode: screen; opacity: 0; transition: opacity 1.6s ease 1s; }
+.theater.open .th-beam { opacity: 1; }
+.th-screen { position: absolute; left: var(--sx); width: var(--sw); top: var(--st); aspect-ratio: 16 / 9; z-index: 1; background: #000;
+  border-radius: 3px; box-shadow: 0 0 0 3px #0c0c10, 0 0 0 5px #2b2b33, 0 0 70px rgba(120,180,255,.22), 0 24px 60px rgba(0,0,0,.7); overflow: hidden; }
+.th-screen video { width: 100%; height: 100%; display: block; object-fit: cover; background: #000; }
+.th-curtain { position: absolute; top: 0; height: 88%; width: 50.5%; z-index: 3; transition: transform 1.9s cubic-bezier(.65,.05,.25,1); filter: drop-shadow(0 12px 18px rgba(0,0,0,.6)); }
+.th-left { left: 0; transform-origin: 0 50%; }
+.th-right { right: 0; transform-origin: 100% 50%; }
+.theater.open .th-curtain { transform: scaleX(var(--open)); }
+.th-valance { position: absolute; top: 0; left: 0; width: 100%; height: 12.5%; z-index: 4; filter: drop-shadow(0 8px 12px rgba(0,0,0,.55)); }
+.th-marquee { position: absolute; top: 1.2%; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 11px 24px 11px; border-radius: 8px; background: linear-gradient(180deg, #1b1206, #0b0703); border: 2px solid #d4a23a; white-space: nowrap;
+  box-shadow: 0 0 0 4px #0b0703, 0 0 22px rgba(255,190,90,.35); }
+.th-marquee::before, .th-marquee::after { content: ''; position: absolute; left: 8px; right: 8px; height: 5px;
+  background: radial-gradient(circle, #fff1c4 0 1.6px, rgba(255,200,110,.5) 2.4px, transparent 3px) 0 0 / 12px 5px repeat-x; animation: thBulb 1.2s steps(2) infinite; }
+.th-marquee::before { top: 2px; } .th-marquee::after { bottom: 2px; animation-delay: .6s; }
+@keyframes thBulb { 50% { opacity: .45; } }
+.th-marquee span { font: 600 9px/1 var(--font-mono, ui-monospace, monospace); letter-spacing: .34em; color: #d4a23a; }
+.th-marquee b { font: 700 14px/1.1 var(--font-mono, ui-monospace, monospace); letter-spacing: .16em; color: #fff3cf; text-shadow: 0 0 10px rgba(255,200,110,.8); }
+.th-seats { position: absolute; left: 0; bottom: 0; width: 100%; height: 22%; z-index: 6; pointer-events: none; }
+.th-play { position: absolute; z-index: 5; left: calc(var(--sx) + var(--sw) / 2); top: calc(var(--st) + 28.5%); transform: translate(-50%, -50%);
+  width: 76px; height: 76px; border-radius: 50%; border: 2px solid rgba(255,255,255,.75); background: rgba(5,12,24,.55); backdrop-filter: blur(6px);
+  cursor: pointer; display: grid; place-items: center; box-shadow: 0 0 30px rgba(79,199,234,.45); transition: transform .25s, background .25s, opacity .4s; }
+.th-play svg { width: 34px; height: 34px; fill: #fff; margin-left: 4px; }
+.th-play:hover { transform: translate(-50%, -50%) scale(1.08); background: rgba(79,199,234,.35); }
+.theater.playing .th-play { opacity: 0; pointer-events: none; }
+@media (max-width: 760px) {
+  .theater { --sx: 6%; --sw: 88%; --st: 17%; --open: .12; aspect-ratio: 16 / 13; }
+  .th-marquee { padding: 9px 12px; } .th-marquee b { font-size: 10.5px; } .th-marquee span { font-size: 7px; }
+  .th-play { width: 58px; height: 58px; top: calc(var(--st) + 24.4%); }
+}
+@media (prefers-reduced-motion: reduce) { .th-curtain, .th-beam { transition: none; } .th-marquee::before, .th-marquee::after { animation: none; } }
 .film-note { max-width: 760px; text-align: center; color: #8EA4C4; font-size: 13px; line-height: 1.6; margin: 16px 0 0; }
 .sw-duo { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; width: min(1060px, 100%); align-items: center; }
 .sw-view { position: relative; aspect-ratio: 1920 / 1086; background: #050a14; }
@@ -853,8 +888,8 @@ body {
     <span class="dot-label">01 HERO</span>
     <span class="dot-circle"></span>
   </div>
-  <div class="dot-item" id="dot-sec-film" onclick="scrollToSection('sec-film')" title="Demo film">
-    <span class="dot-label">02 FILM</span>
+  <div class="dot-item" id="dot-sec-film" onclick="scrollToSection('sec-film')" title="3D simulation">
+    <span class="dot-label">02 3D SIM</span>
     <span class="dot-circle"></span>
   </div>
   <div class="dot-item" id="dot-sec-hardware" onclick="scrollToSection('sec-hardware')" title="Hardware">
@@ -975,24 +1010,69 @@ body {
     </div>
 
     <button class="scroll-nav-btn" onclick="scrollToSection('sec-film')">
-      WATCH THE FILM
+      WATCH THE 3D SIMULATION
       <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
     </button>
   </section>
 
 
-  <!-- SECTION 1b: THE DEMO FILM -->
+  <!-- SECTION 1b: THEATER - 3D SIMULATION -->
   <section class="section-view" id="sec-film">
     <div class="timeline-section-header">
-      <div class="section-tag">DEMO FILM · MK1 + SIMULATION + SOFTWARE</div>
-      <h3 class="section-title">See it lock, in 75 seconds</h3>
+      <div class="section-tag">NOW SHOWING · 3D SIMULATION</div>
+      <h3 class="section-title">From orbit to lock, in 100 seconds</h3>
     </div>
-    <div class="film-wrap rig-card">
-      <div class="sw-view">
-        <video id="filmVideo" playsinline controls preload="none" poster="media/zerodrift_film_poster.jpg" aria-label="ZeroDrift demo film: MK1 hardware, decoy simulation and live software"></video>
+    <div class="theater" id="theater">
+      <svg class="th-wall" viewBox="0 0 1600 1040" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <radialGradient id="thWall" cx="50%" cy="42%" r="70%"><stop offset="0" stop-color="#1b2338"/><stop offset=".55" stop-color="#0b1020"/><stop offset="1" stop-color="#03050b"/></radialGradient>
+          <linearGradient id="thFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a1a14"/><stop offset="1" stop-color="#0a0605"/></linearGradient>
+          <linearGradient id="thBeam" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#bfe3ff" stop-opacity=".0"/><stop offset=".25" stop-color="#bfe3ff" stop-opacity=".10"/><stop offset="1" stop-color="#d8efff" stop-opacity=".02"/></linearGradient>
+        </defs>
+        <rect width="1600" height="1040" fill="url(#thWall)"/>
+        <path d="M0 760 L1600 760 L1600 1040 L0 1040Z" fill="url(#thFloor)"/>
+        <path d="M150 742 H1450 L1500 772 H100Z" fill="#3b2419"/><path d="M100 772 H1500 V784 H100Z" fill="#1a0f0a"/>
+        <g class="th-foot">
+          <circle cx="330" cy="760" r="4"/><circle cx="520" cy="760" r="4"/><circle cx="710" cy="760" r="4"/><circle cx="890" cy="760" r="4"/><circle cx="1080" cy="760" r="4"/><circle cx="1270" cy="760" r="4"/></g>
+        <path class="th-beam" d="M800 1040 L272 139 L1328 139 Z" fill="url(#thBeam)"/>
+      </svg>
+      <div class="th-screen">
+        <video id="filmVideo" playsinline controls preload="none" poster="media/sim3d_poster.jpg"
+          aria-label="ZeroDrift 3D simulation: orbit prediction, beacon detection, lock and link"></video>
       </div>
+      <svg class="th-curtain th-left" viewBox="0 0 500 1000" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="thFold" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="72" y2="0" spreadMethod="repeat">
+            <stop offset="0" stop-color="#2e0206"/><stop offset=".28" stop-color="#7a0b17"/><stop offset=".5" stop-color="#c8202f"/><stop offset=".62" stop-color="#9a1220"/><stop offset="1" stop-color="#2e0206"/></linearGradient>
+          <linearGradient id="thShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset=".25" stop-color="#000" stop-opacity="0"/><stop offset=".8" stop-color="#000" stop-opacity=".1"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></linearGradient>
+          <linearGradient id="thEdge" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset=".94" stop-color="#ff6b6b" stop-opacity=".08"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></linearGradient>
+        </defs>
+        <path d="M0 0 H500 V968 Q485 990 464 968 T428 968 T392 968 T356 968 T320 968 T284 968 T248 968 T212 968 T176 968 T140 968 T104 968 T68 968 T32 968 T0 968Z" fill="url(#thFold)"/>
+        <rect width="500" height="1000" fill="url(#thShade)"/><rect width="500" height="1000" fill="url(#thEdge)"/>
+      </svg>
+      <svg class="th-curtain th-right" viewBox="0 0 500 1000" preserveAspectRatio="none" aria-hidden="true">
+        <g transform="translate(500 0) scale(-1 1)">
+          <path d="M0 0 H500 V968 Q485 990 464 968 T428 968 T392 968 T356 968 T320 968 T284 968 T248 968 T212 968 T176 968 T140 968 T104 968 T68 968 T32 968 T0 968Z" fill="url(#thFold)"/>
+          <rect width="500" height="1000" fill="url(#thShade)"/><rect width="500" height="1000" fill="url(#thEdge)"/></g>
+      </svg>
+      <svg class="th-valance" viewBox="0 0 1600 130" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="thVal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a0409"/><stop offset=".6" stop-color="#9b1422"/><stop offset="1" stop-color="#5a0710"/></linearGradient>
+          <linearGradient id="thGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe29a"/><stop offset=".5" stop-color="#d4a23a"/><stop offset="1" stop-color="#8a6212"/></linearGradient></defs>
+        <path d="M0 0 H1600 V88 Q1560 128 1520 88 Q1480 128 1440 88 Q1400 128 1360 88 Q1320 128 1280 88 Q1240 128 1200 88 Q1160 128 1120 88 Q1080 128 1040 88 Q1000 128 960 88 Q920 128 880 88 Q840 128 800 88 Q760 128 720 88 Q680 128 640 88 Q600 128 560 88 Q520 128 480 88 Q440 128 400 88 Q360 128 320 88 Q280 128 240 88 Q200 128 160 88 Q120 128 80 88 Q40 128 0 88Z" fill="url(#thVal)"/>
+        <path d="M0 88 Q40 128 80 88 Q120 128 160 88 Q200 128 240 88 Q280 128 320 88 Q360 128 400 88 Q440 128 480 88 Q520 128 560 88 Q600 128 640 88 Q680 128 720 88 Q760 128 800 88 Q840 128 880 88 Q920 128 960 88 Q1000 128 1040 88 Q1080 128 1120 88 Q1160 128 1200 88 Q1240 128 1280 88 Q1320 128 1360 88 Q1400 128 1440 88 Q1480 128 1520 88 Q1560 128 1600 88" fill="none" stroke="url(#thGold)" stroke-width="5"/>
+        <rect y="0" width="1600" height="10" fill="url(#thGold)"/>
+      </svg>
+      <div class="th-marquee"><span>NOW SHOWING</span><b>ZERODRIFT · 3D SIMULATION</b></div>
+      <svg class="th-seats" viewBox="0 0 1600 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+        <defs><linearGradient id="thSeat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a1216"/><stop offset=".12" stop-color="#140709"/><stop offset="1" stop-color="#050203"/></linearGradient>
+          <linearGradient id="thSeat2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c0b0e"/><stop offset=".15" stop-color="#0a0405"/><stop offset="1" stop-color="#020101"/></linearGradient></defs>
+        <g fill="url(#thSeat)" id="thRowA"></g>
+        <g fill="url(#thSeat2)" id="thRowB"></g>
+      </svg>
+      <button type="button" class="th-play" id="thPlay" aria-label="Play the 3D simulation">
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
     </div>
-    <p class="film-note">Real MK1 footage, the recorded engine run, and the live software on a laptop webcam. MK2 is in build and will be added to this site.</p>
+    <p class="film-note">Code-rendered 3D visualisation of the full chain: orbit prediction, beacon detection and lock, hand-off to the fine stage. Numbers on screen come from our logged runs.</p>
   </section>
 
 
@@ -1025,7 +1105,7 @@ body {
             <button data-view="photo">PHOTO</button><button data-view="video">VIDEO</button><button data-view="3d" class="on">3D</button></div></div>
           <img class="rig-media" data-kind="photo" data-src="media/mk2_photo.jpg" alt="MK2 rig, photo">
           <video class="rig-media" data-kind="video" data-src="demo-mk2.mp4" muted loop playsinline controls preload="none"></video>
-          <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>In build: photo and video will be added here.</div></div>
+          <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Coming soon: photo and video will be added here.</div></div>
           <span class="rig-legend"><i class="lg-b"></i>Phone torch · blinks 4 Hz · tracked<br><i class="lg-d"></i>Decoy · steady red LED · ignored</span>
           <span class="rig-read" id="rigMk2Read"></span>
         </div>
@@ -1682,18 +1762,37 @@ document.querySelectorAll('.rig-view').forEach(view => {
 })();
 </script>
 <script>
-/* Demo film: load when near, play muted-safe when half visible, pause when away. */
+/* Theater: build the seat rows, open the curtains when the section is reached,
+   then load (720p on phones) and play the 3D simulation muted. */
 (function () {
-  const sec = document.getElementById('sec-film');
-  const v = document.getElementById('filmVideo');
-  if (!sec || !v || !('IntersectionObserver' in window)) return;
+  const th = document.getElementById('theater'), v = document.getElementById('filmVideo'), play = document.getElementById('thPlay');
+  if (!th || !v) return;
+  const NS = 'http://www.w3.org/2000/svg';
+  const row = (id, y, w, h, gap, off) => {
+    const g = document.getElementById(id);
+    for (let x = off; x < 1600; x += w + gap) {
+      const r = document.createElementNS(NS, 'rect');
+      r.setAttribute('x', x); r.setAttribute('y', y); r.setAttribute('width', w); r.setAttribute('height', 260); r.setAttribute('rx', w * 0.32);
+      g.appendChild(r);
+    }
+  };
+  row('thRowA', 70, 118, 70, 22, -40); row('thRowB', 130, 150, 90, 24, -110);
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const load = () => { if (!v.getAttribute('src')) v.src = 'media/zerodrift_film.mp4'; };
-  new IntersectionObserver((es, o) => { if (es.some(e => e.isIntersecting)) { load(); o.disconnect(); } }, { rootMargin: '300px 0px' }).observe(sec);
-  new IntersectionObserver(es => es.forEach(e => {
-    if (e.intersectionRatio >= 0.6) { load(); if (!still) { v.muted = true; v.play().catch(() => {}); } }
-    else if (!v.paused) v.pause();
-  }), { threshold: [0, 0.6] }).observe(v);
+  const load = () => { if (!v.getAttribute('src')) v.src = window.innerWidth <= 800 ? 'media/ZeroDrift_ISRO_Simulation_720p.mp4' : 'media/ZeroDrift_ISRO_Simulation_1080p.mp4'; };
+  let opened = false;
+  const open = () => {
+    if (opened) return; opened = true; load(); th.classList.add('open');
+    setTimeout(() => { if (!still && th.dataset.vis === '1') { v.muted = true; v.play().catch(() => {}); } }, still ? 0 : 1700);
+  };
+  if (!('IntersectionObserver' in window)) { open(); } else {
+    new IntersectionObserver(es => es.forEach(e => {
+      th.dataset.vis = e.intersectionRatio >= 0.5 ? '1' : '0';
+      if (e.intersectionRatio >= 0.5) open(); else if (!v.paused) v.pause();
+    }), { threshold: [0, 0.5] }).observe(th);
+  }
+  play.addEventListener('click', () => { open(); load(); v.muted = false; v.play().catch(() => {}); });
+  v.addEventListener('play', () => th.classList.add('playing'));
+  v.addEventListener('pause', () => th.classList.remove('playing'));
 })();
 </script>
 </body>

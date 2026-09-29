@@ -77,7 +77,7 @@ t(qs[2][0] + 36, qs[2][1] + 45, 'Q1 · flat face toward you', 17, '#0f172a', 700
 d0 = hp(V['d']['A']); d1 = hp(V['d']['K'])
 a(f"<line x1='{d0[0]}' y1='{d0[1]}' x2='{d1[0]}' y2='{d1[1]}' stroke='#9ca3af' stroke-width='5'/><g filter='url(#sh)'><rect x='{(d0[0]+d1[0])/2-46}' y='{d0[1]-15}' width='92' height='30' rx='13' fill='#f59e0b'/></g>")
 rect((d0[0] + d1[0]) / 2 + 24, d0[1] - 15, 14, 30, '#111', 2)
-t((d0[0] + d1[0]) / 2, d0[1] - 26, 'D1  1N4148  (stripe at 24)', 17, '#0f172a', 700, 'middle'); # wire 52: g19 -> GND rail col 19? (rail holes: 15-17 are a group... use column 19 hole if exists)
+t((d0[0] + d1[0]) / 2 + 40, d0[1] - 50, 'D1  1N4148  (stripe at 24)', 17, '#0f172a', 700, 'middle'); # wire 52: g19 -> GND rail col 19? (rail holes: 15-17 are a group... use column 19 hole if exists)
 def railhole(c, yy): return (cx(c), yy)
 line([hp('g19'), (cx(19) - 40, ry['g']), (cx(19) - 40, yG), (cx(19), yG)], C['gnd'], 8); badge(cx(19) - 40, ry['h'] + 18, 52, C['gnd'])
 # wire 53: j24 -> +5 rail col 24

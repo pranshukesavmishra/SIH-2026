@@ -1,0 +1,12 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>ZeroDrift - ISRO field simulation</title>
+<style>
+html,body{margin:0;background:#000;overflow:hidden}
+#wrap{position:relative;width:1920px;height:1080px;transform-origin:0 0}
+canvas{position:absolute;left:0;top:0;width:1920px;height:1080px}
+</style>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+</head><body>
+<div id="wrap"><canvas id="gl" width="1920" height="1080"></canvas><canvas id="hud" width="1920" height="1080"></canvas></div>
+<script type="module" src="sim.js"></script>
+</body></html>

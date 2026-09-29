@@ -1,0 +1,243 @@
+ZERODRIFT · SLIDE REVIEW · what to change (copy-paste list)
+Priority: MUST = wrong / unverifiable / contradicts another slide.  SHOULD = credibility & polish.  NICE = optional.
+Numbers on every slide must be: 250 / 251 tests · 0 / 64 wrong-light runs · 1.27 s median lock · 2.77 s p95 · 4.0 s worst · 100% acquisition · 99.3% vs 14.7% link closure (modelled).
+
+JUDGE SCORES (out of 10, slide 2 not rated):  Slide 1: 8 now → 9 after fixes   Slide 3: 7 now → 9 after fixes   Slide 4: 6.5 now → 8.5 after fixes   Slide 5: 6.5 now → 8.5 after fixes   Slide 6: 6.5 now → 8.5 after fixes
+
+==============================================================================
+SLIDE 1 · TITLE PAGE   —   judge score 8/10  (→ 9/10 after fixes)
+Judge says: Clean, all required fields present (PS ID, title, theme, category, team ID, team name), both logos visible. Nothing wrong, only polish.
+
+[1] NICE · Logo bar, small text under ZeroDrift
+     NOW : PRECISION TRACKING | SIH 2026 |  (stray "|" at the end)
+     TO  : PRECISION TRACKING | SIH 2026
+     WHY : Trailing bar looks like a typo.
+
+[2] NICE · Optional, free space under the ISRO logo
+     NOW : (nothing)
+     TO  : Jabalpur Engineering College · Team ZeroDrift · The pointing brain
+     WHY : Judges see who you are and the one-line idea on page 1. Skip if the template forbids extra text.
+
+==============================================================================
+SLIDE 3 · TECHNICAL APPROACH   —   judge score 7/10  (→ 9/10 after fixes)
+Judge says: Strongest slide: a real flowchart, real proof strip, honest tech stack. Held back by leftover typos, unreadably small text in the ACT lane, and pictures that are AI-generated and are not our system (galaxy, military gimbal, control room, ISS, neural net). The guidelines also want the slide to say WHY each model/framework was chosen: add that line.
+
+[1] SHOULD · SENSE lane, START box
+     NOW : NEW FRAME (33 MS)
+     TO  : NEW FRAME (33 ms)
+     WHY : Unit case.
+
+[2] SHOULD · EXTRACT box
+     NOW : sub pixel centroid of each point (~6/frame)
+     TO  : sub-pixel centroid of each point (~6 / frame)
+     WHY : Hyphen.
+
+[3] MUST · DECIDE lane, diamond
+     NOW : BLINK SIGNATURES MATCHES?
+     TO  : BLINK SIGNATURE MATCHES?
+     WHY : Grammar (plural + singular verb).
+
+[4] MUST · ACT lane heading
+     NOW : ACT: state machine SEARCH
+     TO  : ACT: state machine
+     WHY : SEARCH is repeated: the path next to it already lists all five states.
+
+[5] SHOULD · PREDICT box
+     NOW : smith predictor + IMM feed forward cancel 40ms
+     TO  : Smith predictor + IMM feed-forward, cancels 40 ms
+     WHY : Names take a capital; unit needs a space.
+
+[6] SHOULD · ACT lane, small diamond
+     NOW : BEACON DARK/ NOT DETECTED?
+     TO  : BEACON DARK / NOT DETECTED?
+     WHY : Spacing.
+
+[7] MUST · ACT lane, red box
+     NOW : REAQUIRE
+     TO  : REACQUIRE
+     WHY : Spelling (still wrong here; fixed in the bottom bar).
+
+[8] MUST · EVERY FRAME · TELEMETRY LOG
+     NOW : state - error urad - detentions - blink score slew rate - compute time
+     TO  : state · error (µrad) · detections · blink score · slew rate · compute time
+     WHY : "detentions" is a wrong word, "urad" should be µrad, and one separator is missing.
+
+[9] SHOULD · CONTROL MODULE (three cards)
+     NOW : Compensate 40ms delay  |  SPIRAL SEARCH STATES  |  ~ 30 command/s
+     TO  : Compensates 40 ms delay  |  SPIRAL SEARCH  |  ~30 commands/s
+     WHY : Grammar, unit spacing, plural.
+
+[10] SHOULD · ORBIT DATA sub-title
+     NOW : REAL ISS TLES + SGP4
+     TO  : Real ISS TLEs + SGP4
+     WHY : TLE plural is TLEs.
+
+[11] SHOULD · Pipeline cards 2 and 3
+     NOW : 30 fps · 40ms latency  |  top hat + matched filter + AI
+     TO  : 30 fps · 40 ms latency  |  top-hat + matched filter + AI
+     WHY : Unit spacing, hyphen.
+
+[12] MUST · Five pictures: Orbit data, Neural verifier, Virtual world, Virtual camera, Operator outputs
+     NOW : AI-generated stock images (ISS photo, neural-net art, galaxy, military gimbal, control room)
+     TO  : Use my 5 images (docs/submission/slide3_own_images/): 1_orbit_data → Orbit Data, 2_neural_verifier → Neural Verifier, 3_virtual_world → Virtual World, 4_virtual_camera → Virtual Camera, 5_operator_outputs → Operator Outputs
+     WHY : They look like real photos but are generated, and none is our system. The replacements come from our own engine and Console. Perception and Decision pictures are already engine renders: keep.
+
+[13] MUST · TECH STACK bar
+     NOW : round "ISS" logo · Github Actions · Pyinstaller
+     TO  : Replace the round logo with a plain text badge "ISS TLEs"; write GitHub Actions and PyInstaller
+     WHY : The round logo is a company logo (ISS A/S), not the space station. Product names have fixed spelling.
+
+[14] SHOULD · BUILT · TESTED · LOCKED strip
+     NOW : first picture very dark and tiny
+     TO  : Use the 3 proof photos (2000×694): 1_console_decoy_test, 2_webcam_lock_4hz, 3_mk1_closed_loop
+     WHY : Readable at phone size, small labels in empty corners.
+
+[15] SHOULD · Free space right of the TECH STACK heading
+     NOW : (empty)
+     TO  : Chosen for: CPU-only speed (8–21 ms per 33 ms frame) · blink-rate check gives 0 / 64 wrong locks · neural verifier AUC 0.957 vs 0.900 classical · one command reproduces every figure
+     WHY : Guidelines: the technical slide must state why each model/framework was chosen and how it measurably helps accuracy and scalability. Every number is in the canonical table.
+
+==============================================================================
+SLIDE 4 · FEASIBILITY AND VIABILITY   —   judge score 6.5/10  (→ 8.5/10 after fixes)
+Judge says: Good structure (proof, risks, strategies, worst case) and the right story. But it repeats the old test count, uses "0 false locks" without saying "of 64 runs", has one number with no source (2.8 s), a wrong platform claim (Linux), a typo, ghost background text, and generated pictures in the risk cards.
+
+[1] MUST · FEASIBILITY – PROVEN, first row
+     NOW : 73/73  Automated tests passed
+     TO  : 250 / 251  Automated tests passing (1 skipped)
+     WHY : Verified count on 28 Sept. Must match slide 6.
+
+[2] MUST · FEASIBILITY – PROVEN, third row
+     NOW : 0  Wrong locks / false acquisitions
+     TO  : 0 / 64  runs with a wrong-light lock
+     WHY : 0 is true for the 64-run campaign, not for every frame ever (the decoy demo run had 1 frame on a decoy).
+
+[3] MUST · Bottom of the left box
+     NOW : Standalone Windows/Linux build · 2 CPU cores - No GPU - No dataset
+     TO  : Standalone Windows/macOS build · 2 CPU cores · No GPU · No external dataset
+     WHY : The build workflow makes Windows and macOS apps, not Linux. The neural verifier is trained on our own simulator, so say "no external dataset".
+
+[4] MUST · CHALLENGES & RISKS, Mount Latency card
+     NOW : Tracking instabilit
+     TO  : Tracking instability
+     WHY : Missing letter.
+
+[5] MUST · OUR STRATEGIES, second row
+     NOW : 0 false locks
+     TO  : 0 / 64 wrong locks
+     WHY : Same reason as change 2.
+
+[6] MUST · WORST-CASE PERFORMANCE, third box
+     NOW : 2.8 S  Acquisition under stress (0.53×dimming + 1.74×turbulence)
+     TO  : 2.77 s  95th-percentile acquisition (64 runs)
+     WHY : No source for 2.8 s / 0.53× / 1.74× exists in the repo or canonical table. A judge who asks will not get an answer. 2.77 s is canonical.
+
+[7] MUST · The four risk pictures (storm, sun glints, mount, jets) and the big centre picture with two telescopes
+     NOW : AI-generated stock art
+     TO  : Replace with flat icons, or with our own plots: turbulence trace, decoy diamonds (Console), latency graph, IMM plot. Centre: use the Console screenshot with the LOCKED ring.
+     WHY : Generated images that look real hurt credibility; the centre picture is not our hardware.
+
+[8] SHOULD · Faint text behind the panels
+     NOW : "OUR STRA…", "ZERODRIFT | SOFTWARE-DEFINED OPTICAL COM…", "WORST-CASE PERFORMANCE"
+     TO  : Delete these ghost layers (leftover from the background image)
+     WHY : Looks like an export mistake.
+
+[9] NICE · Box: 100% Acquisition success (64 runs)
+     NOW : 100%  Acquisition success (64 runs)
+     TO  : 100%  Acquisition success (64 runs) · median 1.27 s
+     WHY : Adds the headline speed number from the canonical table.
+
+==============================================================================
+SLIDE 5 · IMPACT AND BENEFITS   —   judge score 6.5/10  (→ 8.5/10 after fixes)
+Judge says: Visually the best-looking slide and the right four impact areas. The 99.3% vs 14.7% bars are correct (canonical). Loses marks for claims we cannot prove (ground and maritime, "less imported hardware"), a duplicated logo, the DRDO logo, generated icons, a missing space, and "Open source" with no licence file in the repo.
+
+[1] SHOULD · Under the title
+     NOW : second ZERODRIFT logo
+     TO  : Delete it
+     WHY : The logo is already top-left. Duplicate looks like a leftover.
+
+[2] MUST · ECONOMIC IMPACT, first bullet
+     NOW : A laptop replaces lakhs of rupees of cameras, gimbals and optics
+     TO  : A laptop replaces a ₹15–50 lakh optical test bench
+     WHY : Number from docs/economic_feasibility.md.
+
+[3] MUST · ECONOMIC IMPACT, third bullet
+     NOW : Zero recurring cost
+     TO  : Near-zero running cost (₹0.22 for a full 64-run campaign)
+     WHY : Zero is an absolute claim; ₹0.22 electricity is the measured figure.
+
+[4] MUST · SCALABLE & GREEN, first bullet
+     NOW : Same engine covers satellite, UAV, ground and maritime links
+     TO  : Same engine runs satellite (LEO) and UAV-relay scenarios; ground and maritime are next
+     WHY : We have scenario files for LEO passes and a UAV relay only. Do not claim what is untested.
+
+[5] SHOULD · SCALABLE & GREEN, second bullet
+     NOW : Pure software-  no consumables, no lab energy, no e-waste in the development cycle.
+     TO  : Pure software: no consumables, no lab energy, no e-waste.
+     WHY : Dangling hyphen and underline look like a broken edit.
+
+[6] MUST · RESEARCH & EDUCATION, third bullet
+     NOW : Open source
+     TO  : Open source (MIT licence)  →  I can add the LICENSE file to the repo
+     WHY : The repository has no LICENSE file, so "open source" is not yet legally true.
+
+[7] MUST · Target audience strip
+     NOW : DRDO seal + generated icons for IITs and space-tech startups
+     TO  : Keep the real ISRO logo; write DRDO, IITs and space-tech startups as text with simple flat icons
+     WHY : Using an organisation seal implies endorsement. The two icons are generated art.
+
+[8] SHOULD · Target audience heading
+     NOW : Building forthe people who build India’s space future
+     TO  : Building for the people who build India’s space future
+     WHY : Missing space.
+
+[9] MUST · Optical Link Close Rate labels
+     NOW : ZeroDrift (modeled fine stage)  /  Without measured fine-stage support
+     TO  : ZeroDrift + modelled fine stage (99.3%)  /  Coarse stage alone (14.7%)   + small line: "Link-budget model, technical report"
+     WHY : 99.3% and 14.7% are canonical, but the second label is confusing. "Modelled" must stay visible.
+
+[10] NICE · STRATEGIC IMPACT, third bullet
+     NOW : Less imported hardware
+     TO  : Reduces dependence on imported test hardware
+     WHY : More precise; software does not remove hardware, it removes the test bench.
+
+==============================================================================
+SLIDE 6 · RESEARCH AND REFERENCES   —   judge score 6.5/10  (→ 8.5/10 after fixes)
+Judge says: The right content for an "open and verifiable" claim: papers, repo, live demo, comparison. Held back by old numbers (73 tests, 6 scenarios, 5,000 lines), links that are only the word [link], a "wins" headline, unexplained ticks in the comparison table, and publisher logos used as decoration.
+
+[1] MUST · Our work, "Inside" row
+     NOW : Full source (5,000+ lines) • 73 automated tests • 6 validated scenarios
+     TO  : Full source (8,500+ lines of Python) • 250 automated tests • 8 scenario files
+     WHY : Counted from the repo: 8,580 lines in src/, 250 tests passing, 8 scenario files.
+
+[2] MUST · Research foundations, right column
+     NOW : [link] ×7 (only the word)
+     TO  : Make each one a real clickable URL: search the paper title on IEEE Xplore / publisher site and paste its DOI link; in PowerPoint: select text → Ctrl+K
+     WHY : A reference that cannot be opened counts as no reference. I did not invent DOIs.
+
+[3] SHOULD · Blackman & Popoli / Bar-Shalom / Andrews & Phillips / Smith
+     NOW : no year, no publisher
+     TO  : Blackman & Popoli, 1999, Artech House · Bar-Shalom et al., 2001, Wiley · Andrews & Phillips, Laser Beam Propagation through Random Media, SPIE Press · Smith, 1957, Chem. Eng. Progress   (check against each book’s title page)
+     WHY : Consistent citations look serious.
+
+[4] SHOULD · Bottom-left logo block
+     NOW : IEEE Xplore, "1957 Smith Predictor", Wiley, artech house, SPIE, AIAA logos
+     TO  : Delete the block; use the space to make the reference text bigger
+     WHY : Publisher logos are decoration and imply affiliation; text is not readable at phone size.
+
+[5] MUST · Dark box title
+     NOW : Why ZeroDrift wins on this problem
+     TO  : Why ZeroDrift fits this problem
+     WHY : "Wins" sounds overconfident to judges.
+
+[6] MUST · Dark box, first tick
+     NOW : All six mandatory deliverables already exist today
+     TO  : Every mandatory deliverable of the problem statement is implemented
+     WHY : Our own docs say five mandatory deliverables, the slide says six. Do not give a number unless it matches the PS text.
+
+[7] SHOULD · Comparison table
+     NOW : Compared with existing approaches (ticks and crosses, MATLAB sim ticked "Zero hardware cost")
+     TO  : Title: "Our assessment vs typical approaches"; MATLAB row 1 → "No special hardware"; add footnote: "Based on our review, not a head-to-head benchmark."
+     WHY : MATLAB is not free; a one-sided table with no footnote invites a challenge.
+
+==============================================================================
+ALSO CHECK (all slides): export the final PDF and open it on a phone. If any text is hard to read, make it bigger.

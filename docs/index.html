@@ -802,6 +802,8 @@ body {
   border: 1px solid #15263F; background: rgba(255,255,255,.03); }
 .rig-hint { margin-top: 12px; font: 11px ui-monospace, monospace; color: #536988; letter-spacing: .08em; text-align: center; }
 /* ---------- Software demo video: video left, brief right ---------- */
+.film-wrap { width: min(980px, 100%); }
+.film-note { max-width: 760px; text-align: center; color: #8EA4C4; font-size: 13px; line-height: 1.6; margin: 16px 0 0; }
 .sw-duo { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; width: min(1060px, 100%); align-items: center; }
 .sw-view { position: relative; aspect-ratio: 1920 / 1086; background: #050a14; }
 .sw-view video { width: 100%; height: 100%; display: block; object-fit: contain; background: #050a14; }
@@ -851,12 +853,16 @@ body {
     <span class="dot-label">01 HERO</span>
     <span class="dot-circle"></span>
   </div>
+  <div class="dot-item" id="dot-sec-film" onclick="scrollToSection('sec-film')" title="Demo film">
+    <span class="dot-label">02 FILM</span>
+    <span class="dot-circle"></span>
+  </div>
   <div class="dot-item" id="dot-sec-hardware" onclick="scrollToSection('sec-hardware')" title="Hardware">
-    <span class="dot-label">02 HARDWARE</span>
+    <span class="dot-label">03 HARDWARE</span>
     <span class="dot-circle"></span>
   </div>
   <div class="dot-item" id="dot-sec-pipeline" onclick="scrollToSection('sec-pipeline')" title="Proposed Solution">
-    <span class="dot-label">03 SOLUTION</span>
+    <span class="dot-label">04 SOLUTION</span>
     <span class="dot-circle"></span>
   </div>
 </nav>
@@ -968,10 +974,25 @@ body {
       <span class="org-txt"><b>PS SIH26169</b><br>JABALPUR ENGINEERING COLLEGE</span>
     </div>
 
-    <button class="scroll-nav-btn" onclick="scrollToSection('sec-hardware')">
-      SEE THE HARDWARE
+    <button class="scroll-nav-btn" onclick="scrollToSection('sec-film')">
+      WATCH THE FILM
       <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
     </button>
+  </section>
+
+
+  <!-- SECTION 1b: THE DEMO FILM -->
+  <section class="section-view" id="sec-film">
+    <div class="timeline-section-header">
+      <div class="section-tag">DEMO FILM · MK1 + SIMULATION + SOFTWARE</div>
+      <h3 class="section-title">See it lock, in 75 seconds</h3>
+    </div>
+    <div class="film-wrap rig-card">
+      <div class="sw-view">
+        <video id="filmVideo" playsinline controls preload="none" poster="media/zerodrift_film_poster.jpg" aria-label="ZeroDrift demo film: MK1 hardware, decoy simulation and live software"></video>
+      </div>
+    </div>
+    <p class="film-note">Real MK1 footage, the recorded engine run, and the live software on a laptop webcam. MK2 is in build and will be added to this site.</p>
   </section>
 
 
@@ -1209,6 +1230,8 @@ body {
     // Update active nav dot immediately
     const navDots = {
       'sec-hero': document.getElementById('dot-sec-hero'),
+      'sec-film': document.getElementById('dot-sec-film'),
+      'sec-hardware': document.getElementById('dot-sec-hardware'),
       'sec-pipeline': document.getElementById('dot-sec-pipeline')
     };
     Object.values(navDots).forEach(dot => dot && dot.classList.remove('active'));
@@ -1556,6 +1579,8 @@ setTimeout(() => {
   const sections = document.querySelectorAll('.section-view');
   const navDots = {
     'sec-hero': document.getElementById('dot-sec-hero'),
+    'sec-film': document.getElementById('dot-sec-film'),
+    'sec-hardware': document.getElementById('dot-sec-hardware'),
     'sec-pipeline': document.getElementById('dot-sec-pipeline')
   };
 
@@ -1654,6 +1679,21 @@ document.querySelectorAll('.rig-view').forEach(view => {
     else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
     v.play().catch(() => {});
   });
+})();
+</script>
+<script>
+/* Demo film: load when near, play muted-safe when half visible, pause when away. */
+(function () {
+  const sec = document.getElementById('sec-film');
+  const v = document.getElementById('filmVideo');
+  if (!sec || !v || !('IntersectionObserver' in window)) return;
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const load = () => { if (!v.getAttribute('src')) v.src = 'media/zerodrift_film.mp4'; };
+  new IntersectionObserver((es, o) => { if (es.some(e => e.isIntersecting)) { load(); o.disconnect(); } }, { rootMargin: '300px 0px' }).observe(sec);
+  new IntersectionObserver(es => es.forEach(e => {
+    if (e.intersectionRatio >= 0.6) { load(); if (!still) { v.muted = true; v.play().catch(() => {}); } }
+    else if (!v.paused) v.pause();
+  }), { threshold: [0, 0.6] }).observe(v);
 })();
 </script>
 </body>

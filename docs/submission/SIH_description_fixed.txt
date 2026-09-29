@@ -1,0 +1,64 @@
+Pointing is critical in free-space optical communication (FSOC) links between mobile terminals: the laser must point directly at the beacon of the partner terminal. Coarse pointing comes before fine pointing. The coarse stage has to acquire the partner's light source, reject false targets (decoys), and keep the target despite beacon blink gaps and command delay. Current approaches often depend on custom sensors or slow manual realignment.
+
+ZeroDrift is our software solution to this coarse alignment problem. An ordinary camera sees the blinking beacon on the partner terminal; our software confirms it is the correct light, tracks its motion and steers the pointing system to keep it centred. This is our solution for PS SIH26169: camera-based coarse alignment without a dedicated optical tracking sensor.
+
+ZeroDrift identifies the beacon by its behaviour, not by choosing the brightest light. The beacon blinks at 4 Hz. ZeroDrift checks each light for this temporal signature and a neural verifier confirms the choice, so the target is picked out from steady lights, stars, glints and other decoys.
+
+The whole system works as a single closed-loop tracking engine.
+
+First, the camera captures frames at 30 fps. Top-hat filtering, matched filtering and CFAR thresholding find candidate point lights, and the image position of each candidate is refined to sub-pixel accuracy with a centroid.
+
+Candidates are followed over time instead of being treated independently in each frame. Each one is tested for the expected 4 Hz blink pattern, and a small neural verifier adds a second check. A light is accepted as the communication beacon only if its blink pattern matches and the verifier agrees; steady lights, glints and stars are filtered out.
+
+After acquisition, an IMM Kalman filter keeps tracking the beacon and predicts its position during short blink gaps. A Smith predictor compensates for about 40 ms of command delay. The pointing error is measured directly on the camera image, and because the camera is mounted on the pointing structure, this forms a closed optical feedback loop:
+
+Camera → Detection → Identification → Prediction → Pointing command → Camera
+
+Azimuth and elevation commands are sent to the pointing mechanism: a physical gimbal with Arduino-controlled motors, or a virtual viewport for simulation.
+
+A state machine controls the tracking sequence: search, acquire, track, coast and re-acquire. If the beacon is lost for a moment, tracking continues from its predicted position. If it is lost completely, a spiral search re-acquires it.
+
+A major design decision in ZeroDrift is that the same tracking engine runs in three environments.
+
+The first is a physics-based virtual camera with real ISS orbital motion (SGP4), atmospheric turbulence, beacon behaviour and decoy lights. This allows large-scale randomised testing that is far more repeatable than the real world.
+
+The second is a live webcam feed in the laptop browser, so the same pipeline works on real camera images, not only simulated ones.
+
+The third is the physical terminal. The MK1 servo-based rig has been built and tested. The MK2 stepper-motor gimbal with a magnetic angle sensor is under development for closed-loop hardware operation.
+
+The software and simulation have been tested with logged and randomised runs.
+
+Over 64 randomised ISS-like passes, the system acquired the beacon in 100% of runs. The median time to lock was 1.27 s, the 95th-percentile time to lock was 2.77 s, and the worst case was 4.0 s.
+
+The median lock retention was 97.5%.
+
+We also tested false-target rejection: in 0 of the 64 runs did the system lock onto a wrong light.
+
+On the demonstration run, the median pointing error in lock was 198 microradians. The median per-run 95th-percentile pointing error was 768 microradians.
+
+A modelled link-closure analysis, including a fine-pointing stage, gives 99.3% link closure, compared with 14.7% for the coarse stage alone, with a mean modelled link margin of 3.1 dB. These numbers come from the model and are not a measured end-to-end result of an optical communication system.
+
+The neural beacon verifier reached an AUC of 0.957, compared with 0.900 for the classical blink test on the short-window dataset.
+
+The full pipeline needs 8–21 ms per frame on 2 CPU cores, which is real time within our 33 ms frame budget.
+
+The code includes an automated test suite of 251 tests: 250 pass and 1 is skipped.
+
+The 64-run software campaign is also very cheap to run: it uses about Rs 0.22 of electricity and runs about 207 times faster than the equivalent hardware-bench testing. This makes large randomised experiments easy without keeping a physical set-up running.
+
+What makes ZeroDrift different from existing solutions is that it detects the beacon, not the brightest source. The 4 Hz temporal signature identifies the beacon and the neural verifier confirms the decision. We also compensate for delay, using image-based closed-loop tracking so the pointing loop accounts for command latency.
+
+Another key point is the single-engine design. The core system switches from physics simulation to live webcam to the real terminal without any change to the core tracking logic. This lets us test algorithms thoroughly in software before moving to hardware.
+
+The project is therefore a working hardware and software system, not only an algorithm. The current implementation includes a physics-based camera model, an SGP4 ISS orbit simulator, point-light detection, 4 Hz beacon recognition, neural-network verification, IMM Kalman tracking, Smith-predictor delay compensation, state-machine control, a browser-based live webcam mode and a physical servo rig (MK1).
+
+The project is open source; the source code and evaluation kit are available for review.
+
+Live demo and replay console:
+https://zerodrift-fsoc-pat.netlify.app
+
+Source code:
+https://github.com/pranshukesavmishra/SIH-2026
+
+YouTube link (demo video):
+https://youtu.be/VCbq5Qs6Mhc

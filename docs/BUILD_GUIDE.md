@@ -16,7 +16,7 @@ Needs Python 3.10+ ( https://python.org , tick "Add to PATH" on Windows).
 python -m venv .venv
 source .venv/bin/activate        # Mac/Linux    |  Windows: .venv\Scripts\activate
 pip install -e ".[gui,dev]"
-pytest                           # optional proof: 73 tests, ~2 min
+pytest                           # optional proof: 250 tests pass (1 skipped), ~2 min
 python -m fsoc_pat.gui.app       # the live console (the stage demo)
 ```
 Headless run + report:

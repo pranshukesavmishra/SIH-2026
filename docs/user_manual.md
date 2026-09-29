@@ -16,7 +16,7 @@ Requires Python 3.10+.
 python -m venv .venv
 .venv\Scripts\activate            # Windows;  source .venv/bin/activate on Linux
 pip install -e ".[gui,dev]"
-pytest                            # 73 tests, ~2 minutes
+pytest                            # 250 tests pass (1 skipped), ~2 minutes
 python -m fsoc_pat.gui.app        # launch the GUI
 ```
 

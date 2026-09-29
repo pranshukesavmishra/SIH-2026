@@ -56,7 +56,7 @@ h3{font:600 19px/1.25 var(--head);color:var(--navy);margin-bottom:6px}
 .abbr{border-bottom:1.5px dotted var(--cyan);cursor:help}
 
 /* layout */
-.hero{display:grid;grid-template-columns:1fr 1.1fr;gap:30px;align-items:center}
+.hero{display:block;margin-bottom:18px}
 .hero-art{border-radius:18px;background:linear-gradient(180deg,#07101f,#040912);overflow:hidden;box-shadow:0 24px 60px rgba(11,31,58,.28)}
 .ctrl{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:20px}
 .ctrl div{background:var(--card);padding:10px 13px}
@@ -226,7 +226,17 @@ td.full{color:var(--ink)}
 @media (max-width:980px){.stv,.jr{grid-template-columns:1fr}.soft{grid-template-columns:repeat(4,1fr)}}
 @media (max-width:600px){.soft{grid-template-columns:repeat(3,1fr)}.jc.now .jm{grid-template-columns:1fr}}
 @media print{.top,.mobile-bottom-nav,.toc{display:none}body{background:#fff}.proof,.fig{box-shadow:none}}
+.simtop{margin:6px 0 26px}
+.simhead{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.simhead i{width:34px;height:34px;border-radius:10px;background:#0b1f3a;display:grid;place-items:center}
+.simhead i svg{width:18px;height:18px;fill:#4FC7EA}
+.simhead h2{margin:0;font-size:24px}
+.simtop .mv{width:100%}
+.rig-duo2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:6px 0 26px}
+.rig-duo2 .rig-card{min-width:0}
+@media (max-width:860px){.rig-duo2{grid-template-columns:1fr}}
 </style>
+<link rel="stylesheet" href="mv.css">
 </head>
 <body>
 <div class="top">
@@ -244,6 +254,43 @@ td.full{color:var(--ink)}
 
 <main class="doc">
 
+<!-- ======================= 3D SIMULATION (very top) ======================= -->
+<section class="simtop" id="sim3d">
+  <div class="simhead"><i><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></i><h2>Live Simulation Demonstration</h2></div>
+  <div class="mv" id="mv">
+      <div class="mv-top">
+        <span class="mv-rec"><i></i>SIM-3D</span>
+        <span class="mv-meta">PS SIH26169 · CODE-RENDERED (THREE.JS) · 1080p · 30 FPS</span>
+        <span class="mv-tc" id="mvTc">T+00:00.0</span>
+      </div>
+      <div class="mv-body">
+        <ol class="mv-ch" id="mvCh" aria-label="Chapters"><li><button type="button" data-t="0"><em>00</em><span>Mission brief</span><time>00:00</time></button></li><li><button type="button" data-t="7"><em>01</em><span>The challenge</span><time>00:07</time></button></li><li><button type="button" data-t="19"><em>02</em><span>Orbit prediction</span><time>00:19</time></button></li><li><button type="button" data-t="31"><em>03</em><span>Coarse slew</span><time>00:31</time></button></li><li><button type="button" data-t="43"><em>04</em><span>Detect &amp; verify</span><time>00:43</time></button></li><li><button type="button" data-t="61"><em>05</em><span>Lock &amp; track</span><time>01:01</time></button></li><li><button type="button" data-t="75"><em>06</em><span>Link closes</span><time>01:15</time></button></li><li><button type="button" data-t="86"><em>07</em><span>End to end</span><time>01:26</time></button></li></ol>
+        <div class="mv-screen" id="mvScreen">
+          <video id="filmVideo" playsinline preload="none" poster="media/sim3d_poster.jpg"
+            aria-label="ZeroDrift 3D simulation: orbit prediction, beacon detection, lock and link"></video>
+          <span class="mv-c tl"></span><span class="mv-c tr"></span><span class="mv-c bl"></span><span class="mv-c br"></span>
+          <div class="mv-stage" id="mvStage"><em>00</em><span>Mission brief</span></div>
+          <button type="button" class="mv-big" id="mvBig" aria-label="Play the 3D simulation"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+        </div>
+        <div class="mv-kpi" id="mvKpi">
+          <div data-ch="4"><b>1.27<small> s</small></b><span>median time to lock · 64 runs</span></div>
+          <div data-ch="4"><b>0 / 64</b><span>runs that locked a decoy</span></div>
+          <div data-ch="5"><b>97.5<small> %</small></b><span>lock retention · campaign median</span></div>
+          <div data-ch="6"><b>99.3<small> %</small></b><span>link closure, modelled fine stage (14.7% coarse only)</span></div>
+        </div>
+      </div>
+      <div class="mv-bar">
+        <button type="button" class="mv-btn" id="mvPlay" aria-label="Play"><svg viewBox="0 0 24 24"><path class="pl" d="M8 5v14l11-7z"/><path class="pa" d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
+        <button type="button" class="mv-btn" id="mvMute" aria-label="Unmute"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path class="on" d="M16.5 12A4.5 4.5 0 0 0 14 7.97v8.05A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06A9 9 0 0 0 14 3.23z"/><path class="off" d="M16 9.4 17.4 8l2.1 2.1L21.6 8 23 9.4 20.9 11.5 23 13.6 21.6 15l-2.1-2.1L17.4 15 16 13.6l2.1-2.1z"/></svg></button>
+        <div class="mv-track" id="mvTrack" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div class="mv-fill" id="mvFill"></div><div class="mv-ticks"><i style="left:7%"></i><i style="left:19%"></i><i style="left:31%"></i><i style="left:43%"></i><i style="left:61%"></i><i style="left:75%"></i><i style="left:86%"></i></div>
+        </div>
+        <span class="mv-dur">01:40</span>
+        <button type="button" class="mv-btn" id="mvFs" aria-label="Full screen"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></button>
+      </div>
+    </div>
+</section>
+
 <!-- ======================= HERO ======================= -->
 <div class="hero">
   <div>
@@ -257,20 +304,36 @@ td.full{color:var(--ink)}
       <div><span>OWNER</span><b>Team ZeroDrift</b></div>
     </div>
   </div>
+</div>
+
+<div class="rig-duo2">
   <div class="rig-card">
-    <div class="rig-view">
-      <canvas id="rigMk2" aria-label="MK2 terminal, live 3D model"></canvas>
-      <div class="rig-top"><span class="rig-badge">MK2</span><div class="rig-tabs" role="tablist" aria-label="MK2 view">
+    <div class="rig-view" data-default="video">
+      <canvas id="rigMk1" aria-label="MK1 rig, 3D"></canvas>
+      <div class="rig-top"><span class="rig-badge">MK1</span><div class="rig-tabs" role="tablist" aria-label="MK1 view">
+        <button data-view="photo">PHOTO</button><button data-view="video" class="on">VIDEO</button><button data-view="3d">3D</button></div></div>
+      <img class="rig-media" data-kind="photo" data-src="media/mk1_photo.jpg" alt="MK1 rig, photo">
+      <video class="rig-media" data-kind="video" data-src="demo-video.mp4" poster="media/mk1_photo.jpg" muted loop playsinline controls preload="none"></video>
+      <div class="rig-empty"><div><b>MK1 · <span class="rig-empty-kind"></span></b>Coming soon</div></div>
+      
+      <span class="rig-read" id="rigMk1Read"></span>
+    </div>
+    <div class="rig-meta"><span>2× SG90 servo</span><span>laptop webcam</span><span>built</span></div>
+  </div>
+  <div class="rig-card">
+    <div class="rig-view" data-default="3d">
+      <canvas id="rigMk2" aria-label="MK2 rig, 3D"></canvas>
+      <div class="rig-top"><span class="rig-badge mk2">MK2</span><div class="rig-tabs" role="tablist" aria-label="MK2 view">
         <button data-view="photo">PHOTO</button><button data-view="video">VIDEO</button><button data-view="3d" class="on">3D</button></div></div>
-      <img class="rig-media" data-kind="photo" data-src="media/mk2_photo.jpg" alt="MK2 terminal, photo">
+      <img class="rig-media" data-kind="photo" data-src="media/mk2_photo.jpg" alt="MK2 rig, photo">
       <video class="rig-media" data-kind="video" data-src="demo-mk2.mp4" muted loop playsinline controls preload="none"></video>
-      <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Coming soon: photo and video will be added here.</div></div>
-      <span class="rig-legend"><i class="lg-b"></i>beacon · blinks 4 Hz · tracked<br><i class="lg-d"></i>decoy · steady · ignored</span>
+      <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Coming soon</div></div>
+      <span class="rig-legend"><i class="lg-b"></i>beacon · 4 Hz<br><i class="lg-d"></i>decoy · ignored</span>
       <span class="rig-read" id="rigMk2Read"></span>
     </div>
-    <div class="rig-meta"><span>2× NEMA17 + A4988</span><span>camera + laser move together</span><span>AS5600 angle sensor</span><span>drag to rotate</span></div>
+    <div class="rig-meta"><span>2× NEMA17 + A4988</span><span>AS5600 sensor</span><span>coming soon</span></div>
   </div>
-</div>
+  </div>
 
 <div class="stats">
   <div class="stat" style="--c:#0e7c9a"><b>1.27 s</b><span><strong>median time to lock</strong> across 64 simulated satellite passes</span><a href="#p-decoy">SEE PROOF ↓</a></div>
@@ -658,6 +721,7 @@ td.full{color:var(--ink)}
 }}
 </script>
 <script type="module" src="rigs3d.js"></script>
+<script src="mv.js" defer></script>
 <script>
 /* MK2 card: PHOTO · VIDEO · 3D (same behaviour as the home page) */
 document.querySelectorAll('.rig-view').forEach(view => {
@@ -680,6 +744,8 @@ document.querySelectorAll('.rig-view').forEach(view => {
   Object.entries(media).forEach(([k, el]) => {
     el.addEventListener('error', () => { missing[k] = true; if (view.querySelector('.rig-tabs .on').dataset.view === k) show(k); });
   });
+  const first = view.dataset.default;
+  if (first && first !== '3d') { const el0 = media[first]; if (el0 && !el0.getAttribute('src')) el0.setAttribute('src', el0.dataset.src); show(first); }
   tabs.forEach(t => t.addEventListener('click', () => {
     const k = t.dataset.view, el = media[k];
     if (el && !el.getAttribute('src')) el.setAttribute('src', el.dataset.src);

@@ -802,71 +802,25 @@ body {
   border: 1px solid #15263F; background: rgba(255,255,255,.03); }
 .rig-hint { margin-top: 12px; font: 11px ui-monospace, monospace; color: #536988; letter-spacing: .08em; text-align: center; }
 /* ---------- Software demo video: video left, brief right ---------- */
-.mv { --c: #4FC7EA; width: min(1180px, 100%, calc((100vh - 330px) * 1.7778 + 440px)); border-radius: 16px; position: relative;
-  background: linear-gradient(180deg, rgba(10,22,40,.92), rgba(5,11,22,.96)); border: 1px solid rgba(79,199,234,.35);
-  box-shadow: 0 0 0 1px rgba(79,199,234,.08), 0 0 60px rgba(79,199,234,.14), 0 30px 70px rgba(0,0,0,.55); overflow: hidden; }
-.mv::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--c), transparent); opacity: .8; }
-.mv-top { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-bottom: 1px solid rgba(29,44,68,.9);
-  font: 600 10.5px/1 var(--font-mono, ui-monospace, monospace); letter-spacing: .14em; color: #8EA4C4; }
-.mv-rec { display: flex; align-items: center; gap: 7px; color: #EAF4FD; }
-.mv-rec i { width: 8px; height: 8px; border-radius: 50%; background: #ff4d4d; box-shadow: 0 0 8px #ff4d4d; animation: mvRec 1.4s ease-in-out infinite; }
-@keyframes mvRec { 50% { opacity: .25; } }
-.mv-meta { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mv-tc { color: var(--c); font-variant-numeric: tabular-nums; }
-.mv-body { display: grid; grid-template-columns: 200px minmax(0,1fr) 196px; gap: 14px; padding: 14px; }
-.mv-ch { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-.mv-ch button { width: 100%; display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: 8px; text-align: left; padding: 8px 10px;
-  border-radius: 8px; border: 1px solid transparent; background: transparent; color: #8EA4C4; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
-.mv-ch button:hover { background: rgba(79,199,234,.06); color: #EAF4FD; }
-.mv-ch em { font: 700 10px/1 var(--font-mono, monospace); font-style: normal; color: #4a6384; }
-.mv-ch span { font-size: 13px; }
-.mv-ch time { font: 500 10px/1 var(--font-mono, monospace); color: #4a6384; }
-.mv-ch button.on { background: rgba(79,199,234,.1); border-color: rgba(79,199,234,.45); color: #EAF4FD; box-shadow: inset 3px 0 0 var(--c); }
-.mv-ch button.on em, .mv-ch button.on time { color: var(--c); }
-.mv-ch button.done em { color: #5DD27A; }
-.mv-screen { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 6px; overflow: hidden; align-self: start;
-  box-shadow: 0 0 0 1px #1b2a41, 0 10px 30px rgba(0,0,0,.6); }
-.mv-screen video { width: 100%; height: 100%; display: block; object-fit: cover; background: #000; cursor: pointer; }
-.mv-c { position: absolute; width: 18px; height: 18px; border: 2px solid var(--c); opacity: .9; pointer-events: none; z-index: 2; }
-.mv-c.tl { left: 8px; top: 8px; border-right: 0; border-bottom: 0; } .mv-c.tr { right: 8px; top: 8px; border-left: 0; border-bottom: 0; }
-.mv-c.bl { left: 8px; bottom: 8px; border-right: 0; border-top: 0; } .mv-c.br { right: 8px; bottom: 8px; border-left: 0; border-top: 0; }
-.mv-stage { position: absolute; left: 50%; transform: translateX(-50%); top: 14px; z-index: 2; white-space: nowrap; display: flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: 6px;
-  background: rgba(4,10,22,.72); border: 1px solid rgba(79,199,234,.35); font: 600 10.5px/1 var(--font-mono, monospace); letter-spacing: .12em; color: #EAF4FD;
-  opacity: 0; transition: opacity .3s; pointer-events: none; }
-.mv.playing .mv-stage, .mv.started .mv-stage { opacity: 1; }
-.mv-stage em { font-style: normal; color: var(--c); }
-.mv-big { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 3; width: 74px; height: 74px; border-radius: 50%;
-  border: 1.5px solid var(--c); background: rgba(4,12,24,.6); backdrop-filter: blur(6px); display: grid; place-items: center; cursor: pointer;
-  box-shadow: 0 0 0 8px rgba(79,199,234,.12), 0 0 34px rgba(79,199,234,.45); transition: transform .2s, opacity .3s; }
-.mv-big svg { width: 30px; height: 30px; fill: #EAF4FD; margin-left: 4px; }
-.mv-big:hover { transform: translate(-50%,-50%) scale(1.07); }
-.mv.playing .mv-big { opacity: 0; pointer-events: none; }
-.mv-kpi { display: flex; flex-direction: column; gap: 8px; }
-.mv-kpi div { flex: 1; min-height: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid #1b2a41; background: rgba(8,16,32,.7);
-  display: flex; flex-direction: column; justify-content: center; transition: border-color .3s, background .3s, box-shadow .3s; }
-.mv-kpi b { font: 700 22px/1 var(--font-mono, monospace); color: #EAF4FD; }
-.mv-kpi b small { font-size: 13px; color: #8EA4C4; }
-.mv-kpi span { font-size: 11.5px; line-height: 1.35; color: #8EA4C4; margin-top: 5px; }
-.mv-kpi div.hot { border-color: #5DD27A; background: rgba(93,210,122,.08); box-shadow: 0 0 18px rgba(93,210,122,.18); }
-.mv-kpi div.hot b { color: #7fe39a; }
-.mv-bar { display: flex; align-items: center; gap: 10px; padding: 10px 16px 12px; border-top: 1px solid rgba(29,44,68,.9); }
-.mv-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #1d2c44; background: transparent; display: grid; place-items: center; cursor: pointer; flex: none; }
-.mv-btn:hover { border-color: var(--c); }
-.mv-btn svg { width: 18px; height: 18px; fill: #EAF4FD; }
-.mv-btn .pa, .mv.playing .mv-btn .pl { display: none; } .mv.playing .mv-btn .pa { display: inline; }
-.mv-btn .on { display: none; } .mv.sound .mv-btn .on { display: inline; } .mv.sound .mv-btn .off { display: none; }
-.mv-track { position: relative; flex: 1; height: 8px; border-radius: 4px; background: #13223a; cursor: pointer; }
-.mv-track:focus-visible { outline: 2px solid var(--c); outline-offset: 3px; }
-.mv-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 4px; background: linear-gradient(90deg, #2b8fd6, var(--c)); box-shadow: 0 0 10px rgba(79,199,234,.5); }
-.mv-ticks i { position: absolute; top: -3px; width: 2px; height: 14px; background: #3d5678; border-radius: 1px; transform: translateX(-1px); }
-.mv-dur { font: 500 11px/1 var(--font-mono, monospace); color: #8EA4C4; }
-@media (max-width: 980px) {
-  .mv-body { grid-template-columns: 1fr; }
-  .mv-ch { flex-direction: row; overflow-x: auto; order: 0; scrollbar-width: none; }
-  .mv-ch li { flex: none; } .mv-ch button { grid-template-columns: auto auto; } .mv-ch time { display: none; }
-  .mv-kpi { display: grid; grid-template-columns: 1fr 1fr; order: 2; }
-  .mv-meta { display: none; } .mv-stage { top: 10px; } .mv-big { width: 58px; height: 58px; }
 }
+.yt-card { width: 1000px; max-width: 100%; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 26px; align-items: center; padding: 22px; border-radius: 18px;
+  background: linear-gradient(160deg, rgba(12,26,46,.9), rgba(5,11,22,.95)); border: 1px solid rgba(79,199,234,.28); box-shadow: 0 0 50px rgba(79,199,234,.1), 0 24px 60px rgba(0,0,0,.5); }
+.yt-box { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 0 0 1px #1b2a41, 0 12px 34px rgba(0,0,0,.6); }
+.yt-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.yt-play { position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: #000; }
+.yt-play img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(.82); transition: transform .5s, filter .3s; }
+.yt-play:hover img { transform: scale(1.03); filter: brightness(1); }
+.yt-btn { position: absolute; left: 50%; top: 50%; width: 76px; height: 54px; transform: translate(-50%, -50%); transition: transform .2s; filter: drop-shadow(0 6px 14px rgba(0,0,0,.5)); }
+.yt-btn svg { width: 100%; height: 100%; } .yt-play:hover .yt-btn { transform: translate(-50%, -50%) scale(1.1); }
+.yt-side { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.yt-logo { height: 30px; width: auto; overflow: visible; }
+.yt-side h3 { margin: 0; font-size: 26px; color: #fff; letter-spacing: -.3px; }
+.yt-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.yt-tags span { display: inline-flex; align-items: center; gap: 6px; font: 600 11.5px/1 var(--font-mono); letter-spacing: .06em; color: #DCEBFA; padding: 7px 11px; border-radius: 999px; border: 1px solid #1d2c44; background: rgba(255,255,255,.04); }
+.yt-tags svg { width: 14px; height: 14px; fill: var(--cyan); }
+.yt-open { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 10px; background: #FF0033; color: #fff; font: 700 13px/1 var(--font-mono); letter-spacing: .06em; text-decoration: none; box-shadow: 0 8px 22px rgba(255,0,51,.3); transition: transform .2s; }
+.yt-open:hover { transform: translateY(-2px); } .yt-open svg { width: 16px; height: 16px; fill: #fff; }
+@media (max-width: 800px) { .yt-card { grid-template-columns: 1fr; padding: 14px; } }
 .film-note { max-width: 760px; text-align: center; color: #8EA4C4; font-size: 13px; line-height: 1.6; margin: 16px 0 0; }
 .sw-duo { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; width: min(1060px, 100%); align-items: center; }
 .sw-view { position: relative; aspect-ratio: 1920 / 1086; background: #050a14; }
@@ -900,6 +854,7 @@ body {
 .hero-logo { margin: 0 0 12px; line-height: 0; }
 .hero-logo img { width: min(460px, 82vw); height: auto; filter: drop-shadow(0 0 22px rgba(79,199,234,.35)); animation: logoFloat 4s ease-in-out infinite alternate; }
 </style>
+<link rel="stylesheet" href="mv.css">
 </head>
 <body>
 
@@ -927,6 +882,10 @@ body {
   </div>
   <div class="dot-item" id="dot-sec-pipeline" onclick="scrollToSection('sec-pipeline')" title="Proposed Solution">
     <span class="dot-label">04 SOLUTION</span>
+    <span class="dot-circle"></span>
+  </div>
+  <div class="dot-item" id="dot-sec-youtube" onclick="scrollToSection('sec-youtube')" title="YouTube">
+    <span class="dot-label">05 YOUTUBE</span>
     <span class="dot-circle"></span>
   </div>
 </nav>
@@ -1246,6 +1205,24 @@ body {
       </a>
     </div>
   </section>
+
+  <!-- SECTION 4: YOUTUBE (last) -->
+  <section class="section-view" id="sec-youtube">
+    <div class="yt-card">
+      <div class="yt-box" id="ytBox">
+        <button type="button" class="yt-play" id="ytPlay" aria-label="Play the ZeroDrift demo video on YouTube">
+          <img src="https://i.ytimg.com/vi/VCbq5Qs6Mhc/maxresdefault.jpg" alt="" loading="lazy" onerror="this.onerror=null;this.src='media/zerodrift_film_poster.jpg'">
+          <span class="yt-btn"><svg viewBox="0 0 68 48"><path d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.2 34 .2 34 .2S12.8.2 7.5 1.7a8.5 8.5 0 0 0-6 6C0 13 0 24 0 24s0 11 1.5 16.3a8.5 8.5 0 0 0 6 6C12.8 47.8 34 47.8 34 47.8s21.2 0 26.5-1.5a8.5 8.5 0 0 0 6-6C68 35 68 24 68 24s0-11-1.5-16.3z" fill="#FF0033"/><path d="M27 34.5 44.5 24 27 13.5z" fill="#fff"/></svg></span>
+        </button>
+      </div>
+      <div class="yt-side">
+        <svg class="yt-logo" viewBox="0 0 112 20" role="img" aria-label="YouTube"><rect width="28" height="20" rx="5.5" fill="#FF0033"/><path d="M11.5 5.8v8.4L18.8 10z" fill="#fff"/><text x="33" y="15.6" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="15.5" letter-spacing="-.4" fill="#fff">YouTube</text></svg>
+        <h3>Demo video</h3>
+        <div class="yt-tags"><span><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 1 5 5v2h1a2 2 0 0 1 2 2v9H4v-9a2 2 0 0 1 2-2h1V7a5 5 0 0 1 5-5z"/></svg>MK1</span><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="12" r="3"/></svg>Simulation</span><span><svg viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-6l1 2h2v2H7v-2h2l1-2H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>Software</span></div>
+        <a class="yt-open" href="https://youtu.be/VCbq5Qs6Mhc" target="_blank" rel="noopener">Watch on YouTube<svg viewBox="0 0 24 24"><path d="M14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7zM5 5h6v2H5v12h12v-6h2v8H3V5h2z"/></svg></a>
+      </div>
+    </div>
+  </section>
 </div>
 
 <!-- Bottom Navigation for Mobile Devices -->
@@ -1323,7 +1300,8 @@ body {
       'sec-hero': document.getElementById('dot-sec-hero'),
       'sec-film': document.getElementById('dot-sec-film'),
       'sec-hardware': document.getElementById('dot-sec-hardware'),
-      'sec-pipeline': document.getElementById('dot-sec-pipeline')
+      'sec-pipeline': document.getElementById('dot-sec-pipeline'),
+      'sec-youtube': document.getElementById('dot-sec-youtube')
     };
     Object.values(navDots).forEach(dot => dot && dot.classList.remove('active'));
     if (navDots[target.id]) navDots[target.id].classList.add('active');
@@ -1672,7 +1650,8 @@ setTimeout(() => {
     'sec-hero': document.getElementById('dot-sec-hero'),
     'sec-film': document.getElementById('dot-sec-film'),
     'sec-hardware': document.getElementById('dot-sec-hardware'),
-    'sec-pipeline': document.getElementById('dot-sec-pipeline')
+    'sec-pipeline': document.getElementById('dot-sec-pipeline'),
+    'sec-youtube': document.getElementById('dot-sec-youtube')
   };
 
   const observer = new IntersectionObserver((entries) => {
@@ -1773,62 +1752,18 @@ document.querySelectorAll('.rig-view').forEach(view => {
 })();
 </script>
 <script>
-/* Mission viewer: chapter rail, synced KPIs and custom transport for the 3D simulation.
-   Loads (720p on phones) when reached and plays muted while at least half visible. */
+/* YouTube block: load the player only when asked. */
 (function () {
-  const mv = document.getElementById('mv'), v = document.getElementById('filmVideo');
-  if (!mv || !v) return;
-  const $ = id => document.getElementById(id);
-  const chBtns = [...document.querySelectorAll('#mvCh button')], times = chBtns.map(b => +b.dataset.t);
-  const kpis = [...document.querySelectorAll('#mvKpi div')], track = $('mvTrack'), fill = $('mvFill'), tc = $('mvTc'), stage = $('mvStage');
-  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const load = () => { if (!v.getAttribute('src')) v.src = window.innerWidth <= 800 ? 'media/ZeroDrift_ISRO_Simulation_720p.mp4' : 'media/ZeroDrift_ISRO_Simulation_1080p.mp4'; };
-  const dur = () => v.duration || 100;
-  let cur = -1;
-  const update = () => {
-    const t = v.currentTime || 0, d = dur();
-    fill.style.width = (100 * t / d) + '%'; track.setAttribute('aria-valuenow', Math.round(100 * t / d));
-    const m = Math.floor(t / 60), sec = (t % 60).toFixed(1).padStart(4, '0');
-    tc.textContent = 'T+' + String(m).padStart(2, '0') + ':' + sec;
-    let k = 0; times.forEach((x, i) => { if (t >= x) k = i; });
-    if (k !== cur) {
-      cur = k;
-      chBtns.forEach((b, i) => { b.classList.toggle('on', i === k); b.classList.toggle('done', i < k); });
-      stage.querySelector('em').textContent = String(k).padStart(2, '0');
-      stage.querySelector('span').innerHTML = chBtns[k].querySelector('span').innerHTML;
-      kpis.forEach(el => el.classList.toggle('hot', +el.dataset.ch === k || (k === 7)));
-      const on = chBtns[k]; if (on && on.parentNode.parentNode.scrollWidth > on.parentNode.parentNode.clientWidth) on.parentNode.parentNode.scrollTo({ left: on.parentNode.offsetLeft - 12, behavior: 'smooth' });
-    }
-  };
-  const play = () => { load(); mv.classList.add('started'); v.play().catch(() => {}); };
-  const seek = t => { load(); const go = () => { v.currentTime = t; update(); }; v.readyState ? go() : v.addEventListener('loadedmetadata', go, { once: true }); };
-  v.addEventListener('timeupdate', update);
-  v.addEventListener('play', () => mv.classList.add('playing'));
-  v.addEventListener('pause', () => mv.classList.remove('playing'));
-  v.addEventListener('volumechange', () => mv.classList.toggle('sound', !v.muted));
-  v.addEventListener('click', () => v.paused ? play() : v.pause());
-  $('mvBig').addEventListener('click', () => { v.muted = false; play(); });
-  $('mvPlay').addEventListener('click', () => v.paused ? play() : v.pause());
-  $('mvMute').addEventListener('click', () => { v.muted = !v.muted; });
-  chBtns.forEach(b => b.addEventListener('click', () => { seek(+b.dataset.t); play(); }));
-  const pick = e => { const r = track.getBoundingClientRect(); seek(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * dur()); };
-  track.addEventListener('click', pick);
-  track.addEventListener('keydown', e => { if (e.key === 'ArrowRight') seek(Math.min(dur(), v.currentTime + 5)); if (e.key === 'ArrowLeft') seek(Math.max(0, v.currentTime - 5)); });
-  $('mvFs').addEventListener('click', () => {
-    const el = $('mvScreen');
-    if (document.fullscreenElement) document.exitFullscreen();
-    else if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-    else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+  const btn = document.getElementById('ytPlay'), box = document.getElementById('ytBox');
+  if (!btn || !box) return;
+  btn.addEventListener('click', () => {
+    const f = document.createElement('iframe');
+    f.src = 'https://www.youtube-nocookie.com/embed/VCbq5Qs6Mhc?autoplay=1&rel=0&modestbranding=1';
+    f.title = 'ZeroDrift demo video'; f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.allowFullscreen = true;
+    box.replaceChildren(f);
   });
-  v.muted = true; update();
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver((es, o) => { if (es.some(e => e.isIntersecting)) { load(); o.disconnect(); } }, { rootMargin: '300px 0px' }).observe(mv);
-    new IntersectionObserver(es => es.forEach(e => {
-      if (e.intersectionRatio >= 0.5) { if (!still && !mv.dataset.auto) { mv.dataset.auto = '1'; play(); } }
-      else if (!v.paused) v.pause();
-    }), { threshold: [0, 0.5] }).observe(mv);
-  }
 })();
 </script>
+<script src="mv.js" defer></script>
 </body>
 </html>

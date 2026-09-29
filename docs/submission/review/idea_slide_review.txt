@@ -1,0 +1,21 @@
+IDEA SLIDE (one-page poster) - mistakes found and what was changed
+
+MUST
+1. Title said "IDEA TITLE" (template placeholder). Now: AI-Based Virtual Camera Tracking for Coarse Alignment of Mobile FSOC Terminals, with PS SIH26169 / ISRO / team line.
+2. "CLOSED OPTIMAL LOOP" -> "CLOSED OPTICAL LOOP".
+3. Third card in the bottom strip (Track & Predict) was an empty blue box. Now filled (full card image).
+4. Tiles showed 1.07 s and "99.3% Lock Success". 99.3% is link closure (modelled), not lock. Now: 1.27 s median lock, 97.5% lock retention (64-run median), 0 / 64 wrong-light runs, 99.3% link closure (modelled) vs 14.7% coarse only.
+5. Input source said "MK2 TERMINAL - USB camera on gimbal" but a UVP card said "MK1 terminal". Now: TERMINAL - MK1 built, MK2 in build.
+6. "MEASURED, NOT CLAIMED - Open source" did not match its heading. Now: every number is from a logged run, 250 / 251 tests pass.
+
+SHOULD (spelling / grammar)
+- "We propose Zerodrift" -> ZeroDrift; "PS26169 solve" -> answers PS SIH26169
+- "PHYSICS TRUE" -> PHYSICS-TRUE; "4 Hz blink text test" -> blink test
+- "verifier:0/ 64" -> "verifier: 0 / 64"
+- "blink Signature" -> signature; "Error means on image it self" -> "Error is read from the image"
+- "top hat" -> top-hat; "subpixel" -> sub-pixel; "IMM kalman" -> IMM Kalman; "smith predictor" -> Smith predictor
+- "web serial -> arduino" -> Web Serial -> Arduino; "Measured:median" missing space
+- "MICRO RADIAN" -> MICRO-RADIAN; "ONE ENGINE, 3 MODES" -> THREE INPUTS
+- Removed made-up "AZ 32.4 / EL 18.7" chip (not from a logged run)
+- Stray "SS" badge in the top-right corner removed; three mixed fonts -> one type system
+- Caption fragment "the live demo run" -> full sentence, marked as the featured demo run

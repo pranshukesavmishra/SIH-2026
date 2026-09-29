@@ -67,7 +67,7 @@ everyone else owns one question area each (bottom of this file).
 
 **"Did you really build all this?"**
 Yes — and we can prove it in thirty seconds: clone the repository, run one
-command, watch it acquire live. 5,500 lines of documented Python, 73 tests, CI.
+command, watch it acquire live. 8,500+ lines of documented Python, 250 automated tests, CI.
 
 **"Where is the AI?"** *(the PS says AI-assisted)*
 Two places. A neural network we wrote from scratch — no framework — that

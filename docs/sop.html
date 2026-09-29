@@ -196,6 +196,23 @@ td.full{color:var(--ink)}
 .jc p{padding:6px 16px 0;color:var(--ink2);font-size:14.5px}
 .jm{display:grid;gap:10px;padding:14px 16px 16px;margin-top:auto}
 .jc.now .jm{grid-template-columns:1fr 1fr}
+.ytrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:26px;align-items:center;margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 10px 30px rgba(11,31,58,.08)}
+.ytbadge{display:inline-block;font:700 10.5px var(--mono);letter-spacing:1.4px;font-style:normal;color:#fff;background:#b91c1c;padding:4px 9px;border-radius:5px}
+.yttx h3{font-size:22px;margin:10px 0 8px}
+.yttx p{color:var(--ink2);line-height:1.6;font-size:15px}
+.ytl{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 16px;padding:0}
+.ytl li{font:600 11.5px var(--mono);letter-spacing:.6px;color:var(--ink2);border:1px solid var(--line2);border-radius:999px;padding:5px 11px;background:var(--bg)}
+.ytlink{font:600 13px var(--mono);color:#1d5fb8;text-decoration:none}
+.ytlink:hover{text-decoration:underline}
+.ytbox{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#050a14;box-shadow:0 0 0 1px #0f1b2d,0 18px 40px rgba(11,31,58,.28)}
+.ytbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ytpl{position:absolute;inset:0;border:0;padding:0;cursor:pointer;background:#050a14}
+.ytpl img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s,filter .3s;filter:brightness(.85)}
+.ytpl:hover img{transform:scale(1.03);filter:brightness(1)}
+.ytbtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68px;height:48px;border-radius:12px;background:#e11d2e;display:grid;place-items:center;box-shadow:0 8px 20px rgba(0,0,0,.4);transition:transform .2s}
+.ytpl:hover .ytbtn{transform:translate(-50%,-50%) scale(1.08)}
+.ytbtn svg{width:26px;height:26px;fill:#fff;margin-left:3px}
+@media (max-width:860px){.ytrow{grid-template-columns:1fr;padding:16px}}
 .shot{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:4/3;background:#050a14;border:1px solid var(--line)}
 .shot img,.shot video{width:100%;height:100%;object-fit:cover;display:block}
 .shot .ph{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:6px;text-align:center;color:#8EA4C4;font:12px var(--mono);background:repeating-linear-gradient(45deg,#07101f 0 14px,#0a1628 14px 28px)}
@@ -247,7 +264,7 @@ td.full{color:var(--ink)}
         <button data-view="photo">PHOTO</button><button data-view="video">VIDEO</button><button data-view="3d" class="on">3D</button></div></div>
       <img class="rig-media" data-kind="photo" data-src="media/mk2_photo.jpg" alt="MK2 terminal, photo">
       <video class="rig-media" data-kind="video" data-src="demo-mk2.mp4" muted loop playsinline controls preload="none"></video>
-      <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Coming soon: recorded after this build.</div></div>
+      <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Coming soon: photo and video will be added here.</div></div>
       <span class="rig-legend"><i class="lg-b"></i>beacon · blinks 4 Hz · tracked<br><i class="lg-d"></i>decoy · steady · ignored</span>
       <span class="rig-read" id="rigMk2Read"></span>
     </div>
@@ -471,6 +488,21 @@ td.full{color:var(--ink)}
       </div>
     </div>
   </div>
+  <div class="ytrow">
+    <div class="yttx">
+      <em class="ytbadge">SUBMITTED DEMO</em>
+      <h3>Watch our demo film</h3>
+      <p>The video we submitted to SIH: <b>MK1 tracking a real beacon</b>, the <b>decoy test</b> in our console, the graded <b>test record</b>, and our <b>software on a laptop webcam</b>.</p>
+      <ul class="ytl"><li>MK1 hardware</li><li>Simulation</li><li>Live software</li></ul>
+      <a class="ytlink" href="https://youtu.be/VCbq5Qs6Mhc" target="_blank" rel="noopener">Open on YouTube ↗</a>
+    </div>
+    <div class="ytbox" id="ytBox">
+      <button type="button" class="ytpl" id="ytPlay" aria-label="Play the ZeroDrift demo film">
+        <img src="https://i.ytimg.com/vi/VCbq5Qs6Mhc/hqdefault.jpg" alt="ZeroDrift demo film" loading="lazy" onerror="this.src='media/zerodrift_film_poster.jpg'">
+        <span class="ytbtn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+      </button>
+    </div>
+  </div>
 </section>
 
 <!-- ======================= A SIMULATION ======================= -->
@@ -654,6 +686,19 @@ document.querySelectorAll('.rig-view').forEach(view => {
     show(k);
   }));
 });
+</script>
+<script>
+/* Demo film: load the YouTube player only when asked (keeps the page fast). */
+(function () {
+  const btn = document.getElementById('ytPlay'), box = document.getElementById('ytBox');
+  if (!btn || !box) return;
+  btn.addEventListener('click', () => {
+    const f = document.createElement('iframe');
+    f.src = 'https://www.youtube-nocookie.com/embed/VCbq5Qs6Mhc?autoplay=1&rel=0&modestbranding=1';
+    f.title = 'ZeroDrift demo film'; f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.allowFullscreen = true;
+    box.replaceChildren(f);
+  });
+})();
 </script>
 </body>
 </html>

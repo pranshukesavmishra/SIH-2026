@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ZeroDrift — FSOC-PAT Coarse Alignment System · ISRO SIH26169</title>
+<meta name="description" content="ZeroDrift: the pointing brain for free-space optical terminals. Finds a 4 Hz blinking beacon, ignores decoys, keeps the laser link in view. SIH 2026, PS26169, ISRO.">
+<meta property="og:title" content="ZeroDrift · SIH 2026 · PS26169">
+<meta property="og:description" content="ZeroDrift: the pointing brain for free-space optical terminals. Finds a 4 Hz blinking beacon, ignores decoys, keeps the laser link in view. SIH 2026, PS26169, ISRO.">
+<meta property="og:image" content="brand/logo_banner.png">
 <link rel="icon" type="image/png" href="brand/zerodrift_mark.png">
 <style>
 :root {
@@ -798,6 +802,72 @@ body {
   border: 1px solid #15263F; background: rgba(255,255,255,.03); }
 .rig-hint { margin-top: 12px; font: 11px ui-monospace, monospace; color: #536988; letter-spacing: .08em; text-align: center; }
 /* ---------- Software demo video: video left, brief right ---------- */
+.mv { --c: #4FC7EA; width: min(1180px, 100%, calc((100vh - 330px) * 1.7778 + 440px)); border-radius: 16px; position: relative;
+  background: linear-gradient(180deg, rgba(10,22,40,.92), rgba(5,11,22,.96)); border: 1px solid rgba(79,199,234,.35);
+  box-shadow: 0 0 0 1px rgba(79,199,234,.08), 0 0 60px rgba(79,199,234,.14), 0 30px 70px rgba(0,0,0,.55); overflow: hidden; }
+.mv::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--c), transparent); opacity: .8; }
+.mv-top { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-bottom: 1px solid rgba(29,44,68,.9);
+  font: 600 10.5px/1 var(--font-mono, ui-monospace, monospace); letter-spacing: .14em; color: #8EA4C4; }
+.mv-rec { display: flex; align-items: center; gap: 7px; color: #EAF4FD; }
+.mv-rec i { width: 8px; height: 8px; border-radius: 50%; background: #ff4d4d; box-shadow: 0 0 8px #ff4d4d; animation: mvRec 1.4s ease-in-out infinite; }
+@keyframes mvRec { 50% { opacity: .25; } }
+.mv-meta { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mv-tc { color: var(--c); font-variant-numeric: tabular-nums; }
+.mv-body { display: grid; grid-template-columns: 200px minmax(0,1fr) 196px; gap: 14px; padding: 14px; }
+.mv-ch { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.mv-ch button { width: 100%; display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: 8px; text-align: left; padding: 8px 10px;
+  border-radius: 8px; border: 1px solid transparent; background: transparent; color: #8EA4C4; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
+.mv-ch button:hover { background: rgba(79,199,234,.06); color: #EAF4FD; }
+.mv-ch em { font: 700 10px/1 var(--font-mono, monospace); font-style: normal; color: #4a6384; }
+.mv-ch span { font-size: 13px; }
+.mv-ch time { font: 500 10px/1 var(--font-mono, monospace); color: #4a6384; }
+.mv-ch button.on { background: rgba(79,199,234,.1); border-color: rgba(79,199,234,.45); color: #EAF4FD; box-shadow: inset 3px 0 0 var(--c); }
+.mv-ch button.on em, .mv-ch button.on time { color: var(--c); }
+.mv-ch button.done em { color: #5DD27A; }
+.mv-screen { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 6px; overflow: hidden; align-self: start;
+  box-shadow: 0 0 0 1px #1b2a41, 0 10px 30px rgba(0,0,0,.6); }
+.mv-screen video { width: 100%; height: 100%; display: block; object-fit: cover; background: #000; cursor: pointer; }
+.mv-c { position: absolute; width: 18px; height: 18px; border: 2px solid var(--c); opacity: .9; pointer-events: none; z-index: 2; }
+.mv-c.tl { left: 8px; top: 8px; border-right: 0; border-bottom: 0; } .mv-c.tr { right: 8px; top: 8px; border-left: 0; border-bottom: 0; }
+.mv-c.bl { left: 8px; bottom: 8px; border-right: 0; border-top: 0; } .mv-c.br { right: 8px; bottom: 8px; border-left: 0; border-top: 0; }
+.mv-stage { position: absolute; left: 50%; transform: translateX(-50%); top: 14px; z-index: 2; white-space: nowrap; display: flex; align-items: center; gap: 8px; padding: 5px 10px; border-radius: 6px;
+  background: rgba(4,10,22,.72); border: 1px solid rgba(79,199,234,.35); font: 600 10.5px/1 var(--font-mono, monospace); letter-spacing: .12em; color: #EAF4FD;
+  opacity: 0; transition: opacity .3s; pointer-events: none; }
+.mv.playing .mv-stage, .mv.started .mv-stage { opacity: 1; }
+.mv-stage em { font-style: normal; color: var(--c); }
+.mv-big { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 3; width: 74px; height: 74px; border-radius: 50%;
+  border: 1.5px solid var(--c); background: rgba(4,12,24,.6); backdrop-filter: blur(6px); display: grid; place-items: center; cursor: pointer;
+  box-shadow: 0 0 0 8px rgba(79,199,234,.12), 0 0 34px rgba(79,199,234,.45); transition: transform .2s, opacity .3s; }
+.mv-big svg { width: 30px; height: 30px; fill: #EAF4FD; margin-left: 4px; }
+.mv-big:hover { transform: translate(-50%,-50%) scale(1.07); }
+.mv.playing .mv-big { opacity: 0; pointer-events: none; }
+.mv-kpi { display: flex; flex-direction: column; gap: 8px; }
+.mv-kpi div { flex: 1; min-height: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid #1b2a41; background: rgba(8,16,32,.7);
+  display: flex; flex-direction: column; justify-content: center; transition: border-color .3s, background .3s, box-shadow .3s; }
+.mv-kpi b { font: 700 22px/1 var(--font-mono, monospace); color: #EAF4FD; }
+.mv-kpi b small { font-size: 13px; color: #8EA4C4; }
+.mv-kpi span { font-size: 11.5px; line-height: 1.35; color: #8EA4C4; margin-top: 5px; }
+.mv-kpi div.hot { border-color: #5DD27A; background: rgba(93,210,122,.08); box-shadow: 0 0 18px rgba(93,210,122,.18); }
+.mv-kpi div.hot b { color: #7fe39a; }
+.mv-bar { display: flex; align-items: center; gap: 10px; padding: 10px 16px 12px; border-top: 1px solid rgba(29,44,68,.9); }
+.mv-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid #1d2c44; background: transparent; display: grid; place-items: center; cursor: pointer; flex: none; }
+.mv-btn:hover { border-color: var(--c); }
+.mv-btn svg { width: 18px; height: 18px; fill: #EAF4FD; }
+.mv-btn .pa, .mv.playing .mv-btn .pl { display: none; } .mv.playing .mv-btn .pa { display: inline; }
+.mv-btn .on { display: none; } .mv.sound .mv-btn .on { display: inline; } .mv.sound .mv-btn .off { display: none; }
+.mv-track { position: relative; flex: 1; height: 8px; border-radius: 4px; background: #13223a; cursor: pointer; }
+.mv-track:focus-visible { outline: 2px solid var(--c); outline-offset: 3px; }
+.mv-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 4px; background: linear-gradient(90deg, #2b8fd6, var(--c)); box-shadow: 0 0 10px rgba(79,199,234,.5); }
+.mv-ticks i { position: absolute; top: -3px; width: 2px; height: 14px; background: #3d5678; border-radius: 1px; transform: translateX(-1px); }
+.mv-dur { font: 500 11px/1 var(--font-mono, monospace); color: #8EA4C4; }
+@media (max-width: 980px) {
+  .mv-body { grid-template-columns: 1fr; }
+  .mv-ch { flex-direction: row; overflow-x: auto; order: 0; scrollbar-width: none; }
+  .mv-ch li { flex: none; } .mv-ch button { grid-template-columns: auto auto; } .mv-ch time { display: none; }
+  .mv-kpi { display: grid; grid-template-columns: 1fr 1fr; order: 2; }
+  .mv-meta { display: none; } .mv-stage { top: 10px; } .mv-big { width: 58px; height: 58px; }
+}
+.film-note { max-width: 760px; text-align: center; color: #8EA4C4; font-size: 13px; line-height: 1.6; margin: 16px 0 0; }
 .sw-duo { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; width: min(1060px, 100%); align-items: center; }
 .sw-view { position: relative; aspect-ratio: 1920 / 1086; background: #050a14; }
 .sw-view video { width: 100%; height: 100%; display: block; object-fit: contain; background: #050a14; }
@@ -847,12 +917,16 @@ body {
     <span class="dot-label">01 HERO</span>
     <span class="dot-circle"></span>
   </div>
+  <div class="dot-item" id="dot-sec-film" onclick="scrollToSection('sec-film')" title="3D simulation">
+    <span class="dot-label">02 3D SIM</span>
+    <span class="dot-circle"></span>
+  </div>
   <div class="dot-item" id="dot-sec-hardware" onclick="scrollToSection('sec-hardware')" title="Hardware">
-    <span class="dot-label">02 HARDWARE</span>
+    <span class="dot-label">03 HARDWARE</span>
     <span class="dot-circle"></span>
   </div>
   <div class="dot-item" id="dot-sec-pipeline" onclick="scrollToSection('sec-pipeline')" title="Proposed Solution">
-    <span class="dot-label">03 SOLUTION</span>
+    <span class="dot-label">04 SOLUTION</span>
     <span class="dot-circle"></span>
   </div>
 </nav>
@@ -961,13 +1035,55 @@ body {
     <div class="org-strip">
       <span class="org-chip"><img src="brand/isro.png" alt="ISRO"></span>
       <span class="org-chip"><img src="brand/sih2026.png" alt="Smart India Hackathon 2026"></span>
-      <span class="org-txt"><b>PS SIH26169</b><br>JABALPUR ENGINEERING COLLEGE</span>
+      <span class="org-txt"><b>PS SIH26169</b><br>JABALPUR ENGINEERING COLLEGE<br>2ND RUNNER-UP · SIH INTERNAL ROUND 2026</span>
     </div>
 
-    <button class="scroll-nav-btn" onclick="scrollToSection('sec-hardware')">
-      SEE THE HARDWARE
+    <button class="scroll-nav-btn" onclick="scrollToSection('sec-film')">
+      WATCH THE 3D SIMULATION
       <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
     </button>
+  </section>
+
+
+  <!-- SECTION 1b: MISSION VIEWER - 3D SIMULATION -->
+  <section class="section-view" id="sec-film">
+    <div class="timeline-section-header">
+      <div class="section-tag">MISSION SIMULATION · 3D</div>
+      <h3 class="section-title">From orbit to lock, in 100 seconds</h3>
+    </div>
+    <div class="mv" id="mv">
+      <div class="mv-top">
+        <span class="mv-rec"><i></i>SIM-3D</span>
+        <span class="mv-meta">PS SIH26169 · CODE-RENDERED (THREE.JS) · 1080p · 30 FPS</span>
+        <span class="mv-tc" id="mvTc">T+00:00.0</span>
+      </div>
+      <div class="mv-body">
+        <ol class="mv-ch" id="mvCh" aria-label="Chapters"><li><button type="button" data-t="0"><em>00</em><span>Mission brief</span><time>00:00</time></button></li><li><button type="button" data-t="7"><em>01</em><span>The challenge</span><time>00:07</time></button></li><li><button type="button" data-t="19"><em>02</em><span>Orbit prediction</span><time>00:19</time></button></li><li><button type="button" data-t="31"><em>03</em><span>Coarse slew</span><time>00:31</time></button></li><li><button type="button" data-t="43"><em>04</em><span>Detect &amp; verify</span><time>00:43</time></button></li><li><button type="button" data-t="61"><em>05</em><span>Lock &amp; track</span><time>01:01</time></button></li><li><button type="button" data-t="75"><em>06</em><span>Link closes</span><time>01:15</time></button></li><li><button type="button" data-t="86"><em>07</em><span>End to end</span><time>01:26</time></button></li></ol>
+        <div class="mv-screen" id="mvScreen">
+          <video id="filmVideo" playsinline preload="none" poster="media/sim3d_poster.jpg"
+            aria-label="ZeroDrift 3D simulation: orbit prediction, beacon detection, lock and link"></video>
+          <span class="mv-c tl"></span><span class="mv-c tr"></span><span class="mv-c bl"></span><span class="mv-c br"></span>
+          <div class="mv-stage" id="mvStage"><em>00</em><span>Mission brief</span></div>
+          <button type="button" class="mv-big" id="mvBig" aria-label="Play the 3D simulation"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+        </div>
+        <div class="mv-kpi" id="mvKpi">
+          <div data-ch="4"><b>1.27<small> s</small></b><span>median time to lock · 64 runs</span></div>
+          <div data-ch="4"><b>0 / 64</b><span>runs that locked a decoy</span></div>
+          <div data-ch="5"><b>97.5<small> %</small></b><span>lock retention · campaign median</span></div>
+          <div data-ch="6"><b>99.3<small> %</small></b><span>link closure, modelled fine stage (14.7% coarse only)</span></div>
+        </div>
+      </div>
+      <div class="mv-bar">
+        <button type="button" class="mv-btn" id="mvPlay" aria-label="Play"><svg viewBox="0 0 24 24"><path class="pl" d="M8 5v14l11-7z"/><path class="pa" d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
+        <button type="button" class="mv-btn" id="mvMute" aria-label="Unmute"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path class="on" d="M16.5 12A4.5 4.5 0 0 0 14 7.97v8.05A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06A9 9 0 0 0 14 3.23z"/><path class="off" d="M16 9.4 17.4 8l2.1 2.1L21.6 8 23 9.4 20.9 11.5 23 13.6 21.6 15l-2.1-2.1L17.4 15 16 13.6l2.1-2.1z"/></svg></button>
+        <div class="mv-track" id="mvTrack" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div class="mv-fill" id="mvFill"></div><div class="mv-ticks"><i style="left:7%"></i><i style="left:19%"></i><i style="left:31%"></i><i style="left:43%"></i><i style="left:61%"></i><i style="left:75%"></i><i style="left:86%"></i></div>
+        </div>
+        <span class="mv-dur">01:40</span>
+        <button type="button" class="mv-btn" id="mvFs" aria-label="Full screen"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></button>
+      </div>
+    </div>
+    <p class="film-note">Code-rendered 3D visualisation of the full chain. Every number on screen comes from our logged runs.</p>
   </section>
 
 
@@ -1000,7 +1116,7 @@ body {
             <button data-view="photo">PHOTO</button><button data-view="video">VIDEO</button><button data-view="3d" class="on">3D</button></div></div>
           <img class="rig-media" data-kind="photo" data-src="media/mk2_photo.jpg" alt="MK2 rig, photo">
           <video class="rig-media" data-kind="video" data-src="demo-mk2.mp4" muted loop playsinline controls preload="none"></video>
-          <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Recorded after tonight's build.</div></div>
+          <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Coming soon: photo and video will be added here.</div></div>
           <span class="rig-legend"><i class="lg-b"></i>Phone torch · blinks 4 Hz · tracked<br><i class="lg-d"></i>Decoy · steady red LED · ignored</span>
           <span class="rig-read" id="rigMk2Read"></span>
         </div>
@@ -1115,7 +1231,7 @@ body {
           <h4>Deterministic Closed-Loop Link Closure</h4>
           <p>8–21 ms per frame on 2 CPU cores. No GPU.</p>
         </div>
-        <div class="step-metric-badge">99.3% Link Closure</div>
+        <div class="step-metric-badge">99.3% Link Closure (modelled)</div>
       </div>
     </div>
 
@@ -1205,6 +1321,8 @@ body {
     // Update active nav dot immediately
     const navDots = {
       'sec-hero': document.getElementById('dot-sec-hero'),
+      'sec-film': document.getElementById('dot-sec-film'),
+      'sec-hardware': document.getElementById('dot-sec-hardware'),
       'sec-pipeline': document.getElementById('dot-sec-pipeline')
     };
     Object.values(navDots).forEach(dot => dot && dot.classList.remove('active'));
@@ -1552,6 +1670,8 @@ setTimeout(() => {
   const sections = document.querySelectorAll('.section-view');
   const navDots = {
     'sec-hero': document.getElementById('dot-sec-hero'),
+    'sec-film': document.getElementById('dot-sec-film'),
+    'sec-hardware': document.getElementById('dot-sec-hardware'),
     'sec-pipeline': document.getElementById('dot-sec-pipeline')
   };
 
@@ -1650,6 +1770,64 @@ document.querySelectorAll('.rig-view').forEach(view => {
     else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
     v.play().catch(() => {});
   });
+})();
+</script>
+<script>
+/* Mission viewer: chapter rail, synced KPIs and custom transport for the 3D simulation.
+   Loads (720p on phones) when reached and plays muted while at least half visible. */
+(function () {
+  const mv = document.getElementById('mv'), v = document.getElementById('filmVideo');
+  if (!mv || !v) return;
+  const $ = id => document.getElementById(id);
+  const chBtns = [...document.querySelectorAll('#mvCh button')], times = chBtns.map(b => +b.dataset.t);
+  const kpis = [...document.querySelectorAll('#mvKpi div')], track = $('mvTrack'), fill = $('mvFill'), tc = $('mvTc'), stage = $('mvStage');
+  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const load = () => { if (!v.getAttribute('src')) v.src = window.innerWidth <= 800 ? 'media/ZeroDrift_ISRO_Simulation_720p.mp4' : 'media/ZeroDrift_ISRO_Simulation_1080p.mp4'; };
+  const dur = () => v.duration || 100;
+  let cur = -1;
+  const update = () => {
+    const t = v.currentTime || 0, d = dur();
+    fill.style.width = (100 * t / d) + '%'; track.setAttribute('aria-valuenow', Math.round(100 * t / d));
+    const m = Math.floor(t / 60), sec = (t % 60).toFixed(1).padStart(4, '0');
+    tc.textContent = 'T+' + String(m).padStart(2, '0') + ':' + sec;
+    let k = 0; times.forEach((x, i) => { if (t >= x) k = i; });
+    if (k !== cur) {
+      cur = k;
+      chBtns.forEach((b, i) => { b.classList.toggle('on', i === k); b.classList.toggle('done', i < k); });
+      stage.querySelector('em').textContent = String(k).padStart(2, '0');
+      stage.querySelector('span').innerHTML = chBtns[k].querySelector('span').innerHTML;
+      kpis.forEach(el => el.classList.toggle('hot', +el.dataset.ch === k || (k === 7)));
+      const on = chBtns[k]; if (on && on.parentNode.parentNode.scrollWidth > on.parentNode.parentNode.clientWidth) on.parentNode.parentNode.scrollTo({ left: on.parentNode.offsetLeft - 12, behavior: 'smooth' });
+    }
+  };
+  const play = () => { load(); mv.classList.add('started'); v.play().catch(() => {}); };
+  const seek = t => { load(); const go = () => { v.currentTime = t; update(); }; v.readyState ? go() : v.addEventListener('loadedmetadata', go, { once: true }); };
+  v.addEventListener('timeupdate', update);
+  v.addEventListener('play', () => mv.classList.add('playing'));
+  v.addEventListener('pause', () => mv.classList.remove('playing'));
+  v.addEventListener('volumechange', () => mv.classList.toggle('sound', !v.muted));
+  v.addEventListener('click', () => v.paused ? play() : v.pause());
+  $('mvBig').addEventListener('click', () => { v.muted = false; play(); });
+  $('mvPlay').addEventListener('click', () => v.paused ? play() : v.pause());
+  $('mvMute').addEventListener('click', () => { v.muted = !v.muted; });
+  chBtns.forEach(b => b.addEventListener('click', () => { seek(+b.dataset.t); play(); }));
+  const pick = e => { const r = track.getBoundingClientRect(); seek(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * dur()); };
+  track.addEventListener('click', pick);
+  track.addEventListener('keydown', e => { if (e.key === 'ArrowRight') seek(Math.min(dur(), v.currentTime + 5)); if (e.key === 'ArrowLeft') seek(Math.max(0, v.currentTime - 5)); });
+  $('mvFs').addEventListener('click', () => {
+    const el = $('mvScreen');
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+    else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+  });
+  v.muted = true; update();
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((es, o) => { if (es.some(e => e.isIntersecting)) { load(); o.disconnect(); } }, { rootMargin: '300px 0px' }).observe(mv);
+    new IntersectionObserver(es => es.forEach(e => {
+      if (e.intersectionRatio >= 0.5) { if (!still && !mv.dataset.auto) { mv.dataset.auto = '1'; play(); } }
+      else if (!v.paused) v.pause();
+    }), { threshold: [0, 0.5] }).observe(mv);
+  }
 })();
 </script>
 </body>

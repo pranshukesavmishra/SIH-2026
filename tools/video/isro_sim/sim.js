@@ -10,6 +10,9 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 // Deterministic: seek(t) draws the frame at t seconds. Numbers on screen: docs/PROJECT_STATE.md section 2 only.
 
 const W = 1920, H = 1080, DUR = 100, D2R = Math.PI / 180;
+// ?ss=2 renders at 2x (3840x2160) for supersampled output; render.mjs captures at the same scale.
+const ANG0 = +(new URLSearchParams(location.search).get('a0') || 2.1), ANG1 = +(new URLSearchParams(location.search).get('a1') || 2.5);
+const SS = Math.max(1, Math.min(3, +(new URLSearchParams(location.search).get('ss') || 1)));
 const Y = new THREE.Vector3(0, 1, 0);
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -30,10 +33,10 @@ float fb(vec3 p){float s=0.,a=.5;for(int i=0;i<6;i++){s+=a*n3(p);p*=2.03;a*=.5;}
 
 // ---------------------------------------------------------------- renderer + post
 const R = new THREE.WebGLRenderer({ canvas: document.getElementById('gl'), antialias: true, preserveDrawingBuffer: true });
-R.setPixelRatio(1); R.setSize(W, H, false);
+R.setPixelRatio(SS); R.setSize(W, H, false);
 R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.05; R.outputColorSpace = THREE.SRGBColorSpace;
 R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap;
-const comp = new EffectComposer(R); comp.setPixelRatio(1); comp.setSize(W, H);
+const comp = new EffectComposer(R); comp.setPixelRatio(SS); comp.setSize(W, H);
 const rpass = new RenderPass(new THREE.Scene(), new THREE.PerspectiveCamera()); comp.addPass(rpass);
 const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), .85, .6, .7); comp.addPass(bloom);
 const film = new ShaderPass({ uniforms: { tDiffuse: { value: null }, time: { value: 0 }, ca: { value: 1 }, grain: { value: .03 } },
@@ -342,7 +345,8 @@ const villages = new THREE.Group(); GROUND.add(villages);
 const azT = t => lerp(214, 250, clamp((t - 31) / 44)) * D2R, elT = t => lerp(50, 63, clamp((t - 31) / 44)) * D2R;
 
 // ---------------------------------------------------------------- HUD (2D)
-const hud = document.getElementById('hud').getContext('2d');
+const hudC = document.getElementById('hud'); hudC.width = W * SS; hudC.height = H * SS;
+const hud = hudC.getContext('2d'); hud.setTransform(SS, 0, 0, SS, 0, 0);
 const FT = '"Bahnschrift","Segoe UI",sans-serif', FM = '"Cascadia Mono","Consolas",monospace';
 const IMG = {};
 const CY = '#4FC7EA', GR = '#5DE08A', RD = '#FF5A4E', AM = '#FFC85A', INK = '#EAF4FD', MU = '#93A9C8';
@@ -412,7 +416,7 @@ function groundCommon(t) {
   const az = azT(t), el = elT(t), sd = dirOf(az, el);
   gSat.position.copy(sd.clone().multiplyScalar(420).add(new THREE.Vector3(0, 3.9, -1.2))); const blink = frac(t * 4) < .5;
   gSat.scale.setScalar(blink ? 4.2 : 2.2); gSat.material.opacity = blink ? 1 : .45;
-  mastLamp.material.opacity = frac(t * .9) < .2 ? 1 : .08; mastPole.visible = mDish.visible = mastLamp.visible = !(t >= 61 && t < 68);
+  mastLamp.material.opacity = frac(t * .9) < .2 ? 1 : .08; mastPole.visible = mDish.visible = mastLamp.visible = !(t >= 61 && t < 75);
   return { az, el, sd };
 }
 
@@ -427,7 +431,7 @@ function seek(t) {
     hideSpaceFx(); bloom.strength = .85; bloom.threshold = .7;
     if (t < 7) { // --- S1 sunrise over Earth + title
       setupSpace(t, 0, false); orbit.material.opacity = 0;
-      const ang = lerp(.265, .335, ease(ss(.8, 6.6, t)));
+      const ang = lerp(ANG0, ANG1, ease(ss(.8, 6.6, t)));
       const cd = sunDir.clone().negate().applyAxisAngle(Y, ang), pos = cd.multiplyScalar(lerp(3.5, 3.3, t / 7));
       camS.position.copy(pos); camS.up.set(0, 1, 0);
       const fwd = pos.clone().negate().normalize(), right = new THREE.Vector3().crossVectors(fwd, Y).normalize(); camS.lookAt(right.multiplyScalar(-.7).add(new THREE.Vector3(0, .12, 0)));

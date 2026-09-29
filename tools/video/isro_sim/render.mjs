@@ -4,10 +4,11 @@ const root = process.cwd(), types = { '.html': 'text/html', '.js': 'text/javascr
 const srv = http.createServer((q, r) => { let p = decodeURIComponent(q.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(root, p);
   fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); r.end(); return; } r.writeHead(200, { 'Content-Type': types[path.extname(f)] || 'application/octet-stream' }); r.end(d); }); }).listen(8793);
 const [mode, a1, a2, a3] = process.argv.slice(2);
+const SS = +(process.env.SS || 1); // SS=2 -> 3840x2160 frames (supersampled)
 const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--ignore-gpu-blocklist', '--enable-gpu', '--use-angle=d3d11'] });
-async function mk() { const p = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+async function mk() { const p = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: SS });
   p.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') console.log('[page]', m.text()); }); p.on('pageerror', e => console.log('[err]', e.message));
-  await p.goto('http://localhost:8793/index.html'); await p.waitForFunction('window.READY===true', null, { timeout: 180000 }); return p; }
+  await p.goto('http://localhost:8793/index.html?ss=' + SS); await p.waitForFunction('window.READY===true', null, { timeout: 180000 }); return p; }
 if (mode === 'preview') { fs.mkdirSync('prev', { recursive: true }); const p = await mk();
   for (const t of a1.split(',')) { const s = Date.now(); await p.evaluate(t => seek(+t), t); await p.screenshot({ path: `prev/p_${t}.jpg`, type: 'jpeg', quality: 80 }); console.log(t, Date.now() - s, 'ms'); } }
 else { const n0 = Math.round(+a1 * 30), n1 = Math.round(+a2 * 30), nw = +(a3 || 3); fs.mkdirSync('frames', { recursive: true });

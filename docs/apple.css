@@ -579,3 +579,20 @@ html.zd-in .gn, html.zd-in .pn, html.zd-in .hero-down, html.zd-in .mnav { animat
 .sw-steps li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: baseline; font-size: 16px; line-height: 1.45; color: var(--mute); }
 .sw-steps li span { font: 600 12px/1 var(--mono); letter-spacing: .1em; color: var(--acc); }
 .sw-steps li b { color: var(--ink); font-weight: 600; }
+
+/* ---------- Home: Watch it decide (camera view, watch.js) ---------- */
+.wd-side { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.wd-card { padding: 14px 16px; border-radius: 20px; background: #161618; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.wd-card small { display: block; font: 600 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--mute); margin-bottom: 10px; }
+.wd-card strong { display: block; font: 700 26px/1 var(--mono); letter-spacing: .04em; color: var(--mute2); transition: color .3s; }
+.wd-card strong[data-tone="ok"] { color: #5DE08A; } .wd-card strong[data-tone="warn"] { color: #FFC85A; } .wd-card strong[data-tone="acc"] { color: #4FC7EA; }
+.wd-card p { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--mute); min-height: 3.9em; }
+.wd-live div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,.06); font-size: 13px; color: var(--mute); }
+.wd-live b { font: 600 13px/1.2 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; } .wd-live b.ok { color: #5DE08A; }
+.wd-plot { flex: 1; display: flex; flex-direction: column; min-height: 90px; }
+.wd-plot canvas { flex: 1; width: 100%; min-height: 60px; display: block; }
+.dz-state[data-s="LOCK"] { color: var(--ok); } .dz-state[data-s="LOCK"] i { box-shadow: 0 0 10px currentColor; }
+.dz-state[data-s="TRACK"] { color: var(--acc); } .dz-state[data-s="ACQUIRE"], .dz-state[data-s="PREDICT"] { color: var(--warn); }
+.dz-ctl button.on { background: rgba(255,200,90,.18); color: #FFC85A; }
+@media (max-width: 900px) { .wd-side { display: grid; grid-template-columns: 1fr 1fr; } .wd-side .wd-card:first-child { grid-column: span 2; } .wd-plot { min-height: 120px; } }
+@media (max-width: 900px) { .wd .dz-view { height: 78vw; min-height: 300px; max-height: 520px; } }

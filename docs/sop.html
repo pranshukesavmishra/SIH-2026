@@ -2,355 +2,407 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ZeroDrift — Standard Operating Procedure (SOP)</title>
-<meta name="description" content="ZD-SOP-001: how Team ZeroDrift runs and tests the ZeroDrift Pointing, Acquisition and Tracking system for Free-Space Optical Communication: simulation test, live tracking and MK2 terminal, with proof for every step.">
-<link rel="icon" type="image/png" href="brand/zerodrift_mark.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOP · How we run ZeroDrift</title>
+<meta name="description" content="ZeroDrift standard operating procedure: the simulation, the MK1 working prototype, the MK2 terminal in development, circuit diagrams, safety and acceptance.">
+<meta name="theme-color" content="#f5f5f7">
+<link rel="icon" href="brand/zerodrift_mark.png">
+<link rel="preload" href="fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="apple.css">
+<link rel="stylesheet" href="tour.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-:root{
+.doc{
   --bg:#f4f7fb; --bg2:#eaf0f7; --card:#ffffff; --line:#dbe3ee; --line2:#c7d3e2;
   --ink:#0f1b2d; --ink2:#3b4a60; --mute:#6b7a90;
   --navy:#0b1f3a; --blue:#1d5fb8; --cyan:#0e7c9a; --cyanL:#e3f4f9; --green:#15803d; --greenL:#e7f6ec;
   --amber:#b45309; --amberL:#fdf1e2; --orange:#c2410c; --red:#b91c1c; --redL:#fdecec; --vio:#6d28d9; --vioL:#f0eafd;
-  --head:"Space Grotesk","Segoe UI",system-ui,sans-serif;
-  --body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --head:'ZD Inter',system-ui,sans-serif;
+  --body:'ZD Inter',system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;overflow-x:hidden;scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--body);
-  background-image:radial-gradient(circle at 85% -5%,rgba(14,124,154,.10),transparent 40%),radial-gradient(circle at 0% 30%,rgba(29,95,184,.06),transparent 35%)}
-a{color:var(--blue);text-decoration:none}
-b,strong{font-weight:700;color:var(--ink)}
-svg text{font-family:var(--body)}
-/* site header stays dark, same as every other page */
-.top{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid #18263A;background:rgba(6,11,20,.96);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
-.brand-logo-full{height:42px;width:auto;display:block;margin:-4px 0}
-.nav-links{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px}
-.nav-link{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:5px;color:#9fb1c8;font-size:11px;letter-spacing:1px;transition:all .2s;border:1px solid transparent}
-.nav-link svg{width:13px;height:13px;fill:currentColor;opacity:.85}
-.nav-link:hover{color:#4FC7EA;background:rgba(79,199,234,.08)}
-.nav-link.active{color:#4FC7EA;background:rgba(79,199,234,.14);border-color:rgba(79,199,234,.3)}
-.github-icon-btn{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:5px;background:#0A111E;border:1px solid #18263A;color:#9fb1c8}
-.github-icon-btn svg{width:16px;height:16px;fill:currentColor}
-.mobile-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:rgba(6,11,20,.96);backdrop-filter:blur(16px);border-top:1px solid #18263A;z-index:200;justify-content:space-around;align-items:center;padding:0 10px;font-family:ui-monospace,Menlo,Consolas,monospace}
-.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;color:#9fb1c8;font-size:10px;flex:1;padding:6px 0}
-.mobile-nav-item svg{width:18px;height:18px;fill:currentColor}
-.mobile-nav-item.active{color:#4FC7EA}
-@media (max-width:900px){.nav-links{display:none}.mobile-bottom-nav{display:flex}body{padding-bottom:70px}}
-
 /* type system */
+
 .doc{max-width:1180px;margin:0 auto;padding:34px 20px 70px}
-.eyebrow{font:700 12px var(--mono);letter-spacing:2.2px;color:var(--cyan);text-transform:uppercase}
-h1{font:700 46px/1.05 var(--head);letter-spacing:-1.2px;margin:12px 0 10px;color:var(--navy)}
-h1 em{font-style:normal;color:var(--cyan)}
-.lede{font-size:18px;color:var(--ink2);max-width:560px}
-.lede b{color:var(--navy)}
-h2{font:700 30px/1.1 var(--head);letter-spacing:-.6px;color:var(--navy)}
-h3{font:600 19px/1.25 var(--head);color:var(--navy);margin-bottom:6px}
-.small{font-size:13.5px;color:var(--mute)}
-.code{font:600 13px var(--mono);color:var(--navy);background:var(--bg2);border:1px solid var(--line2);padding:2px 7px;border-radius:6px;white-space:nowrap}
-.hl{background:linear-gradient(transparent 58%,rgba(14,124,154,.18) 58%);font-weight:700;color:var(--navy)}
-.abbr{border-bottom:1.5px dotted var(--cyan);cursor:help}
+.doc .seb{font:700 12px var(--mono);letter-spacing:2.2px;color:var(--cyan);text-transform:uppercase}
+.doc h1{font:700 46px/1.05 var(--head);letter-spacing:-1.2px;margin:12px 0 10px;color:var(--navy)}
+.doc h1 em{font-style:normal;color:var(--cyan)}
+.doc .lede{font-size:18px;color:var(--ink2);max-width:560px}
+.doc .lede b{color:var(--navy)}
+.doc h2{font:700 30px/1.1 var(--head);letter-spacing:-.6px;color:var(--navy)}
+.doc h3{font:600 19px/1.25 var(--head);color:var(--navy);margin-bottom:6px}
+.doc .small{font-size:13.5px;color:var(--mute)}
+.doc .code{font:600 13px var(--mono);color:var(--navy);background:var(--bg2);border:1px solid var(--line2);padding:2px 7px;border-radius:6px;white-space:nowrap}
+.doc .hl{background:linear-gradient(transparent 58%,rgba(14,124,154,.18) 58%);font-weight:700;color:var(--navy)}
+.doc .abbr{border-bottom:1.5px dotted var(--cyan);cursor:help}
 
 /* layout */
-.hero{display:block;margin-bottom:18px}
-.hero-art{border-radius:18px;background:linear-gradient(180deg,#07101f,#040912);overflow:hidden;box-shadow:0 24px 60px rgba(11,31,58,.28)}
-.ctrl{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:20px}
-.ctrl div{background:var(--card);padding:10px 13px}
-.ctrl span{display:block;font:700 9.5px var(--mono);letter-spacing:1.3px;color:var(--mute)}
-.ctrl b{font:700 13px var(--mono);color:var(--navy)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px}
-.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;position:relative;overflow:hidden}
-.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--cyan))}
-.stat b{display:block;font:700 32px/1 var(--head);color:var(--c,var(--cyan));letter-spacing:-.5px}
-.stat span{display:block;font-size:13.5px;color:var(--ink2);margin-top:6px;line-height:1.35}
-.stat a{display:inline-block;margin-top:8px;font:700 11px var(--mono);letter-spacing:.8px;color:var(--c,var(--cyan))}
-.toc{display:flex;flex-wrap:wrap;gap:7px;margin:26px 0 4px}
-.toc a{display:inline-flex;align-items:center;gap:8px;font:600 13px var(--body);color:var(--ink2);border:1px solid var(--line);border-radius:999px;padding:6px 13px 6px 6px;background:var(--card)}
-.toc a i{font:700 11px var(--mono);font-style:normal;color:#fff;background:var(--navy);border-radius:999px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center}
-.toc a:hover{border-color:var(--cyan);color:var(--navy)}
-section{margin-top:64px;scroll-margin-top:84px}
-.sh{display:flex;align-items:flex-start;gap:16px;margin-bottom:22px}
-.sh .n{font:700 15px var(--mono);color:#fff;background:var(--navy);width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:2px}
-.sh p{font-size:15.5px;color:var(--ink2);margin-top:5px;max-width:760px}
-.grid{display:grid;gap:16px}
-.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
-.split{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 1px 2px rgba(15,27,45,.04)}
-.card p{color:var(--ink2);font-size:14.5px;line-height:1.5}
-.ico{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
-.ico svg{width:26px;height:26px}
-.pill{display:inline-block;font:700 10.5px var(--mono);letter-spacing:.8px;padding:4px 9px;border-radius:6px;margin-top:10px}
-.mode img{width:100%;height:150px;object-fit:cover;border-radius:10px;border:1px solid var(--line);margin-top:12px;display:block}
-.mode .src{font:600 11px var(--mono);color:var(--mute);margin-top:6px;display:block}
+
+
+.doc .ctrl{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:20px}
+.doc .ctrl div{background:var(--card);padding:10px 13px}
+.doc .ctrl span{display:block;font:700 9.5px var(--mono);letter-spacing:1.3px;color:var(--mute)}
+.doc .ctrl b{font:700 13px var(--mono);color:var(--navy)}
+.doc .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px}
+.doc .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;position:relative;overflow:hidden}
+.doc .stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--cyan))}
+.doc .stat b{display:block;font:700 32px/1 var(--head);color:var(--c,var(--cyan));letter-spacing:-.5px}
+.doc .stat span{display:block;font-size:13.5px;color:var(--ink2);margin-top:6px;line-height:1.35}
+.doc .stat a{display:inline-block;margin-top:8px;font:700 11px var(--mono);letter-spacing:.8px;color:var(--c,var(--cyan))}
+.doc .toc{display:flex;flex-wrap:wrap;gap:7px;margin:26px 0 4px}
+.doc .toc a{display:inline-flex;align-items:center;gap:8px;font:600 13px var(--body);color:var(--ink2);border:1px solid var(--line);border-radius:999px;padding:6px 13px 6px 6px;background:var(--card)}
+.doc .toc a i{font:700 11px var(--mono);font-style:normal;color:#fff;background:var(--navy);border-radius:999px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center}
+.doc .toc a:hover{border-color:var(--cyan);color:var(--navy)}
+.doc section{margin-top:64px;scroll-margin-top:84px}
+.doc .sh{display:flex;align-items:flex-start;gap:16px;margin-bottom:22px}
+.doc .sh .n{font:700 15px var(--mono);color:#fff;background:var(--navy);width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:2px}
+.doc .sh p{font-size:15.5px;color:var(--ink2);margin-top:5px;max-width:760px}
+.doc .grid{display:grid;gap:16px}
+.doc .g2{grid-template-columns:1fr 1fr}.doc .g3{grid-template-columns:repeat(3,1fr)}.doc .g4{grid-template-columns:repeat(4,1fr)}
+.doc .split{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:start}
+.doc .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 1px 2px rgba(15,27,45,.04)}
+.doc .card p{color:var(--ink2);font-size:14.5px;line-height:1.5}
+.doc .ico{width:48px;height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.doc .ico svg{width:26px;height:26px}
+.doc .pill{display:inline-block;font:700 10.5px var(--mono);letter-spacing:.8px;padding:4px 9px;border-radius:6px;margin-top:10px}
+.doc .mode img{width:100%;height:150px;object-fit:cover;border-radius:10px;border:1px solid var(--line);margin-top:12px;display:block}
+.doc .mode .src{font:600 11px var(--mono);color:var(--mute);margin-top:6px;display:block}
 
 /* proof blocks */
-.proof{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(11,31,58,.08)}
-.proof .ph{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,var(--greenL),#fff)}
-.proof .ph b{font:700 11px var(--mono);letter-spacing:1.6px;color:var(--green)}
-.proof .ph span{font-size:13px;color:var(--ink2)}
-.proof .ph svg{width:18px;height:18px;flex:none}
-.proof img,.proof video{display:block;width:100%;height:auto;background:#020610}
-.proof .pc{padding:11px 14px;font-size:13.5px;color:var(--ink2);line-height:1.45;border-top:1px solid var(--line)}
-.proof .pc b{color:var(--navy)}
-.proof .svgw{padding:12px 12px 4px;background:#fff}
-.proof .svgw svg{width:100%;height:auto;display:block}
+
+
+.doc .proof{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(11,31,58,.08)}
+.doc .proof .sph{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,var(--greenL),#fff)}
+.doc .proof .sph b{font:700 11px var(--mono);letter-spacing:1.6px;color:var(--green)}
+.doc .proof .sph span{font-size:13px;color:var(--ink2)}
+.doc .proof .sph svg{width:18px;height:18px;flex:none}
+.doc .proof img,.doc .proof video{display:block;width:100%;height:auto;background:#020610}
+.doc .proof .spc{padding:11px 14px;font-size:13.5px;color:var(--ink2);line-height:1.45;border-top:1px solid var(--line)}
+.doc .proof .spc b{color:var(--navy)}
+.doc .proof .svgw{padding:12px 12px 4px;background:#fff}
+.doc .proof .svgw svg{width:100%;height:auto;display:block}
 
 /* steps */
-.steps{display:grid;gap:12px}
-.step{display:grid;grid-template-columns:46px 1fr;gap:14px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-.step .d{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font:700 14px var(--mono);color:#fff;background:var(--c,var(--navy))}
-.step h4{font:600 16.5px var(--head);color:var(--navy)}
-.step p{font-size:14.5px;color:var(--ink2);margin-top:2px}
-.ok{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font:700 12px var(--mono);color:var(--green);background:var(--greenL);border:1px solid #b9e2c6;padding:4px 9px;border-radius:7px}
-.why{display:block;margin-top:6px;font-size:13px;color:var(--mute);font-style:italic}
+
+
+.doc .steps{display:grid;gap:12px}
+.doc .step{display:grid;grid-template-columns:46px 1fr;gap:14px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.doc .step .d{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font:700 14px var(--mono);color:#fff;background:var(--c,var(--navy))}
+.doc .step h4{font:600 16.5px var(--head);color:var(--navy)}
+.doc .step p{font-size:14.5px;color:var(--ink2);margin-top:2px}
+.doc .sok{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font:700 12px var(--mono);color:var(--green);background:var(--greenL);border:1px solid #b9e2c6;padding:4px 9px;border-radius:7px}
+.doc .why{display:block;margin-top:6px;font-size:13px;color:var(--mute);font-style:italic}
 
 /* states, tables, safety */
-.states{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card)}
-.states div{padding:16px 14px;border-right:1px solid var(--line);position:relative}
-.states div:last-child{border-right:0}
-.states i{position:absolute;left:0;right:0;top:0;height:4px}
-.states b{display:block;font:700 14px var(--mono);letter-spacing:1px}
-.states span{display:block;color:var(--ink2);font-size:13.5px;margin-top:6px;line-height:1.4}
-.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--card)}
-table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:620px}
-th{text-align:left;font:700 10.5px var(--mono);letter-spacing:1.4px;color:var(--mute);padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg)}
-td{padding:11px 16px;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:middle}
-tr:last-child td{border-bottom:0}
-td.k{font:700 13.5px var(--mono);color:var(--navy);white-space:nowrap}
-td.full{color:var(--ink)}
-.dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--navy)}
-.dot.no{background:transparent;border:1.5px solid var(--line2)}
-.bar{height:8px;border-radius:4px;background:var(--bg2);overflow:hidden;min-width:110px}
-.bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--cyan),var(--green))}
-.pass{font:700 11px var(--mono);letter-spacing:1px;color:#fff;background:var(--green);padding:3px 8px;border-radius:5px}
-.haz{display:grid;grid-template-columns:58px 1fr;gap:14px;align-items:center;border:1px solid #f2c4c4;background:linear-gradient(90deg,var(--redL),#fff);border-radius:16px;padding:16px}
-.haz h3{color:var(--red);margin:0}
-.haz p{color:var(--ink2);font-size:14px;line-height:1.45}
-.seq{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
-.chip{font:700 13px var(--mono);padding:9px 13px;border-radius:9px;border:1.5px solid}
-.arrow{color:var(--mute);font:700 16px var(--mono)}
-.gloss{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.gl{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px}
-.gl b{display:block;font:700 15px var(--mono);color:var(--cyan)}
-.gl span{font-size:13.5px;color:var(--ink2);line-height:1.35;display:block;margin-top:2px}
-.fig{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:0 14px 40px rgba(11,31,58,.10)}
-.fig svg{width:100%;height:auto;display:block}
-.scroller{overflow-x:auto}.scroller .fig{min-width:760px}
-.figcap{font-size:13.5px;color:var(--mute);margin-top:10px;text-align:center}
-.foot{border-top:1px solid var(--line);margin-top:60px;padding-top:18px;font:12px var(--mono);color:var(--mute);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-@media (max-width:980px){.hero,.split{grid-template-columns:1fr}.stats,.g4{grid-template-columns:1fr 1fr}.g3,.gloss{grid-template-columns:1fr 1fr}.states{grid-template-columns:1fr 1fr}.states div{border-bottom:1px solid var(--line)}}
-@media (max-width:600px){h1{font-size:34px}h2{font-size:25px}.ctrl{grid-template-columns:1fr 1fr}.g2,.g3,.gloss{grid-template-columns:1fr}.states{grid-template-columns:1fr}.stat b{font-size:27px}}
+
+
+.doc .states{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card)}
+.doc .states div{padding:16px 14px;border-right:1px solid var(--line);position:relative}
+.doc .states div:last-child{border-right:0}
+.doc .states i{position:absolute;left:0;right:0;top:0;height:4px}
+.doc .states b{display:block;font:700 14px var(--mono);letter-spacing:1px}
+.doc .states span{display:block;color:var(--ink2);font-size:13.5px;margin-top:6px;line-height:1.4}
+.doc .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+.doc table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:620px}
+.doc th{text-align:left;font:700 10.5px var(--mono);letter-spacing:1.4px;color:var(--mute);padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg)}
+.doc td{padding:11px 16px;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:middle}
+.doc tr:last-child td{border-bottom:0}
+.doc td.k{font:700 13.5px var(--mono);color:var(--navy);white-space:nowrap}
+.doc td.full{color:var(--ink)}
+.doc .dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--navy)}
+.doc .dot.no{background:transparent;border:1.5px solid var(--line2)}
+.doc .bar{height:8px;border-radius:4px;background:var(--bg2);overflow:hidden;min-width:110px}
+.doc .bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.doc .pass{font:700 11px var(--mono);letter-spacing:1px;color:#fff;background:var(--green);padding:3px 8px;border-radius:5px}
+.doc .haz{display:grid;grid-template-columns:58px 1fr;gap:14px;align-items:center;border:1px solid #f2c4c4;background:linear-gradient(90deg,var(--redL),#fff);border-radius:16px;padding:16px}
+.doc .haz h3{color:var(--red);margin:0}
+.doc .haz p{color:var(--ink2);font-size:14px;line-height:1.45}
+.doc .seq{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+.doc .chip{font:700 13px var(--mono);padding:9px 13px;border-radius:9px;border:1.5px solid}
+.doc .arrow{color:var(--mute);font:700 16px var(--mono)}
+.doc .gloss{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.doc .gl{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+.doc .gl b{display:block;font:700 15px var(--mono);color:var(--cyan)}
+.doc .gl span{font-size:13.5px;color:var(--ink2);line-height:1.35;display:block;margin-top:2px}
+.doc .fig{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:0 14px 40px rgba(11,31,58,.10)}
+.doc .fig svg{width:100%;height:auto;display:block}
+.doc .scroller{overflow-x:auto}.doc .scroller .fig{min-width:760px}
+.doc .figcap{font-size:13.5px;color:var(--mute);margin-top:10px;text-align:center}
+.doc .foot{border-top:1px solid var(--line);margin-top:60px;padding-top:18px;font:12px var(--mono);color:var(--mute);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (max-width:980px){.doc .hero,.doc .split{grid-template-columns:1fr}.doc .stats,.doc .g4{grid-template-columns:1fr 1fr}.doc .g3,.doc .gloss{grid-template-columns:1fr 1fr}.doc .states{grid-template-columns:1fr 1fr}.doc .states div{border-bottom:1px solid var(--line)}}
+@media (max-width:600px){.doc h1{font-size:34px}.doc h2{font-size:25px}.doc .ctrl{grid-template-columns:1fr 1fr}.doc .g2,.doc .g3,.doc .gloss{grid-template-columns:1fr}.doc .states{grid-template-columns:1fr}.doc .stat b{font-size:27px}}
 
 /* v3: MK2 viewer (same card as the home page) */
-.rig-card{background:#08101f;border:1px solid #15263F;border-radius:18px;overflow:hidden;box-shadow:0 24px 60px rgba(11,31,58,.28)}
-.rig-view{position:relative;aspect-ratio:4/3;background:#050a14}
-.rig-view canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:pan-y}
-.rig-top{position:absolute;top:12px;left:12px;display:flex;align-items:center;gap:8px;z-index:3}
-.rig-badge{padding:5px 11px;border-radius:7px;font:700 11px var(--mono);letter-spacing:.12em;color:#3BD68C;background:rgba(4,9,21,.8);border:1px solid rgba(59,214,140,.45)}
-.rig-tabs{display:flex;border:1px solid rgba(79,199,234,.35);border-radius:7px;overflow:hidden;background:rgba(4,9,21,.8)}
-.rig-tabs button{font:700 10.5px/1 var(--mono);letter-spacing:.12em;color:#8EA4C4;background:none;border:0;padding:7px 11px;cursor:pointer}
-.rig-tabs button+button{border-left:1px solid rgba(79,199,234,.2)}
-.rig-tabs button.on{color:#04121c;background:#4FC7EA}
-.rig-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#050a14;z-index:2;display:none}
-.rig-media.show{display:block}
-.rig-empty{position:absolute;inset:0;z-index:2;display:none;align-items:center;justify-content:center;text-align:center;font:12px var(--mono);color:#8EA4C4;padding:20px;background:repeating-linear-gradient(45deg,#07101f 0 14px,#0a1628 14px 28px)}
-.rig-empty b{display:block;color:#EAF4FD;font-size:14px;letter-spacing:.12em;margin-bottom:6px}
-.rig-empty.show{display:flex}
-.rig-legend{position:absolute;top:12px;right:12px;font:11px/1.7 var(--mono);color:#cdd8e6;background:rgba(4,9,21,.72);padding:6px 10px;border-radius:7px;border:1px solid #15263F;z-index:3}
-.rig-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}
-.lg-b{background:#fff3dc;box-shadow:0 0 8px #fff3dc}.lg-d{background:#ff5a48;box-shadow:0 0 8px #ff5a48}
-.rig-read{position:absolute;right:12px;bottom:10px;font:11px var(--mono);color:#8EA4C4;z-index:3}
-.rig-read[data-state="LOCKED"]{color:#3BD68C}
-.rig-view.flat .rig-legend,.rig-view.flat .rig-read,.rig-view.flat .hs-hint{display:none!important}
-.hero .ctrl{grid-template-columns:1fr 1fr}
-.rig-meta{padding:12px 16px 14px;display:flex;flex-wrap:wrap;gap:6px}
-.rig-meta span{font:11px var(--mono);color:#8EA4C4;padding:4px 9px;border-radius:6px;border:1px solid #15263F;background:#0a1426}
-@media (max-width:560px){.rig-legend{display:none}}
-/* real charts */
+
+
+.doc /* real charts */
 .proof img.chart{background:#fff;padding:6px}
 /* states + video */
-.stv{display:grid;grid-template-columns:1.25fr .75fr;gap:20px;align-items:start}
-.stl{display:grid;gap:10px}
-.stl div{display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-.stl b{font:700 13.5px var(--mono);letter-spacing:1px;padding:6px 0;border-radius:7px;text-align:center;color:#fff}
-.stl span{font-size:14px;color:var(--ink2);line-height:1.35}
+
+.doc .stv{display:grid;grid-template-columns:1.25fr .75fr;gap:20px;align-items:start}
+.doc .stl{display:grid;gap:10px}
+.doc .stl div{display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.doc .stl b{font:700 13.5px var(--mono);letter-spacing:1px;padding:6px 0;border-radius:7px;text-align:center;color:#fff}
+.doc .stl span{font-size:14px;color:var(--ink2);line-height:1.35}
 /* software */
-.soft{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
-.sw{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 10px 14px;text-align:center;box-shadow:0 8px 22px rgba(11,31,58,.06);transition:transform .2s,box-shadow .2s}
-.sw:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(11,31,58,.12)}
-.sw img,.sw .mono{width:46px;height:46px;display:block;margin:0 auto 10px}
-.sw .mono{border-radius:12px;display:flex;align-items:center;justify-content:center;font:700 16px var(--mono);color:#fff}
-.sw b{display:block;font:600 14.5px var(--head);color:var(--navy)}
-.sw span{display:block;font:600 10.5px var(--mono);letter-spacing:.8px;color:var(--mute);margin-top:3px;text-transform:uppercase}
+
+.doc .soft{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.doc .sw{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 10px 14px;text-align:center;box-shadow:0 8px 22px rgba(11,31,58,.06);transition:transform .2s,box-shadow .2s}
+.doc .sw:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(11,31,58,.12)}
+.doc .sw img,.doc .sw .mono{width:46px;height:46px;display:block;margin:0 auto 10px}
+.doc .sw .mono{border-radius:12px;display:flex;align-items:center;justify-content:center;font:700 16px var(--mono);color:#fff}
+.doc .sw b{display:block;font:600 14.5px var(--head);color:var(--navy)}
+.doc .sw span{display:block;font:600 10.5px var(--mono);letter-spacing:.8px;color:var(--mute);margin-top:3px;text-transform:uppercase}
 /* journey */
-.jr{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px;align-items:stretch}
-.jc{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
-.jc.now{border:2px solid var(--green);box-shadow:0 16px 40px rgba(21,128,61,.14)}
-.jc .jh{display:flex;align-items:center;gap:10px;padding:14px 16px 0}
-.jc .jh em{font:700 10.5px var(--mono);letter-spacing:1.4px;font-style:normal;padding:4px 9px;border-radius:6px}
-.jc h3{margin:0}
-.jc p{padding:6px 16px 0;color:var(--ink2);font-size:14.5px}
-.jm{display:grid;gap:10px;padding:14px 16px 16px;margin-top:auto}
-.jc.now .jm{grid-template-columns:1fr 1fr}
-.ytrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:26px;align-items:center;margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 10px 30px rgba(11,31,58,.08)}
-.ytbadge{display:inline-block;font:700 10.5px var(--mono);letter-spacing:1.4px;font-style:normal;color:#fff;background:#b91c1c;padding:4px 9px;border-radius:5px}
-.yttx h3{font-size:22px;margin:10px 0 8px}
-.yttx p{color:var(--ink2);line-height:1.6;font-size:15px}
-.ytl{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 16px;padding:0}
-.ytl li{font:600 11.5px var(--mono);letter-spacing:.6px;color:var(--ink2);border:1px solid var(--line2);border-radius:999px;padding:5px 11px;background:var(--bg)}
-.ytlink{font:600 13px var(--mono);color:#1d5fb8;text-decoration:none}
-.ytlink:hover{text-decoration:underline}
-.ytbox{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#050a14;box-shadow:0 0 0 1px #0f1b2d,0 18px 40px rgba(11,31,58,.28)}
-.ytbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.ytpl{position:absolute;inset:0;border:0;padding:0;cursor:pointer;background:#050a14}
-.ytpl img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s,filter .3s;filter:brightness(.85)}
-.ytpl:hover img{transform:scale(1.03);filter:brightness(1)}
-.ytbtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68px;height:48px;border-radius:12px;background:#e11d2e;display:grid;place-items:center;box-shadow:0 8px 20px rgba(0,0,0,.4);transition:transform .2s}
-.ytpl:hover .ytbtn{transform:translate(-50%,-50%) scale(1.08)}
-.ytbtn svg{width:26px;height:26px;fill:#fff;margin-left:3px}
-@media (max-width:860px){.ytrow{grid-template-columns:1fr;padding:16px}}
-.shot{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:4/3;background:#050a14;border:1px solid var(--line)}
-.shot img,.shot video{width:100%;height:100%;object-fit:cover;display:block}
-.shot .ph{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:6px;text-align:center;color:#8EA4C4;font:12px var(--mono);background:repeating-linear-gradient(45deg,#07101f 0 14px,#0a1628 14px 28px)}
-.shot .ph b{color:#EAF4FD;font-size:13px;letter-spacing:1.2px}
-.shot.missing .ph{display:flex}.shot.missing img,.shot.missing video{visibility:hidden}
-.shot figcaption{position:absolute;left:8px;bottom:8px;font:700 10.5px var(--mono);letter-spacing:1px;color:#fff;background:rgba(4,9,21,.75);padding:3px 8px;border-radius:5px;z-index:2}
-.diff{display:grid;gap:8px;padding:0 16px 16px}
-.diff div{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:14px;color:var(--ink2)}
-.diff i{font-style:normal;color:var(--green);font-weight:700}
-.wiring img{display:block;width:100%;height:auto;background:#fff}
-@media (max-width:980px){.stv,.jr{grid-template-columns:1fr}.soft{grid-template-columns:repeat(4,1fr)}}
-@media (max-width:600px){.soft{grid-template-columns:repeat(3,1fr)}.jc.now .jm{grid-template-columns:1fr}}
-@media print{.top,.mobile-bottom-nav,.toc{display:none}body{background:#fff}.proof,.fig{box-shadow:none}}
-.simtop{margin:6px 0 26px}
-.simhead{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.simhead i{width:34px;height:34px;border-radius:10px;background:#0b1f3a;display:grid;place-items:center}
-.simhead i svg{width:18px;height:18px;fill:#4FC7EA}
-.simhead h2{margin:0;font-size:24px}
-.simtop .mv{width:100%}
-.rig-duo2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:6px 0 26px}
-.rig-duo2 .rig-card{min-width:0}
-@media (max-width:860px){.rig-duo2{grid-template-columns:1fr}}
+
+.doc .jr{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px;align-items:stretch}
+.doc .jc{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.doc .jc.now{border:2px solid var(--green);box-shadow:0 16px 40px rgba(21,128,61,.14)}
+.doc .jc .jh{display:flex;align-items:center;gap:10px;padding:14px 16px 0}
+.doc .jc .jh em{font:700 10.5px var(--mono);letter-spacing:1.4px;font-style:normal;padding:4px 9px;border-radius:6px}
+.doc .jc h3{margin:0}
+.doc .jc p{padding:6px 16px 0;color:var(--ink2);font-size:14.5px}
+.doc .jm{display:grid;gap:10px;padding:14px 16px 16px;margin-top:auto}
+.doc .jc.now .jm{grid-template-columns:1fr 1fr}
+.doc .ytrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:26px;align-items:center;margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 10px 30px rgba(11,31,58,.08)}
+.doc .ytbadge{display:inline-block;font:700 10.5px var(--mono);letter-spacing:1.4px;font-style:normal;color:#fff;background:#b91c1c;padding:4px 9px;border-radius:5px}
+.doc .yttx h3{font-size:22px;margin:10px 0 8px}
+.doc .yttx p{color:var(--ink2);line-height:1.6;font-size:15px}
+.doc .ytl{list-style:none;display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 16px;padding:0}
+.doc .ytl li{font:600 11.5px var(--mono);letter-spacing:.6px;color:var(--ink2);border:1px solid var(--line2);border-radius:999px;padding:5px 11px;background:var(--bg)}
+.doc .ytlink{font:600 13px var(--mono);color:#1d5fb8;text-decoration:none}
+.doc .ytlink:hover{text-decoration:underline}
+.doc .ytbox{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#050a14;box-shadow:0 0 0 1px #0f1b2d,0 18px 40px rgba(11,31,58,.28)}
+.doc .ytbox iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.doc .ytpl{position:absolute;inset:0;border:0;padding:0;cursor:pointer;background:#050a14}
+.doc .ytpl img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s,filter .3s;filter:brightness(.85)}
+.doc .ytpl:hover img{transform:scale(1.03);filter:brightness(1)}
+.doc .ytbtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68px;height:48px;border-radius:12px;background:#e11d2e;display:grid;place-items:center;box-shadow:0 8px 20px rgba(0,0,0,.4);transition:transform .2s}
+.doc .ytpl:hover .ytbtn{transform:translate(-50%,-50%) scale(1.08)}
+.doc .ytbtn svg{width:26px;height:26px;fill:#fff;margin-left:3px}
+@media (max-width:860px){.doc .ytrow{grid-template-columns:1fr;padding:16px}}
+.doc .shot{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:4/3;background:#050a14;border:1px solid var(--line)}
+.doc .shot img,.doc .shot video{width:100%;height:100%;object-fit:cover;display:block}
+.doc .shot .sph{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:6px;text-align:center;color:#8EA4C4;font:12px var(--mono);background:repeating-linear-gradient(45deg,#07101f 0 14px,#0a1628 14px 28px)}
+.doc .shot .sph b{color:#EAF4FD;font-size:13px;letter-spacing:1.2px}
+.doc .shot.missing .sph{display:flex}.doc .shot.missing img,.doc .shot.missing video{visibility:hidden}
+.doc .shot figcaption{position:absolute;left:8px;bottom:8px;font:700 10.5px var(--mono);letter-spacing:1px;color:#fff;background:rgba(4,9,21,.75);padding:3px 8px;border-radius:5px;z-index:2}
+.doc .diff{display:grid;gap:8px;padding:0 16px 16px}
+.doc .diff div{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:14px;color:var(--ink2)}
+.doc .diff i{font-style:normal;color:var(--green);font-weight:700}
+.doc .wiring img{display:block;width:100%;height:auto;background:#fff}
+@media (max-width:980px){.doc .stv,.doc .jr{grid-template-columns:1fr}.doc .soft{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:600px){.doc .soft{grid-template-columns:repeat(3,1fr)}.doc .jc.now .jm{grid-template-columns:1fr}}
+
+.doc{padding-top:10px;font:16px/1.6 var(--body);color:var(--ink)}
+.doc a{color:var(--blue);text-decoration:none}
+.doc b,.doc strong{font-weight:700;color:var(--ink)}
+.doc svg text{font-family:var(--body)}
+.doc h2{letter-spacing:-.6px}
+.doc .soonp{display:inline-block;font:700 11px var(--mono);letter-spacing:1px;text-transform:uppercase;color:#b25e00;background:rgba(255,149,0,.12);padding:4px 10px;border-radius:999px;margin-right:6px}
+
+.doc{--apl:#0071e3;--card:#fff;--line:rgba(0,0,0,.06)}
+.doc section{margin-top:0;padding-top:120px;scroll-margin-top:70px}
+.doc .sh{flex-direction:column;align-items:flex-start;gap:14px;margin-bottom:36px}
+.doc .sh .n{width:auto;min-width:0;height:30px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:rgba(0,113,227,.1);color:var(--apl);font:600 14px var(--body);letter-spacing:.02em;box-shadow:none}
+.doc .sh .n[style]{color:#fff}
+.doc .sh .n[style]::before{content:none}
+.doc .sh .n::before{content:"Step ";font-weight:500;opacity:.8;margin-right:4px}
+.doc h2{font:700 clamp(34px,4.6vw,56px)/1.05 var(--body);letter-spacing:-.035em;color:#1d1d1f;margin:0}
+.doc .sh p{font-size:clamp(17px,1.6vw,21px);line-height:1.45;color:#6e6e73;max-width:820px;margin:14px 0 0}
+.doc .sh p b{color:#1d1d1f}
+.doc h3{font:600 21px/1.25 var(--body);letter-spacing:-.015em;color:#1d1d1f}
+.doc .card,.doc .step,.doc .stat,.doc .sw,.doc .proof,.doc .tbl,.doc .mode{border:0!important;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.04),0 14px 36px rgba(0,0,0,.07)}
+.doc .card,.doc .proof,.doc .tbl,.doc .mode{border-radius:28px}
+.doc .card{padding:26px}
+.doc .step{border-radius:22px;padding:18px 22px}
+.doc .stat{border-radius:24px;padding:22px 22px 18px}
+.doc .sw{border-radius:22px}
+.doc .sw:hover{transform:translateY(-3px);box-shadow:0 2px 4px rgba(0,0,0,.05),0 22px 44px rgba(0,0,0,.1)}
+.doc .haz{border:0!important;border-radius:26px;background:linear-gradient(90deg,#fff1f0,#fff);box-shadow:0 14px 36px rgba(215,0,21,.06)}
+.doc .seb{font:600 13px var(--body);letter-spacing:.06em;text-transform:none;color:var(--apl)}
+.doc .toc{gap:10px;margin:34px 0 0}
+.doc .toc a{border:0!important;border-radius:999px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.05),0 6px 18px rgba(0,0,0,.06);font-family:var(--body)}
+.doc .chip{font-family:var(--body);border-radius:999px}
+.doc table th{font:600 12px var(--body)!important;letter-spacing:.05em;text-transform:uppercase;color:#6e6e73;background:#fafafc!important;border-bottom:1px solid rgba(0,0,0,.06)!important}
+.doc table td{border-bottom:1px solid rgba(0,0,0,.05)!important}
+.doc .tbl table tr:last-child td{border-bottom:0!important}
+.doc .mode img,.doc .proof img{border:0!important;border-radius:16px}
+.doc .sph{font-family:var(--body)}
+.doc .stats{gap:18px}
+@media (max-width:760px){.doc section{padding-top:80px}.doc .card{padding:18px}}
 </style>
-<link rel="stylesheet" href="mv.css">
 </head>
-<body>
-<div class="top">
-  <a href="index.html"><img src="brand/zerodrift_logo.png" alt="ZeroDrift" class="brand-logo-full"></a>
-  <div class="nav-links">
-    <a href="index.html" class="nav-link"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>HOME</a>
-    <a href="console.html" class="nav-link"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg>CONSOLE</a>
-    <a href="live.html" class="nav-link"><svg viewBox="0 0 24 24"><path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4zM9 3l-1.8 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 15a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/></svg>LIVE DEMO</a>
-    <a href="about.html" class="nav-link"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>ABOUT US</a>
-    <a href="sop.html" class="nav-link active"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg>SOP</a>
-  </div>
-  <a href="https://github.com/pranshukesavmishra/SIH-2026" class="github-icon-btn" title="View Source on GitHub" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg></a>
-</div>
+<body class="ap light sop has-pn">
+<header class="gn"><div class="gn-in">
+  <a class="logo" href="index.html" aria-label="ZeroDrift home"><span class="zdl zdl-nav"><svg class="zdl-em" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="zdSweepnav" x1="0" y1="1" x2=".62" y2="0"><stop offset="0" stop-color="#35a7e8" stop-opacity="0"/><stop offset="1" stop-color="#35a7e8" stop-opacity=".55"/></linearGradient></defs><path d="M256 256 L 297.6 88.7 A172 172 0 0 1 377.6 134.4 Z" fill="url(#zdSweepnav)"/><g fill="none" stroke="#1d4f86" stroke-width="5"><circle cx="256" cy="256" r="115"/><circle cx="256" cy="256" r="64"/><path d="M256 86v340M86 256h340"/></g><circle cx="256" cy="256" r="172" fill="none" stroke="#35a7e8" stroke-width="13"/><path d="M256 34v52M256 426v52M34 256h52M426 256h52" stroke="#35a7e8" stroke-width="12" stroke-linecap="butt"/><g fill="#35a7e8"><circle cx="200" cy="110" r="16"/><circle cx="178" cy="160" r="26"/><circle cx="139" cy="210" r="21"/><circle cx="341" cy="318" r="18"/></g><circle cx="256" cy="256" r="32" fill="#34c759"/><circle cx="256" cy="256" r="13" fill="#fff"/></svg><span class="zdl-tx"><span class="zdl-wm"><b>ZER</b><svg class="zdl-o" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="29" fill="none" stroke="#35a7e8" stroke-width="10"/><path d="M50 0v21M50 79v21M0 50h21M79 50h21" stroke="#35a7e8" stroke-width="10"/><circle cx="50" cy="50" r="12" fill="#34c759"/></svg><i>DRIFT</i></span></span></span></a>
+  <nav class="gn-tabs" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a><a href="console.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg><span>Console</span></a><a href="live.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Live demo</span></a><a href="about.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>About us</span></a><a href="sop.html" class="on" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/></svg><span>SOP</span></a></nav>
+  <a class="gh" href="https://github.com/pranshukesavmishra/SIH-2026" target="_blank" rel="noopener" aria-label="Source code on GitHub" title="Source code on GitHub"><svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg></a>
+</div></header>
+<div class="pn show" id="pn"><b class="pn-t">SOP</b><nav class="pn-l" aria-label="On this page"><a href="#sim">Simulation</a><a href="#film">Film</a><a href="#hardware">Hardware</a><a href="#circuits">Circuits</a><a href="#a">Procedure</a></nav><a class="pn-cta" href="live.html">Live demo</a></div>
+<main>
+  <section class="sec sop-hero" id="top">
+    <div class="wrap center">
+      <p class="eyebrow rv">ZD-SOP-001 · Standard Operating Procedure · rev 3.0</p>
+      <h1 class="h-xl rv d1">How we run it.</h1>
+      <p class="lede rv d2" style="margin:0 auto;max-width:760px">Every step we follow to run, test and trust ZeroDrift, <b>with the proof behind every result</b>.</p>
+      <div class="sop-chips rv d3"><span><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="10" ry="4.2" fill="none" stroke="currentColor" stroke-width="1.9" transform="rotate(-28 12 12)"/><circle cx="12" cy="12" r="3.4"/><circle cx="19.2" cy="7.6" r="1.9"/></svg>Simulation</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h12v10H4zM16 10h3v4h-3zM8 3h4v4H8z"/><circle cx="10" cy="12" r="2.2" fill="#000" opacity=".5"/></svg>MK1 prototype</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.2"/><circle cx="7.5" cy="7.5" r="1"/><circle cx="16.5" cy="7.5" r="1"/><circle cx="7.5" cy="16.5" r="1"/><circle cx="16.5" cy="16.5" r="1"/></svg>MK2 · proposed</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>Safety</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6v2h-1v5.3l5.6 9.7A2 2 0 0 1 17.9 22H6.1a2 2 0 0 1-1.7-3L10 9.3V4H9V2zm-.9 13h7.8l-2.2-3.8-.7-.2V4h-2v7l-2.9 4z"/></svg>Acceptance</span></div>
+    </div>
+  </section>
 
-
-<main class="doc">
-
-<!-- ======================= 3D SIMULATION (very top) ======================= -->
-<section class="simtop" id="sim3d">
-  <div class="simhead"><i><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></i><h2>Live Simulation Demonstration</h2></div>
-  <div class="mv" id="mv">
-      <div class="mv-top">
-        <span class="mv-rec"><i></i>SIM-3D</span>
-        <span class="mv-meta">PS SIH26169 · CODE-RENDERED (THREE.JS) · 1080p · 30 FPS</span>
-        <span class="mv-tc" id="mvTc">T+00:00.0</span>
-      </div>
-      <div class="mv-body">
-        <ol class="mv-ch" id="mvCh" aria-label="Chapters"><li><button type="button" data-t="0"><em>00</em><span>Mission brief</span><time>00:00</time></button></li><li><button type="button" data-t="7"><em>01</em><span>The challenge</span><time>00:07</time></button></li><li><button type="button" data-t="19"><em>02</em><span>Orbit prediction</span><time>00:19</time></button></li><li><button type="button" data-t="31"><em>03</em><span>Coarse slew</span><time>00:31</time></button></li><li><button type="button" data-t="43"><em>04</em><span>Detect &amp; verify</span><time>00:43</time></button></li><li><button type="button" data-t="61"><em>05</em><span>Lock &amp; track</span><time>01:01</time></button></li><li><button type="button" data-t="75"><em>06</em><span>Link closes</span><time>01:15</time></button></li><li><button type="button" data-t="86"><em>07</em><span>End to end</span><time>01:26</time></button></li></ol>
-        <div class="mv-screen" id="mvScreen">
-          <video id="filmVideo" playsinline preload="none" poster="media/sim3d_poster.jpg"
-            aria-label="ZeroDrift 3D simulation: orbit prediction, beacon detection, lock and link"></video>
-          <span class="mv-c tl"></span><span class="mv-c tr"></span><span class="mv-c bl"></span><span class="mv-c br"></span>
-          <div class="mv-stage" id="mvStage"><em>00</em><span>Mission brief</span></div>
-          <button type="button" class="mv-big" id="mvBig" aria-label="Play the 3D simulation"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+  <!-- LIVE SIMULATION DEMONSTRATION (top) -->
+  <section class="sec tight" id="sim">
+    <div class="wrap center">
+      <h2 class="h-l rv">Live Simulation Demonstration.</h2>
+    </div>
+    <div class="mv" id="mv">
+      <div class="mbp">
+        <div class="mbp-glow"></div>
+        <div class="mbp-lid">
+          <div class="mbp-face">
+            <div class="mbp-screen" id="mvScreen">
+              <video id="filmVideo" playsinline preload="none" poster="media/site/earth_end.jpg" aria-label="ZeroDrift 3D simulation: orbit prediction, beacon detection, lock and link"></video>
+              <div class="mv-stage" id="mvStage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>Brief</span></div>
+              <button type="button" class="mv-big" id="mvBig" aria-label="Play the simulation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
+            </div>
+          </div>
+          <div class="mbp-back"><img src="brand/zerodrift_mark.png" alt=""></div>
         </div>
+        <div class="mbp-base"><i></i></div>
         <div class="mv-kpi" id="mvKpi">
-          <div data-ch="4"><b>1.27<small> s</small></b><span>median time to lock · 64 runs</span></div>
-          <div data-ch="4"><b>0 / 64</b><span>runs that locked a decoy</span></div>
-          <div data-ch="5"><b>97.5<small> %</small></b><span>lock retention · campaign median</span></div>
-          <div data-ch="6"><b>99.3<small> %</small></b><span>link closure, modelled fine stage (14.7% coarse only)</span></div>
+          <div class="co left" data-ch="4" style="right:88%;top:30%;--len:calc(11cqw + 34px)"><i class="co-dot"></i><i class="co-line"></i><div class="co-txt"><b>1.07<small>s</small></b><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61 1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.96 8.96 0 0 0 12 4a9 9 0 1 0 9 9c0-2.12-.74-4.07-1.97-5.61zM12 20a7 7 0 1 1 0-14 7 7 0 0 1 0 14z"/></svg>time to lock</span></div></div>
+          <div class="co" data-ch="4" style="left:88%;top:22%;--len:calc(11cqw + 34px)"><i class="co-dot"></i><i class="co-line"></i><div class="co-txt"><b>0/64</b><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>decoys locked</span></div></div>
+          <div class="co" data-ch="5,6" style="left:88%;top:62%;--len:calc(11cqw + 34px)"><i class="co-dot"></i><i class="co-line"></i><div class="co-txt"><b>99.3<small>%</small></b><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM9 8V6a3 3 0 0 1 6 0v2H9z"/></svg>lock held</span></div></div>
         </div>
       </div>
-      <div class="mv-bar">
-        <button type="button" class="mv-btn" id="mvPlay" aria-label="Play"><svg viewBox="0 0 24 24"><path class="pl" d="M8 5v14l11-7z"/><path class="pa" d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
-        <button type="button" class="mv-btn" id="mvMute" aria-label="Unmute"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path class="on" d="M16.5 12A4.5 4.5 0 0 0 14 7.97v8.05A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06A9 9 0 0 0 14 3.23z"/><path class="off" d="M16 9.4 17.4 8l2.1 2.1L21.6 8 23 9.4 20.9 11.5 23 13.6 21.6 15l-2.1-2.1L17.4 15 16 13.6l2.1-2.1z"/></svg></button>
-        <div class="mv-track" id="mvTrack" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
-          <div class="mv-fill" id="mvFill"></div><div class="mv-ticks"><i style="left:7%"></i><i style="left:19%"></i><i style="left:31%"></i><i style="left:43%"></i><i style="left:61%"></i><i style="left:75%"></i><i style="left:86%"></i></div>
-        </div>
-        <span class="mv-dur">01:40</span>
+      <div class="mv-ctl">
+        <button type="button" class="mv-btn" id="mvPlay" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path class="pl" d="M8 5v14l11-7z"/><path class="pa" d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
+        <ol class="mv-ch" id="mvCh" aria-label="Chapters"><li><button type="button" data-t="0" data-label="Brief" aria-label="Brief" title="Brief"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>Brief</span></button></li><li><button type="button" data-t="7" data-label="Challenge" aria-label="Challenge" title="Challenge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg><span>Challenge</span></button></li><li><button type="button" data-t="19" data-label="Orbit" aria-label="Orbit" title="Orbit"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="10" ry="4.2" fill="none" stroke="currentColor" stroke-width="1.9" transform="rotate(-28 12 12)"/><circle cx="12" cy="12" r="3.4"/><circle cx="19.2" cy="7.6" r="1.9"/></svg><span>Orbit</span></button></li><li><button type="button" data-t="31" data-label="Slew" aria-label="Slew" title="Slew"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg><span>Slew</span></button></li><li><button type="button" data-t="43" data-label="Detect" aria-label="Detect" title="Detect"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.4"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Detect</span></button></li><li><button type="button" data-t="61" data-label="Lock" aria-label="Lock" title="Lock"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM9 8V6a3 3 0 0 1 6 0v2H9z"/></svg><span>Lock</span></button></li><li><button type="button" data-t="75" data-label="Link" aria-label="Link" title="Link"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.9 12a3.1 3.1 0 0 1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 0 1 0 6.2h-4V17h4a5 5 0 0 0 0-10z"/></svg><span>Link</span></button></li><li><button type="button" data-t="86" data-label="Result" aria-label="Result" title="Result"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-2 15-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"/></svg><span>Result</span></button></li></ol>
+        <button type="button" class="mv-btn" id="mvMute" aria-label="Sound on or off"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path class="on" d="M16.5 12A4.5 4.5 0 0 0 14 7.97v8.05A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06A9 9 0 0 0 14 3.23z"/><path class="off" d="M16 9.4 17.4 8l2.1 2.1L21.6 8 23 9.4 20.9 11.5 23 13.6 21.6 15l-2.1-2.1L17.4 15 16 13.6l2.1-2.1z"/></svg></button>
         <button type="button" class="mv-btn" id="mvFs" aria-label="Full screen"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></button>
       </div>
+      <div class="mv-prog">
+        <div class="mv-track" id="mvTrack" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><div class="mv-fill" id="mvFill"></div><div class="mv-ticks"><i style="left:7%"></i><i style="left:19%"></i><i style="left:31%"></i><i style="left:43%"></i><i style="left:61%"></i><i style="left:75%"></i><i style="left:86%"></i></div></div>
+        <span class="mv-tc"><b id="mvTc">00:00</b> / 01:40</span>
+      </div>
     </div>
-</section>
+  </section>
 
-<!-- ======================= HERO ======================= -->
-<div class="hero">
-  <div>
-    <div class="eyebrow">ZD-SOP-001 · Standard Operating Procedure</div>
-    <h1>How we run, test and trust <em>ZeroDrift</em></h1>
-    <p class="lede">We built ZeroDrift to keep a laser aimed at a moving partner, so data can travel <b>through the open air</b>. Here we show you exactly how we run it, step by step, with <b>the proof behind every result</b>.</p>
-    <div class="ctrl">
-      <div><span>DOCUMENT</span><b>ZD-SOP-001</b></div>
-      <div><span>REVISION</span><b>3.0 · 28 Sep 26</b></div>
-      <div><span>PROBLEM STATEMENT</span><b>PS26169 · ISRO</b></div>
-      <div><span>OWNER</span><b>Team ZeroDrift</b></div>
+  <!-- FILM -->
+  <section class="sec tight" id="film">
+    <div class="wrap">
+      <div class="feat">
+      <div class="feat-media rv">
+        <button type="button" class="feat-play" data-yt="VCbq5Qs6Mhc" aria-label="Play the ZeroDrift demo film">
+          <img src="https://i.ytimg.com/vi/VCbq5Qs6Mhc/maxresdefault.jpg" alt="" loading="lazy" onerror="this.onerror=null;this.src='media/zerodrift_film_poster.jpg'"><svg class="ytb" viewBox="0 0 68 48"><path d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.2 34 .2 34 .2S12.8.2 7.5 1.7a8.5 8.5 0 0 0-6 6C0 13 0 24 0 24s0 11 1.5 16.3a8.5 8.5 0 0 0 6 6C12.8 47.8 34 47.8 34 47.8s21.2 0 26.5-1.5a8.5 8.5 0 0 0 6-6C68 35 68 24 68 24s0-11-1.5-16.3z" fill="#FF0033"/><path d="M27 34.5 44.5 24 27 13.5z" fill="#fff"/></svg>
+        </button>
+      </div>
+      <div class="feat-side rv d1">
+        <svg class="ytlogo" viewBox="0 0 134 26" role="img" aria-label="YouTube"><rect y="1" width="36" height="25" rx="7" fill="#FF0033"/><path d="M14.5 8v11l9.5-5.5z" fill="#fff"/><text x="42" y="21" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="21" letter-spacing="-.6" fill="currentColor">YouTube</text></svg>
+        <h3>Our demo film.</h3>
+        <p>Our submitted demo, in our own voice: <b>MK1 tracking a real beacon</b>, the <b>decoy test</b>, the graded test record and <b>our software on a laptop webcam</b>.</p>
+        <div class="chips"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h12v10H4zM16 10h3v4h-3zM8 3h4v4H8z"/><circle cx="10" cy="12" r="2.2" fill="#000" opacity=".5"/></svg>MK1 prototype</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="10" ry="4.2" fill="none" stroke="currentColor" stroke-width="1.9" transform="rotate(-28 12 12)"/><circle cx="12" cy="12" r="3.4"/><circle cx="19.2" cy="7.6" r="1.9"/></svg>Simulation</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Live software</span></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn yt" href="https://youtu.be/VCbq5Qs6Mhc" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3L10 15z"/></svg>Watch on YouTube</a>
+          <a class="btn ghost" href="live.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Live demo</a>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+    </div>
+  </section>
 
-<div class="rig-duo2">
-  <div class="rig-card">
-    <div class="rig-view" data-default="video">
-      <canvas id="rigMk1" aria-label="MK1 rig, 3D"></canvas>
-      <div class="rig-top"><span class="rig-badge">MK1</span><div class="rig-tabs" role="tablist" aria-label="MK1 view">
-        <button data-view="photo">PHOTO</button><button data-view="video" class="on">VIDEO</button><button data-view="3d">3D</button></div></div>
-      <img class="rig-media" data-kind="photo" data-src="media/mk1_photo.jpg" alt="MK1 rig, photo">
-      <video class="rig-media" data-kind="video" data-src="demo-video.mp4" poster="media/mk1_photo.jpg" muted loop playsinline controls preload="none"></video>
-      <div class="rig-empty"><div><b>MK1 · <span class="rig-empty-kind"></span></b>Coming soon</div></div>
-      
-      <span class="rig-read" id="rigMk1Read"></span>
+  <section class="sec fit" id="hardware">
+    <div class="wrap">
+      <div class="head-row"><div><p class="eyebrow rv">Hardware</p><h2 class="h-l rv d1">Implementation of Software.</h2></div><p class="hint rv"><b>MK1</b> is our working prototype. <b>MK2</b> is a proposed upgrade, in development.</p></div>
+      <div class="duo">
+        <article class="pc rv">
+          <div class="pc-media">
+            <div class="rig-view" data-default="video" data-cycle="video,3d,photo">
+              <canvas id="rigMk1" aria-label="MK1 servo prototype, 3D"></canvas>
+              <div class="rig-top"><div class="rig-tabs" role="tablist" aria-label="MK1 view"><button data-view="photo">Photo</button><button data-view="video" class="on">Video</button><button data-view="3d">3D</button></div></div>
+              <img class="rig-media" data-kind="photo" data-src="media/mk1_photo.jpg" alt="MK1 prototype, photo">
+              <video class="rig-media" data-kind="video" data-src="demo-video.mp4" poster="media/mk1_photo.jpg" muted playsinline preload="none"></video>
+              <div class="rig-empty"><div><b>MK1</b>Not available in this browser.</div></div>
+              <span class="rig-read" id="rigMk1Read"></span>
+            </div>
+          </div>
+          <div class="pc-body">
+            <span class="pc-tag ok"><i></i>CURRENT · WORKING PROTOTYPE</span>
+            <h3>MK1 · Servo tracker</h3>
+            <p>The hardware we demonstrate. <b>It locks on a real 4 Hz beacon</b> and steers a laser with two servos, driven by our software through a laptop webcam.</p>
+            <div class="pc-spec"><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h12v10H4zM16 10h3v4h-3zM8 3h4v4H8z"/><circle cx="10" cy="12" r="2.2" fill="#000" opacity=".5"/></svg>2× SG90 servos</div><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11h9v2H2zM13 8h4v8h-4zM18 11.3l4-1.3v4l-4-1.3z"/></svg>KY-008 laser</div><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Laptop webcam</div></div>
+          </div>
+        </article>
+        <article class="pc proposed rv d1">
+          <div class="pc-media">
+            <div class="proposed-ribbon" aria-hidden="true"><span>PROPOSED IDEA · WORKING ON IT · COMING SOON</span></div>
+            <div class="rig-view" data-default="3d">
+              <canvas id="rigMk2" aria-label="MK2 stepper terminal, 3D"></canvas>
+              <div class="rig-top"><div class="rig-tabs" role="tablist" aria-label="MK2 view"><button data-view="photo">Photo</button><button data-view="video">Video</button><button data-view="3d" class="on">3D</button></div><span class="rig-soon"><i></i>Working on it · coming soon</span></div>
+              <img class="rig-media" data-kind="photo" alt="MK2 terminal, photo">
+              <video class="rig-media" data-kind="video" muted loop playsinline preload="none"></video>
+              <div class="rig-empty"><div><b>Coming soon</b>We are building MK2 now.</div></div>
+              <span class="rig-legend"><i class="lg-b"></i>beacon · 4 Hz<br><i class="lg-d"></i>decoy · ignored</span>
+              <span class="rig-read" id="rigMk2Read"></span>
+            </div>
+          </div>
+          <div class="pc-body">
+            <span class="pc-tag soon"><i></i>PROPOSED · IN DEVELOPMENT</span>
+            <h3>MK2 · Stepper terminal</h3>
+            <p>A proposed upgrade, not yet built. <b>Camera and laser share one gimbal</b>, moved by stepper motors and checked by angle sensors.</p>
+            <div class="pc-spec"><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.2"/><circle cx="7.5" cy="7.5" r="1"/><circle cx="16.5" cy="7.5" r="1"/><circle cx="7.5" cy="16.5" r="1"/><circle cx="16.5" cy="16.5" r="1"/></svg>2× NEMA17 steppers</div><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Camera + laser on gimbal</div><div><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 12 17 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="12" r="2"/></svg>AS5600 angle sensor</div></div>
+          </div>
+        </article>
+      </div>
     </div>
-    <div class="rig-meta"><span>2× SG90 servo</span><span>laptop webcam</span><span>built</span></div>
-  </div>
-  <div class="rig-card">
-    <div class="rig-view" data-default="3d">
-      <canvas id="rigMk2" aria-label="MK2 rig, 3D"></canvas>
-      <div class="rig-top"><span class="rig-badge mk2">MK2</span><div class="rig-tabs" role="tablist" aria-label="MK2 view">
-        <button data-view="photo">PHOTO</button><button data-view="video">VIDEO</button><button data-view="3d" class="on">3D</button></div></div>
-      <img class="rig-media" data-kind="photo" data-src="media/mk2_photo.jpg" alt="MK2 rig, photo">
-      <video class="rig-media" data-kind="video" data-src="demo-mk2.mp4" muted loop playsinline controls preload="none"></video>
-      <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Coming soon</div></div>
-      <span class="rig-legend"><i class="lg-b"></i>beacon · 4 Hz<br><i class="lg-d"></i>decoy · ignored</span>
-      <span class="rig-read" id="rigMk2Read"></span>
-    </div>
-    <div class="rig-meta"><span>2× NEMA17 + A4988</span><span>AS5600 sensor</span><span>coming soon</span></div>
-  </div>
-  </div>
+  </section>
 
-<div class="stats">
+  
+  <!-- CIRCUITS -->
+  <section class="sec tight" id="circuits">
+    <div class="wrap">
+      <div class="head-row"><div><p class="eyebrow rv">Wiring</p><h2 class="h-l rv d1">The circuits.</h2></div><p class="lede rv d2" style="max-width:420px">Every part, every wire, every pin. <b>Tap to open full size.</b></p></div>
+      <div class="czs">
+        <figure class="cz rv">
+          <button type="button" class="cz-img" data-full="media/sop/mk1_circuit.jpg" aria-label="Open the MK1 · Servo tracker circuit diagram full size">
+            <img src="media/sop/mk1_circuit_sm.jpg" srcset="media/sop/mk1_circuit_sm.jpg 1200w, media/sop/mk1_circuit.jpg 2400w" sizes="(max-width: 860px) 100vw, 50vw" alt="MK1 · Servo tracker circuit diagram: parts, coloured wires, component list, colour guide, how it works and key features" loading="lazy">
+            <span class="cz-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 1 0 14 15.5l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14zm.5-7H9v2H7v1h2v2h1v-2h2V9h-2z"/></svg></span>
+          </button>
+          <figcaption><span class="pc-tag ok"><i></i>CURRENT · WORKING PROTOTYPE</span><b>MK1 · Servo tracker</b><span>Nano, 2× SG90 servos, KY-008 laser, laptop webcam. One USB cable.</span></figcaption>
+        </figure>
+        <figure class="cz rv d1 proposed">
+          <button type="button" class="cz-img" data-full="media/sop/mk2_circuit.jpg" aria-label="Open the MK2 · Stepper terminal circuit diagram full size">
+            <img src="media/sop/mk2_circuit_sm.jpg" srcset="media/sop/mk2_circuit_sm.jpg 1200w, media/sop/mk2_circuit.jpg 2400w" sizes="(max-width: 860px) 100vw, 50vw" alt="MK2 · Stepper terminal circuit diagram: parts, coloured wires, component list, colour guide, how it works and key features" loading="lazy"><span class="proposed-ribbon" aria-hidden="true"><span>PROPOSED IDEA · WORKING ON IT · COMING SOON</span></span>
+            <span class="cz-zoom"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.5 6.5 0 1 0 14 15.5l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14zm.5-7H9v2H7v1h2v2h1v-2h2V9h-2z"/></svg></span>
+          </button>
+          <figcaption><span class="pc-tag soon"><i></i>PROPOSED · IN DEVELOPMENT</span><b>MK2 · Stepper terminal</b><span>Proposed upgrade: camera and laser on one gimbal, NEMA 17 steppers, AS5600 angle sensors, 12 V.</span></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec tight" id="proof">
+    <div class="wrap"><div class="doc" style="padding:0"><div class="stats">
   <div class="stat" style="--c:#0e7c9a"><b>1.27 s</b><span><strong>median time to lock</strong> across 64 simulated satellite passes</span><a href="#p-decoy">SEE PROOF ↓</a></div>
   <div class="stat" style="--c:#15803d"><b>0 / 64</b><span>runs that <strong>ever locked onto a wrong light</strong></span><a href="#p-decoy">SEE PROOF ↓</a></div>
   <div class="stat" style="--c:#1d5fb8"><b>198 µrad</b><span><strong>median pointing error</strong> on the ISS (International Space Station) pass</span><a href="#p-accept">SEE PROOF ↓</a></div>
   <div class="stat" style="--c:#6d28d9"><b>250 / 251</b><span>automated <strong>tests passing</strong> (1 skipped), re-run 28 Sep</span><a href="#p-tests">SEE PROOF ↓</a></div>
 </div>
 
+</div></div>
+  </section>
+
+  <div class="doc">
 <nav class="toc">
   <a href="#modes"><i>1</i>Modes</a><a href="#flow"><i>2</i>How it decides</a><a href="#states"><i>3</i>Status light</a><a href="#soft"><i>4</i>Software</a>
-  <a href="#safety"><i>5</i>Safety</a><a href="#journey"><i>6</i>MK1 → MK2</a><a href="#a"><i>A</i>Simulation</a><a href="#b"><i>B</i>Live</a>
+  <a href="#safety"><i>5</i>Safety</a><a href="#hardware"><i>6</i>MK1 · MK2</a><a href="#a"><i>A</i>Simulation</a><a href="#b"><i>B</i>Live</a>
   <a href="#c"><i>C</i>MK2</a><a href="#off"><i>D</i>Shutdown</a><a href="#accept"><i>7</i>Acceptance</a><a href="#faults"><i>8</i>Faults</a><a href="#records"><i>9</i>Record</a>
 </nav>
 
 <!-- ======================= 1 MODES ======================= -->
 <section id="modes">
-  <div class="sh"><div class="n">1</div><div><h2>One engine, three ways to run it</h2><p>We wrote <b>one tracking engine</b>. You can watch it in a simulation, on your own webcam, or on our MK2 hardware. The steps and the record are the same every time, so every result can be compared.</p></div></div>
+  <div class="sh"><div class="n">1</div><div><h2>One engine, three ways to run it</h2><p>We wrote <b>one tracking engine</b>. You can watch it in a simulation, on your own webcam, or on our <b>MK1 working prototype</b>. MK2 is a proposed upgrade, in development. The steps and the record are the same every time, so every result can be compared.</p></div></div>
   <div class="grid g3">
     <a class="card mode" href="#a">
       <div class="ico" style="background:#e6eefb"><svg viewBox="0 0 24 24" fill="none" stroke="#1d5fb8" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-25 12 12)"/><circle cx="20" cy="8" r="1.4" fill="#1d5fb8"/></svg></div>
@@ -364,7 +416,7 @@ td.full{color:var(--ink)}
     </a>
     <a class="card mode" href="#c">
       <div class="ico" style="background:var(--greenL)"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="1.9" stroke-linecap="round"><path d="M5 20h14M9 20v-5h6v5"/><rect x="7" y="6" width="10" height="7" rx="2"/><path d="M17 9.5h4M12 13v2"/></svg></div>
-      <h3>C · MK2 terminal</h3><p>Our two-axis <b>stepper-motor gimbal</b> closes the loop on real hardware.</p>
+      <h3>C · MK2 terminal</h3><p>A proposed <b>stepper-motor gimbal</b> with the camera built in. <b style="color:#b25e00">Proposed · in development.</b></p>
       <img src="media/sop/mk2_twin.jpg" alt="MK2 digital twin" loading="lazy"><span class="src">▲ 3D model of our build</span>
     </a>
   </div>
@@ -493,8 +545,8 @@ td.full{color:var(--ink)}
   </g>
 </svg></div></div>
   <div class="grid g2" style="margin-top:22px">
-    <div class="proof" id="p-blink"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>It follows the 4 Hz blink, not the brightest light</span></div><img class="chart" src="media/sop/proof_blink.png" alt="Measured blink rate stays at 4 Hz for the whole 130 second run" loading="lazy"><div class="pc">Plotted from our <b>logged decoy-field run</b>: the light we lock on measures <b>4.01 Hz</b> for all 130 seconds. A steady lamp reads 0 Hz, so however bright it is, <b>it can never win</b>.</div></div>
-    <div class="proof" id="p-decoy"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>64 passes, 0 wrong-light locks</span></div><img class="chart" src="media/sop/proof_campaign.png" alt="64 runs: all locked, none on a wrong light" loading="lazy"><div class="pc">Every bar is <b>one real run</b> of our Monte-Carlo campaign, with 900 stars in view. All 64 locked; <b>none ever locked a wrong light</b>. Three runs were slower than 3 s: we show them, we do not hide them.</div></div>
+    <div class="proof" id="p-blink"><div class="sph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>It follows the 4 Hz blink, not the brightest light</span></div><img class="chart" src="media/sop/proof_blink.png" alt="Measured blink rate stays at 4 Hz for the whole 130 second run" loading="lazy"><div class="spc">Plotted from our <b>logged decoy-field run</b>: the light we lock on measures <b>4.01 Hz</b> for all 130 seconds. A steady lamp reads 0 Hz, so however bright it is, <b>it can never win</b>.</div></div>
+    <div class="proof" id="p-decoy"><div class="sph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>64 passes, 0 wrong-light locks</span></div><img class="chart" src="media/sop/proof_campaign.png" alt="64 runs: all locked, none on a wrong light" loading="lazy"><div class="spc">Every bar is <b>one real run</b> of our Monte-Carlo campaign, with 900 stars in view. All 64 locked; <b>none ever locked a wrong light</b>. Three runs were slower than 3 s: we show them, we do not hide them.</div></div>
   </div>
 </section>
 
@@ -502,7 +554,7 @@ td.full{color:var(--ink)}
 <section id="states">
   <div class="sh"><div class="n">3</div><div><h2>What the status light means</h2><p>Press play and watch the label on the lock box. It goes <b>SEARCH → ACQUIRE → TRACK</b>, and flickers to <b>COAST</b> every time the beacon blinks off.</p></div></div>
   <div class="stv">
-    <div class="proof"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Our unedited laptop-webcam recording</span></div><video src="media/software_demo_720.mp4" poster="media/software_demo_poster.jpg" controls muted playsinline preload="none"></video><div class="pc">Nothing here is edited or simulated: a real LED, a real webcam, our real software.</div></div>
+    <div class="proof"><div class="sph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Our unedited laptop-webcam recording</span></div><video src="media/software_demo_720.mp4" poster="media/software_demo_poster.jpg" controls muted playsinline preload="none"></video><div class="spc">Nothing here is edited or simulated: a real LED, a real webcam, our real software.</div></div>
     <div class="stl"><div><b style="background:#1d5fb8">SEARCH</b><span>Nothing locked yet. We sweep a growing spiral until a light shows up.</span></div><div><b style="background:#b45309">ACQUIRE</b><span>We found the 4 Hz blink. Now we steer onto it.</span></div><div><b style="background:#15803d">TRACK</b><span><strong>Locked.</strong> We measure the error on the picture itself.</span></div><div><b style="background:#c2410c">COAST</b><span>The beacon blinked off. We keep following our prediction. <strong>This is normal.</strong></span></div><div><b style="background:#b91c1c">REACQUIRE</b><span>Lost for too long. A small spiral where we last saw it.</span></div></div>
   </div>
 </section>
@@ -515,7 +567,7 @@ td.full{color:var(--ink)}
 
 <!-- ======================= 5 SAFETY ======================= -->
 <section id="safety">
-  <div class="sh"><div class="n">5</div><div><h2>Safety first</h2><p>We follow these three rules <b>every single time</b> we switch MK2 on. One of us always keeps a hand on the 12 V switch, so <b>everything can be stopped in one second</b>.</p></div></div>
+  <div class="sh"><div class="n">5</div><div><h2>Safety first</h2><p>For the 12 V MK2 rig (proposed, in development) these three rules apply <b>every single time</b> it is switched on. One of us always keeps a hand on the 12 V switch, so <b>everything can be stopped in one second</b>.</p></div></div>
   <div class="grid g3">
     <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="#fdecec" stroke="#b91c1c" stroke-width="2.6" stroke-linejoin="round"/><circle cx="30" cy="36" r="5" fill="#b91c1c"/><path d="M30 36 L46 22" stroke="#b91c1c" stroke-width="2.6"/></svg><div><h3>The laser</h3><p>We <b>never</b> point it at eyes, people or mirrors. It stays off (<span class="code">L0</span>) until a step needs it.</p></div></div>
     <div class="haz"><svg viewBox="0 0 60 60"><path d="M30 6 L56 52 H4 Z" fill="#fdecec" stroke="#b91c1c" stroke-width="2.6" stroke-linejoin="round"/><path d="M32 20 L24 36 H31 L27 46 L38 30 H31 Z" fill="#b91c1c"/></svg><div><h3>The 12 volts</h3><p>12 V goes <b>only</b> to the motor drivers. We wire with everything unplugged, and never swap a motor while it is powered.</p></div></div>
@@ -523,48 +575,10 @@ td.full{color:var(--ink)}
   </div>
   <div class="split" style="margin-top:18px">
     <div class="grid" style="gap:14px">
-      <div class="card"><div class="eyebrow" style="color:var(--green)">How we power on</div><div class="seq"><span class="chip" style="color:#0e7c9a;border-color:#9fd3e3;background:var(--cyanL)">① USB</span><span class="arrow">→</span><span class="chip" style="color:#15803d;border-color:#b9e2c6;background:var(--greenL)">② 12 V switch ON</span></div><span class="why">The Arduino wakes up first, so it is in control before the motors get any power.</span></div>
-      <div class="card"><div class="eyebrow" style="color:var(--red)">How we power off</div><div class="seq"><span class="chip" style="color:#b91c1c;border-color:#f2c4c4;background:var(--redL)">① 12 V switch OFF</span><span class="arrow">→</span><span class="chip" style="color:#3b4a60;border-color:var(--line2);background:var(--bg)">② USB out</span></div><span class="why">The motors lose power first, so nothing can move by surprise.</span></div>
+      <div class="card"><div class="seb" style="color:var(--green)">How we power on</div><div class="seq"><span class="chip" style="color:#0e7c9a;border-color:#9fd3e3;background:var(--cyanL)">① USB</span><span class="arrow">→</span><span class="chip" style="color:#15803d;border-color:#b9e2c6;background:var(--greenL)">② 12 V switch ON</span></div><span class="why">The Arduino wakes up first, so it is in control before the motors get any power.</span></div>
+      <div class="card"><div class="seb" style="color:var(--red)">How we power off</div><div class="seq"><span class="chip" style="color:#b91c1c;border-color:#f2c4c4;background:var(--redL)">① 12 V switch OFF</span><span class="arrow">→</span><span class="chip" style="color:#3b4a60;border-color:var(--line2);background:var(--bg)">② USB out</span></div><span class="why">The motors lose power first, so nothing can move by surprise.</span></div>
     </div>
-    <div class="proof"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Our real wiring sheet: where the 12 V can and cannot go</span></div><a class="wiring" href="media/sop/mk2_wiring.jpg" target="_blank" rel="noopener"><img src="media/sop/mk2_wiring.jpg" alt="MK2 wiring sheet with 22 numbered wires" loading="lazy"></a><div class="pc">The sheet we wire MK2 from: <b>22 numbered wires</b>, 12 V (red) only on the driver <b>VMOT</b> pins. Tap to open it full size.</div></div>
-  </div>
-</section>
-
-<!-- ======================= 6 JOURNEY ======================= -->
-<section id="journey">
-  <div class="sh"><div class="n">6</div><div><h2>Our journey: MK1 → MK2</h2><p>We built <b>MK1</b> first, to prove the idea works on real hardware. <b>MK2 is what we are building now</b>, and it is the one this page is about.</p></div></div>
-  <div class="jr">
-    <div class="jc">
-      <div class="jh"><em style="background:var(--bg2);color:var(--mute)">HISTORY</em><h3>MK1 · servo rig</h3></div>
-      <p>Two small servos and a laptop webcam. It <b>tracked the beacon on hardware</b>, and taught us what to fix.</p>
-      <div class="jm"><figure class="shot"><img src="media/mk1_photo.jpg" alt="MK1 rig" loading="lazy"><figcaption>MK1 · PHOTO</figcaption></figure></div>
-    </div>
-    <div class="jc now">
-      <div class="jh"><em style="background:var(--green);color:#fff">NOW · OUR FOCUS</em><h3>MK2 · stepper terminal</h3></div>
-      <div class="jm">
-        <figure class="shot"><img src="media/mk2_photo.jpg" alt="MK2 terminal" loading="lazy" onerror="this.parentNode.classList.add('missing')"><div class="ph"><b>MK2 · PHOTO</b>coming soon</div><figcaption>MK2 · PHOTO</figcaption></figure>
-        <figure class="shot"><video src="demo-mk2.mp4" muted loop playsinline controls preload="metadata" onerror="this.parentNode.classList.add('missing')"></video><div class="ph"><b>MK2 · VIDEO</b>coming soon</div><figcaption>MK2 · VIDEO</figcaption></figure>
-      </div>
-      <div class="diff">
-        <div><i>✓</i><span><b>Moves smoothly and precisely</b>, and always knows where it is pointing (angle sensor).</span></div>
-        <div><i>✓</i><span><b>The camera moves with the laser</b>, so it sees exactly where it is aiming.</span></div>
-      </div>
-    </div>
-  </div>
-  <div class="ytrow">
-    <div class="yttx">
-      <em class="ytbadge">SUBMITTED DEMO</em>
-      <h3>Watch our demo film</h3>
-      <p>The video we submitted to SIH: <b>MK1 tracking a real beacon</b>, the <b>decoy test</b> in our console, the graded <b>test record</b>, and our <b>software on a laptop webcam</b>.</p>
-      <ul class="ytl"><li>MK1 hardware</li><li>Simulation</li><li>Live software</li></ul>
-      <a class="ytlink" href="https://youtu.be/VCbq5Qs6Mhc" target="_blank" rel="noopener">Open on YouTube ↗</a>
-    </div>
-    <div class="ytbox" id="ytBox">
-      <button type="button" class="ytpl" id="ytPlay" aria-label="Play the ZeroDrift demo film">
-        <img src="https://i.ytimg.com/vi/VCbq5Qs6Mhc/hqdefault.jpg" alt="ZeroDrift demo film" loading="lazy" onerror="this.src='media/zerodrift_film_poster.jpg'">
-        <span class="ytbtn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
-      </button>
-    </div>
+    <div class="proof"><div class="sph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Our real wiring sheet: where the 12 V can and cannot go</span></div><a class="wiring" href="media/sop/mk2_wiring.jpg" target="_blank" rel="noopener"><img src="media/sop/mk2_wiring.jpg" alt="MK2 wiring sheet with 22 numbered wires" loading="lazy"></a><div class="spc">The sheet we wire MK2 from: <b>22 numbered wires</b>, 12 V (red) only on the driver <b>VMOT</b> pins. Tap to open it full size.</div></div>
   </div>
 </section>
 
@@ -573,15 +587,15 @@ td.full{color:var(--ink)}
   <div class="sh"><div class="n" style="background:#1d5fb8">A</div><div><h2>Procedure A · Simulation test</h2><p>No hardware. About <b>5 minutes</b>.</p></div></div>
   <div class="split">
     <div class="steps">
-      <div class="step" style="--c:#1d5fb8"><div class="d">A1</div><div><h4>Open the Console</h4><p><a href="console.html">zerodrift…/console</a> in any desktop browser.</p><span class="ok">✓ the run starts playing</span></div></div>
+      <div class="step" style="--c:#1d5fb8"><div class="d">A1</div><div><h4>Open the Console</h4><p><a href="console.html">zerodrift…/console</a> in any desktop browser.</p><span class="sok">✓ the run starts playing</span></div></div>
       <div class="step" style="--c:#1d5fb8"><div class="d">A2</div><div><h4>Pick a scenario</h4><p><b>Decoy field</b> · <b>ISS pass</b> · <b>Hard turbulence</b>.</p></div></div>
-      <div class="step" style="--c:#1d5fb8"><div class="d">A3</div><div><h4>Watch it lock</h4><p><b>SEARCH → ACQUIRE → TRACK</b>.</p><span class="ok">✓ green box on the beacon, never on a red ◇ decoy</span></div></div>
-      <div class="step" style="--c:#1d5fb8"><div class="d">A4</div><div><h4>Read the Test Record</h4><p>It opens by itself: every test graded PASS / FAIL.</p><span class="ok">✓ 8 / 8 PASSED</span></div></div>
+      <div class="step" style="--c:#1d5fb8"><div class="d">A3</div><div><h4>Watch it lock</h4><p><b>SEARCH → ACQUIRE → TRACK</b>.</p><span class="sok">✓ green box on the beacon, never on a red ◇ decoy</span></div></div>
+      <div class="step" style="--c:#1d5fb8"><div class="d">A4</div><div><h4>Read the Test Record</h4><p>It opens by itself: every test graded PASS / FAIL.</p><span class="sok">✓ 8 / 8 PASSED</span></div></div>
     </div>
     <div class="grid" style="gap:16px">
-      <div class="proof"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Real Test Record from our Console</span></div><img src="media/sop/test_record.jpg" alt="Console test record, 8 of 8 passed" loading="lazy"><div class="pc">Decoy-field run: <b>8 / 8 PASSED</b>. Computed in your browser from the logged frames, <b>not typed in</b>.</div></div>
+      <div class="proof"><div class="sph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Real Test Record from our Console</span></div><img src="media/sop/test_record.jpg" alt="Console test record, 8 of 8 passed" loading="lazy"><div class="spc">Decoy-field run: <b>8 / 8 PASSED</b>. Computed in your browser from the logged frames, <b>not typed in</b>.</div></div>
       <div class="proof" id="p-tests">
-        <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Our engine's own test suite</span></div>
+        <div class="sph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>Our engine's own test suite</span></div>
         <div class="svgw" style="background:#0b1220;padding:14px">
           <svg viewBox="0 0 520 112" role="img" aria-label="pytest: 250 passed, 1 skipped">
             <text x="0" y="16" font-family="JetBrains Mono,monospace" font-size="12.5" fill="#7fe0f8">$ pytest -q</text>
@@ -591,7 +605,7 @@ td.full{color:var(--ink)}
             <text x="0" y="102" font-family="JetBrains Mono,monospace" font-size="13" font-weight="700" fill="#fff">250 passed, 1 skipped</text>
           </svg>
         </div>
-        <div class="pc">Run on <b>28 September 2026</b>. Anyone can repeat it: <span class="code">pytest</span>.</div>
+        <div class="spc">Run on <b>28 September 2026</b>. Anyone can repeat it: <span class="code">pytest</span>.</div>
       </div>
     </div>
   </div>
@@ -601,16 +615,16 @@ td.full{color:var(--ink)}
 <section id="b">
   <div class="sh"><div class="n" style="background:#0e7c9a">B</div><div><h2>Procedure B · Live optical tracking</h2><p>A laptop, our beacon and a steady decoy. <b>Dim the room.</b></p></div></div>
   <div class="steps" style="grid-template-columns:repeat(2,1fr)">
-    <div class="step" style="--c:#0e7c9a"><div class="d">B1</div><div><h4>START CAMERA</h4><p>On the <a href="live.html">Live Demo</a> page; allow the camera.</p><span class="ok">✓ SEARCHING, 25 fps or more</span></div></div>
-    <div class="step" style="--c:#0e7c9a"><div class="d">B2</div><div><h4>Show the beacon</h4><p>Anywhere in the picture, decoy in view too.</p><span class="ok">✓ LOCKED · 4.0 Hz · about 2 s</span></div></div>
-    <div class="step" style="--c:#0e7c9a"><div class="d">B3</div><div><h4>Move it around</h4><p>Slowly, then fast.</p><span class="ok">✓ lock follows · decoy never boxed</span></div></div>
-    <div class="step" style="--c:#0e7c9a"><div class="d">B4</div><div><h4>Cover it for 1 second</h4><p>Then uncover it.</p><span class="ok">✓ COAST, then relocks by itself</span></div></div>
+    <div class="step" style="--c:#0e7c9a"><div class="d">B1</div><div><h4>START CAMERA</h4><p>On the <a href="live.html">Live Demo</a> page; allow the camera.</p><span class="sok">✓ SEARCHING, 25 fps or more</span></div></div>
+    <div class="step" style="--c:#0e7c9a"><div class="d">B2</div><div><h4>Show the beacon</h4><p>Anywhere in the picture, decoy in view too.</p><span class="sok">✓ LOCKED · 4.0 Hz · about 2 s</span></div></div>
+    <div class="step" style="--c:#0e7c9a"><div class="d">B3</div><div><h4>Move it around</h4><p>Slowly, then fast.</p><span class="sok">✓ lock follows · decoy never boxed</span></div></div>
+    <div class="step" style="--c:#0e7c9a"><div class="d">B4</div><div><h4>Cover it for 1 second</h4><p>Then uncover it.</p><span class="sok">✓ COAST, then relocks by itself</span></div></div>
   </div>
 </section>
 
 <!-- ======================= C MK2 ======================= -->
 <section id="c">
-  <div class="sh"><div class="n" style="background:#15803d">C</div><div><h2>Procedure C · MK2 terminal</h2><p><b>Check it unplugged</b>, <b>test it over USB</b>, then <b>close the loop</b>.</p></div></div>
+  <div class="sh"><div class="n" style="background:#15803d">C</div><div><h2>Procedure C · MK2 terminal</h2><p><span class="soonp">Proposed · in development</span> <b>Check it unplugged</b>, <b>test it over USB</b>, then <b>close the loop</b>.</p></div></div>
   <div class="grid g2">
     <div>
       <h3>C.1 · Before power (unplugged)</h3>
@@ -638,11 +652,11 @@ td.full{color:var(--ink)}
       <h3>C.3 · Closed loop</h3>
       <div class="steps">
         <div class="step" style="--c:#15803d"><div class="d">C1</div><div><h4>CONNECT RIG</h4><p>Pick the Nano's port (Chrome / Edge).</p></div></div>
-        <div class="step" style="--c:#15803d"><div class="d">C2</div><div><h4>TEST MOTION</h4><p>A short move on both axes.</p><span class="ok">✓ both axes move and return</span></div></div>
-        <div class="step" style="--c:#15803d"><div class="d">C3</div><div><h4>Show the beacon</h4><p>Walk it around the room.</p><span class="ok">✓ head follows · laser stays on it · decoy ignored</span></div></div>
+        <div class="step" style="--c:#15803d"><div class="d">C2</div><div><h4>TEST MOTION</h4><p>A short move on both axes.</p><span class="sok">✓ both axes move and return</span></div></div>
+        <div class="step" style="--c:#15803d"><div class="d">C3</div><div><h4>Show the beacon</h4><p>Walk it around the room.</p><span class="sok">✓ head follows · laser stays on it · decoy ignored</span></div></div>
       </div>
     </div>
-    <div class="proof"><div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>How we mount the angle sensor</span></div><img src="media/sop/encoder_card.jpg" alt="AS5600 mounted over the magnet" loading="lazy" style="max-height:360px;object-fit:contain;background:#fff"><div class="pc">AS5600 <b>centred over the shaft magnet, 1–2 mm gap</b>: the build card we follow.</div></div>
+    <div class="proof"><div class="sph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>How we mount the angle sensor</span></div><img src="media/sop/encoder_card.jpg" alt="AS5600 mounted over the magnet" loading="lazy" style="max-height:360px;object-fit:contain;background:#fff"><div class="spc">AS5600 <b>centred over the shaft magnet, 1–2 mm gap</b>: the build card we follow.</div></div>
   </div>
 </section>
 
@@ -650,10 +664,10 @@ td.full{color:var(--ink)}
 <section id="off">
   <div class="sh"><div class="n" style="background:#b91c1c">D</div><div><h2>Shutdown, always in this order</h2></div></div>
   <div class="grid g4">
-    <div class="card"><div class="eyebrow" style="color:var(--amber)">Step 1</div><h3 style="margin-top:6px">Centre + laser off</h3><p><span class="code">C</span> then <span class="code">L0</span></p></div>
-    <div class="card"><div class="eyebrow" style="color:var(--red)">Step 2</div><h3 style="margin-top:6px">12 V OFF</h3><p>Flip the kill switch.</p></div>
-    <div class="card"><div class="eyebrow">Step 3</div><h3 style="margin-top:6px">USB out</h3><p>Then the adapter.</p></div>
-    <div class="card"><div class="eyebrow">Step 4</div><h3 style="margin-top:6px">Beacon off</h3><p>Batteries out.</p></div>
+    <div class="card"><div class="seb" style="color:var(--amber)">Step 1</div><h3 style="margin-top:6px">Centre + laser off</h3><p><span class="code">C</span> then <span class="code">L0</span></p></div>
+    <div class="card"><div class="seb" style="color:var(--red)">Step 2</div><h3 style="margin-top:6px">12 V OFF</h3><p>Flip the kill switch.</p></div>
+    <div class="card"><div class="seb">Step 3</div><h3 style="margin-top:6px">USB out</h3><p>Then the adapter.</p></div>
+    <div class="card"><div class="seb">Step 4</div><h3 style="margin-top:6px">Beacon off</h3><p>Batteries out.</p></div>
   </div>
 </section>
 <!-- ======================= 7 ACCEPTANCE ======================= -->
@@ -672,9 +686,9 @@ td.full{color:var(--ink)}
     <tr><td class="k">TC-09</td><td class="full">Re-acquisitions</td><td>recorded only</td><td><b>4</b></td><td></td><td><span class="small">INFO</span></td></tr>
   </table></div>
   <div class="proof" id="p-accept" style="margin-top:18px">
-    <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>The ISS pass, second by second</span></div>
+    <div class="sph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>The ISS pass, second by second</span></div>
     <img src="media/chart_convergence.png" alt="Pointing error falls below the field-of-view edge and locks at 1.3 s; median 198 µrad" loading="lazy" style="background:#fff">
-    <div class="pc">Pointing error (log scale) through a real ISS orbit over Bengaluru with every disturbance switched on. <b>Locked at 1.3 s</b>, then held at a <b>median of 198 µrad</b>, far below the field-of-view edge (dashed line). This exact run replays in the Console.</div>
+    <div class="spc">Pointing error (log scale) through a real ISS orbit over Bengaluru with every disturbance switched on. <b>Locked at 1.3 s</b>, then held at a <b>median of 198 µrad</b>, far below the field-of-view edge (dashed line). This exact run replays in the Console.</div>
   </div>
 </section>
 
@@ -704,15 +718,17 @@ td.full{color:var(--ink)}
   </table></div>
 </section>
 
-<div class="foot"><span>ZeroDrift · Jabalpur Engineering College · SIH 2026 · PS26169</span><span>ZD-SOP-001 rev 3.0</span></div>
+
+  </div>
+<section class="next" aria-label="Next step"><div class="next-in"><div><small>Step 4 of 5 done · Next: About</small><h3>Meet the team behind it.</h3><p>Six students from Jabalpur Engineering College, 2nd Runner-Up at the SIH 2026 internal round.</p></div>
+<div><a class="next-btn" href="about.html">Open About <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></a></div></div></section>
 </main>
-<nav class="mobile-bottom-nav">
-  <a href="index.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a>
-  <a href="console.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg><span>Console</span></a>
-  <a href="live.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Live</span></a>
-  <a href="about.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>About</span></a>
-  <a href="sop.html" class="mobile-nav-item active"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg><span>SOP</span></a>
-</nav>
+<div class="lb" id="lb" hidden><button type="button" class="lb-x" aria-label="Close">×</button><img alt=""></div>
+<footer class="ft"><div class="wrap">
+  <div style="display:flex;align-items:center;gap:10px"><img src="brand/isro.png" alt="ISRO"><img src="brand/sih2026.png" alt="Smart India Hackathon 2026"></div>
+  <div>ZeroDrift · Problem statement SIH26169 (ISRO) · Jabalpur Engineering College · <a href="https://github.com/pranshukesavmishra/SIH-2026" target="_blank" rel="noopener">Open source</a></div>
+</div></footer>
+<nav class="mnav" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</a><a href="console.html"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg>Console</a><a href="live.html"><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Live</a><a href="about.html"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>About</a><a href="sop.html" class="on"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/></svg>SOP</a></nav>
 <script type="importmap">
 {"imports":{
   "three":"./vendor/three/three.module.js",
@@ -721,49 +737,16 @@ td.full{color:var(--ink)}
 }}
 </script>
 <script type="module" src="rigs3d.js"></script>
+<script src="apple.js" defer></script>
 <script src="mv.js" defer></script>
 <script>
-/* MK2 card: PHOTO · VIDEO · 3D (same behaviour as the home page) */
-document.querySelectorAll('.rig-view').forEach(view => {
-  const tabs = view.querySelectorAll('.rig-tabs button');
-  const empty = view.querySelector('.rig-empty');
-  const media = { photo: view.querySelector('img.rig-media'), video: view.querySelector('video.rig-media') };
-  const missing = {};
-  const show = kind => {
-    tabs.forEach(t => t.classList.toggle('on', t.dataset.view === kind));
-    view.classList.toggle('flat', kind !== '3d');
-    Object.entries(media).forEach(([k, el]) => {
-      const on = k === kind && !missing[k];
-      el.classList.toggle('show', on);
-      if (k === 'video') { if (on) el.play().catch(() => {}); else el.pause(); }
-    });
-    const gone = kind !== '3d' && missing[kind];
-    empty.classList.toggle('show', !!gone);
-    if (gone) empty.querySelector('.rig-empty-kind').textContent = kind.toUpperCase();
-  };
-  Object.entries(media).forEach(([k, el]) => {
-    el.addEventListener('error', () => { missing[k] = true; if (view.querySelector('.rig-tabs .on').dataset.view === k) show(k); });
-  });
-  const first = view.dataset.default;
-  if (first && first !== '3d') { const el0 = media[first]; if (el0 && !el0.getAttribute('src')) el0.setAttribute('src', el0.dataset.src); show(first); }
-  tabs.forEach(t => t.addEventListener('click', () => {
-    const k = t.dataset.view, el = media[k];
-    if (el && !el.getAttribute('src')) el.setAttribute('src', el.dataset.src);
-    show(k);
-  }));
-});
-</script>
-<script>
-/* Demo film: load the YouTube player only when asked (keeps the page fast). */
+/* Circuit diagrams open full size */
 (function () {
-  const btn = document.getElementById('ytPlay'), box = document.getElementById('ytBox');
-  if (!btn || !box) return;
-  btn.addEventListener('click', () => {
-    const f = document.createElement('iframe');
-    f.src = 'https://www.youtube-nocookie.com/embed/VCbq5Qs6Mhc?autoplay=1&rel=0&modestbranding=1';
-    f.title = 'ZeroDrift demo film'; f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.allowFullscreen = true;
-    box.replaceChildren(f);
-  });
+  const lb = document.getElementById('lb'), im = lb.querySelector('img');
+  const close = () => { lb.hidden = true; document.body.style.overflow = ''; };
+  document.querySelectorAll('.cz-img').forEach(b => b.addEventListener('click', () => { im.src = b.dataset.full; im.alt = b.querySelector('img').alt; lb.hidden = false; document.body.style.overflow = 'hidden'; }));
+  lb.addEventListener('click', e => { if (e.target !== im) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !lb.hidden) close(); });
 })();
 </script>
 </body>

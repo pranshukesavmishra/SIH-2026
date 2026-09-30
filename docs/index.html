@@ -2,1686 +2,232 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>ZeroDrift — FSOC-PAT Coarse Alignment System · ISRO SIH26169</title>
-<meta name="description" content="ZeroDrift: the pointing brain for free-space optical terminals. Finds a 4 Hz blinking beacon, ignores decoys, keeps the laser link in view. SIH 2026, PS26169, ISRO.">
-<meta property="og:title" content="ZeroDrift · SIH 2026 · PS26169">
-<meta property="og:description" content="ZeroDrift: the pointing brain for free-space optical terminals. Finds a 4 Hz blinking beacon, ignores decoys, keeps the laser link in view. SIH 2026, PS26169, ISRO.">
-<meta property="og:image" content="brand/logo_banner.png">
-<link rel="icon" type="image/png" href="brand/zerodrift_mark.png">
-<style>
-:root {
-  --bg-deep: #02050E;
-  --bg-base: #040915;
-  --panel: rgba(8, 16, 32, 0.85);
-  --panel-solid: #0A1224;
-  --panel-hover: rgba(14, 26, 50, 0.95);
-  --edge: #15263F;
-  --edge-glow: rgba(79, 199, 234, 0.5);
-  --ink-primary: #EAF4FD;
-  --ink-secondary: #8EA4C4;
-  --ink-muted: #536988;
-  --cyan: #4FC7EA;
-  --cyan-bright: #7FE0F8;
-  --green: #3BD68C;
-  --amber: #FFC24D;
-  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --glow-cyan: 0 0 25px rgba(79, 199, 234, 0.55);
-  --glow-card: 0 12px 35px -10px rgba(0, 0, 0, 0.8), 0 0 16px rgba(79, 199, 234, 0.15);
-}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZeroDrift · The pointing brain for laser links</title>
+<meta name="description" content="ZeroDrift finds the partner terminal's 4 Hz beacon, ignores every decoy and keeps a laser link on target. PS SIH26169 (ISRO).">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="brand/zerodrift_mark.png">
+<link rel="preload" href="fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="apple.css">
+<link rel="stylesheet" href="tour.css">
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html {
-  scroll-behavior: smooth;
-  scroll-snap-type: y mandatory;
-  scroll-padding-top: 64px;
-}
-body {
-  background: var(--bg-deep);
-  color: var(--ink-primary);
-  font-family: var(--font-sans);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-/* Morphing Square Loading Screen Overlay (Minimalist, Pure Spinner, No Text) */
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: #02050E;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s ease;
-  pointer-events: all;
-}
-.loading-overlay.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-.morph-square {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #4FC7EA 0%, #7FE0F8 100%);
-  box-shadow: 0 0 32px rgba(79, 199, 234, 0.85), 0 0 12px #fff;
-  animation: morphSquareAnim 2s infinite ease-in-out;
-}
-@keyframes morphSquareAnim {
-  0% {
-    border-radius: 6%;
-    transform: rotate(0deg) scale(1);
-  }
-  50% {
-    border-radius: 50%;
-    transform: rotate(180deg) scale(0.8);
-    box-shadow: 0 0 48px rgba(79, 199, 234, 1), 0 0 18px #fff;
-  }
-  100% {
-    border-radius: 6%;
-    transform: rotate(360deg) scale(1);
-  }
-}
-
-/* Background Canvas for Constellation Grid (Subtly Dimmed for Enhanced Foreground Focus) */
-#bg-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.55;
-}
-
-/* Sticky Top Navigation Bar */
-.top-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 32px;
-  background: rgba(3, 7, 15, 0.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--edge);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  height: 64px;
-}
-.brand-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-}
-.brand-logo-img {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 10px rgba(79, 199, 234, 0.7));
-  transition: transform 0.3s ease;
-}
-.brand-group:hover .brand-logo-img {
-  transform: scale(1.1) rotate(15deg);
-}
-.brand-text b {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  letter-spacing: 1.5px;
-  color: #fff;
-}
-.brand-text b span { color: var(--cyan); }
-.brand-text small {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--ink-muted);
-  letter-spacing: 1.5px;
-}
-
-.nav-links {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.nav-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 6px;
-  color: var(--ink-secondary);
-  text-decoration: none;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 1px;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
-}
-.nav-link svg {
-  width: 14px;
-  height: 14px;
-  fill: currentColor;
-  opacity: 0.85;
-}
-.nav-link:hover {
-  color: var(--cyan);
-  background: rgba(79, 199, 234, 0.08);
-  border-color: rgba(79, 199, 234, 0.25);
-}
-.nav-link.active {
-  color: var(--cyan);
-  background: rgba(79, 199, 234, 0.14);
-  border-color: var(--cyan);
-  box-shadow: 0 0 12px rgba(79, 199, 234, 0.3);
-}
-
-.nav-right {
-  display: flex;
-  align-items: center;
-}
-
-.github-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 6px;
-  background: var(--panel);
-  border: 1px solid var(--edge);
-  color: var(--ink-secondary);
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-.github-icon-btn svg { width: 18px; height: 18px; fill: currentColor; }
-.github-icon-btn:hover {
-  color: #fff;
-  border-color: var(--cyan);
-  background: rgba(79, 199, 234, 0.15);
-  transform: translateY(-1px);
-}
-
-/* Floating Section Indicator Dots on Desktop */
-.section-nav-dots {
-  position: fixed;
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  z-index: 90;
-}
-.dot-item {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  text-decoration: none;
-  color: var(--ink-muted);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 1px;
-  transition: all 0.25s ease;
-  cursor: pointer;
-}
-.dot-label {
-  opacity: 0;
-  transform: translateX(10px);
-  transition: all 0.25s ease;
-  pointer-events: none;
-  background: rgba(5, 11, 22, 0.9);
-  padding: 3px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--edge);
-}
-.dot-circle {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 1.5px solid var(--ink-muted);
-  background: transparent;
-  transition: all 0.25s ease;
-}
-.dot-item:hover .dot-label,
-.dot-item.active .dot-label {
-  opacity: 1;
-  transform: translateX(0);
-}
-.dot-item:hover .dot-circle {
-  border-color: var(--cyan);
-  background: rgba(79, 199, 234, 0.3);
-}
-.dot-item.active .dot-circle {
-  border-color: var(--cyan);
-  background: var(--cyan);
-  box-shadow: 0 0 10px var(--cyan);
-}
-@media (max-width: 1024px) {
-  .section-nav-dots { display: none; }
-}
-
-/* Fullpage Multi-Section Container */
-.fullpage-container {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-}
-
-/* Discrete Desktop Section Viewports */
-.section-view {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  min-height: calc(100vh - 64px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 40px 24px 50px;
-  max-width: 1180px;
-  margin: 0 auto;
-  position: relative;
-  box-sizing: border-box;
-}
-
-/* Hero Section Elements */
-.hero-emblem-wrap {
-  position: relative;
-  margin-bottom: 14px;
-}
-.hero-emblem {
-  width: 76px;
-  height: 76px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 24px rgba(79, 199, 234, 0.7));
-  animation: logoFloat 4s ease-in-out infinite alternate;
-}
-@keyframes logoFloat {
-  0% { transform: translateY(0px); filter: drop-shadow(0 0 20px rgba(79, 199, 234, 0.5)); }
-  100% { transform: translateY(-8px); filter: drop-shadow(0 0 32px rgba(79, 199, 234, 0.9)); }
-}
-
-.hero-title {
-  font-family: var(--font-mono);
-  font-size: clamp(34px, 6vw, 54px);
-  font-weight: 900;
-  letter-spacing: 4px;
-  color: #fff;
-  text-align: center;
-  line-height: 1.1;
-  margin-bottom: 10px;
-  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.9);
-}
-.hero-title span {
-  color: var(--cyan);
-  text-shadow: var(--glow-cyan);
-}
-
-.mission-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 14px;
-  padding: 5px 16px;
-  background: rgba(14, 25, 42, 0.85);
-  border: 1px solid rgba(79, 199, 234, 0.35);
-  border-radius: 20px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--cyan);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  box-shadow: 0 0 16px rgba(79, 199, 234, 0.2);
-}
-.badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 8px var(--green);
-  animation: pulseDot 2s infinite ease-in-out;
-}
-@keyframes pulseDot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(1.3); }
-}
-
-.hero-tagline {
-  font-size: clamp(17px, 2.8vw, 22px);
-  font-weight: 600;
-  color: #fff;
-  text-align: center;
-  max-width: 820px;
-  line-height: 1.4;
-  margin-bottom: 8px;
-  letter-spacing: -0.2px;
-}
-.hero-tagline span { color: var(--cyan); }
-.hero-desc {
-  font-size: clamp(13px, 1.6vw, 14.5px);
-  color: var(--ink-secondary);
-  text-align: center;
-  max-width: 720px;
-  line-height: 1.55;
-  margin-bottom: 22px;
-}
-
-/* Call-to-Action Buttons */
-.cta-group {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 24px;
-  width: 100%;
-}
-.btn-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  text-decoration: none;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
-  border: 1px solid var(--edge);
-}
-.btn-cta svg {
-  width: 14px;
-  height: 14px;
-  fill: currentColor;
-  flex-shrink: 0;
-}
-.btn-cta.primary {
-  background: var(--cyan);
-  color: #030B14;
-  border-color: var(--cyan);
-  box-shadow: 0 4px 22px rgba(79, 199, 234, 0.45);
-}
-.btn-cta.primary:hover {
-  background: var(--cyan-bright);
-  box-shadow: 0 6px 28px rgba(79, 199, 234, 0.7);
-  transform: translateY(-2px);
-}
-.btn-cta.secondary {
-  background: var(--panel);
-  color: var(--ink-primary);
-  border-color: var(--edge);
-  backdrop-filter: blur(12px);
-}
-.btn-cta.secondary:hover {
-  border-color: var(--cyan);
-  color: var(--cyan);
-  background: rgba(79, 199, 234, 0.1);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-}
-
-/* Compact, Sleek Non-Bulky KPI Ribbon */
-.kpi-ribbon {
-  width: 100%;
-  max-width: 980px;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-  background: rgba(8, 16, 32, 0.75);
-  border: 1px solid var(--edge);
-  border-radius: 12px;
-  padding: 12px 14px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: var(--glow-card);
-  margin-bottom: 22px;
-}
-.kpi-item {
-  text-align: center;
-  padding: 6px 8px;
-  border-right: 1px solid rgba(21, 38, 63, 0.8);
-  transition: all 0.2s ease;
-}
-.kpi-item:last-child { border-right: none; }
-.kpi-item:hover {
-  transform: translateY(-2px);
-}
-.kpi-item b {
-  font-family: var(--font-mono);
-  display: block;
-  font-size: 20px;
-  font-weight: 800;
-  color: #fff;
-  line-height: 1.1;
-  margin-bottom: 3px;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
-}
-.kpi-item span {
-  font-family: var(--font-mono);
-  font-size: 9.5px;
-  color: var(--cyan);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  display: block;
-}
-.kpi-item small {
-  font-family: var(--font-mono);
-  font-size: 8.5px;
-  color: var(--ink-muted);
-  display: block;
-  margin-top: 2px;
-}
-
-/* Auto-Scroll Prompt Button with Animated Chevron */
-.scroll-nav-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 20px;
-  background: rgba(14, 25, 44, 0.95);
-  border: 1px solid var(--edge);
-  border-radius: 20px;
-  color: var(--cyan);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  text-decoration: none;
-  transition: all 0.25s ease;
-  box-shadow: var(--glow-card);
-  cursor: pointer;
-  z-index: 10;
-}
-.scroll-nav-btn:hover {
-  background: rgba(79, 199, 234, 0.15);
-  border-color: var(--cyan);
-  transform: translateY(2px);
-}
-.scroll-nav-btn svg {
-  width: 14px;
-  height: 14px;
-  fill: currentColor;
-  animation: bounceDown 1.8s infinite ease-in-out;
-}
-@keyframes bounceDown {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(3px); }
-}
-
-/* SECTION 2: VERTICAL CONNECTED LINE GRAPHIC FLOW (DIRECT FROM SIH PDF) */
-.timeline-section-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-.section-tag {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--cyan);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-.section-title {
-  font-size: clamp(22px, 3.5vw, 32px);
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.5px;
-}
-
-/* Vertical Timeline Connected Points Container */
-.pipeline-flow {
-  position: relative;
-  width: 100%;
-  max-width: 920px;
-  margin: 0 auto 22px;
-  padding-left: 36px;
-}
-
-/* The Glowing Vertical Spine Line */
-.pipeline-spine {
-  position: absolute;
-  top: 15px;
-  bottom: 15px;
-  left: 11px;
-  width: 2px;
-  background: linear-gradient(180deg, var(--cyan) 0%, rgba(79, 199, 234, 0.8) 50%, rgba(59, 214, 140, 0.9) 100%);
-  box-shadow: 0 0 12px rgba(79, 199, 234, 0.6);
-}
-.spine-pulse {
-  position: absolute;
-  width: 6px;
-  height: 30px;
-  left: -2px;
-  background: #fff;
-  border-radius: 3px;
-  box-shadow: 0 0 14px #fff, 0 0 20px var(--cyan);
-  animation: spineTravel 3.5s infinite linear;
-}
-@keyframes spineTravel {
-  0% { top: 0%; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { top: 95%; opacity: 0; }
-}
-
-/* Connected Point Item */
-.flow-step {
-  position: relative;
-  margin-bottom: 12px;
-  background: var(--panel);
-  border: 1px solid var(--edge);
-  border-radius: 10px;
-  padding: 13px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  box-shadow: var(--glow-card);
-  backdrop-filter: blur(14px);
-  transition: all 0.25s ease;
-}
-.flow-step:hover {
-  border-color: var(--cyan);
-  transform: translateX(4px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.6), 0 0 16px rgba(79, 199, 234, 0.2);
-}
-
-/* Connected Node Dot on the Spine */
-.flow-node-dot {
-  position: absolute;
-  left: -32px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #060E1C;
-  border: 2px solid var(--cyan);
-  box-shadow: 0 0 10px var(--cyan);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-}
-.flow-node-dot::after {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--cyan-bright);
-}
-
-.step-num {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--cyan);
-  background: rgba(79, 199, 234, 0.12);
-  border: 1px solid rgba(79, 199, 234, 0.3);
-  border-radius: 6px;
-  padding: 4px 8px;
-  flex-shrink: 0;
-}
-.step-body {
-  flex: 1;
-}
-.step-body h4 {
-  font-family: var(--font-mono);
-  font-size: 13.5px;
-  color: #fff;
-  letter-spacing: 0.5px;
-  margin-bottom: 2px;
-}
-.step-body p {
-  font-size: 12px;
-  color: var(--ink-secondary);
-  line-height: 1.45;
-}
-.step-metric-badge {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--green);
-  background: rgba(59, 214, 140, 0.1);
-  border: 1px solid rgba(59, 214, 140, 0.25);
-  border-radius: 6px;
-  padding: 4px 10px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-/* Verification Note */
-.telemetry-note {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(14, 25, 44, 0.85);
-  border: 1px solid var(--edge);
-  border-radius: 24px;
-  padding: 8px 20px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-secondary);
-  text-align: center;
-  margin-bottom: 18px;
-  box-shadow: var(--glow-card);
-}
-.telemetry-note svg {
-  width: 14px;
-  height: 14px;
-  fill: var(--amber);
-  flex-shrink: 0;
-}
-
-/* Footer */
-.page-footer {
-  position: relative;
-  z-index: 10;
-  padding: 24px 20px 36px;
-  border-top: 1px solid var(--edge);
-  color: var(--ink-muted);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  text-align: center;
-  background: var(--bg-base);
-}
-.page-footer a { color: var(--cyan); text-decoration: none; }
-.page-footer a:hover { text-decoration: underline; color: #fff; }
-
-/* Mobile Bottom Navigation */
-.mobile-bottom-nav {
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: rgba(3, 7, 15, 0.96);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--edge);
-  z-index: 200;
-  justify-content: space-around;
-  align-items: center;
-  padding: 0 10px;
-}
-.mobile-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  color: var(--ink-secondary);
-  text-decoration: none;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.5px;
-  flex: 1;
-  padding: 6px 0;
-  transition: color 0.2s ease;
-}
-.mobile-nav-item svg { width: 18px; height: 18px; fill: currentColor; }
-.mobile-nav-item:hover, .mobile-nav-item.active { color: var(--cyan); }
-
-@media (max-width: 768px) {
-  .nav-links { display: none; }
-  .mobile-bottom-nav { display: flex; }
-  .section-view { min-height: auto; padding: 36px 16px 50px; }
-  .cta-group { flex-direction: column; width: 100%; }
-  .btn-cta { width: 100%; }
-  .kpi-ribbon { grid-template-columns: 1fr 1fr; }
-  .kpi-item { border-right: none; border-bottom: 1px solid var(--edge); }
-  .fullpage-container { padding-bottom: 70px; }
-  .flow-step { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .step-metric-badge { align-self: flex-start; }
-}
-
-
-.rig-legend { position: absolute; top: 12px; right: 12px; font: 11px/1.7 ui-monospace, monospace; color: #cdd8e6;
-  background: rgba(4,9,21,.72); padding: 6px 10px; border-radius: 7px; border: 1px solid #15263F; }
-.rig-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: 0; }
-.lg-b { background: #fff3dc; box-shadow: 0 0 8px #fff3dc; }
-.lg-d { background: #ff5a48; box-shadow: 0 0 8px #ff5a48; }
-.rig-diff { width: 100%; margin-top: 16px; border: 1px solid #15263F; border-radius: 12px; overflow: hidden; background: rgba(8,16,32,.85); }
-.rd-row { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 12px; padding: 10px 16px; border-top: 1px solid #15263F;
-  font: 13px/1.45 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #8EA4C4; }
-.rd-row:first-child { border-top: 0; }
-.rd-row > span:first-child { font: 600 11px ui-monospace, monospace; letter-spacing: .12em; color: #536988; text-transform: uppercase; align-self: center; }
-.rd-row b { color: #EAF4FD; font-weight: 600; }
-.rd-head { font: 700 12px ui-monospace, monospace !important; letter-spacing: .16em; color: #7FE0F8 !important; background: rgba(79,199,234,.06); }
-.rd-head span:last-child { color: #3BD68C; }
-@media (max-width: 640px) { .rd-row { grid-template-columns: 1fr 1fr; } .rd-row > span:first-child { grid-column: 1 / -1; } .rig-legend { font-size: 10px; } }
-/* ---------- MK1 / MK2 3D ---------- */
-.rig-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; width: 100%; margin-top: 8px; }
-@media (max-width: 860px) { .rig-duo { grid-template-columns: 1fr; } }
-.rig-card { background: rgba(8,16,32,.85); border: 1px solid #15263F; border-radius: 14px; overflow: hidden;
-  box-shadow: 0 12px 35px -10px rgba(0,0,0,.8), 0 0 16px rgba(79,199,234,.12); }
-.rig-view { position: relative; aspect-ratio: 4 / 3; background: #050a14; }
-.rig-view canvas { width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
-.rig-view canvas:active { cursor: grabbing; }
-.rig-badge { position: absolute; top: 12px; left: 12px; padding: 5px 11px; border-radius: 7px;
-  font: 700 12px/1 ui-monospace, monospace; letter-spacing: .16em; color: #7FE0F8;
-  background: rgba(4,9,21,.8); border: 1px solid rgba(79,199,234,.4); }
-.rig-badge.mk2 { color: #3BD68C; border-color: rgba(59,214,140,.45); }
-.rig-top { position: absolute; top: 12px; left: 12px; display: flex; align-items: center; gap: 8px; z-index: 3; }
-.rig-top .rig-badge { position: static; }
-.rig-tabs { display: flex; border: 1px solid rgba(79,199,234,.35); border-radius: 7px; overflow: hidden; background: rgba(4,9,21,.8); }
-.rig-tabs button { font: 700 10.5px/1 ui-monospace, monospace; letter-spacing: .12em; color: #8EA4C4; background: none;
-  border: 0; padding: 7px 10px; cursor: pointer; }
-.rig-tabs button + button { border-left: 1px solid rgba(79,199,234,.2); }
-.rig-tabs button.on { color: #04121c; background: #4FC7EA; }
-.rig-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #050a14; z-index: 2; display: none; }
-.rig-media.show { display: block; }
-.rig-empty { position: absolute; inset: 0; z-index: 2; display: none; align-items: center; justify-content: center; text-align: center;
-  background: #050a14; color: #8EA4C4; font: 12px/1.6 ui-monospace, monospace; letter-spacing: .06em; padding: 20px; }
-.rig-empty b { display: block; color: #EAF4FD; font-size: 13px; letter-spacing: .12em; margin-bottom: 6px; }
-.rig-empty.show { display: flex; }
-.rig-view.flat .rig-legend, .rig-view.flat .rig-read { display: none; }
-@media (max-width: 560px) { .rig-legend { top: 50px !important; right: auto !important; left: 12px; } }
-.rig-read { position: absolute; right: 12px; bottom: 10px; font: 11px ui-monospace, monospace; color: #8EA4C4;
-  background: rgba(4,9,21,.7); padding: 4px 8px; border-radius: 6px; white-space: pre; }
-.rig-read[data-state="LOCKED"] { color: #3BD68C; }
-.rig-read[data-state="COASTING"] { color: #FFC24D; }
-.rig-meta { padding: 14px 16px 16px; }
-.rig-name { font: 700 15px/1.3 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #EAF4FD; }
-.rig-name em { font: 400 11px ui-monospace, monospace; color: #536988; letter-spacing: .08em; margin-left: 8px; font-style: normal; }
-.rig-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.rig-chips span { font: 11px ui-monospace, monospace; color: #8EA4C4; padding: 4px 9px; border-radius: 6px;
-  border: 1px solid #15263F; background: rgba(255,255,255,.03); }
-.rig-hint { margin-top: 12px; font: 11px ui-monospace, monospace; color: #536988; letter-spacing: .08em; text-align: center; }
-/* ---------- Software demo video: video left, brief right ---------- */
-}
-.yt-card { width: 1000px; max-width: 100%; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 26px; align-items: center; padding: 22px; border-radius: 18px;
-  background: linear-gradient(160deg, rgba(12,26,46,.9), rgba(5,11,22,.95)); border: 1px solid rgba(79,199,234,.28); box-shadow: 0 0 50px rgba(79,199,234,.1), 0 24px 60px rgba(0,0,0,.5); }
-.yt-box { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000; box-shadow: 0 0 0 1px #1b2a41, 0 12px 34px rgba(0,0,0,.6); }
-.yt-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.yt-play { position: absolute; inset: 0; border: 0; padding: 0; cursor: pointer; background: #000; }
-.yt-play img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(.82); transition: transform .5s, filter .3s; }
-.yt-play:hover img { transform: scale(1.03); filter: brightness(1); }
-.yt-btn { position: absolute; left: 50%; top: 50%; width: 76px; height: 54px; transform: translate(-50%, -50%); transition: transform .2s; filter: drop-shadow(0 6px 14px rgba(0,0,0,.5)); }
-.yt-btn svg { width: 100%; height: 100%; } .yt-play:hover .yt-btn { transform: translate(-50%, -50%) scale(1.1); }
-.yt-side { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
-.yt-logo { height: 30px; width: auto; overflow: visible; }
-.yt-side h3 { margin: 0; font-size: 26px; color: #fff; letter-spacing: -.3px; }
-.yt-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-.yt-tags span { display: inline-flex; align-items: center; gap: 6px; font: 600 11.5px/1 var(--font-mono); letter-spacing: .06em; color: #DCEBFA; padding: 7px 11px; border-radius: 999px; border: 1px solid #1d2c44; background: rgba(255,255,255,.04); }
-.yt-tags svg { width: 14px; height: 14px; fill: var(--cyan); }
-.yt-open { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 10px; background: #FF0033; color: #fff; font: 700 13px/1 var(--font-mono); letter-spacing: .06em; text-decoration: none; box-shadow: 0 8px 22px rgba(255,0,51,.3); transition: transform .2s; }
-.yt-open:hover { transform: translateY(-2px); } .yt-open svg { width: 16px; height: 16px; fill: #fff; }
-@media (max-width: 800px) { .yt-card { grid-template-columns: 1fr; padding: 14px; } }
-.film-note { max-width: 760px; text-align: center; color: #8EA4C4; font-size: 13px; line-height: 1.6; margin: 16px 0 0; }
-.sw-duo { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 22px; width: min(1060px, 100%); align-items: center; }
-.sw-view { position: relative; aspect-ratio: 1920 / 1086; background: #050a14; }
-.sw-view video { width: 100%; height: 100%; display: block; object-fit: contain; background: #050a14; }
-.sw-brief { text-align: left; }
-.sw-brief p { font: 14px/1.6 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #8EA4C4; margin: 0 0 14px; }
-.sw-brief p b { color: #EAF4FD; font-weight: 600; }
-.sw-steps { list-style: none; margin: 0 0 18px; padding: 0; border: 1px solid #15263F; border-radius: 12px; overflow: hidden; background: rgba(8,16,32,.85); }
-.sw-steps li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 10px 14px; border-top: 1px solid #15263F;
-  font: 13px/1.45 -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #8EA4C4; }
-.sw-steps li:first-child { border-top: 0; }
-.sw-steps li span { font: 700 11px/1.6 ui-monospace, monospace; color: #7FE0F8; letter-spacing: .1em; }
-.sw-steps li b { color: #EAF4FD; font-weight: 600; }
-@media (max-width: 860px) { .sw-duo { grid-template-columns: 1fr; } }
-@media (max-width: 768px) { .sw-brief .btn-cta { width: auto; } }
-
-/* Organisations: ISRO (problem statement), SIH 2026, JEC. Official
-   colours, so each sits on its own white chip. */
-.org-strip { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 24px auto 22px; }
-.org-chip { background: #fff; border-radius: 8px; height: 46px; padding: 6px 12px; display: inline-flex; align-items: center; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,.35); }
-.org-chip img { height: 34px; width: auto; display: block; }
-.org-txt { font: 600 10px/1.55 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: .14em; color: #8ea4c4; text-align: left; margin-left: 4px; }
-.org-txt b { color: #eaf4fd; font-weight: 700; }
-.org-mini { display: inline-flex; gap: 6px; vertical-align: middle; margin-right: 10px; }
-.org-mini .org-chip { height: 24px; padding: 3px 6px; border-radius: 5px; box-shadow: none; }
-.org-mini .org-chip img { height: 18px; }
-
-/* Brand logo (transparent PNG, drawn for a dark background). */
-.brand-logo-full { height: 52px; width: auto; display: block; margin: -6px 0; }
-@media (max-width: 720px) { .brand-logo-full { height: 42px; } }
-.hero-logo { margin: 0 0 12px; line-height: 0; }
-.hero-logo img { width: min(460px, 82vw); height: auto; filter: drop-shadow(0 0 22px rgba(79,199,234,.35)); animation: logoFloat 4s ease-in-out infinite alternate; }
-</style>
-<link rel="stylesheet" href="mv.css">
 </head>
-<body>
+<body class="ap home has-pn">
+<script>/* intro only when the page opens at the top */(function(){var h=document.documentElement;if(!location.hash&&window.scrollY<10&&!matchMedia('(prefers-reduced-motion: reduce)').matches){h.classList.add('zd-intro');setTimeout(function(){if(h.classList.contains('zd-intro')){h.classList.remove('zd-intro');h.classList.add('zd-in');}},14000);}})();</script>
+<header class="gn"><div class="gn-in">
+  <a class="logo" href="index.html" aria-label="ZeroDrift home"><span class="zdl zdl-nav"><svg class="zdl-em" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="zdSweepnav" x1="0" y1="1" x2=".62" y2="0"><stop offset="0" stop-color="#35a7e8" stop-opacity="0"/><stop offset="1" stop-color="#35a7e8" stop-opacity=".55"/></linearGradient></defs><path d="M256 256 L 297.6 88.7 A172 172 0 0 1 377.6 134.4 Z" fill="url(#zdSweepnav)"/><g fill="none" stroke="#1d4f86" stroke-width="5"><circle cx="256" cy="256" r="115"/><circle cx="256" cy="256" r="64"/><path d="M256 86v340M86 256h340"/></g><circle cx="256" cy="256" r="172" fill="none" stroke="#35a7e8" stroke-width="13"/><path d="M256 34v52M256 426v52M34 256h52M426 256h52" stroke="#35a7e8" stroke-width="12" stroke-linecap="butt"/><g fill="#35a7e8"><circle cx="200" cy="110" r="16"/><circle cx="178" cy="160" r="26"/><circle cx="139" cy="210" r="21"/><circle cx="341" cy="318" r="18"/></g><circle cx="256" cy="256" r="32" fill="#34c759"/><circle cx="256" cy="256" r="13" fill="#fff"/></svg><span class="zdl-tx"><span class="zdl-wm"><b>ZER</b><svg class="zdl-o" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="29" fill="none" stroke="#35a7e8" stroke-width="10"/><path d="M50 0v21M50 79v21M0 50h21M79 50h21" stroke="#35a7e8" stroke-width="10"/><circle cx="50" cy="50" r="12" fill="#34c759"/></svg><i>DRIFT</i></span></span></span></a>
+  <nav class="gn-tabs" aria-label="Main"><a href="index.html" class="on" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a><a href="console.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg><span>Console</span></a><a href="live.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Live demo</span></a><a href="about.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>About us</span></a><a href="sop.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/></svg><span>SOP</span></a></nav>
+  <a class="gh" href="https://github.com/pranshukesavmishra/SIH-2026" target="_blank" rel="noopener" aria-label="Source code on GitHub" title="Source code on GitHub"><svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg></a>
+</div></header>
+<div class="pn show" id="pn"><b class="pn-t">ZeroDrift</b><nav class="pn-l" aria-label="On this page"><a href="#sim">Simulation</a><a href="#software">Software</a><a href="#highlights">Highlights</a><a href="#hardware">Hardware</a><a href="#decide">Engine</a><a href="#film">Film</a></nav><a class="pn-cta" href="live.html">Live demo</a></div>
 
-<!-- Full-Screen Morphing Square Loading Screen (Pure Minimalist Spinner, No Text) -->
-<div id="loading-screen" class="loading-overlay">
-  <div class="morph-square"></div>
-</div>
-
-<!-- Dynamic Constellation Grid Canvas (Original Vibrant Mesh) -->
-<canvas id="bg-canvas"></canvas>
-
-<!-- Floating Section Indicator Dots on Desktop -->
-<nav class="section-nav-dots">
-  <div class="dot-item active" id="dot-sec-hero" onclick="scrollToSection('sec-hero')" title="Home Overview">
-    <span class="dot-label">01 HERO</span>
-    <span class="dot-circle"></span>
-  </div>
-  <div class="dot-item" id="dot-sec-film" onclick="scrollToSection('sec-film')" title="3D simulation">
-    <span class="dot-label">02 3D SIM</span>
-    <span class="dot-circle"></span>
-  </div>
-  <div class="dot-item" id="dot-sec-hardware" onclick="scrollToSection('sec-hardware')" title="Hardware">
-    <span class="dot-label">03 HARDWARE</span>
-    <span class="dot-circle"></span>
-  </div>
-  <div class="dot-item" id="dot-sec-pipeline" onclick="scrollToSection('sec-pipeline')" title="Proposed Solution">
-    <span class="dot-label">04 SOLUTION</span>
-    <span class="dot-circle"></span>
-  </div>
-  <div class="dot-item" id="dot-sec-youtube" onclick="scrollToSection('sec-youtube')" title="YouTube">
-    <span class="dot-label">05 YOUTUBE</span>
-    <span class="dot-circle"></span>
-  </div>
-</nav>
-
-<!-- Sticky Top Navigation -->
-<header class="top-nav">
-  <a href="index.html" class="brand-group">
-    <img src="brand/zerodrift_logo.png" alt="ZeroDrift" class="brand-logo-full">
-  </a>
-
-  <nav class="nav-links">
-    <a href="index.html" class="nav-link active">
-      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-      HOME
-    </a>
-    <a href="console.html" class="nav-link">
-      <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg>
-      CONSOLE
-    </a>
-    <a href="live.html" class="nav-link">
-      <svg viewBox="0 0 24 24"><path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4zM9 3l-1.8 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 15a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/></svg>
-      LIVE DEMO
-    </a>
-    <a href="about.html" class="nav-link">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-      ABOUT US
-    </a>
-    <a href="sop.html" class="nav-link">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg>
-      SOP
-    </a>
-  </nav>
-
-  <div class="nav-right">
-    <a href="https://github.com/pranshukesavmishra/SIH-2026" class="github-icon-btn" title="View Source on GitHub" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
-    </a>
-  </div>
-</header>
-
-<div class="fullpage-container">
-  <!-- SECTION 1: HERO SHOWCASE -->
-  <section class="section-view" id="sec-hero">
-    <h1 class="hero-logo"><img src="brand/zerodrift_logo.png" alt="ZeroDrift"></h1>
-    
-    <div class="mission-badge">
-      <span class="badge-dot"></span>
-      FSOC COARSE ALIGNMENT · ISRO SIH26169
+<main>
+  <!-- HERO: real-time scene (hero3d.js) over a still of the same scene -->
+  <section class="hero gl-wait" id="top">
+    <div class="hero-stage"><img class="hero-poster" src="media/site/hero_poster.jpg" alt=""><canvas id="heroGL" aria-hidden="true"></canvas></div>
+    <div class="wrap hero-in">
+      <nav class="tour drop" aria-label="Suggested order"><span class="tour-l">Your tour</span><a href="index.html" class="on"><i>1</i>Home</a><span class="arr">›</span><a href="console.html"><i>2</i>Console</a><span class="arr">›</span><a href="live.html"><i>3</i>Live demo</a><span class="arr">›</span><a href="sop.html"><i>4</i>SOP</a><span class="arr">›</span><a href="about.html"><i>5</i>About</a></nav>
+      <p class="eyebrow drop">ISRO · PS SIH26169 · Smart India Hackathon 2026</p>
+      <h1 class="hero-logo drop d1" aria-label="ZeroDrift"><span class="zdl zdl-hero"><svg class="zdl-em" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="zdSweephero" x1="0" y1="1" x2=".62" y2="0"><stop offset="0" stop-color="#35a7e8" stop-opacity="0"/><stop offset="1" stop-color="#35a7e8" stop-opacity=".55"/></linearGradient></defs><path d="M256 256 L 297.6 88.7 A172 172 0 0 1 377.6 134.4 Z" fill="url(#zdSweephero)"/><g fill="none" stroke="#1d4f86" stroke-width="5"><circle cx="256" cy="256" r="115"/><circle cx="256" cy="256" r="64"/><path d="M256 86v340M86 256h340"/></g><circle cx="256" cy="256" r="172" fill="none" stroke="#35a7e8" stroke-width="13"/><path d="M256 34v52M256 426v52M34 256h52M426 256h52" stroke="#35a7e8" stroke-width="12" stroke-linecap="butt"/><g fill="#35a7e8"><circle cx="200" cy="110" r="16"/><circle cx="178" cy="160" r="26"/><circle cx="139" cy="210" r="21"/><circle cx="341" cy="318" r="18"/></g><circle cx="256" cy="256" r="32" fill="#34c759"/><circle cx="256" cy="256" r="13" fill="#fff"/></svg><span class="zdl-tx"><span class="zdl-wm"><b>ZER</b><svg class="zdl-o" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="29" fill="none" stroke="#35a7e8" stroke-width="10"/><path d="M50 0v21M50 79v21M0 50h21M79 50h21" stroke="#35a7e8" stroke-width="10"/><circle cx="50" cy="50" r="12" fill="#34c759"/></svg><i>DRIFT</i></span><small>Precision tracking · SIH 2026 · PS 26169</small></span></span></h1>
+      <p class="hero-sub drop d2"><span class="grad">The pointing brain</span><br>for laser links.</p>
+      <div class="hero-cta drop d3"><a class="btn" href="live.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Try the live demo</a><a class="lnk" href="#film">Watch the film <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 8.5v7l6-3.5z" fill="currentColor" stroke="none"/></svg></a></div>
     </div>
-
-    <h2 class="hero-tagline">
-      The eyes and neck of an <span>optical communication terminal</span>.
-    </h2>
-    
-    <p class="hero-desc">
-      Finds the blinking beacon, ignores the decoys, and keeps the laser link in view.
-    </p>
-
-    <div class="cta-group">
-      <a class="btn-cta primary" href="live.html">
-        <svg viewBox="0 0 24 24"><path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4zM9 2 7.17 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.17L15 2H9zm3 5a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/></svg>
-        LIVE CAMERA DEMO
-      </a>
-      <a class="btn-cta secondary" href="console.html">
-        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        OPEN REPLAY CONSOLE
-      </a>
-      <a class="btn-cta secondary" href="about.html">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-        PROJECT DOSSIER
-      </a>
-      <a class="btn-cta secondary" href="https://github.com/pranshukesavmishra/SIH-2026" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
-        GITHUB CODE
-      </a>
-    </div>
-
-    <!-- Compact, Non-Bulky KPI Ribbon -->
-    <div class="kpi-ribbon" id="chips">
-      <div class="kpi-item">
-        <b>1.27 s</b>
-        <span>ACQUISITION TIME</span>
-        <small>from cold start</small>
-      </div>
-      <div class="kpi-item">
-        <b>98.3 %</b>
-        <span>LOCK RETENTION</span>
-        <small>across pass</small>
-      </div>
-      <div class="kpi-item">
-        <b>198 µrad</b>
-        <span>MEDIAN ERROR</span>
-        <small>in closed lock</small>
-      </div>
-      <div class="kpi-item">
-        <b>0 / 64</b>
-        <span>WRONG-TARGET LOCKS</span>
-        <small>100% decoy rejection</small>
-      </div>
-      <div class="kpi-item">
-        <b>250</b>
-        <span>TESTS PASS</span>
-        <small>automated suite</small>
-      </div>
-    </div>
-    <div class="org-strip">
-      <span class="org-chip"><img src="brand/isro.png" alt="ISRO"></span>
-      <span class="org-chip"><img src="brand/sih2026.png" alt="Smart India Hackathon 2026"></span>
-      <span class="org-txt"><b>PS SIH26169</b><br>JABALPUR ENGINEERING COLLEGE<br>2ND RUNNER-UP · SIH INTERNAL ROUND 2026</span>
-    </div>
-
-    <button class="scroll-nav-btn" onclick="scrollToSection('sec-film')">
-      WATCH THE 3D SIMULATION
-      <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
-    </button>
+    <a class="hero-down" href="#sim" aria-label="Scroll down"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></a>
   </section>
 
 
-  <!-- SECTION 1b: MISSION VIEWER - 3D SIMULATION -->
-  <section class="section-view" id="sec-film">
-    <div class="timeline-section-header">
-      <div class="section-tag">MISSION SIMULATION · 3D</div>
-      <h3 class="section-title">From orbit to lock, in 100 seconds</h3>
+
+  <!-- LIVE SIMULATION DEMONSTRATION -->
+  <section class="sec fit" id="sim">
+    <div class="wrap center sim-head">
+      <p class="eyebrow rv">3D simulation · 100 seconds</p>
+      <h2 class="h-l rv d1">Live Simulation Demonstration.</h2>
     </div>
-    <div class="mv" id="mv">
-      <div class="mv-top">
-        <span class="mv-rec"><i></i>SIM-3D</span>
-        <span class="mv-meta">PS SIH26169 · CODE-RENDERED (THREE.JS) · 1080p · 30 FPS</span>
-        <span class="mv-tc" id="mvTc">T+00:00.0</span>
-      </div>
-      <div class="mv-body">
-        <ol class="mv-ch" id="mvCh" aria-label="Chapters"><li><button type="button" data-t="0"><em>00</em><span>Mission brief</span><time>00:00</time></button></li><li><button type="button" data-t="7"><em>01</em><span>The challenge</span><time>00:07</time></button></li><li><button type="button" data-t="19"><em>02</em><span>Orbit prediction</span><time>00:19</time></button></li><li><button type="button" data-t="31"><em>03</em><span>Coarse slew</span><time>00:31</time></button></li><li><button type="button" data-t="43"><em>04</em><span>Detect &amp; verify</span><time>00:43</time></button></li><li><button type="button" data-t="61"><em>05</em><span>Lock &amp; track</span><time>01:01</time></button></li><li><button type="button" data-t="75"><em>06</em><span>Link closes</span><time>01:15</time></button></li><li><button type="button" data-t="86"><em>07</em><span>End to end</span><time>01:26</time></button></li></ol>
-        <div class="mv-screen" id="mvScreen">
-          <video id="filmVideo" playsinline preload="none" poster="media/sim3d_poster.jpg"
-            aria-label="ZeroDrift 3D simulation: orbit prediction, beacon detection, lock and link"></video>
-          <span class="mv-c tl"></span><span class="mv-c tr"></span><span class="mv-c bl"></span><span class="mv-c br"></span>
-          <div class="mv-stage" id="mvStage"><em>00</em><span>Mission brief</span></div>
-          <button type="button" class="mv-big" id="mvBig" aria-label="Play the 3D simulation"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+    <div class="wrap"><div class="mv" id="mv">
+      <div class="mbp">
+        <div class="mbp-glow"></div>
+        <div class="mbp-lid">
+          <div class="mbp-face">
+            <div class="mbp-screen" id="mvScreen">
+              <video id="filmVideo" playsinline preload="none" poster="media/site/earth_end.jpg" aria-label="ZeroDrift 3D simulation: orbit prediction, beacon detection, lock and link"></video>
+              <div class="mv-stage" id="mvStage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>Brief</span></div>
+              <button type="button" class="mv-big" id="mvBig" aria-label="Play the simulation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
+            </div>
+          </div>
+          <div class="mbp-back"><img src="brand/zerodrift_mark.png" alt=""></div>
         </div>
+        <div class="mbp-base"><i></i></div>
         <div class="mv-kpi" id="mvKpi">
-          <div data-ch="4"><b>1.27<small> s</small></b><span>median time to lock · 64 runs</span></div>
-          <div data-ch="4"><b>0 / 64</b><span>runs that locked a decoy</span></div>
-          <div data-ch="5"><b>97.5<small> %</small></b><span>lock retention · campaign median</span></div>
-          <div data-ch="6"><b>99.3<small> %</small></b><span>link closure, modelled fine stage (14.7% coarse only)</span></div>
+          <div class="co left" data-ch="4" style="right:88%;top:30%;--len:calc(11cqw + 34px)"><i class="co-dot"></i><i class="co-line"></i><div class="co-txt"><b>1.07<small>s</small></b><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61 1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.96 8.96 0 0 0 12 4a9 9 0 1 0 9 9c0-2.12-.74-4.07-1.97-5.61zM12 20a7 7 0 1 1 0-14 7 7 0 0 1 0 14z"/></svg>time to lock</span></div></div>
+          <div class="co" data-ch="4" style="left:88%;top:22%;--len:calc(11cqw + 34px)"><i class="co-dot"></i><i class="co-line"></i><div class="co-txt"><b>0/64</b><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>decoys locked</span></div></div>
+          <div class="co" data-ch="5,6" style="left:88%;top:62%;--len:calc(11cqw + 34px)"><i class="co-dot"></i><i class="co-line"></i><div class="co-txt"><b>99.3<small>%</small></b><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM9 8V6a3 3 0 0 1 6 0v2H9z"/></svg>lock held</span></div></div>
         </div>
       </div>
-      <div class="mv-bar">
-        <button type="button" class="mv-btn" id="mvPlay" aria-label="Play"><svg viewBox="0 0 24 24"><path class="pl" d="M8 5v14l11-7z"/><path class="pa" d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
-        <button type="button" class="mv-btn" id="mvMute" aria-label="Unmute"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path class="on" d="M16.5 12A4.5 4.5 0 0 0 14 7.97v8.05A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06A9 9 0 0 0 14 3.23z"/><path class="off" d="M16 9.4 17.4 8l2.1 2.1L21.6 8 23 9.4 20.9 11.5 23 13.6 21.6 15l-2.1-2.1L17.4 15 16 13.6l2.1-2.1z"/></svg></button>
-        <div class="mv-track" id="mvTrack" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
-          <div class="mv-fill" id="mvFill"></div><div class="mv-ticks"><i style="left:7%"></i><i style="left:19%"></i><i style="left:31%"></i><i style="left:43%"></i><i style="left:61%"></i><i style="left:75%"></i><i style="left:86%"></i></div>
-        </div>
-        <span class="mv-dur">01:40</span>
+      <div class="mv-ctl">
+        <button type="button" class="mv-btn" id="mvPlay" aria-label="Play or pause"><svg viewBox="0 0 24 24"><path class="pl" d="M8 5v14l11-7z"/><path class="pa" d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg></button>
+        <ol class="mv-ch" id="mvCh" aria-label="Chapters"><li><button type="button" data-t="0" data-label="Brief" aria-label="Brief" title="Brief"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>Brief</span></button></li><li><button type="button" data-t="7" data-label="Challenge" aria-label="Challenge" title="Challenge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg><span>Challenge</span></button></li><li><button type="button" data-t="19" data-label="Orbit" aria-label="Orbit" title="Orbit"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="10" ry="4.2" fill="none" stroke="currentColor" stroke-width="1.9" transform="rotate(-28 12 12)"/><circle cx="12" cy="12" r="3.4"/><circle cx="19.2" cy="7.6" r="1.9"/></svg><span>Orbit</span></button></li><li><button type="button" data-t="31" data-label="Slew" aria-label="Slew" title="Slew"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg><span>Slew</span></button></li><li><button type="button" data-t="43" data-label="Detect" aria-label="Detect" title="Detect"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.4"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Detect</span></button></li><li><button type="button" data-t="61" data-label="Lock" aria-label="Lock" title="Lock"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM9 8V6a3 3 0 0 1 6 0v2H9z"/></svg><span>Lock</span></button></li><li><button type="button" data-t="75" data-label="Link" aria-label="Link" title="Link"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.9 12a3.1 3.1 0 0 1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 0 1 0 6.2h-4V17h4a5 5 0 0 0 0-10z"/></svg><span>Link</span></button></li><li><button type="button" data-t="86" data-label="Result" aria-label="Result" title="Result"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-2 15-5-5 1.4-1.4 3.6 3.6 7.6-7.6L19 8l-9 9z"/></svg><span>Result</span></button></li></ol>
+        <button type="button" class="mv-btn" id="mvMute" aria-label="Sound on or off"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path class="on" d="M16.5 12A4.5 4.5 0 0 0 14 7.97v8.05A4.47 4.47 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06A9 9 0 0 0 14 3.23z"/><path class="off" d="M16 9.4 17.4 8l2.1 2.1L21.6 8 23 9.4 20.9 11.5 23 13.6 21.6 15l-2.1-2.1L17.4 15 16 13.6l2.1-2.1z"/></svg></button>
         <button type="button" class="mv-btn" id="mvFs" aria-label="Full screen"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></button>
       </div>
-    </div>
-    <p class="film-note">Code-rendered 3D visualisation of the full chain. Every number on screen comes from our logged runs.</p>
+      <div class="mv-prog">
+        <div class="mv-track" id="mvTrack" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><div class="mv-fill" id="mvFill"></div><div class="mv-ticks"><i style="left:7%"></i><i style="left:19%"></i><i style="left:31%"></i><i style="left:43%"></i><i style="left:61%"></i><i style="left:75%"></i><i style="left:86%"></i></div></div>
+        <span class="mv-tc"><b id="mvTc">00:00</b> / 01:40</span>
+      </div>
+    </div></div>
   </section>
 
-
-  <!-- SECTION 2: THE HARDWARE, MK1 AND MK2, LIVE IN 3D -->
-  <section class="section-view" id="sec-hardware">
-    <div class="timeline-section-header">
-      <div class="section-tag">HARDWARE · BUILT, THEN REBUILT</div>
-      <h3 class="section-title">MK1 → MK2</h3>
-    </div>
-    <div class="rig-duo">
-      <div class="rig-card">
-        <div class="rig-view">
-          <canvas id="rigMk1" aria-label="MK1 servo rig, 3D"></canvas>
-          <div class="rig-top"><span class="rig-badge">MK1</span><div class="rig-tabs" role="tablist" aria-label="MK1 view">
-            <button data-view="photo">PHOTO</button><button data-view="video">VIDEO</button><button data-view="3d" class="on">3D</button></div></div>
-          <img class="rig-media" data-kind="photo" data-src="media/mk1_photo.jpg" alt="MK1 rig, photo">
-          <video class="rig-media" data-kind="video" data-src="demo-video.mp4" data-alt="demo-video.webm" poster="media/mk1_photo.jpg" muted loop playsinline controls preload="none"></video>
-          <div class="rig-empty"><div><b>MK1 · <span class="rig-empty-kind"></span></b>Not available in this browser.</div></div>
-          <span class="rig-read" id="rigMk1Read"></span>
-        </div>
-        <div class="rig-meta">
-          <div class="rig-name">Servo rig <em>built · demo video</em></div>
-          <div class="rig-chips"><span>2× SG90 servo</span><span>Laptop webcam</span><span>KY-008 laser</span><span>Open loop</span></div>
-        </div>
-      </div>
-      <div class="rig-card">
-        <div class="rig-view">
-          <canvas id="rigMk2" aria-label="MK2 stepper terminal, 3D"></canvas>
-          <div class="rig-top"><span class="rig-badge mk2">MK2</span><div class="rig-tabs" role="tablist" aria-label="MK2 view">
-            <button data-view="photo">PHOTO</button><button data-view="video">VIDEO</button><button data-view="3d" class="on">3D</button></div></div>
-          <img class="rig-media" data-kind="photo" data-src="media/mk2_photo.jpg" alt="MK2 rig, photo">
-          <video class="rig-media" data-kind="video" data-src="demo-mk2.mp4" muted loop playsinline controls preload="none"></video>
-          <div class="rig-empty"><div><b>MK2 · <span class="rig-empty-kind"></span></b>Coming soon: photo and video will be added here.</div></div>
-          <span class="rig-legend"><i class="lg-b"></i>Phone torch · blinks 4 Hz · tracked<br><i class="lg-d"></i>Decoy · steady red LED · ignored</span>
-          <span class="rig-read" id="rigMk2Read"></span>
-        </div>
-        <div class="rig-meta">
-          <div class="rig-name">Stepper terminal <em>building now · ₹6,709</em></div>
-          <div class="rig-chips"><span>2× NEMA17 + A4988</span><span>Webcam + laser on the tilt</span><span>AS5600 pan feedback</span><span>12 V adapter</span></div>
+  <!-- SOFTWARE: our screen recording of the Live demo page -->
+  <section class="sec fit" id="software">
+    <div class="wrap">
+      <div class="feat sw-feat">
+        <div class="feat-media rv"><video id="swVideo" muted loop playsinline controls preload="none" poster="media/software_demo_poster.jpg" data-src="media/software_demo.mp4" data-src-sm="media/software_demo_720.mp4" aria-label="ZeroDrift software locking onto the blinking beacon, screen recording"></video></div>
+        <div class="feat-side rv d1">
+          <p class="eyebrow">Software · unedited screen recording</p>
+          <h3>Live tracking, in the browser.</h3>
+          <p>Our <b>Live demo</b> page on a <b>standard laptop webcam</b>. No special sensor, no install: the whole engine runs on the page.</p>
+          <ol class="sw-steps">
+            <li><span>01</span><div><b>Detect.</b> Every bright point in the frame is found and followed.</div></li>
+            <li><span>02</span><div><b>Identify.</b> Only a light blinking at <b>4.0 Hz</b> is accepted. Lamps, screens and glints are rejected.</div></li>
+            <li><span>03</span><div><b>Lock and track.</b> The lock follows the beacon and reports its offset from the aim point.</div></li>
+            <li><span>04</span><div><b>Real time.</b> <b>8–21 ms</b> of processing inside each 33 ms frame.</div></li>
+          </ol>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="live.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Try it on your camera</a><button type="button" class="btn ghost" id="swFull"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>Full screen</button></div>
         </div>
       </div>
     </div>
-    <div class="rig-diff">
-      <div class="rd-row rd-head"><span></span><span>MK1</span><span>MK2</span></div>
-      <div class="rd-row"><span>Movement</span><span>Moves in small jumps and can't tell where it is pointing</span><b>Moves smoothly and precisely, and always knows where it is pointing</b></div>
-      <div class="rd-row"><span>Aiming</span><span>Camera sits beside the laser, so the aim is estimated</span><b>Camera moves with the laser, so it sees exactly where it is aiming</b></div>
-    </div>
-    <div class="rig-hint">Drag to rotate · click, then scroll to zoom · double-click to resume</div>
   </section>
 
-  <!-- SECTION 2B: THE SOFTWARE, RUNNING LIVE (screen recording) -->
-  <section class="section-view" id="sec-software">
-    <div class="timeline-section-header">
-      <div class="section-tag">SOFTWARE · RUNNING LIVE</div>
-      <h3 class="section-title">Live tracking in the browser</h3>
-    </div>
-    <div class="sw-duo">
-      <div class="rig-card">
-        <div class="sw-view">
-          <video id="swVideo" muted loop playsinline controls preload="none" poster="media/software_demo_poster.jpg" aria-label="ZeroDrift live demo: the software locks onto the blinking beacon"></video>
-        </div>
+  <!-- HIGHLIGHTS -->
+  <section class="sec fit" id="highlights">
+    <div class="wrap head-row"><h2 class="h-l rv">Get the highlights.</h2><a class="lnk rv" href="#film">Watch the film <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M10 8.5v7l6-3.5z" fill="currentColor" stroke="none"/></svg></a></div>
+    <div class="hl" data-dur="9">
+      <div class="hl-track">
+        <div class="hl-card"><video class="crop" muted playsinline preload="none" data-src="media/hl/lock.mp4" poster="media/hl/lock.jpg"></video><div class="hl-cap"><small>CLOSED LOOP</small>Locks on. Holds on.<br>Through every blink and every delay.</div></div>
+        <div class="hl-card"><video muted playsinline preload="none" data-src="demo-video.mp4" poster="media/hl/mk1.jpg"></video><div class="hl-cap"><small>MK1 · WORKING PROTOTYPE</small>Real hardware.<br>Tracking a real blinking beacon.</div></div>
+        <div class="hl-card"><video muted playsinline preload="none" data-src="media/software_demo.mp4" data-src-sm="media/software_demo_720.mp4" poster="media/software_demo_poster.jpg"></video><div class="hl-cap"><small>LIVE SOFTWARE</small>Runs in your browser.<br>On an ordinary laptop webcam.</div></div>
+        <div class="hl-card"><video class="crop" muted playsinline preload="none" data-src="media/hl/decoy.mp4" poster="media/hl/decoy.jpg"></video><div class="hl-cap"><small>DECOY TEST</small>Stars, lamps and glints.<br>Seen. Ignored. 0 of 64 runs fooled.</div></div>
+        <div class="hl-card"><video class="crop" muted playsinline preload="none" data-src="media/hl/link.mp4" poster="media/hl/link.jpg"></video><div class="hl-cap"><small>SIMULATION</small>From orbit to lock.<br>A full mission, rendered by our engine.</div></div>
       </div>
-      <div class="sw-brief">
-        <p>Unedited screen recording of the <b>Live Demo</b> page. The tracking engine runs entirely in the browser on a standard laptop webcam; no specialised sensor is used.</p>
-        <ul class="sw-steps">
-          <li><span>01</span><div><b>Detect.</b> Every frame is scanned for bright point sources; each candidate's brightness is followed over time.</div></li>
-          <li><span>02</span><div><b>Identify.</b> The beacon is accepted only when it blinks at its 4.0 Hz signature. Steady lights and reflections are rejected.</div></li>
-          <li><span>03</span><div><b>Lock and track.</b> The lock box follows the moving beacon and reports azimuth / elevation offset from boresight, target angular speed and its motion vector.</div></li>
-          <li><span>04</span><div><b>Real time.</b> About 35 frames per second with roughly 10 ms of processing per frame, well inside the frame budget.</div></li>
-        </ul>
-        <button type="button" class="btn-cta secondary" id="swFull">
-          <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>FULL SCREEN
+      <div class="hl-ctl"><div class="hl-dots"></div><button type="button" class="hl-pp" aria-label="Pause or play the highlights"><svg class="pa" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg><svg class="pl" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button></div>
+    </div>
+  </section>
+
+  <!-- NUMBERS -->
+  <section class="sec fit" id="numbers">
+    <div class="wrap">
+      <h2 class="h-xl center rv">Measured.<br><span class="grad">Not claimed.</span></h2>
+      <p class="lede center rv d1" style="max-width:900px;margin:34px auto 0">ZeroDrift finds the partner terminal's beacon in an <b>ordinary camera image</b>, confirms it by its <b>4 Hz blink</b>, and holds the aim <b>through blink gaps and command delay</b>. Every figure below is taken from a logged run.</p>
+      <div class="stats3 rv d2">
+        <div><small>Time to lock</small><b>1.07 s</b><span>decoy-field run</span></div>
+        <div><small>Lock held</small><b>99.3%</b><span>of 3,900 frames</span></div>
+        <div><small>Fooled by a decoy</small><b>0 / 64</b><span>randomised runs</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IMPLEMENTATION OF SOFTWARE -->
+  <section class="sec fit" id="hardware">
+    <div class="wrap">
+      <div class="head-row"><div><p class="eyebrow rv">Hardware</p><h2 class="h-l rv d1">Implementation of Software.</h2></div><p class="hint rv"><b>MK1</b> is our working prototype. <b>MK2</b> is a proposed upgrade, in development.</p></div>
+      <div class="duo">
+        <article class="pc rv">
+          <div class="pc-media">
+            <div class="rig-view" data-default="video" data-cycle="video,3d,photo">
+              <canvas id="rigMk1" aria-label="MK1 servo prototype, 3D"></canvas>
+              <div class="rig-top"><div class="rig-tabs" role="tablist" aria-label="MK1 view"><button data-view="photo">Photo</button><button data-view="video" class="on">Video</button><button data-view="3d">3D</button></div></div>
+              <img class="rig-media" data-kind="photo" data-src="media/mk1_photo.jpg" alt="MK1 prototype, photo">
+              <video class="rig-media" data-kind="video" data-src="demo-video.mp4" poster="media/mk1_photo.jpg" muted playsinline preload="none"></video>
+              <div class="rig-empty"><div><b>MK1</b>Not available in this browser.</div></div>
+              <span class="rig-read" id="rigMk1Read"></span>
+            </div>
+          </div>
+          <div class="pc-body">
+            <span class="pc-tag ok"><i></i>CURRENT · WORKING PROTOTYPE</span>
+            <h3>MK1 · Servo tracker</h3>
+            <p>The hardware we demonstrate. <b>It locks on a real 4 Hz beacon</b> and steers a laser with two servos, driven by our software through a laptop webcam.</p>
+            <div class="pc-spec"><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h12v10H4zM16 10h3v4h-3zM8 3h4v4H8z"/><circle cx="10" cy="12" r="2.2" fill="#000" opacity=".5"/></svg>2× SG90 servos</div><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 11h9v2H2zM13 8h4v8h-4zM18 11.3l4-1.3v4l-4-1.3z"/></svg>KY-008 laser</div><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Laptop webcam</div></div>
+          </div>
+        </article>
+        <article class="pc proposed rv d1">
+          <div class="pc-media">
+            <div class="proposed-ribbon" aria-hidden="true"><span>PROPOSED IDEA · WORKING ON IT · COMING SOON</span></div>
+            <div class="rig-view" data-default="3d">
+              <canvas id="rigMk2" aria-label="MK2 stepper terminal, 3D"></canvas>
+              <div class="rig-top"><div class="rig-tabs" role="tablist" aria-label="MK2 view"><button data-view="photo">Photo</button><button data-view="video">Video</button><button data-view="3d" class="on">3D</button></div><span class="rig-soon"><i></i>Working on it · coming soon</span></div>
+              <img class="rig-media" data-kind="photo" alt="MK2 terminal, photo">
+              <video class="rig-media" data-kind="video" muted loop playsinline preload="none"></video>
+              <div class="rig-empty"><div><b>Coming soon</b>We are building MK2 now.</div></div>
+              <span class="rig-legend"><i class="lg-b"></i>beacon · 4 Hz<br><i class="lg-d"></i>decoy · ignored</span>
+              <span class="rig-read" id="rigMk2Read"></span>
+            </div>
+          </div>
+          <div class="pc-body">
+            <span class="pc-tag soon"><i></i>PROPOSED · IN DEVELOPMENT</span>
+            <h3>MK2 · Stepper terminal</h3>
+            <p>A proposed upgrade, not yet built. <b>Camera and laser share one gimbal</b>, moved by stepper motors and checked by angle sensors.</p>
+            <div class="pc-spec"><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3.2"/><circle cx="7.5" cy="7.5" r="1"/><circle cx="16.5" cy="7.5" r="1"/><circle cx="7.5" cy="16.5" r="1"/><circle cx="16.5" cy="16.5" r="1"/></svg>2× NEMA17 steppers</div><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Camera + laser on gimbal</div><div><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 12 17 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="12" r="2"/></svg>AS5600 angle sensor</div></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- WATCH IT DECIDE: the real engine, live -->
+  <section class="sec fit" id="decide">
+    <div class="wrap">
+      <div class="head-row"><div><p class="eyebrow rv">Live · the real engine, in your browser</p><h2 class="h-l rv d1">Watch it decide.</h2></div>
+        <p class="lede rv d2 dz-lede">Many lights. One blinks at <b>4 Hz</b>. <b>Only that one gets locked.</b></p></div>
+      <div class="dz rv">
+        <div class="dz-view">
+          <canvas id="dzCanvas" aria-label="ZeroDrift engine running live on a synthetic sky: it measures every light and locks only the 4 Hz beacon"></canvas>
+          <span class="dz-state" id="dzState" data-s="SEARCHING"><i></i>SEARCHING</span>
+          <div class="dz-ctl">
+            <button type="button" id="dzHide"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>Cover the beacon</button>
+            <button type="button" id="dzDecoy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>Add a decoy</button>
+            <button type="button" id="dzReset" aria-label="Restart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></button>
+          </div>
+        </div>
+        <ol class="dz-steps">
+          <li data-k="detect"><div class="dz-h"><i><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.4"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></i><b>Detect</b><em>Active</em></div><strong>—</strong><span>found in view</span></li>
+          <li data-k="identify"><div class="dz-h"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h4l2.5-7 5 14L16 9l2 3h4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></i><b>Identify</b><em>Waiting</em></div><strong>Measuring</strong><span>each light’s blink rate</span></li>
+          <li data-k="track"><div class="dz-h"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM9 8V6a3 3 0 0 1 6 0v2H9z"/></svg></i><b>Track</b><em>Waiting</em></div><strong>Searching</strong><span>waiting for the beacon</span></li>
+          <li data-k="point"><div class="dz-h"><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 1 3 3v1h3a2 2 0 0 1 2 2v3h-2V8h-3v2a3 3 0 0 1-6 0V8H6v3H4V8a2 2 0 0 1 2-2h3V5a3 3 0 0 1 3-3zM8 14h8l2 8H6l2-8z"/></svg></i><b>Point</b><em>Waiting</em></div><strong>—</strong><span>aim goes to the gimbal</span></li>
+          <li class="dz-proof"><div><small>Wrong locks</small><strong id="dzWrong">0</strong></div><div><small>Frames analysed</small><strong id="dzFrames">0</strong></div></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILM -->
+  <section class="sec fit" id="film">
+    <div class="wrap"><div class="feat">
+      <div class="feat-media rv">
+        <button type="button" class="feat-play" data-yt="VCbq5Qs6Mhc" aria-label="Play the ZeroDrift demo film">
+          <img src="https://i.ytimg.com/vi/VCbq5Qs6Mhc/maxresdefault.jpg" alt="" loading="lazy" onerror="this.onerror=null;this.src='media/zerodrift_film_poster.jpg'"><svg class="ytb" viewBox="0 0 68 48"><path d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.2 34 .2 34 .2S12.8.2 7.5 1.7a8.5 8.5 0 0 0-6 6C0 13 0 24 0 24s0 11 1.5 16.3a8.5 8.5 0 0 0 6 6C12.8 47.8 34 47.8 34 47.8s21.2 0 26.5-1.5a8.5 8.5 0 0 0 6-6C68 35 68 24 68 24s0-11-1.5-16.3z" fill="#FF0033"/><path d="M27 34.5 44.5 24 27 13.5z" fill="#fff"/></svg>
         </button>
       </div>
-    </div>
+      <div class="feat-side rv d1">
+        <svg class="ytlogo" viewBox="0 0 134 26" role="img" aria-label="YouTube"><rect y="1" width="36" height="25" rx="7" fill="#FF0033"/><path d="M14.5 8v11l9.5-5.5z" fill="#fff"/><text x="42" y="21" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="21" letter-spacing="-.6" fill="currentColor">YouTube</text></svg>
+        <h3>Watch the film.</h3>
+        <p>Our submitted demo, in our own voice: <b>MK1 tracking a real beacon</b>, the <b>decoy test</b>, the graded test record and <b>our software on a laptop webcam</b>.</p>
+        <div class="chips"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h12v10H4zM16 10h3v4h-3zM8 3h4v4H8z"/><circle cx="10" cy="12" r="2.2" fill="#000" opacity=".5"/></svg>MK1 prototype</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="10" ry="4.2" fill="none" stroke="currentColor" stroke-width="1.9" transform="rotate(-28 12 12)"/><circle cx="12" cy="12" r="3.4"/><circle cx="19.2" cy="7.6" r="1.9"/></svg>Simulation</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Live software</span></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn yt" href="https://youtu.be/VCbq5Qs6Mhc" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3L10 15z"/></svg>Watch on YouTube</a>
+          <a class="btn ghost" href="live.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Live demo</a>
+        </div>
+      </div>
+    </div></div>
   </section>
 
-  <!-- SECTION 3: CONNECTED VERTICAL LINE PIPELINE FLOW (DIRECT FROM SIH PDF) -->
-  <section class="section-view" id="sec-pipeline">
-    <div class="timeline-section-header">
-      <div class="section-tag">PROPOSED SOLUTION &amp; ARCHITECTURE</div>
-      <h3 class="section-title">The ZeroDrift Technical Pipeline</h3>
-    </div>
-
-    <!-- Vertical Line Connected Points Graphic -->
-    <div class="pipeline-flow">
-      <div class="pipeline-spine">
-        <div class="spine-pulse"></div>
-      </div>
-
-      <div class="flow-step">
-        <div class="flow-node-dot"></div>
-        <div class="step-num">01</div>
-        <div class="step-body">
-          <h4>Physics-True Virtual World &amp; Sensor Simulation</h4>
-          <p>Real orbits, turbulence, vibration and sensor noise.</p>
-        </div>
-        <div class="step-metric-badge">9.2 MPx / s Imagery</div>
-      </div>
-
-      <div class="flow-step">
-        <div class="flow-node-dot"></div>
-        <div class="step-num">02</div>
-        <div class="step-body">
-          <h4>2D CA-CFAR Sub-Pixel Centroiding</h4>
-          <p>Finds faint beacon spots in a cluttered sky.</p>
-        </div>
-        <div class="step-metric-badge">&approx; 6 Candidates / Frame</div>
-      </div>
-
-      <div class="flow-step">
-        <div class="flow-node-dot"></div>
-        <div class="step-num">03</div>
-        <div class="step-body">
-          <h4>4 Hz Blink-Signature Hard Gating</h4>
-          <p>Only a 4 Hz blink passes. Stars and glints are rejected.</p>
-        </div>
-        <div class="step-metric-badge">0 / 64 False Locks</div>
-      </div>
-
-      <div class="flow-step">
-        <div class="flow-node-dot"></div>
-        <div class="step-num">04</div>
-        <div class="step-body">
-          <h4>Dual-Model IMM Kalman State Estimator</h4>
-          <p>Two motion models, blended every frame.</p>
-        </div>
-        <div class="step-metric-badge">Adaptive State Tracking</div>
-      </div>
-
-      <div class="flow-step">
-        <div class="flow-node-dot"></div>
-        <div class="step-num">05</div>
-        <div class="step-body">
-          <h4>Smith Predictor Latency Cancellation</h4>
-          <p>Predicts 40 ms ahead to cancel mount delay.</p>
-        </div>
-        <div class="step-metric-badge">40 ms Delay Canceled</div>
-      </div>
-
-      <div class="flow-step">
-        <div class="flow-node-dot"></div>
-        <div class="step-num">06</div>
-        <div class="step-body">
-          <h4>Deterministic Closed-Loop Link Closure</h4>
-          <p>8–21 ms per frame on 2 CPU cores. No GPU.</p>
-        </div>
-        <div class="step-metric-badge">99.3% Link Closure (modelled)</div>
-      </div>
-    </div>
-
-    <div class="cta-group" style="margin-bottom: 0;">
-      <a class="btn-cta primary" href="console.html">
-        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        LAUNCH ZD-1 REPLAY CONSOLE
-      </a>
-      <a class="btn-cta secondary" href="about.html">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-        VIEW FULL TEAM DOSSIER
-      </a>
-    </div>
-  </section>
-
-  <!-- SECTION 4: YOUTUBE (last) -->
-  <section class="section-view" id="sec-youtube">
-    <div class="yt-card">
-      <div class="yt-box" id="ytBox">
-        <button type="button" class="yt-play" id="ytPlay" aria-label="Play the ZeroDrift demo video on YouTube">
-          <img src="https://i.ytimg.com/vi/VCbq5Qs6Mhc/maxresdefault.jpg" alt="" loading="lazy" onerror="this.onerror=null;this.src='media/zerodrift_film_poster.jpg'">
-          <span class="yt-btn"><svg viewBox="0 0 68 48"><path d="M66.5 7.7a8.5 8.5 0 0 0-6-6C55.2.2 34 .2 34 .2S12.8.2 7.5 1.7a8.5 8.5 0 0 0-6 6C0 13 0 24 0 24s0 11 1.5 16.3a8.5 8.5 0 0 0 6 6C12.8 47.8 34 47.8 34 47.8s21.2 0 26.5-1.5a8.5 8.5 0 0 0 6-6C68 35 68 24 68 24s0-11-1.5-16.3z" fill="#FF0033"/><path d="M27 34.5 44.5 24 27 13.5z" fill="#fff"/></svg></span>
-        </button>
-      </div>
-      <div class="yt-side">
-        <svg class="yt-logo" viewBox="0 0 112 20" role="img" aria-label="YouTube"><rect width="28" height="20" rx="5.5" fill="#FF0033"/><path d="M11.5 5.8v8.4L18.8 10z" fill="#fff"/><text x="33" y="15.6" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="15.5" letter-spacing="-.4" fill="#fff">YouTube</text></svg>
-        <h3>Demo video</h3>
-        <div class="yt-tags"><span><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 1 5 5v2h1a2 2 0 0 1 2 2v9H4v-9a2 2 0 0 1 2-2h1V7a5 5 0 0 1 5-5z"/></svg>MK1</span><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="12" r="3"/></svg>Simulation</span><span><svg viewBox="0 0 24 24"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-6l1 2h2v2H7v-2h2l1-2H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>Software</span></div>
-        <a class="yt-open" href="https://youtu.be/VCbq5Qs6Mhc" target="_blank" rel="noopener">Watch on YouTube<svg viewBox="0 0 24 24"><path d="M14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7zM5 5h6v2H5v12h12v-6h2v8H3V5h2z"/></svg></a>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- Bottom Navigation for Mobile Devices -->
-<nav class="mobile-bottom-nav">
-  <a href="index.html" class="mobile-nav-item active">
-    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-    <span>Home</span>
-  </a>
-  <a href="console.html" class="mobile-nav-item">
-    <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg>
-    <span>Console</span>
-  </a>
-  <a href="live.html" class="mobile-nav-item">
-    <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>
-    <span>Live</span>
-  </a>
-  <a href="about.html" class="mobile-nav-item">
-    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-    <span>About</span>
-  </a>
-  <a href="sop.html" class="mobile-nav-item">
-    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg>
-    <span>SOP</span>
-  </a>
-  <a href="https://github.com/pranshukesavmishra/SIH-2026" class="mobile-nav-item" target="_blank" rel="noopener">
-    <svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
-    <span>Code</span>
-  </a>
-</nav>
-
-<footer class="page-footer">
-  <span class="org-mini"><span class="org-chip"><img src="brand/isro.png" alt="ISRO"></span><span class="org-chip"><img src="brand/sih2026.png" alt="SIH 2026"></span></span>ZeroDrift · Jabalpur Engineering College · Smart India Hackathon 2026 — 
-  <a href="https://github.com/pranshukesavmishra/SIH-2026" target="_blank" rel="noopener">github.com/pranshukesavmishra/SIH-2026</a>
-</footer>
-
-<!-- 3D Constellation Nebula Canvas, Dynamic Telemetry & Smooth Auto-Scroll -->
-<script>
-// 1. Guaranteed Fullpage Section Auto-Scroll & Snapping Engine
-(function initSectionAutoScroll() {
-  const sections = Array.from(document.querySelectorAll('.section-view'));
-  if (!sections.length) return;
-
-  let activeIndex = 0;
-  let isSnapping = false;
-  let snapTimeout = null;
-
-  function getClosestSectionIndex() {
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    let closestIdx = 0;
-    let minDiff = Infinity;
-    sections.forEach((sec, idx) => {
-      const topPos = sec.getBoundingClientRect().top + scrollY - 64;
-      const diff = Math.abs(topPos - scrollY);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestIdx = idx;
-      }
-    });
-    return closestIdx;
-  }
-
-  function goToSection(index) {
-    if (index < 0 || index >= sections.length) return;
-    activeIndex = index;
-    isSnapping = true;
-    clearTimeout(snapTimeout);
-
-    const target = sections[activeIndex];
-    const headerOffset = 64;
-    const elementPosition = target.getBoundingClientRect().top;
-    const offsetPosition = Math.max(0, elementPosition + window.pageYOffset - headerOffset);
-
-    // Update active nav dot immediately
-    const navDots = {
-      'sec-hero': document.getElementById('dot-sec-hero'),
-      'sec-film': document.getElementById('dot-sec-film'),
-      'sec-hardware': document.getElementById('dot-sec-hardware'),
-      'sec-pipeline': document.getElementById('dot-sec-pipeline'),
-      'sec-youtube': document.getElementById('dot-sec-youtube')
-    };
-    Object.values(navDots).forEach(dot => dot && dot.classList.remove('active'));
-    if (navDots[target.id]) navDots[target.id].classList.add('active');
-
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: 'smooth'
-    });
-
-    snapTimeout = setTimeout(() => {
-      isSnapping = false;
-    }, 700);
-  }
-
-  // Intercept Mouse Wheel for single-scroll full section glide
-  window.addEventListener('wheel', (e) => {
-    if (Math.abs(e.deltaY) < 12) return;
-    e.preventDefault();
-
-    if (isSnapping) return;
-
-    activeIndex = getClosestSectionIndex();
-    if (e.deltaY > 0) {
-      if (activeIndex < sections.length - 1) {
-        goToSection(activeIndex + 1);
-      }
-    } else {
-      if (activeIndex > 0) {
-        goToSection(activeIndex - 1);
-      }
-    }
-  }, { passive: false });
-
-  // Touch gesture support for mobile / tablet
-  let touchStartY = 0;
-  let touchStartX = 0;
-
-  window.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1) {
-      touchStartY = e.touches[0].clientY;
-      touchStartX = e.touches[0].clientX;
-    }
-  }, { passive: true });
-
-  window.addEventListener('touchmove', (e) => {
-    if (isSnapping && e.cancelable) {
-      e.preventDefault();
-    }
-  }, { passive: false });
-
-  window.addEventListener('touchend', (e) => {
-    if (isSnapping) return;
-    if (e.changedTouches.length === 1) {
-      const touchEndY = e.changedTouches[0].clientY;
-      const touchEndX = e.changedTouches[0].clientX;
-      const diffY = touchStartY - touchEndY;
-      const diffX = touchStartX - touchEndX;
-
-      if (Math.abs(diffY) > 30 && Math.abs(diffY) > Math.abs(diffX)) {
-        activeIndex = getClosestSectionIndex();
-        if (diffY > 0) {
-          if (activeIndex < sections.length - 1) {
-            goToSection(activeIndex + 1);
-          }
-        } else {
-          if (activeIndex > 0) {
-            goToSection(activeIndex - 1);
-          }
-        }
-      }
-    }
-  }, { passive: true });
-
-  // Keyboard navigation
-  window.addEventListener('keydown', (e) => {
-    if (['ArrowDown', 'PageDown', 'Space'].includes(e.code)) {
-      activeIndex = getClosestSectionIndex();
-      if (activeIndex < sections.length - 1) {
-        e.preventDefault();
-        goToSection(activeIndex + 1);
-      }
-    } else if (['ArrowUp', 'PageUp'].includes(e.code)) {
-      activeIndex = getClosestSectionIndex();
-      if (activeIndex > 0) {
-        e.preventDefault();
-        goToSection(activeIndex - 1);
-      }
-    }
-  });
-
-  // Global helper used by button clicks & dots
-  window.scrollToSection = function(id) {
-    const idx = sections.findIndex(s => s.id === id);
-    if (idx !== -1) {
-      goToSection(idx);
-    } else {
-      const target = document.getElementById(id);
-      if (target) {
-        const offsetPosition = target.getBoundingClientRect().top + window.pageYOffset - 64;
-        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-      }
-    }
-  };
-})();
-
-// 2. Loading Screen Dismissal
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const loader = document.getElementById('loading-screen');
-    if (loader) loader.classList.add('hidden');
-  }, 450);
-});
-setTimeout(() => {
-  const loader = document.getElementById('loading-screen');
-  if (loader) loader.classList.add('hidden');
-}, 1200);
-
-(function() {
-  // 3. High-Velocity Dynamic Constellation Grid Canvas (Original Vibrant Mesh)
-  const canvas = document.getElementById('bg-canvas');
-  if (canvas) {
-    const ctx = canvas.getContext('2d', { alpha: true });
-    let width = 0;
-    let height = 0;
-
-    const mouse = {
-      x: -1000,
-      y: -1000,
-      prevX: -1000,
-      prevY: -1000,
-      vx: 0,
-      vy: 0,
-      radius: 220,
-    };
-
-    let nodes = [];
-
-    const handleResize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      canvas.style.width = width + 'px';
-      canvas.style.height = height + 'px';
-      ctx.scale(dpr, dpr);
-      initNodes();
-    };
-
-    window.addEventListener('mousemove', e => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    });
-
-    window.addEventListener('mouseleave', () => {
-      mouse.x = -1000;
-      mouse.y = -1000;
-    });
-
-    const initNodes = () => {
-      nodes = [];
-      const spacing = 55;
-      const cols = Math.ceil(width / spacing) + 1;
-      const rows = Math.ceil(height / spacing) + 1;
-
-      for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-          const x = i * spacing;
-          const y = j * spacing;
-          nodes.push({
-            x,
-            y,
-            vx: 0,
-            vy: 0,
-            baseX: x,
-            baseY: y,
-            radius: Math.random() * 1.2 + 1.2,
-            label: (i * 7).toString(16).toUpperCase() + ':' + (j * 11).toString(16).toUpperCase(),
-            pulse: Math.random() * Math.PI * 2,
-          });
-        }
-      }
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    let lastTime = performance.now();
-
-    const render = (now) => {
-      const dt = Math.min((now - lastTime) / 1000, 0.05);
-      lastTime = now;
-
-      // Mouse velocity calculation
-      mouse.vx = (mouse.x - mouse.prevX) / (dt * 1000 || 1);
-      mouse.vy = (mouse.y - mouse.prevY) / (dt * 1000 || 1);
-      mouse.prevX = mouse.x;
-      mouse.prevY = mouse.y;
-
-      const speed = Math.sqrt(mouse.vx * mouse.vx + mouse.vy * mouse.vy);
-
-      ctx.clearRect(0, 0, width, height);
-
-      // Cosmic background backdrop
-      ctx.fillStyle = '#02050E';
-      ctx.fillRect(0, 0, width, height);
-
-      const neb1 = ctx.createRadialGradient(width * 0.3, height * 0.25, 40, width * 0.3, height * 0.25, width * 0.7);
-      neb1.addColorStop(0, 'rgba(14, 38, 72, 0.35)');
-      neb1.addColorStop(1, 'transparent');
-      ctx.fillStyle = neb1;
-      ctx.fillRect(0, 0, width, height);
-
-      const neb2 = ctx.createRadialGradient(width * 0.75, height * 0.75, 40, width * 0.75, height * 0.75, width * 0.6);
-      neb2.addColorStop(0, 'rgba(79, 199, 234, 0.12)');
-      neb2.addColorStop(1, 'transparent');
-      ctx.fillStyle = neb2;
-      ctx.fillRect(0, 0, width, height);
-
-      // Node Physics Engine (Hooke's Law Spring-Mass-Damping system)
-      const SPRING_K = 18;
-      const DAMPING = 0.82;
-
-      for (let i = 0; i < nodes.length; i++) {
-        const n = nodes[i];
-        n.pulse += dt * 3;
-
-        const dx = mouse.x - n.x;
-        const dy = mouse.y - n.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        // Dynamic shockwave repulsion based on cursor speed
-        if (dist < mouse.radius && dist > 0) {
-          const power = (1 - dist / mouse.radius);
-          const force = power * (1500 + speed * 150);
-          const angle = Math.atan2(dy, dx);
-
-          n.vx -= Math.cos(angle) * force * dt;
-          n.vy -= Math.sin(angle) * force * dt;
-        }
-
-        // Restoring force to home anchor
-        const homeDx = n.baseX - n.x;
-        const homeDy = n.baseY - n.y;
-
-        n.vx += homeDx * SPRING_K * dt;
-        n.vy += homeDy * SPRING_K * dt;
-
-        // Apply Damping
-        n.vx *= DAMPING;
-        n.vy *= DAMPING;
-
-        // Integrate position
-        n.x += n.vx * dt * 60;
-        n.y += n.vy * dt * 60;
-      }
-
-      // Draw Connections (Optimized Distance Culling)
-      const MAX_CONN_DIST = 75;
-      const MAX_CONN_DIST_SQ = MAX_CONN_DIST * MAX_CONN_DIST;
-
-      for (let i = 0; i < nodes.length; i++) {
-        const n = nodes[i];
-
-        for (let j = i + 1; j < nodes.length; j++) {
-          const n2 = nodes[j];
-          const ndx = n.x - n2.x;
-          const ndy = n.y - n2.y;
-          const distSq = ndx * ndx + ndy * ndy;
-
-          if (distSq < MAX_CONN_DIST_SQ) {
-            const nDist = Math.sqrt(distSq);
-            const alpha = (1 - nDist / MAX_CONN_DIST) * 0.13;
-
-            ctx.strokeStyle = `rgba(220, 235, 255, ${alpha})`;
-            ctx.lineWidth = 0.65;
-            ctx.beginPath();
-            ctx.moveTo(n.x, n.y);
-            ctx.lineTo(n2.x, n2.y);
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Render Node Points & Interactive Spatial Radar Highlights
-      for (let i = 0; i < nodes.length; i++) {
-        const n = nodes[i];
-        const dx = mouse.x - n.x;
-        const dy = mouse.y - n.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const isNear = dist < mouse.radius;
-
-        const baseAlpha = isNear ? 0.88 : 0.18 + Math.sin(n.pulse) * 0.08;
-
-        ctx.fillStyle = isNear
-          ? `rgba(79, 199, 234, ${baseAlpha})`
-          : `rgba(220, 235, 255, ${baseAlpha})`;
-
-        const currentRadius = isNear
-          ? n.radius * 2.0
-          : n.radius + Math.sin(n.pulse) * 0.25;
-
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, Math.max(0.5, currentRadius), 0, Math.PI * 2);
-        ctx.fill();
-
-        // High-tech Spatial Radar Rings on active proximity
-        if (dist < 90) {
-          const pulseRing = ((n.pulse * 20) % 30) + 4;
-          const ringAlpha = (1 - pulseRing / 34) * 0.3;
-
-          ctx.strokeStyle = `rgba(79, 199, 234, ${ringAlpha})`;
-          ctx.lineWidth = 0.9;
-          ctx.beginPath();
-          ctx.arc(n.x, n.y, pulseRing, 0, Math.PI * 2);
-          ctx.stroke();
-
-          // Hex Coordinate Readout
-          ctx.font = '8px ui-monospace, SFMono-Regular, Consolas, monospace';
-          ctx.fillStyle = `rgba(79, 199, 234, 0.8)`;
-          ctx.fillText(n.label, n.x + 10, n.y - 10);
-        }
-      }
-
-      requestAnimationFrame(render);
-    };
-
-    requestAnimationFrame(render);
-  }
-
-  // 4. Fetch live telemetry KPI metrics from telemetry_run.json
-  fetch('media/telemetry_run.json').then(r=>r.json()).then(d=>{
-    const s = d.summary;
-    const C = (v,l,m)=>'<div class="kpi-item"><b>'+v+'</b><span>'+l+'</span><small>'+m+'</small></div>';
-    document.getElementById('chips').innerHTML=
-      C(s.acquisition_time_s.toFixed(2)+' s','ACQUISITION TIME','from cold start')+
-      C(s.lock_retention_pct.toFixed(1)+' %','LOCK RETENTION','across pass')+
-      C(s.pointing_error_urad.p50.toFixed(0)+' µrad','MEDIAN ERROR','in closed lock')+
-      C('0 / 64','WRONG-TARGET LOCKS','100% decoy rejection')+
-      C('250','TESTS PASS','automated suite');
-  }).catch(()=>{});
-
-  // 5. Active Section Dot Indicator on Scroll
-  const sections = document.querySelectorAll('.section-view');
-  const navDots = {
-    'sec-hero': document.getElementById('dot-sec-hero'),
-    'sec-film': document.getElementById('dot-sec-film'),
-    'sec-hardware': document.getElementById('dot-sec-hardware'),
-    'sec-pipeline': document.getElementById('dot-sec-pipeline'),
-    'sec-youtube': document.getElementById('dot-sec-youtube')
-  };
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const id = entry.target.id;
-        Object.values(navDots).forEach(dot => dot && dot.classList.remove('active'));
-        if (navDots[id]) navDots[id].classList.add('active');
-      }
-    });
-  }, { threshold: 0.35 });
-
-  sections.forEach(sec => observer.observe(sec));
-
-  // 6. Instant Morphing Square Loading Screen Trigger on Navigation Links
-  document.querySelectorAll('a[href$=".html"]').forEach(link => {
-    link.addEventListener('click', e => {
-      const href = link.getAttribute('href');
-      if (href && !href.startsWith('http') && !href.startsWith('#') && !link.getAttribute('target')) {
-        const loader = document.getElementById('loading-screen');
-        if (loader) {
-          loader.classList.remove('hidden');
-          loader.style.opacity = '1';
-          loader.style.visibility = 'visible';
-        }
-      }
-    });
-  });
-})();
-</script>
+  <!-- CTA -->
+<section class="next" aria-label="Next step"><div class="next-in"><div><small>Step 1 of 5 done · Next: Console</small><h3>Replay a real run in the Console.</h3><p>Watch the engine lock on a beacon and ignore every decoy, frame by frame, with the logged numbers.</p></div>
+<div><a class="next-btn" href="console.html">Open Console <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></a></div></div></section>
+</main>
+<footer class="ft"><div class="wrap">
+  <div style="display:flex;align-items:center;gap:10px"><img src="brand/isro.png" alt="ISRO"><img src="brand/sih2026.png" alt="Smart India Hackathon 2026"></div>
+  <div>ZeroDrift · Problem statement SIH26169 (ISRO) · Jabalpur Engineering College · <a href="https://github.com/pranshukesavmishra/SIH-2026" target="_blank" rel="noopener">Open source</a></div>
+</div></footer>
+<nav class="mnav" aria-label="Main"><a href="index.html" class="on"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</a><a href="console.html"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg>Console</a><a href="live.html"><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Live</a><a href="about.html"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>About</a><a href="sop.html"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/></svg>SOP</a></nav>
 <script type="importmap">
 {"imports":{
   "three":"./vendor/three/three.module.js",
@@ -1689,81 +235,12 @@ setTimeout(() => {
   "three/addons/loaders/STLLoader.js":"./vendor/three/STLLoader.js"
 }}
 </script>
+<script type="module" src="hero3d.js"></script>
 <script type="module" src="rigs3d.js"></script>
-<script>
-/* MK1 / MK2 cards: PHOTO · VIDEO · 3D. Media loads only when its tab is
-   opened; a file that is not there yet shows a placeholder instead. */
-document.querySelectorAll('.rig-view').forEach(view => {
-  const tabs = view.querySelectorAll('.rig-tabs button');
-  const empty = view.querySelector('.rig-empty');
-  const media = { photo: view.querySelector('img.rig-media'), video: view.querySelector('video.rig-media') };
-  const missing = {};
-  const show = kind => {
-    tabs.forEach(t => t.classList.toggle('on', t.dataset.view === kind));
-    view.classList.toggle('flat', kind !== '3d');
-    Object.entries(media).forEach(([k, el]) => {
-      const on = k === kind && !missing[k];
-      el.classList.toggle('show', on);
-      if (k === 'video') { if (on) el.play().catch(() => {}); else el.pause(); }
-    });
-    const gone = kind !== '3d' && missing[kind];
-    empty.classList.toggle('show', !!gone);
-    if (gone) empty.querySelector('.rig-empty-kind').textContent = kind.toUpperCase();
-  };
-  Object.entries(media).forEach(([k, el]) => {
-    el.addEventListener('error', () => { missing[k] = true; if (view.querySelector('.rig-tabs .on').dataset.view === k) show(k); });
-  });
-  tabs.forEach(t => t.addEventListener('click', () => {
-    const k = t.dataset.view, el = media[k];
-    if (el && !el.getAttribute('src')) {
-      // MP4 (H.264) where the browser plays it, else the WebM copy.
-      const mp4 = el.tagName !== 'VIDEO' || el.canPlayType('video/mp4; codecs="avc1.42E01E"');
-      el.setAttribute('src', mp4 || !el.dataset.alt ? el.dataset.src : el.dataset.alt);
-    }
-    show(k);
-  }));
-});
-</script>
-<script>
-/* Software demo: pick 720p on phones, set the source only when the section
-   is first reached, play muted while at least half visible. */
-(function () {
-  const sec = document.getElementById('sec-software');
-  const v = document.getElementById('swVideo');
-  if (!sec || !v || !('IntersectionObserver' in window)) return;
-  const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const load = () => {
-    if (v.getAttribute('src')) return;
-    v.src = window.innerWidth <= 800 ? 'media/software_demo_720.mp4' : 'media/software_demo.mp4';
-  };
-  new IntersectionObserver((es, o) => {
-    if (es.some(e => e.isIntersecting)) { load(); o.disconnect(); }
-  }, { rootMargin: '200px 0px' }).observe(sec);
-  new IntersectionObserver(es => es.forEach(e => {
-    if (e.intersectionRatio >= 0.5) { load(); if (!still) v.play().catch(() => {}); }
-    else if (!v.paused) v.pause();
-  }), { threshold: [0, 0.5] }).observe(v);
-  document.getElementById('swFull').addEventListener('click', () => {
-    load();
-    if (v.requestFullscreen) v.requestFullscreen().catch(() => {});
-    else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
-    v.play().catch(() => {});
-  });
-})();
-</script>
-<script>
-/* YouTube block: load the player only when asked. */
-(function () {
-  const btn = document.getElementById('ytPlay'), box = document.getElementById('ytBox');
-  if (!btn || !box) return;
-  btn.addEventListener('click', () => {
-    const f = document.createElement('iframe');
-    f.src = 'https://www.youtube-nocookie.com/embed/VCbq5Qs6Mhc?autoplay=1&rel=0&modestbranding=1';
-    f.title = 'ZeroDrift demo video'; f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.allowFullscreen = true;
-    box.replaceChildren(f);
-  });
-})();
-</script>
+<script src="tracker-core.js" defer></script>
+<script src="decide.js" defer></script>
+<script src="apple.js" defer></script>
+<script src="bg.js" defer></script>
 <script src="mv.js" defer></script>
 </body>
 </html>

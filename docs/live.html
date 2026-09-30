@@ -9,7 +9,14 @@
 <meta property="og:description" content="Try ZeroDrift live: your webcam locks onto a light blinking at 4 Hz and ignores everything else. Runs in the browser. SIH 2026, PS26169.">
 <meta property="og:image" content="brand/logo_banner.png">
 <link rel="icon" type="image/png" href="brand/zerodrift_mark.png">
+<link rel="stylesheet" href="tour.css">
+<link rel="preload" href="fonts/inter-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+@font-face { font-family: 'ZD Inter'; src: url(fonts/inter-latin-400-normal.woff2) format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'ZD Inter'; src: url(fonts/inter-latin-500-normal.woff2) format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'ZD Inter'; src: url(fonts/inter-latin-600-normal.woff2) format('woff2'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'ZD Inter'; src: url(fonts/inter-latin-700-normal.woff2) format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'ZD Inter'; src: url(fonts/inter-latin-800-normal.woff2) format('woff2'); font-weight: 800; font-display: swap; }
 :root {
   --bg-deep: #02050E;
   --bg-base: #040915;
@@ -235,34 +242,159 @@ details[open] summary::before { content: '− '; }
 .mobile-nav-item svg{width:18px;height:18px;fill:currentColor}
 .mobile-nav-item.active{color:#4FC7EA}
 @media (max-width:900px){.nav-links{display:none!important}.mobile-bottom-nav{display:flex}body{padding-bottom:70px}}
+/* ---------- global nav: logo left · five icon tabs centred · GitHub right ---------- */
+.gn { position: sticky; top: 0; z-index: 100; height: 68px; background: rgba(18,18,20,.82); backdrop-filter: saturate(180%) blur(22px); -webkit-backdrop-filter: saturate(180%) blur(22px); border-bottom: 1px solid rgba(255,255,255,.07); }
+.gn-in { margin: 0 auto; padding: 0 28px; max-width: 1320px; height: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; }
+.gn-in .logo { justify-self: start; display: flex; align-items: center; text-decoration: none; }
+.gn-tabs { display: flex; align-items: center; gap: 6px; }
+.gn-tabs a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-width: 84px; height: 54px; padding: 0 14px; border-radius: 14px;
+  font-size: 11.5px; font-weight: 500; letter-spacing: .01em; line-height: 1; color: rgba(232,232,237,.66); text-decoration: none; transition: color .2s, background .2s; }
+.gn-tabs a svg { width: 21px; height: 21px; fill: currentColor; }
+.gn-tabs a:hover { color: #f5f5f7; background: rgba(255,255,255,.05); }
+.gn-tabs a.on { color: #fff; background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 1px rgba(255,255,255,.08); }
+.gn-tabs a.on svg { fill: #4FC7EA; }
+.gn-in .gh { justify-self: end; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: rgba(232,232,237,.75); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); transition: color .2s, background .2s; }
+.gn-in .gh:hover { color: #fff; background: rgba(255,255,255,.12); }
+.gn-in .gh svg { width: 20px; height: 20px; fill: currentColor; display: block; }
+@media (max-width: 900px) {
+  .gn { height: 56px; }
+  .gn-in { padding: 0 18px; grid-template-columns: 1fr auto; }
+  .gn-tabs { display: none; }
+}
+
+/* ---------- ZeroDrift logo (inline SVG + live text) ---------- */
+.zdl { display: inline-flex; align-items: center; gap: .42em; font-size: 15px; line-height: 1; white-space: nowrap; }
+.zdl-em { width: 1.72em; height: 1.72em; flex: none; display: block; }
+.zdl-tx { display: flex; flex-direction: column; gap: .45em; }
+.zdl-wm { display: inline-flex; align-items: center; font-weight: 800; font-size: 1em; letter-spacing: .035em; }
+.zdl-wm b { color: #35a7e8; font-weight: 800; }
+.zdl-wm i { font-style: normal; color: #f5f5f7; }
+.zdl-o { width: .98em; height: .98em; margin: 0 .1em 0 .04em; flex: none; }
+.zdl small { font: 600 .25em/1 'ZD Inter', -apple-system, sans-serif; letter-spacing: .24em; text-transform: uppercase; color: #8b9aaf; padding-left: .12em; }
+.gn .zdl { font-size: 17px; }
+
+.gn, .gn * { box-sizing: border-box; font-family: 'ZD Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+.mnav { display: none; }
+@media (max-width: 900px) {
+  .gn nav { display: none; }
+  .mnav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 120; height: 62px; justify-content: space-around; align-items: center;
+    background: rgba(22,22,24,.9); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-top: 1px solid rgba(255,255,255,.08); }
+  .mnav a { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10.5px; color: #86868b; text-decoration: none; }
+  .mnav a.on { color: #4FC7EA; }
+  .mnav svg { width: 21px; height: 21px; fill: currentColor; }
+  body { padding-bottom: 70px; }
+}
+
+/* ---------- Apple-style refresh (same look as Home / About / SOP) ---------- */
+:root { --bg-deep: #000; --bg-base: #000; --panel: rgba(28,28,30,.78); --panel-solid: #1c1c1e; --edge: rgba(255,255,255,.1);
+  --ink-primary: #f5f5f7; --ink-secondary: #a1a1a6; --ink-muted: #86868b; --green: #5DE08A; --amber: #FFC85A;
+  --font-sans: 'ZD Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --glow-card: 0 30px 80px -20px rgba(0,0,0,.9), 0 0 0 1px rgba(255,255,255,.06); }
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  background: radial-gradient(ellipse 90% 50% at 50% -10%, rgba(79,199,234,.13), transparent 60%), #000; }
+.wrap { max-width: 1260px; padding: 72px 24px 80px; }
+.lv-hero { text-align: center; }
+.eyebrow { font: 600 13px/1 var(--font-sans); letter-spacing: .14em; color: #4FC7EA; margin-bottom: 16px; }
+h1 { font-size: clamp(40px, 6.6vw, 84px); font-weight: 700; line-height: 1.03; letter-spacing: -.04em; }
+h1 .grad { background: linear-gradient(90deg, #4FC7EA 0%, #5DE08A 60%, #b4f5c8 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lede { font-size: clamp(17px, 1.8vw, 21px); line-height: 1.45; color: #a1a1a6; max-width: 640px; margin: 20px auto 0; }
+.lv-feat { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+.lv-feat span { display: inline-flex; align-items: center; gap: 8px; padding: 9px 15px; border-radius: 980px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); font-size: 14px; font-weight: 500; color: #f5f5f7; }
+.lv-feat svg { width: 17px; height: 17px; fill: #4FC7EA; }
+.lightnote { max-width: 980px; margin: 30px auto 28px; border-radius: 16px; padding: 12px 16px; font-size: 13.5px; background: rgba(255,200,90,.06); border-color: rgba(255,200,90,.25); }
+.stage { gap: 24px; margin-top: 0; grid-template-columns: minmax(0,1fr) 320px; }
+.viewport { border-radius: 28px; border: 1px solid rgba(255,255,255,.08); background: #0a0a0c; }
+.placeholder svg { fill: #4FC7EA; opacity: .8; width: 56px; height: 56px; }
+.placeholder p { color: #a1a1a6; font-size: 16px; }
+.card { background: var(--panel); border: 1px solid rgba(255,255,255,.07); border-radius: 22px; padding: 20px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.card h3 { font: 600 12px/1 var(--font-sans); letter-spacing: .12em; color: #86868b; margin-bottom: 14px; }
+.btn { border-radius: 980px; border: 0; background: #2997ff; color: #fff; font: 600 14px/1 var(--font-sans); letter-spacing: .02em; padding: 14px 18px; }
+.btn:hover:not(:disabled) { background: #0a84ff; box-shadow: 0 8px 26px rgba(41,151,255,.35); }
+.btn.ghost { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); color: #f5f5f7; }
+.btn.ghost:hover:not(:disabled) { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.18); }
+.btn.ghost.on { background: rgba(79,199,234,.14); border-color: rgba(79,199,234,.5); color: #7FE0F8; }
+.btn.ghost.good { background: rgba(93,224,138,.12); border-color: rgba(93,224,138,.45); color: #5DE08A; }
+.btn svg { width: 17px; height: 17px; }
+.state-chip { border-radius: 980px; font: 600 13px/1 var(--font-sans); letter-spacing: .12em; padding: 12px 14px; }
+.readout { padding: 9px 0; border-bottom-color: rgba(255,255,255,.07); }
+.readout span { font: 500 12px var(--font-sans); letter-spacing: .04em; color: #86868b; }
+.readout b { font-size: 14px; }
+select { border-radius: 10px; background: #1c1c1e; border-color: rgba(255,255,255,.12); }
+details { border-top-color: rgba(255,255,255,.08); }
+summary { font: 600 12px var(--font-sans); letter-spacing: .1em; }
+label.row { font: 500 13px var(--font-sans); }
+.note { border-radius: 14px; }
+.steps { margin-top: 56px; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 20px; }
+.step { background: #111113; border: 1px solid rgba(255,255,255,.07); border-radius: 24px; padding: 28px 26px; }
+.step-ic { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; margin-bottom: 18px;
+  background: radial-gradient(circle at 50% 35%, rgba(79,199,234,.28), rgba(79,199,234,.06)); box-shadow: inset 0 0 0 1px rgba(79,199,234,.3); }
+.step-ic svg { width: 26px; height: 26px; fill: #4FC7EA; }
+.step-n { font: 600 13px/1 var(--font-sans); letter-spacing: .12em; color: #86868b; margin-bottom: 10px; }
+.step p { font-size: 16px; line-height: 1.5; color: #a1a1a6; }
+.step p b { color: #f5f5f7; }
+@media (max-width: 900px) { .steps { grid-template-columns: 1fr; } .wrap { padding-top: 44px; } .stage { grid-template-columns: 1fr; } }
+.org-strip { margin-top: 48px; }
+
+/* ---------- hero: real-time scene (hero3d.js, shot "live"); camera + controls are section two ---------- */
+.hero { position: relative; height: calc(100svh - 68px); min-height: 560px; display: flex; align-items: center; overflow: hidden; background: #000; }
+.hero-stage { position: absolute; inset: 0; z-index: 0; }
+.hero-stage canvas, .hero-poster { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
+.hero-stage canvas { opacity: 0; transition: opacity 1.2s ease; }
+.hero.gl-on .hero-stage canvas { opacity: 1; }
+.hero-stage::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(0,0,0,.6) 0%, rgba(0,0,0,.3) 38%, rgba(0,0,0,0) 60%), linear-gradient(180deg, rgba(0,0,0,.3) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 84%, #000 100%); }
+.hero-wrap { position: relative; z-index: 1; width: 100%; max-width: 1260px; margin: 0 auto; padding: 40px 28px 14vh; }
+.hero h1 { max-width: 11.5em; }
+.hero .lede { margin: 22px 0 0; max-width: 560px; }
+.hero .lv-feat { justify-content: flex-start; max-width: 640px; }
+.hero-cta { display: flex; gap: 14px; margin-top: 30px; }
+.hero-btn { display: inline-flex; align-items: center; gap: 9px; padding: 13px 22px; border-radius: 980px; background: #4FC7EA; color: #03121c; font-weight: 600; font-size: 16px; text-decoration: none; }
+.hero-btn:hover { background: #7fd9f2; }
+.hero-btn svg { width: 18px; height: 18px; fill: currentColor; }
+.hero-down { position: absolute; left: 50%; bottom: 22px; z-index: 2; width: 40px; height: 40px; margin-left: -20px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px); animation: heroBob 2.4s ease-in-out infinite; }
+.hero-down svg { width: 18px; height: 18px; fill: none; stroke: #f5f5f7; stroke-width: 2; }
+@keyframes heroBob { 50% { transform: translateY(6px); } }
+.hero .drop { animation: heroDrop 1.25s cubic-bezier(.2, .8, .2, 1) both; animation-delay: .9s; }
+.hero .drop.d1 { animation-delay: 1.25s; } .hero .drop.d2 { animation-delay: 1.6s; } .hero .drop.d3 { animation-delay: 1.95s; }
+@keyframes heroDrop { from { opacity: 0; transform: translateY(-46px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@media (prefers-reduced-motion: reduce) { .hero .drop { animation: none; } }
+.hero.gl-wait .hero-poster { opacity: 0; } .hero.gl-wait:not(.go) .hero-poster { animation: zdReveal .6s 8s forwards; } @keyframes zdReveal { to { opacity: 1; } } .hero-stage canvas { transition-duration: .45s !important; }
+.hero .drop { animation-play-state: paused; } .hero.go .drop { animation-play-state: running; }
+#try { scroll-margin-top: 0; padding-top: 34px; }
+#try .lightnote { margin-top: 0; }
+@media (max-width: 900px) {
+  .hero { height: calc(100svh - 56px); align-items: flex-end; }
+  .hero-stage::after { background: linear-gradient(180deg, rgba(0,0,0,.2) 0%, rgba(0,0,0,0) 30%, rgba(0,0,0,.6) 66%, #000 100%); }
+  .hero-wrap { padding-bottom: 60px; } .hero-down { display: none; }
+  .hero .lv-feat { display: none; } .hero h1 { font-size: clamp(34px, 9.5vw, 46px); } .hero .lede { font-size: 16px; }
+}
+#bgStars { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; }
 </style>
 </head>
 <body>
 
-<header class="top-nav">
-  <a href="index.html" class="brand-group">
-    <img src="brand/zerodrift_logo.png" alt="ZeroDrift" class="brand-logo-full">
-  </a>
-  <nav class="nav-links">
-    <a href="index.html" class="nav-link">
-      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>HOME</a>
-    <a href="console.html" class="nav-link">
-      <svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4z"/></svg>CONSOLE</a>
-    <a href="live.html" class="nav-link active">
-      <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>LIVE DEMO</a>
-    <a href="about.html" class="nav-link">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>ABOUT US</a>
-    <a href="sop.html" class="nav-link">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg>SOP</a>
-  </nav>
-</header>
+<header class="gn"><div class="gn-in">
+  <a class="logo" href="index.html" aria-label="ZeroDrift home"><span class="zdl zdl-nav"><svg class="zdl-em" viewBox="0 0 512 512" aria-hidden="true"><defs><linearGradient id="zdSweepnav" x1="0" y1="1" x2=".62" y2="0"><stop offset="0" stop-color="#35a7e8" stop-opacity="0"/><stop offset="1" stop-color="#35a7e8" stop-opacity=".55"/></linearGradient></defs><path d="M256 256 L 297.6 88.7 A172 172 0 0 1 377.6 134.4 Z" fill="url(#zdSweepnav)"/><g fill="none" stroke="#1d4f86" stroke-width="5"><circle cx="256" cy="256" r="115"/><circle cx="256" cy="256" r="64"/><path d="M256 86v340M86 256h340"/></g><circle cx="256" cy="256" r="172" fill="none" stroke="#35a7e8" stroke-width="13"/><path d="M256 34v52M256 426v52M34 256h52M426 256h52" stroke="#35a7e8" stroke-width="12" stroke-linecap="butt"/><g fill="#35a7e8"><circle cx="200" cy="110" r="16"/><circle cx="178" cy="160" r="26"/><circle cx="139" cy="210" r="21"/><circle cx="341" cy="318" r="18"/></g><circle cx="256" cy="256" r="32" fill="#34c759"/><circle cx="256" cy="256" r="13" fill="#fff"/></svg><span class="zdl-tx"><span class="zdl-wm"><b>ZER</b><svg class="zdl-o" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="29" fill="none" stroke="#35a7e8" stroke-width="10"/><path d="M50 0v21M50 79v21M0 50h21M79 50h21" stroke="#35a7e8" stroke-width="10"/><circle cx="50" cy="50" r="12" fill="#34c759"/></svg><i>DRIFT</i></span></span></span></a>
+  <nav class="gn-tabs" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a><a href="console.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg><span>Console</span></a><a href="live.html" class="on" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Live demo</span></a><a href="about.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>About us</span></a><a href="sop.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/></svg><span>SOP</span></a></nav>
+  <a class="gh" href="https://github.com/pranshukesavmishra/SIH-2026" target="_blank" rel="noopener" aria-label="Source code on GitHub" title="Source code on GitHub"><svg viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg></a>
+</div></header>
 
-<div class="wrap">
-  <div class="eyebrow">LIVE DEMO · RUNS ON YOUR CAMERA</div>
-  <h1>Locks onto the blink.<br>Ignores everything else.</h1>
-  <p class="lede">Show it a light blinking at the set rate. Lamps, screens, faces and wrong-rate
-    blinkers are ignored.</p>
+<!-- HERO: the same real-time scene as Home; the satellite arrives from above -->
+<section class="hero gl-wait" id="top" data-shot="live">
+  <div class="hero-stage"><img class="hero-poster" src="media/site/live_poster.jpg" alt=""><canvas id="heroGL" aria-hidden="true"></canvas></div>
+  <div class="hero-wrap hero-in">
+    <div class="eyebrow drop">LIVE DEMO · RUNS ON YOUR CAMERA</div>
+    <h1 class="drop d1">Locks onto the blink.<br><span class="grad">Ignores everything else.</span></h1>
+    <p class="lede drop d2">Show it a light blinking at the set rate. It locks on in about a second and ignores lamps, screens and lights blinking at any other rate.</p>
+    <div class="lv-feat drop d2"><span><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Any webcam</span><span><svg viewBox="0 0 24 24"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>Video stays on your device</span><span><svg viewBox="0 0 24 24"><path d="M2 12h4l2.5-7 5 14L16 9l2 3h4" fill="none" stroke="#4FC7EA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Locks on the 4 Hz blink</span><span><svg viewBox="0 0 24 24"><path d="M15 7v4h1v2h-3V5h2l-3-4-3 4h2v8H8v-2.07A1.99 1.99 0 0 0 9 9.2a2 2 0 1 0-3 1.73V13a2 2 0 0 0 2 2h3v3.05A2.5 2.5 0 1 0 13 18.05V15h3a2 2 0 0 0 2-2v-2h1V7h-4z"/></svg>Drives MK1 over USB</span></div>
+    <div class="hero-cta drop d3"><a class="hero-btn" href="#try"><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Try it now</a></div>
+    <p class="tour-hint drop d3">Step 3 of 5 · After the demo: <a href="sop.html">see how we run and test it (SOP)</a>, then <a href="about.html">meet the team</a>.</p>
+  </div>
+  <a class="hero-down" href="#try" aria-label="Scroll down"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></a>
+</section>
 
+<div class="wrap" id="try">
   <div class="lightnote"><svg viewBox="0 0 24 24"><path d="M9 21h6v-1H9v1zm3-20a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3.26A7 7 0 0 0 12 1z"/></svg>
       <span>Works best in a <b>dark or dim room</b>. Using the <b>red LED beacon</b>? Turn on <b>RED BEACON FILTER</b> in the <b>⚙ settings</b> on the video: it then works in bright rooms too. Phone or white light in a bright room: keep lamps and windows out of view.</span></div>
 
@@ -398,11 +530,11 @@ details[open] summary::before { content: '− '; }
   </div>
 
   <div class="steps">
-    <div class="step"><div class="step-n">01 · START</div>
+    <div class="step"><div class="step-ic"><svg viewBox="0 0 24 24"><path d="M12 15.2A3.2 3.2 0 1 0 12 8.8a3.2 3.2 0 0 0 0 6.4zM9 2 7.17 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.17L15 2H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg></div><div class="step-n">01 · START</div>
       <p>Press <b>START CAMERA</b> and allow access.</p></div>
-    <div class="step"><div class="step-n">02 · BEACON</div>
+    <div class="step"><div class="step-ic"><svg viewBox="0 0 24 24"><path d="M16 1H8a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm-4 20a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm4-5H8V4h8v12z"/><circle cx="12" cy="9" r="2.6"/></svg></div><div class="step-n">02 · BEACON</div>
       <p>On a phone, open this page and press <b>USE AS BEACON</b>. Any 4&nbsp;Hz strobe works too.</p></div>
-    <div class="step"><div class="step-n">03 · LOCK</div>
+    <div class="step"><div class="step-ic"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zm-6 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4zM9 8V6a3 3 0 0 1 6 0v2H9z"/></svg></div><div class="step-n">03 · LOCK</div>
       <p>Hold it in view: <b style="color:var(--green)">LOCKED</b> in about a second. Move it anywhere. Only the set <b>BEACON RATE</b> locks. Bright room: turn on <b>RED BEACON FILTER</b> (red beacon), or hold a red filter or sunglasses lens over the camera.</p></div>
   </div>
   <div class="org-strip">
@@ -411,6 +543,9 @@ details[open] summary::before { content: '− '; }
     <span class="org-txt"><b>PS SIH26169</b><br>JABALPUR ENGINEERING COLLEGE</span>
   </div>
 </div>
+
+<section class="next" aria-label="Next step"><div class="next-in"><div><small>Step 3 of 5 done · Next: SOP</small><h3>See how we run and test it.</h3><p>The standard operating procedure: setup, safety, acceptance criteria and the record of every run.</p></div>
+<div><a class="next-btn" href="sop.html">Open SOP <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></a></div></div></section>
 
 <div class="beacon-overlay" id="beaconOverlay">
   <button class="exit" id="beaconExit">TAP TO STOP BEACON</button>
@@ -1310,12 +1445,11 @@ if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
   note('Opened as a file, so the camera is blocked. Use the website, or run <b>python -m http.server</b> in docs/.', true);
 }
 </script>
-<nav class="mobile-bottom-nav">
-  <a href="index.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span></a>
-  <a href="console.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg><span>Console</span></a>
-  <a href="live.html" class="mobile-nav-item active"><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Live</span></a>
-  <a href="about.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>About</span></a>
-  <a href="sop.html" class="mobile-nav-item"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h3v2H8V9z"/></svg><span>SOP</span></a>
-</nav>
+<nav class="mnav" aria-label="Main"><a href="index.html"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home</a><a href="console.html"><svg viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2zm0 4v10h16V8H4zm3 2h2v2H7v-2zm0 4h10v2H7v-2zm4-4h6v2h-6v-2z"/></svg>Console</a><a href="live.html" class="on"><svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>Live</a><a href="about.html"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>About</a><a href="sop.html"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8v-2zm0 4h8v2H8v-2z"/></svg>SOP</a></nav>
+<script type="importmap">
+{"imports":{"three":"./vendor/three/three.module.js"}}
+</script>
+<script type="module" src="hero3d.js"></script>
+<script src="bg.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,305 @@
+{
+ "parts": [
+  {
+   "name": "01_base_hub",
+   "group": "fixed",
+   "colour": "#9aa0a8",
+   "printed": true,
+   "note": "Base hub: two 6808 bearings, open centre for cables, pan motor tower"
+  },
+  {
+   "name": "02_leg_1",
+   "group": "fixed",
+   "colour": "#8b9098",
+   "printed": true,
+   "note": "Tripod leg (print 3)"
+  },
+  {
+   "name": "02_leg_2",
+   "group": "fixed",
+   "colour": "#8b9098",
+   "printed": true,
+   "note": "Tripod leg (print 3)"
+  },
+  {
+   "name": "02_leg_3",
+   "group": "fixed",
+   "colour": "#8b9098",
+   "printed": true,
+   "note": "Tripod leg (print 3)"
+  },
+  {
+   "name": "03_pan_sensor_bridge",
+   "group": "fixed",
+   "colour": "#6f7680",
+   "printed": true,
+   "note": "Holds the pan AS5600 over the pan motor shaft"
+  },
+  {
+   "name": "04_magnet_cap",
+   "group": "fixed",
+   "colour": "#e0e0e0",
+   "printed": true,
+   "note": "Magnet cap on the pan motor shaft"
+  },
+  {
+   "name": "05_spindle_washer",
+   "group": "pan",
+   "colour": "#e0e0e0",
+   "printed": true,
+   "note": "Clamps the lower pan bearing (3 x M3)"
+  },
+  {
+   "name": "06_pan_turntable",
+   "group": "pan",
+   "colour": "#a7adb5",
+   "printed": true,
+   "note": "Hollow spindle + 80T pulley + deck, one print"
+  },
+  {
+   "name": "07_arm_right",
+   "group": "pan",
+   "colour": "#9aa0a8",
+   "printed": true,
+   "note": "Yoke arm, belt side (6806 bearing, motor-plate standoffs)"
+  },
+  {
+   "name": "08_arm_left",
+   "group": "pan",
+   "colour": "#9aa0a8",
+   "printed": true,
+   "note": "Yoke arm, cable side (6806 bearing)"
+  },
+  {
+   "name": "09_tilt_motor_plate",
+   "group": "pan",
+   "colour": "#7d848e",
+   "printed": true,
+   "note": "Tilt motor plate: stands on the deck under the head"
+  },
+  {
+   "name": "10_tilt_sensor_bracket",
+   "group": "pan",
+   "colour": "#6f7680",
+   "printed": true,
+   "note": "Tilt sensor bracket, outside the right arm"
+  },
+  {
+   "name": "11_head",
+   "group": "tilt",
+   "colour": "#2b2e33",
+   "printed": true,
+   "note": "Optics head (camera + laser bench)"
+  },
+  {
+   "name": "12_front_plate",
+   "group": "tilt",
+   "colour": "#1f2226",
+   "printed": true,
+   "note": "Camera board plate"
+  },
+  {
+   "name": "13_laser_holder",
+   "group": "tilt",
+   "colour": "#1f2226",
+   "printed": true,
+   "note": "Laser tube with 3 alignment screws"
+  },
+  {
+   "name": "14_trunnion_left",
+   "group": "tilt",
+   "colour": "#c3c7cd",
+   "printed": true,
+   "note": "Left trunnion: hollow, cables pass through"
+  },
+  {
+   "name": "15_trunnion_right",
+   "group": "tilt",
+   "colour": "#c3c7cd",
+   "printed": true,
+   "note": "Right trunnion with the 80T tilt pulley built in"
+  },
+  {
+   "name": "16_electronics_box",
+   "group": "desk",
+   "colour": "#3a3f46",
+   "printed": true,
+   "note": "Electronics box (UNO + CNC shield)"
+  },
+  {
+   "name": "17_electronics_lid",
+   "group": "desk",
+   "colour": "#4a5058",
+   "printed": true,
+   "note": "Box lid with fan opening"
+  },
+  {
+   "name": "00_test_coupon",
+   "group": "desk",
+   "colour": "#e7c96a",
+   "printed": true,
+   "note": "Fit test (print FIRST)"
+  },
+  {
+   "name": "m_pan_motor",
+   "group": "fixed",
+   "colour": "#1c1d20",
+   "printed": false,
+   "note": "NEMA17 (reuse MK2)"
+  },
+  {
+   "name": "m_pan_motor_shaft",
+   "group": "fixed",
+   "colour": "#c9ccd1",
+   "printed": false,
+   "note": ""
+  },
+  {
+   "name": "m_pan_pulley20",
+   "group": "fixed",
+   "colour": "#c9ccd1",
+   "printed": false,
+   "note": "GT2 20T 5 mm bore (hub down)"
+  },
+  {
+   "name": "m_pan_belt",
+   "group": "fixedbelt",
+   "colour": "#111214",
+   "printed": false,
+   "note": "GT2 6 mm closed belt 232 mm (240 also fits)"
+  },
+  {
+   "name": "m_brg_pan_low",
+   "group": "fixed",
+   "colour": "#d7dade",
+   "printed": false,
+   "note": "6808-2RS"
+  },
+  {
+   "name": "m_brg_pan_top",
+   "group": "fixed",
+   "colour": "#d7dade",
+   "printed": false,
+   "note": "6808-2RS"
+  },
+  {
+   "name": "m_pan_as5600",
+   "group": "fixed",
+   "colour": "#1d6fd1",
+   "printed": false,
+   "note": "AS5600 (pan, reads the motor)"
+  },
+  {
+   "name": "m_tilt_motor",
+   "group": "pan",
+   "colour": "#1c1d20",
+   "printed": false,
+   "note": "NEMA17 (reuse MK2), on the deck under the head"
+  },
+  {
+   "name": "m_tilt_motor_shaft",
+   "group": "pan",
+   "colour": "#c9ccd1",
+   "printed": false,
+   "note": ""
+  },
+  {
+   "name": "m_tilt_pulley20",
+   "group": "pan",
+   "colour": "#c9ccd1",
+   "printed": false,
+   "note": "GT2 20T 5 mm bore"
+  },
+  {
+   "name": "m_tilt_belt",
+   "group": "pan",
+   "colour": "#111214",
+   "printed": false,
+   "note": "GT2 6 mm closed belt 280 mm"
+  },
+  {
+   "name": "m_brg_tilt_r",
+   "group": "pan",
+   "colour": "#d7dade",
+   "printed": false,
+   "note": "6806-2RS"
+  },
+  {
+   "name": "m_brg_tilt_l",
+   "group": "pan",
+   "colour": "#d7dade",
+   "printed": false,
+   "note": "6806-2RS"
+  },
+  {
+   "name": "m_tilt_as5600",
+   "group": "pan",
+   "colour": "#1d6fd1",
+   "printed": false,
+   "note": "AS5600 (tilt)"
+  },
+  {
+   "name": "m_camera",
+   "group": "tilt",
+   "colour": "#1f7a4a",
+   "printed": false,
+   "note": "USB camera board 38x38"
+  },
+  {
+   "name": "m_laser",
+   "group": "tilt",
+   "colour": "#b08a2e",
+   "printed": false,
+   "note": "12 mm laser module"
+  }
+ ],
+ "z_tilt": 212.0,
+ "belts": {
+  "ratio": 4.0,
+  "pan": {
+   "belt_mm": 232.0,
+   "teeth": 116.0,
+   "centre_mm": 63.09,
+   "motor_x_mm": -63.09,
+   "belts_that_fit_mm": [
+    227,
+    228,
+    229,
+    230,
+    231,
+    232,
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    240,
+    241,
+    242,
+    243,
+    244,
+    245
+   ]
+  },
+  "tilt": {
+   "belt_mm": 280.0,
+   "teeth": 140.0,
+   "centre_mm": 87.92,
+   "motor_z_mm": 131.35,
+   "belts_that_fit_mm": [
+    276,
+    277,
+    278,
+    279,
+    280,
+    281,
+    282,
+    283,
+    284
+   ]
+  },
+  "steps_per_output_deg": 35.55555555555556
+ }
+}

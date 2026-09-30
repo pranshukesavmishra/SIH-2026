@@ -1,0 +1,38 @@
+/* The guided tour: Home -> Console -> Live demo -> SOP -> About.
+   A route map (on Home, above the heading) and a "next step" card at the end of every page. */
+.tour { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 5px; border-radius: 980px;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); margin: 0 0 22px; }
+.tour-l { font: 600 11px/1 'ZD Inter', system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: rgba(245,245,247,.6); padding: 0 8px 0 10px; }
+.tour a { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px 7px 7px; border-radius: 980px; text-decoration: none;
+  font: 600 13px/1 'ZD Inter', system-ui, sans-serif; color: rgba(245,245,247,.82); transition: background .2s, color .2s; }
+.tour a:hover { background: rgba(255,255,255,.08); color: #fff; }
+.tour a i { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font: 700 11px/1 'ZD Inter', system-ui, sans-serif; font-style: normal;
+  background: rgba(255,255,255,.12); color: #f5f5f7; }
+.tour a.on { background: #4FC7EA; color: #03121c; } .tour a.on i { background: rgba(3,18,28,.18); color: #03121c; }
+.tour .arr { color: rgba(245,245,247,.35); font-size: 12px; }
+.light .tour { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.08); }
+.light .tour-l { color: #6e6e73; } .light .tour a { color: #1d1d1f; } .light .tour a i { background: rgba(0,0,0,.07); color: #1d1d1f; }
+.light .tour a.on { background: #0071e3; color: #fff; } .light .tour a.on i { background: rgba(255,255,255,.25); color: #fff; } .light .tour .arr { color: rgba(0,0,0,.3); }
+@media (max-width: 700px) { .tour .arr, .tour-l { display: none; } .tour a { padding-right: 9px; font-size: 12px; } }
+
+.next { max-width: 980px; margin: 0 auto; padding: 0 22px 90px; }
+.next-in { position: relative; overflow: hidden; border-radius: 28px; padding: 38px 40px; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center;
+  background: linear-gradient(135deg, rgba(79,199,234,.14), rgba(93,224,138,.08) 60%, rgba(255,255,255,.03)); border: 1px solid rgba(255,255,255,.1); }
+.next small { display: block; font: 600 12px/1 'ZD Inter', system-ui, sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #4FC7EA; margin-bottom: 12px; }
+.next h3 { margin: 0; font: 700 clamp(24px, 3vw, 34px)/1.1 'ZD Inter', system-ui, sans-serif; letter-spacing: -.02em; color: #f5f5f7; }
+.next p { margin: 10px 0 0; font: 400 16px/1.5 'ZD Inter', system-ui, sans-serif; color: #a1a1a6; max-width: 560px; }
+.next-btn { display: inline-flex; align-items: center; gap: 10px; padding: 15px 24px; border-radius: 980px; background: #4FC7EA; color: #03121c; text-decoration: none;
+  font: 600 16px/1 'ZD Inter', system-ui, sans-serif; white-space: nowrap; transition: transform .2s, background .2s; }
+.next-btn:hover { background: #7fd9f2; transform: translateX(2px); }
+.next-alt { display: block; margin-top: 10px; text-align: center; font: 500 13px 'ZD Inter', system-ui, sans-serif; color: #86868b; text-decoration: none; }
+.next-alt:hover { color: #f5f5f7; }
+.light .next-in { background: linear-gradient(135deg, rgba(0,113,227,.08), rgba(26,138,69,.05) 60%, #fff); border-color: rgba(0,0,0,.07); box-shadow: 0 14px 40px rgba(0,0,0,.06); }
+.light .next small { color: #0071e3; } .light .next h3 { color: #1d1d1f; } .light .next p { color: #6e6e73; }
+.light .next-btn { background: #0071e3; color: #fff; } .light .next-btn:hover { background: #2b8cf0; }
+@media (max-width: 700px) { .next-in { grid-template-columns: 1fr; padding: 28px 24px; } .next { padding-bottom: 110px; } }
+
+/* a quiet "where next" line on the Live page and in the Console debrief */
+.tour-hint { font: 500 14px/1.45 'ZD Inter', system-ui, sans-serif; color: #a1a1a6; margin-top: 16px; }
+.tour-hint a { color: #4FC7EA; text-decoration: none; font-weight: 600; } .tour-hint a:hover { text-decoration: underline; }
+.hero .tour-hint { display: inline-block; padding: 9px 16px; border-radius: 980px; background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.1);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #d2d2d7; }

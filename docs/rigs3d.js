@@ -246,7 +246,7 @@ function start() {
   const step1 = v1 ? buildMk1(v1) : null, mk2 = buildMk2Twin(v2);
   window.__zdViewers = { v1, v2, mk2 };                                // test hook (screenshots)
   const labels = mk2.hotspots ? hoverLabels(c2, v2, mk2) : null;
-  const view2 = c2.closest('.rig-view');
+  const view2 = c2.closest('.rig-view'), view1 = c1 ? c1.closest('.rig-view') : null;
   const t0 = parseFloat(new URLSearchParams(location.search).get('mk2t')) || 0;   // start the MK2 run at a given second
   const out1 = document.getElementById('rigMk1Read'), out2 = document.getElementById('rigMk2Read');
   const deg = r => (r * 180 / Math.PI).toFixed(1).padStart(6);
@@ -259,7 +259,7 @@ function start() {
     const now = performance.now() / 1000, dt = Math.min(0.05, now - last); last = now;
     if (!visible || document.hidden) return;
     t += dt;
-    if (step1) {
+    if (step1 && !(view1 && view1.classList.contains('flat'))) {   // skip MK1 while its PHOTO / VIDEO tab is up
       const a = step1(t, dt);
       v1.controls.update(); v1.renderer.render(v1.scene, v1.camera);
       if (out1) out1.textContent = `PAN ${deg(a.pan)}°  TILT ${deg(a.tilt)}°`;

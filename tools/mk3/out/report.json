@@ -1,0 +1,756 @@
+{
+ "belts": {
+  "ratio": 4.0,
+  "pan": {
+   "belt_mm": 232.0,
+   "teeth": 116.0,
+   "centre_mm": 63.09,
+   "motor_x_mm": -63.09,
+   "belts_that_fit_mm": [
+    227,
+    228,
+    229,
+    230,
+    231,
+    232,
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    240,
+    241,
+    242,
+    243,
+    244,
+    245
+   ]
+  },
+  "tilt": {
+   "belt_mm": 280.0,
+   "teeth": 140.0,
+   "centre_mm": 87.92,
+   "motor_z_mm": 131.35,
+   "belts_that_fit_mm": [
+    276,
+    277,
+    278,
+    279,
+    280,
+    281,
+    282,
+    283,
+    284
+   ]
+  },
+  "steps_per_output_deg": 35.55555555555556
+ },
+ "parts": {
+  "01_base_hub": {
+   "group": "fixed",
+   "printed": true,
+   "colour": "#9aa0a8",
+   "note": "Base hub: two 6808 bearings, open centre for cables, pan motor tower",
+   "volume_cm3": 219.51,
+   "bbox_mm": [
+    155.1,
+    113.5,
+    70.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    155.1,
+    113.5,
+    70.0
+   ],
+   "grams_petg": 194.7
+  },
+  "02_leg_1": {
+   "group": "fixed",
+   "printed": true,
+   "colour": "#8b9098",
+   "note": "Tripod leg (print 3)",
+   "volume_cm3": 44.2,
+   "bbox_mm": [
+    160.0,
+    31.9,
+    26.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    160.0,
+    31.9,
+    26.0
+   ],
+   "grams_petg": 42.1
+  },
+  "02_leg_2": {
+   "group": "fixed",
+   "printed": true,
+   "colour": "#8b9098",
+   "note": "Tripod leg (print 3)",
+   "volume_cm3": 44.2,
+   "bbox_mm": [
+    95.8,
+    145.2,
+    26.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    160.0,
+    31.9,
+    26.0
+   ],
+   "grams_petg": 42.1
+  },
+  "02_leg_3": {
+   "group": "fixed",
+   "printed": true,
+   "colour": "#8b9098",
+   "note": "Tripod leg (print 3)",
+   "volume_cm3": 44.2,
+   "bbox_mm": [
+    95.8,
+    145.2,
+    26.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    160.0,
+    31.9,
+    26.0
+   ],
+   "grams_petg": 42.1
+  },
+  "03_pan_sensor_bridge": {
+   "group": "fixed",
+   "printed": true,
+   "colour": "#6f7680",
+   "note": "Holds the pan AS5600 over the pan motor shaft",
+   "volume_cm3": 8.69,
+   "bbox_mm": [
+    35.0,
+    42.0,
+    31.2
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    35.0,
+    42.0,
+    31.2
+   ],
+   "grams_petg": 11.0
+  },
+  "04_magnet_cap": {
+   "group": "fixed",
+   "printed": true,
+   "colour": "#e0e0e0",
+   "note": "Magnet cap on the pan motor shaft",
+   "volume_cm3": 0.33,
+   "bbox_mm": [
+    10.0,
+    10.0,
+    6.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    10.0,
+    10.0,
+    6.0
+   ],
+   "grams_petg": 0.4
+  },
+  "05_spindle_washer": {
+   "group": "pan",
+   "printed": true,
+   "colour": "#e0e0e0",
+   "note": "Clamps the lower pan bearing (3 x M3)",
+   "volume_cm3": 2.01,
+   "bbox_mm": [
+    43.0,
+    42.9,
+    3.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    43.0,
+    42.9,
+    3.0
+   ],
+   "grams_petg": 2.6
+  },
+  "06_pan_turntable": {
+   "group": "pan",
+   "printed": true,
+   "colour": "#a7adb5",
+   "note": "Hollow spindle + 80T pulley + deck, one print",
+   "volume_cm3": 152.97,
+   "bbox_mm": [
+    140.0,
+    139.9,
+    78.7
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    140.0,
+    139.9,
+    78.7
+   ],
+   "grams_petg": 141.9
+  },
+  "07_arm_right": {
+   "group": "pan",
+   "printed": true,
+   "colour": "#9aa0a8",
+   "note": "Yoke arm, belt side (6806 bearing, motor-plate standoffs)",
+   "volume_cm3": 62.65,
+   "bbox_mm": [
+    80.0,
+    12.0,
+    131.9
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    80.0,
+    131.9,
+    12.0
+   ],
+   "grams_petg": 63.8
+  },
+  "08_arm_left": {
+   "group": "pan",
+   "printed": true,
+   "colour": "#9aa0a8",
+   "note": "Yoke arm, cable side (6806 bearing)",
+   "volume_cm3": 63.12,
+   "bbox_mm": [
+    80.0,
+    12.0,
+    131.9
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    80.0,
+    131.9,
+    12.0
+   ],
+   "grams_petg": 63.9
+  },
+  "09_tilt_motor_plate": {
+   "group": "pan",
+   "printed": true,
+   "colour": "#7d848e",
+   "note": "Tilt motor plate: stands on the deck under the head",
+   "volume_cm3": 15.91,
+   "bbox_mm": [
+    62.0,
+    17.0,
+    48.3
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    62.0,
+    48.3,
+    17.0
+   ],
+   "grams_petg": 18.6
+  },
+  "10_tilt_sensor_bracket": {
+   "group": "pan",
+   "printed": true,
+   "colour": "#6f7680",
+   "note": "Tilt sensor bracket, outside the right arm",
+   "volume_cm3": 6.12,
+   "bbox_mm": [
+    54.0,
+    9.7,
+    30.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    54.0,
+    30.0,
+    9.7
+   ],
+   "grams_petg": 7.8
+  },
+  "11_head": {
+   "group": "tilt",
+   "printed": true,
+   "colour": "#2b2e33",
+   "note": "Optics head (camera + laser bench)",
+   "volume_cm3": 84.26,
+   "bbox_mm": [
+    92.0,
+    64.0,
+    58.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    92.0,
+    64.0,
+    58.0
+   ],
+   "grams_petg": 97.0
+  },
+  "12_front_plate": {
+   "group": "tilt",
+   "printed": true,
+   "colour": "#1f2226",
+   "note": "Camera board plate",
+   "volume_cm3": 10.5,
+   "bbox_mm": [
+    4.0,
+    64.0,
+    48.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    48.0,
+    64.0,
+    4.0
+   ],
+   "grams_petg": 13.3
+  },
+  "13_laser_holder": {
+   "group": "tilt",
+   "printed": true,
+   "colour": "#1f2226",
+   "note": "Laser tube with 3 alignment screws",
+   "volume_cm3": 7.04,
+   "bbox_mm": [
+    26.0,
+    22.0,
+    34.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    34.0,
+    22.0,
+    26.0
+   ],
+   "grams_petg": 8.9
+  },
+  "14_trunnion_left": {
+   "group": "tilt",
+   "printed": true,
+   "colour": "#c3c7cd",
+   "note": "Left trunnion: hollow, cables pass through",
+   "volume_cm3": 12.34,
+   "bbox_mm": [
+    46.0,
+    21.0,
+    45.9
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    46.0,
+    45.9,
+    21.0
+   ],
+   "grams_petg": 14.1
+  },
+  "15_trunnion_right": {
+   "group": "tilt",
+   "printed": true,
+   "colour": "#c3c7cd",
+   "note": "Right trunnion with the 80T tilt pulley built in",
+   "volume_cm3": 34.14,
+   "bbox_mm": [
+    54.4,
+    31.0,
+    54.3
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    54.4,
+    54.3,
+    31.0
+   ],
+   "grams_petg": 31.0
+  },
+  "16_electronics_box": {
+   "group": "desk",
+   "printed": true,
+   "colour": "#3a3f46",
+   "note": "Electronics box (UNO + CNC shield)",
+   "volume_cm3": 125.26,
+   "bbox_mm": [
+    170.0,
+    110.0,
+    60.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    170.0,
+    110.0,
+    60.0
+   ],
+   "grams_petg": 159.1
+  },
+  "17_electronics_lid": {
+   "group": "desk",
+   "printed": true,
+   "colour": "#4a5058",
+   "note": "Box lid with fan opening",
+   "volume_cm3": 44.81,
+   "bbox_mm": [
+    170.0,
+    110.0,
+    5.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    170.0,
+    110.0,
+    5.0
+   ],
+   "grams_petg": 56.9
+  },
+  "00_test_coupon": {
+   "group": "desk",
+   "printed": true,
+   "colour": "#e7c96a",
+   "note": "Fit test (print FIRST)",
+   "volume_cm3": 56.76,
+   "bbox_mm": [
+    130.0,
+    109.9,
+    10.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    130.0,
+    109.9,
+    10.0
+   ],
+   "grams_petg": 62.3
+  },
+  "m_pan_motor": {
+   "group": "fixed",
+   "printed": false,
+   "colour": "#1c1d20",
+   "note": "NEMA17 (reuse MK2)",
+   "volume_cm3": 70.29,
+   "bbox_mm": [
+    42.3,
+    42.3,
+    40.0
+   ],
+   "watertight": true
+  },
+  "m_pan_motor_shaft": {
+   "group": "fixed",
+   "printed": false,
+   "colour": "#c9ccd1",
+   "note": "",
+   "volume_cm3": 1.19,
+   "bbox_mm": [
+    22.0,
+    21.9,
+    24.0
+   ],
+   "watertight": true
+  },
+  "m_pan_pulley20": {
+   "group": "fixed",
+   "printed": false,
+   "colour": "#c9ccd1",
+   "note": "GT2 20T 5 mm bore (hub down)",
+   "volume_cm3": 1.83,
+   "bbox_mm": [
+    16.0,
+    16.0,
+    16.0
+   ],
+   "watertight": true
+  },
+  "m_pan_belt": {
+   "group": "fixedbelt",
+   "printed": false,
+   "colour": "#111214",
+   "note": "GT2 6 mm closed belt 232 mm (240 also fits)",
+   "volume_cm3": 1.79,
+   "bbox_mm": [
+    97.7,
+    51.2,
+    6.0
+   ],
+   "watertight": true
+  },
+  "m_brg_pan_low": {
+   "group": "fixed",
+   "printed": false,
+   "colour": "#d7dade",
+   "note": "6808-2RS",
+   "volume_cm3": 6.05,
+   "bbox_mm": [
+    52.0,
+    51.9,
+    7.0
+   ],
+   "watertight": true
+  },
+  "m_brg_pan_top": {
+   "group": "fixed",
+   "printed": false,
+   "colour": "#d7dade",
+   "note": "6808-2RS",
+   "volume_cm3": 6.05,
+   "bbox_mm": [
+    52.0,
+    51.9,
+    7.0
+   ],
+   "watertight": true
+  },
+  "m_pan_as5600": {
+   "group": "fixed",
+   "printed": false,
+   "colour": "#1d6fd1",
+   "note": "AS5600 (pan, reads the motor)",
+   "volume_cm3": 0.86,
+   "bbox_mm": [
+    23.0,
+    23.0,
+    2.6
+   ],
+   "watertight": true
+  },
+  "m_tilt_motor": {
+   "group": "pan",
+   "printed": false,
+   "colour": "#1c1d20",
+   "note": "NEMA17 (reuse MK2), on the deck under the head",
+   "volume_cm3": 70.29,
+   "bbox_mm": [
+    42.3,
+    40.0,
+    42.3
+   ],
+   "watertight": true
+  },
+  "m_tilt_motor_shaft": {
+   "group": "pan",
+   "printed": false,
+   "colour": "#c9ccd1",
+   "note": "",
+   "volume_cm3": 0.47,
+   "bbox_mm": [
+    5.0,
+    24.0,
+    5.0
+   ],
+   "watertight": true
+  },
+  "m_tilt_pulley20": {
+   "group": "pan",
+   "printed": false,
+   "colour": "#c9ccd1",
+   "note": "GT2 20T 5 mm bore",
+   "volume_cm3": 1.83,
+   "bbox_mm": [
+    16.0,
+    16.0,
+    16.0
+   ],
+   "watertight": true
+  },
+  "m_tilt_belt": {
+   "group": "pan",
+   "printed": false,
+   "colour": "#111214",
+   "note": "GT2 6 mm closed belt 280 mm",
+   "volume_cm3": 2.25,
+   "bbox_mm": [
+    69.6,
+    6.0,
+    115.3
+   ],
+   "watertight": true
+  },
+  "m_brg_tilt_r": {
+   "group": "pan",
+   "printed": false,
+   "colour": "#d7dade",
+   "note": "6806-2RS",
+   "volume_cm3": 4.73,
+   "bbox_mm": [
+    42.0,
+    7.0,
+    41.9
+   ],
+   "watertight": true
+  },
+  "m_brg_tilt_l": {
+   "group": "pan",
+   "printed": false,
+   "colour": "#d7dade",
+   "note": "6806-2RS",
+   "volume_cm3": 4.73,
+   "bbox_mm": [
+    42.0,
+    7.0,
+    41.9
+   ],
+   "watertight": true
+  },
+  "m_tilt_as5600": {
+   "group": "pan",
+   "printed": false,
+   "colour": "#1d6fd1",
+   "note": "AS5600 (tilt)",
+   "volume_cm3": 0.86,
+   "bbox_mm": [
+    23.0,
+    2.6,
+    23.0
+   ],
+   "watertight": true
+  },
+  "m_camera": {
+   "group": "tilt",
+   "printed": false,
+   "colour": "#1f7a4a",
+   "note": "USB camera board 38x38",
+   "volume_cm3": 6.17,
+   "bbox_mm": [
+    22.0,
+    38.0,
+    38.0
+   ],
+   "watertight": true
+  },
+  "m_laser": {
+   "group": "tilt",
+   "printed": false,
+   "colour": "#b08a2e",
+   "note": "12 mm laser module",
+   "volume_cm3": 3.44,
+   "bbox_mm": [
+    30.0,
+    12.8,
+    12.8
+   ],
+   "watertight": true
+  }
+ },
+ "clearance": {
+  "static @pan0 tilt0": [],
+  "fixed-vs-pan @pan0": [],
+  "fixed-vs-pan @pan60": [],
+  "fixed-vs-pan @pan120": [],
+  "fixed-vs-pan @pan150": [],
+  "fixed-vs-pan @pan-60": [],
+  "fixed-vs-pan @pan-120": [],
+  "fixed-vs-pan @pan-150": [],
+  "pan-vs-tilt @tilt-45": [],
+  "fixed-vs-tilt @tilt-45": [],
+  "pan-vs-tilt @tilt-30": [],
+  "fixed-vs-tilt @tilt-30": [],
+  "pan-vs-tilt @tilt0": [],
+  "fixed-vs-tilt @tilt0": [],
+  "pan-vs-tilt @tilt30": [],
+  "fixed-vs-tilt @tilt30": [],
+  "pan-vs-tilt @tilt45": [],
+  "fixed-vs-tilt @tilt45": [],
+  "pan-vs-tilt @tilt60": [],
+  "fixed-vs-tilt @tilt60": []
+ },
+ "params": {
+  "HOLE_CLEAR": 0.25,
+  "BRG_PRESS": 0.1,
+  "RACE_FIT": 0.05,
+  "NEMA": 42.3,
+  "NEMA_HOLES": 31.0,
+  "NEMA_PILOT": 22.0,
+  "NEMA_LEN": 40.0,
+  "NEMA_SHAFT": 5.0,
+  "NEMA_SHAFT_LEN": 24.0,
+  "M3": 3.2,
+  "M3_NUT_AF": 5.7,
+  "M3_HEAD": 5.8,
+  "M4": 4.3,
+  "M4_NUT_AF": 7.2,
+  "GT2_PITCH": 2.0,
+  "BELT_W": 6.0,
+  "T_SMALL": 20,
+  "T_BIG": 80,
+  "PD_SMALL": 12.732395447351628,
+  "PD_BIG": 50.92958178940651,
+  "BELT_PAN_L": 232.0,
+  "BELT_TILT_L": 280.0,
+  "PAN_SLIDE_IN": 3.0,
+  "PAN_SLIDE_OUT": 7.0,
+  "WALL": 3.2,
+  "MAG_D": 6.0,
+  "MAG_T": 2.5,
+  "Z_HUB_TOP": 70.0,
+  "Z_BRG_LOW": 28.0,
+  "PAN_CAVITY_R": 30.0,
+  "Z_BELT_PAN": 78.0,
+  "Z_PAN_PLATE": 62.0,
+  "Z_DECK_BOT": 100.0,
+  "DECK_T": 7.0,
+  "Z_DECK_TOP": 107.0,
+  "DECK_R": 70.0,
+  "Z_TILT": 212.0,
+  "SPINDLE_BORE_R": 15.0,
+  "ARM_T": 12.0,
+  "HEAD_W": 64.0,
+  "ARM_GAP": 7.0,
+  "Y_ARM_IN": 39.0,
+  "Y_ARM_OUT": 51.0,
+  "ARM_BOSS_R": 27.0,
+  "Y_PUL0": 36.0,
+  "Y_BELT_TILT": 41.0,
+  "Y_ARM_IN_R": 49.0,
+  "Y_ARM_OUT_R": 61.0,
+  "Y_TRUN_END": 63.0,
+  "Y_TSENSOR": 67.19999999999999,
+  "TILT_MOTOR_X": -35.0,
+  "TILT_SLIDE": 2.5,
+  "Y_TPLATE": 24.3,
+  "TRUN_BORE_L": 10.0,
+  "TRUN_BORE_R": 8.0,
+  "TRUN_BOLT_R": 18.5,
+  "HEAD_L": 92.0,
+  "HEAD_H": 58.0,
+  "C_PAN": 63.086359212501435,
+  "C_TILT": 87.91729590069454,
+  "Z_TILT_MOTOR": 131.34982381612375,
+  "X_PAN_MOTOR": -63.086359212501435,
+  "PB_OD": 52.0,
+  "PB_ID": 40.0,
+  "PB_W": 7.0,
+  "TB_OD": 42.0,
+  "TB_ID": 30.0,
+  "TB_W": 7.0,
+  "LEG_LEN": 150.0,
+  "CABLE_EXIT_DEG": 60,
+  "PAN_PUL20_Z": 78.0,
+  "PAN_SHAFT_TOP": 86.0,
+  "PAN_CAP_Z0": 83.0,
+  "PAN_CAP_H": 6.0,
+  "PAN_MAG_TOP": 89.0,
+  "PAN_BOARD_Z": 91.5,
+  "PAN_BRIDGE_Z": 93.19999999999999,
+  "SPINDLE_Z0": 28.3,
+  "TPLATE_BOLT_Y": 35.3,
+  "ARM_L": 80.0,
+  "CAM_Y": -15.0,
+  "LASER_Y": 16.0,
+  "OPT_Z": 8.0,
+  "BOX_L": 170.0,
+  "BOX_W": 110.0,
+  "BOX_H": 60.0
+ },
+ "clearance_ok": true,
+ "assembly_bbox_mm": [
+  299.0,
+  340.2,
+  242.0
+ ]
+}

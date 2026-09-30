@@ -1,0 +1,287 @@
+{
+  "version": 1,
+  "author": "ZeroDrift (Plan Urena)",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-arduino-uno",
+      "id": "uno",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-a4988",
+      "id": "drvPan",
+      "top": -150,
+      "left": 250,
+      "rotate": 90,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-a4988",
+      "id": "drvTilt",
+      "top": 110,
+      "left": 250,
+      "rotate": 90,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-stepper-motor",
+      "id": "motPan",
+      "top": -250,
+      "left": 420,
+      "attrs": {
+        "size": "17",
+        "arrow": "orange",
+        "display": "angle"
+      }
+    },
+    {
+      "type": "wokwi-stepper-motor",
+      "id": "motTilt",
+      "top": 40,
+      "left": 420,
+      "attrs": {
+        "size": "17",
+        "arrow": "cyan",
+        "display": "angle"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "laser",
+      "top": -120,
+      "left": -120,
+      "attrs": {
+        "color": "red",
+        "label": "LASER D12"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rLaser",
+      "top": -40,
+      "left": -140,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "vib",
+      "top": -120,
+      "left": -40,
+      "attrs": {
+        "color": "yellow",
+        "label": "VIBRATION D13"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rVib",
+      "top": -40,
+      "left": -60,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "uno:2",
+      "drvPan:STEP",
+      "green",
+      []
+    ],
+    [
+      "uno:5",
+      "drvPan:DIR",
+      "blue",
+      []
+    ],
+    [
+      "uno:8",
+      "drvPan:ENABLE",
+      "gray",
+      []
+    ],
+    [
+      "drvPan:SLEEP",
+      "drvPan:RESET",
+      "green",
+      []
+    ],
+    [
+      "drvPan:MS1",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "drvPan:MS2",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "drvPan:MS3",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "drvPan:VDD",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "drvPan:GND.1",
+      "uno:GND.1",
+      "black",
+      []
+    ],
+    [
+      "drvPan:1B",
+      "motPan:B-",
+      "black",
+      []
+    ],
+    [
+      "drvPan:1A",
+      "motPan:B+",
+      "green",
+      []
+    ],
+    [
+      "drvPan:2A",
+      "motPan:A+",
+      "blue",
+      []
+    ],
+    [
+      "drvPan:2B",
+      "motPan:A-",
+      "red",
+      []
+    ],
+    [
+      "uno:3",
+      "drvTilt:STEP",
+      "green",
+      []
+    ],
+    [
+      "uno:6",
+      "drvTilt:DIR",
+      "blue",
+      []
+    ],
+    [
+      "uno:8",
+      "drvTilt:ENABLE",
+      "gray",
+      []
+    ],
+    [
+      "drvTilt:SLEEP",
+      "drvTilt:RESET",
+      "green",
+      []
+    ],
+    [
+      "drvTilt:MS1",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "drvTilt:MS2",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "drvTilt:MS3",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "drvTilt:VDD",
+      "uno:5V",
+      "red",
+      []
+    ],
+    [
+      "drvTilt:GND.1",
+      "uno:GND.1",
+      "black",
+      []
+    ],
+    [
+      "drvTilt:1B",
+      "motTilt:B-",
+      "black",
+      []
+    ],
+    [
+      "drvTilt:1A",
+      "motTilt:B+",
+      "green",
+      []
+    ],
+    [
+      "drvTilt:2A",
+      "motTilt:A+",
+      "blue",
+      []
+    ],
+    [
+      "drvTilt:2B",
+      "motTilt:A-",
+      "red",
+      []
+    ],
+    [
+      "uno:12",
+      "rLaser:1",
+      "orange",
+      []
+    ],
+    [
+      "rLaser:2",
+      "laser:A",
+      "orange",
+      []
+    ],
+    [
+      "laser:C",
+      "uno:GND.2",
+      "black",
+      []
+    ],
+    [
+      "uno:13",
+      "rVib:1",
+      "yellow",
+      []
+    ],
+    [
+      "rVib:2",
+      "vib:A",
+      "yellow",
+      []
+    ],
+    [
+      "vib:C",
+      "uno:GND.2",
+      "black",
+      []
+    ]
+  ],
+  "dependencies": {}
+}

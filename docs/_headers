@@ -9,6 +9,12 @@
 # Team-only pages: reachable by their address, never listed or indexed.
 /build.html
   X-Robots-Tag: noindex, nofollow
+/mk3.html
+  X-Robots-Tag: noindex, nofollow
+/mk3
+  X-Robots-Tag: noindex, nofollow
+/mk3/*
+  X-Robots-Tag: noindex, nofollow
 /build
   X-Robots-Tag: noindex, nofollow
 /assembly.html

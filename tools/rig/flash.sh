@@ -4,7 +4,8 @@
 #   tools/rig/flash.sh beacon     # tools/rig/beacon_firmware.ino  (LED on D9, 4 Hz)
 #   tools/rig/flash.sh pintest    # tools/rig/pin_test/pin_test.ino (all of D2-D13 blink, 1 Hz)
 #   tools/rig/flash.sh rig        # tools/rig/rig_firmware_v2.ino  (MK2 gimbal)
-#   tools/rig/flash.sh urena      # tools/rig/rig_firmware_v3.ino  (Plan Urena, UNO + CNC Shield V3)
+#   tools/rig/flash.sh urena      # tools/rig/rig_firmware_v3.ino  (Plan Urena belts, UNO + CNC Shield V3)
+#   tools/rig/flash.sh tower      # same firmware, DRIVE_DIRECT=1 (direct-drive tower, 1:1, pan +/-90, tilt +/-30)
 #   tools/rig/flash.sh beacon /dev/cu.usbserial-1420   # pick the port yourself
 #
 # Our beacon Nano (FTDI chip) uses the NEW bootloader (115200). The script
@@ -25,7 +26,9 @@ case "${1:-beacon}" in
            arduino-cli lib list | grep -q '^Servo' || arduino-cli lib install Servo ;;
   urena)   src=rig_firmware_v3.ino; board=uno
            arduino-cli lib list | grep -q AccelStepper || arduino-cli lib install AccelStepper ;;
-  *) echo "usage: $0 beacon|pintest|rig|urena [port]"; exit 1 ;;
+  tower)   src=rig_firmware_v3.ino; board=uno; extra="-DDRIVE_DIRECT=1"
+           arduino-cli lib list | grep -q AccelStepper || arduino-cli lib install AccelStepper ;;
+  *) echo "usage: $0 beacon|pintest|rig|urena|tower [port]"; exit 1 ;;
 esac
 
 # arduino-cli wants the sketch in a folder of the same name: stage a copy.
@@ -44,7 +47,7 @@ fqbns="arduino:avr:nano:cpu=atmega328 arduino:avr:nano:cpu=atmega328old"
 [ "${board:-nano}" = uno ] && fqbns="arduino:avr:uno"
 for fqbn in $fqbns; do
   echo "== compile + upload as $fqbn"
-  if arduino-cli compile --fqbn "$fqbn" "$stage" && arduino-cli upload -p "$port" --fqbn "$fqbn" "$stage"; then
+  if arduino-cli compile --fqbn "$fqbn" ${extra:+--build-property "build.extra_flags=$extra"} "$stage" && arduino-cli upload -p "$port" --fqbn "$fqbn" "$stage"; then
     ok=$fqbn; break
   fi
 done

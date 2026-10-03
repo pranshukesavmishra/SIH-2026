@@ -1,0 +1,72 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Plan Urena · MK3 Tower shop sheet</title><style>
+@page { size: A4; margin: 0 }
+* { box-sizing: border-box }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact }
+body { margin: 0; font: 10.5pt/1.45 Inter, "Helvetica Neue", Helvetica, Arial, sans-serif; color: #15171a }
+.pg { width: 210mm; height: 297mm; padding: 13mm 14mm 14mm; page-break-after: always; position: relative; overflow: hidden }
+.pg:last-child { page-break-after: auto }
+h1 { font-size: 27pt; line-height: 1.05; margin: 0 0 4mm; letter-spacing: -.02em }
+h2 { font-size: 17pt; margin: 0 0 3mm; letter-spacing: -.01em }
+h3 { font-size: 11.5pt; margin: 4mm 0 1.5mm }
+p { margin: 0 0 2.5mm }
+.kick { font: 600 8pt/1 "SF Mono", Menlo, Consolas, monospace; letter-spacing: .14em; text-transform: uppercase; color: #0a7ea4; margin: 0 0 3mm }
+.mute { color: #60666e }
+.small { font-size: 8.5pt }
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin: 4mm 0 }
+.tile { border: 1px solid #d9dde2; border-radius: 3mm; padding: 3mm 3.5mm; background: #f7f8fa }
+.tile b { display: block; font-size: 17pt; letter-spacing: -.02em }
+.tile span { font-size: 8pt; color: #60666e }
+table { border-collapse: collapse; width: 100%; font-size: 9pt }
+th { text-align: left; font: 600 7.5pt/1.2 "SF Mono", Menlo, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; color: #60666e; background: #f1f3f5; padding: 2mm 2.5mm; border-bottom: 1px solid #d9dde2 }
+td { padding: 2mm 2.5mm; border-bottom: 1px solid #e6e9ed; vertical-align: top }
+td.n, th.n { text-align: right; white-space: nowrap }
+.box { border: 1px solid #d9dde2; border-radius: 3mm; padding: 3mm 4mm; margin: 3mm 0; background: #fff }
+.warn { border-color: #e7b9b5; background: #fdf0ef }
+.good { border-color: #b7dcc6; background: #eff8f2 }
+.note { border-color: #efdca6; background: #fff9e6 }
+.chk { display: inline-block; width: 4mm; height: 4mm; border: 1.3px solid #15171a; border-radius: 1mm; vertical-align: -0.8mm; margin-right: 2mm }
+.tag { display: inline-block; font: 600 7pt/1 "SF Mono", Menlo, monospace; letter-spacing: .06em; padding: 1.2mm 2mm; border-radius: 10mm; background: #e7f1f7; color: #0a6687; text-transform: uppercase }
+.tag.g { background: #e3f3ea; color: #1c7a45 } .tag.a { background: #fdf0d2; color: #8a5a00 }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm }
+.img { width: 100%; border: 1px solid #e6e9ed; border-radius: 3mm; background: #fff }
+.imgc { display: block; margin: 0 auto; max-width: 100%; max-height: 100% }
+.step { display: grid; grid-template-columns: 9mm 1fr; gap: 3mm; margin: 0 0 3.2mm; break-inside: avoid }
+.step .no { width: 9mm; height: 9mm; border-radius: 50%; background: #0a7ea4; color: #fff; font: 700 11pt/9mm sans-serif; text-align: center }
+.step .chkline { font-size: 9pt; color: #1c7a45; background: #eff8f2; border-radius: 2mm; padding: 1.2mm 2.5mm; margin-top: 1.3mm }
+.foot { position: absolute; left: 14mm; right: 14mm; bottom: 7mm; font-size: 7pt; color: #8e8e93; display: flex; justify-content: space-between }
+.big { font-size: 13pt; font-weight: 600 }
+ul { margin: 0 0 2.5mm; padding-left: 5mm } li { margin: 0 0 1mm }
+.say { font-style: italic; color: #2b3138 }
+</style><body><section class="pg"><div class="kick">Shop slip 1 of 3 · Amar shop (electronics)</div>
+<h2>Show this to the shopkeeper</h2>
+<p class="say">"Hello. I am building a small camera-and-laser turntable with two stepper motors. I need these parts. Please check that each one is the exact type written."</p>
+<table><tr><th>Item</th><th class="n">Qty</th><th class="n">Price (estimate)</th><th>Shop</th><th>Must be</th></tr><tr><td><span class="chk"></span>Arduino UNO R3 + USB-B cable</td><td class="n">1</td><td class="n">₹450–700</td><td>Amar shop</td><td class="mute small">CH340 clone is fine. Amazon: &quot;Arduino UNO R3 CH340 with cable&quot;.</td></tr><tr><td><span class="chk"></span>CNC Shield V3 for UNO</td><td class="n">1</td><td class="n">₹250–350</td><td>Amar shop</td><td class="mute small">It must say &quot;V3&quot; and fit on an UNO. Amazon: &quot;CNC shield V3 Arduino UNO&quot;.</td></tr><tr><td><span class="chk"></span>12 mm laser module, red 650 nm, 5 mW, 5 V</td><td class="n">1</td><td class="n">₹100–200</td><td>Amar shop</td><td class="mute small">Only 5 mW. Never a &quot;burning&quot; laser. Amazon: &quot;650nm 5mW laser module 12mm&quot;.</td></tr><tr><td><span class="chk"></span>Dupont jumper wires, female-female, 20 cm</td><td class="n">1</td><td class="n">₹60–100</td><td>Amar shop</td><td class="mute small">One pack. For the laser.</td></tr><tr><td><span class="chk"></span>Fuse holder 5×20 mm + 3 A fuses + rocker switch</td><td class="n">1</td><td class="n">₹60–120</td><td>Amar shop</td><td class="mute small">Safety for the 12 V. Optional but cheap.</td></tr><tr><td><span class="chk"></span>Heatsinks for A4988 (if the drivers have none)</td><td class="n">1</td><td class="n">₹20–40</td><td>Amar shop</td><td class="mute small">Small stick-on type.</td></tr></table>
+<div class="box note"><b>Check at the counter</b><ul class="small">
+<li><b>CNC shield:</b> the text on the board says "V3", and it fits on the UNO (it has 4 driver sockets).</li>
+<li><b>Laser:</b> 12 mm wide metal tube, red, 5 mW, 5 V. Ask for the datasheet or label.</li>
+<li><b>UNO:</b> has a USB-B cable. A CH340 clone is fine.</li></ul></div>
+<div class="box"><b>We already have:</b> 2 × A4988 drivers, a 12 V adapter, 2 × NEMA17 motors, a USB camera. Do not buy these again.</div>
+<p class="big">Amar shop total: about ₹940–1,510</p><div class="foot"><span>Plan Urena · MK3 Tower shop sheet · internal · Team ZeroDrift</span><span>1 / 3</span></div></section><section class="pg"><div class="kick">Shop slip 2 of 3 · Hardware shop (screws and glue)</div>
+<h2>Screws, nuts and small things</h2>
+<p class="say">"I need M3 screws and nuts in a kit, some tiny self-tapping screws, and strong glue."</p>
+<table><tr><th>Item</th><th class="n">Qty</th><th class="n">Price (estimate)</th><th>Shop</th><th>Must be</th></tr><tr><td><span class="chk"></span>M3 screw kit (6 to 30 mm) with nuts and washers</td><td class="n">1</td><td class="n">₹250–400</td><td>Hardware shop</td><td class="mute small">Covers every screw below. Amazon: &quot;M3 screw nut assortment kit&quot;.</td></tr><tr><td><span class="chk"></span>M2 × 6 self-tapping screws</td><td class="n">1</td><td class="n">₹20–40</td><td>Hardware shop</td><td class="mute small">Four are used for the camera board.</td></tr><tr><td><span class="chk"></span>Super glue + rubber feet (or non-slip tape)</td><td class="n">1</td><td class="n">₹60–120</td><td>Hardware shop</td><td class="mute small">Three feet under the tripod legs.</td></tr></table>
+<h3>What the screw kit must contain (counts we use)</h3>
+<table><tr><th>Screw</th><th class="n">How many</th><th>Used for</th></tr>
+<tr><td>M3 × 8 mm</td><td class="n">11</td><td>4 pan motor · 4 tilt motor · 1 hub set screw · 1 head set screw · 1 laser clamp</td></tr>
+<tr><td>M3 × 10 mm</td><td class="n">3</td><td>tilt mount onto the hub</td></tr>
+<tr><td>M3 × 12 mm</td><td class="n">8</td><td>4 cap to tower · 4 tower to base</td></tr>
+<tr><td>M3 nut</td><td class="n">6</td><td>4 under the base · 1 hub · 1 head</td></tr>
+<tr><td>M2 × 6 mm self-tapping</td><td class="n">4</td><td>camera board</td></tr></table>
+<p class="small mute">A kit of 6 to 30 mm M3 screws has all of these with spares. Buy a few extra M3 × 8.</p>
+<p class="big">Hardware shop total: about ₹330–560</p>
+<div class="box note"><b>Amazon (only if a shop does not have it).</b> Search words: "Arduino UNO R3 CH340", "CNC shield V3 Arduino UNO", "650nm 5mW laser module 12mm", "M3 screw nut assortment kit", "Dupont jumper wire female female". Check the delivery date: we need the parts before printing ends.</div>
+<div class="box good"><b>Not needed any more:</b> No bearings, belts or pulleys. No angle sensors, no splitter. No breadboard, no soldering. No metal shaft hubs (the hubs are printed and clamp with a set screw).</div><div class="foot"><span>Plan Urena · MK3 Tower shop sheet · internal · Team ZeroDrift</span><span>2 / 3</span></div></section><section class="pg"><div class="kick">Shop slip 3 of 3 · 3D print shop</div>
+<h2>Print job sheet</h2>
+<p class="say">"Please print these parts in PETG. The files are attached. Print the test coupon first so we can check the fits."</p>
+<table><tr><th>Part</th><th class="n">Qty</th><th class="n">Size mm</th><th class="n">Weight</th><th>Supports</th><th>How to lay it</th></tr><tr><td><b>Tripod base</b><br><span class="mute small">01_tripod_base.stl</span></td><td class="n">1</td><td class="n">190 × 167 × 6</td><td class="n">52 g</td><td>No</td><td class="small">Flat on the bed, as shown. Three legs and the square pad. Four nut pockets on the underside.</td></tr><tr><td><b>Tower sleeve</b><br><span class="mute small">02_tower_sleeve.stl</span></td><td class="n">1</td><td class="n">74 × 74 × 46</td><td class="n">66 g</td><td>No</td><td class="small">Foot flange on the bed, open end up. Holds the pan motor. A cable slot near the bottom.</td></tr><tr><td><b>Tower cap</b><br><span class="mute small">03_tower_cap.stl</span></td><td class="n">1</td><td class="n">60 × 60 × 4</td><td class="n">16 g</td><td>No</td><td class="small">Flat on the bed. The pan motor screws to its underside.</td></tr><tr><td><b>Pan hub</b><br><span class="mute small">04_pan_hub.stl</span></td><td class="n">1</td><td class="n">34 × 34 × 16</td><td class="n">9 g</td><td>No</td><td class="small">Small end down, wide end up. Clamps on the pan shaft. Slot for one M3 nut.</td></tr><tr><td><b>Tilt mount</b><br><span class="mute small">05_tilt_mount.stl</span></td><td class="n">1</td><td class="n">52 × 47 × 51</td><td class="n">26 g</td><td>No</td><td class="small">Plate down, wall and ribs standing up. The tilt motor screws to its wall.</td></tr><tr><td><b>Head</b><br><span class="mute small">06_head.stl</span></td><td class="n">1</td><td class="n">58 × 40 × 70</td><td class="n">29 g</td><td>Yes, only under the camera plate</td><td class="small">Stand it on the rear of the clamp, laser tube pointing up. Camera on the front, laser tube on top, clamps on the tilt shaft.</td></tr><tr><td><b>Test coupon (print FIRST)</b><br><span class="mute small">00_test_coupon.stl</span></td><td class="n">1</td><td class="n">100 × 46 × 8</td><td class="n">28 g</td><td>No</td><td class="small">Flat on the bed. Checks every fit in about an hour. See page &quot;Do the parts fit?&quot;.</td></tr></table>
+<div class="box"><b>Settings:</b> Material PETG (PLA is fine for the first test). Layer 0.2 mm. 4 walls. Infill 25%. No brim needed.<br><b>Files:</b> one STL per part in the pack (<span class="small">Plan_Urena_Tower_print_pack.zip</span>). STEP files are inside too, in case the shop needs them.<br>
+<b>Total:</b> 198 g for the six parts (+ 28 g for the coupon). About 14–20 hours on a normal printer (estimate). Biggest part: the tripod base, 190 × 167 mm, fits a 220 mm bed.</div>
+<div class="cols"><div class="box good"><b>At a print shop</b><br>About ₹990–1,980 (₹5–10 per gram, ask for a quote) + ₹140–281 for the coupon.</div>
+<div class="box"><b>On a friend's printer</b><br>About ₹240–400 of PETG for the six parts (estimate).</div></div>
+<div class="cols"><img class="img" style="height:40mm;object-fit:contain" src="../../img/p01.jpg"><img class="img" style="height:40mm;object-fit:contain" src="../../img/p06.jpg"></div>
+<p class="small mute">Left: tripod base. Right: head (camera plate on the front, laser tube on top).</p><div class="foot"><span>Plan Urena · MK3 Tower shop sheet · internal · Team ZeroDrift</span><span>3 / 3</span></div></section></body></html>

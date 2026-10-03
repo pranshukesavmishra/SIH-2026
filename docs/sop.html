@@ -384,9 +384,9 @@
 
   <section class="sec tight" id="proof">
     <div class="wrap"><div class="doc" style="padding:0"><div class="stats">
-  <div class="stat" style="--c:#0e7c9a"><b>1.27 s</b><span><strong>median time to lock</strong> across 64 simulated satellite passes</span><a href="#p-decoy">SEE PROOF ↓</a></div>
+  <div class="stat" style="--c:#0e7c9a"><b>1.07 s</b><span><strong>time to lock</strong> in the decoy-field test: three moving decoys and glints</span><a href="#p-accept">SEE PROOF ↓</a></div>
   <div class="stat" style="--c:#15803d"><b>0 / 64</b><span>runs that <strong>ever locked onto a wrong light</strong></span><a href="#p-decoy">SEE PROOF ↓</a></div>
-  <div class="stat" style="--c:#1d5fb8"><b>198 µrad</b><span><strong>median pointing error</strong> on the ISS (International Space Station) pass</span><a href="#p-accept">SEE PROOF ↓</a></div>
+  <div class="stat" style="--c:#1d5fb8"><b>178 µrad</b><span><strong>median pointing error</strong> in the same decoy-field test</span><a href="#p-accept">SEE PROOF ↓</a></div>
   <div class="stat" style="--c:#6d28d9"><b>250 / 251</b><span>automated <strong>tests passing</strong> (1 skipped), re-run 28 Sep</span><a href="#p-tests">SEE PROOF ↓</a></div>
 </div>
 
@@ -672,18 +672,18 @@
 </section>
 <!-- ======================= 7 ACCEPTANCE ======================= -->
 <section id="accept">
-  <div class="sh"><div class="n">7</div><div><h2>Acceptance criteria</h2><p>We fix these limits <b>before</b> a run, the same for every scenario. The bar shows how much of each limit our ISS-pass run used.</p></div></div>
+  <div class="sh"><div class="n">7</div><div><h2>Acceptance criteria</h2><p>We fix these limits <b>before</b> a run, the same for every scenario. The bar shows how much of each limit the decoy-field run used. The ISS-pass run is beside it.</p></div></div>
   <div class="tbl"><table>
-    <tr><th>ID</th><th>PARAMETER</th><th>PASS IF</th><th>ISS PASS RUN</th><th>USE OF LIMIT</th><th></th></tr>
-    <tr><td class="k">TC-01</td><td class="full">Time to first lock</td><td>≤ 3.0 s</td><td><b>1.27 s</b></td><td><div class="bar"><i style="width:42%"></i></div></td><td><span class="pass">PASS</span></td></tr>
-    <tr><td class="k">TC-02</td><td class="full">Lock held after first lock</td><td>≥ 90 %</td><td><b>98.3 %</b></td><td><div class="bar"><i style="width:98%"></i></div></td><td><span class="pass">PASS</span></td></tr>
-    <tr><td class="k">TC-03</td><td class="full">Median pointing error</td><td>≤ 1,047 µrad</td><td><b>198 µrad</b></td><td><div class="bar"><i style="width:19%"></i></div></td><td><span class="pass">PASS</span></td></tr>
-    <tr><td class="k">TC-04</td><td class="full">95th-percentile error</td><td>≤ 2,618 µrad</td><td><b>692 µrad</b></td><td><div class="bar"><i style="width:26%"></i></div></td><td><span class="pass">PASS</span></td></tr>
-    <tr><td class="k">TC-05</td><td class="full">Beacon kept in view</td><td>≥ 95 %</td><td><b>100 %</b></td><td><div class="bar"><i style="width:100%"></i></div></td><td><span class="pass">PASS</span></td></tr>
-    <tr><td class="k">TC-06</td><td class="full">Frames locked on a decoy</td><td>≤ 1 %</td><td><b>0 %</b></td><td><div class="bar"><i style="width:0"></i></div></td><td><span class="pass">PASS</span></td></tr>
-    <tr><td class="k">TC-07</td><td class="full">Compute time per frame (95th %)</td><td>≤ 33.3 ms</td><td><b>19.1 ms</b></td><td><div class="bar"><i style="width:57%"></i></div></td><td><span class="pass">PASS</span></td></tr>
-    <tr><td class="k">TC-08</td><td class="full">Frames over the time budget</td><td>≤ 1 %</td><td><b>0.07 %</b></td><td><div class="bar"><i style="width:7%"></i></div></td><td><span class="pass">PASS</span></td></tr>
-    <tr><td class="k">TC-09</td><td class="full">Re-acquisitions</td><td>recorded only</td><td><b>4</b></td><td></td><td><span class="small">INFO</span></td></tr>
+    <tr><th>ID</th><th>PARAMETER</th><th>PASS IF</th><th>DECOY-FIELD RUN</th><th>ISS PASS RUN</th><th>USE OF LIMIT</th><th></th></tr>
+    <tr><td class="k">TC-01</td><td class="full">Time to first lock</td><td>≤ 3.0 s</td><td><b>1.07 s</b></td><td>1.27 s</td><td><div class="bar"><i style="width:36%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-02</td><td class="full">Lock held after first lock</td><td>≥ 90 %</td><td><b>99.3 %</b></td><td>98.3 %</td><td><div class="bar"><i style="width:99%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-03</td><td class="full">Median pointing error</td><td>≤ 1,047 µrad</td><td><b>178 µrad</b></td><td>198 µrad</td><td><div class="bar"><i style="width:17%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-04</td><td class="full">95th-percentile error</td><td>≤ 2,618 µrad</td><td><b>443 µrad</b></td><td>692 µrad</td><td><div class="bar"><i style="width:17%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-05</td><td class="full">Beacon kept in view</td><td>≥ 95 %</td><td><b>100 %</b></td><td>100 %</td><td><div class="bar"><i style="width:100%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-06</td><td class="full">Frames locked on a decoy</td><td>≤ 1 %</td><td><b>0.03 %</b> (1 / 3,900)</td><td>0 %</td><td><div class="bar"><i style="width:3%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-07</td><td class="full">Compute time per frame (95th %)</td><td>≤ 33.3 ms</td><td><b>19.2 ms</b></td><td>19.1 ms</td><td><div class="bar"><i style="width:57%"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-08</td><td class="full">Frames over the time budget</td><td>≤ 1 %</td><td><b>0 %</b> (0 / 3,900)</td><td>0.07 %</td><td><div class="bar"><i style="width:0"></i></div></td><td><span class="pass">PASS</span></td></tr>
+    <tr><td class="k">TC-09</td><td class="full">Re-acquisitions</td><td>recorded only</td><td><b>9</b></td><td>4</td><td></td><td><span class="small">INFO</span></td></tr>
   </table></div>
   <div class="proof" id="p-accept" style="margin-top:18px">
     <div class="sph"><svg viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="#e7f6ec"/><path d="M7.5 12.5l3 3 6-7"/></svg><b>PROOF</b><span>The ISS pass, second by second</span></div>

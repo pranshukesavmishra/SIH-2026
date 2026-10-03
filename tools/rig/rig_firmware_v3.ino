@@ -116,9 +116,21 @@ const float STEPS_PER_DEG = (STEPS_PER_REV * MICROSTEPS) / 360.0;   // 8.889
 // positioning error by three, which is why it is worth the build effort.
 // This lives here, not on the host — the host is not allowed to know about
 // mechanics. Change the pulleys, change this number, reflash, done.
+// Build modes. DRIVE_DIRECT 0 = the belt build (Plan Urena). DRIVE_DIRECT 1 = the direct-drive
+// TOWER (two NEMA17 motors on the axes, no belts): ratio 1:1, travel pan +/-90 and tilt +/-30 (the
+// CAD sweep is clear past that), gentler speeds. Flash it with:  tools/rig/flash.sh tower
+#ifndef DRIVE_DIRECT
+#define DRIVE_DIRECT 0
+#endif
+#if DRIVE_DIRECT
+const float PAN_GEAR_RATIO  = 1.0;    // tower: motor shaft = axis
+const float TILT_GEAR_RATIO = 1.0;
+const float PAN_LIMIT_DEG   = 90.0;
+const float TILT_LIMIT_DEG  = 30.0;
+const float MAX_SPS = 1200.0, ACCEL = 1500.0;   // 1200 steps/s = 135 deg/s at 1/16
+#else
 const float PAN_GEAR_RATIO  = 4.0;    // MK3: 20T -> 80T
 const float TILT_GEAR_RATIO = 4.0;    // MK3: 20T -> 80T
-
 // ---- Soft limits. These protect the wiring loom and the head. -----------
 // MK3 CAD (tools/mk3/mk3_cad.py) sweeps clear for pan +/-150 and tilt
 // -45..+60. Which way is "+" depends on how the motor was wired, so tilt
@@ -128,6 +140,8 @@ const float TILT_GEAR_RATIO = 4.0;    // MK3: 20T -> 80T
 // the backstop for when a person in a serial terminal is talking.
 const float PAN_LIMIT_DEG  = 150.0;   // MK3: cables have slack for +/-150
 const float TILT_LIMIT_DEG = 40.0;    // MK3: CAD sweep is clear from -45 to +60
+const float MAX_SPS = 2000.0, ACCEL = 2000.0;
+#endif
 const long PAN_MAX_STEPS  = (long)(PAN_LIMIT_DEG  * STEPS_PER_DEG * PAN_GEAR_RATIO  + 0.5);
 const long TILT_MAX_STEPS = (long)(TILT_LIMIT_DEG * STEPS_PER_DEG * TILT_GEAR_RATIO + 0.5);
 const long PAN_MIN_STEPS  = -PAN_MAX_STEPS, TILT_MIN_STEPS = -TILT_MAX_STEPS;
@@ -236,10 +250,10 @@ void setup() {
   // MK3: 4:1 belts, so 35.6 motor steps per output degree. 2000 steps/s
   // = 56 deg/s at the output, and 2 x 2000 stays inside what a Nano can
   // step for both axes at once.
-  panStepper.setMaxSpeed(2000);
-  panStepper.setAcceleration(2000);
-  tiltStepper.setMaxSpeed(2000);
-  tiltStepper.setAcceleration(2000);
+  panStepper.setMaxSpeed(MAX_SPS);
+  panStepper.setAcceleration(ACCEL);
+  tiltStepper.setMaxSpeed(MAX_SPS);
+  tiltStepper.setAcceleration(ACCEL);
 
 #if FINE_STAGE
   finePan.attach(FINE_PAN_PIN);
@@ -272,7 +286,8 @@ void setup() {
   // mk2.py recognise a stepper rig. The protocol is Mk2's, so it is true.
   Serial.print(F("# ZeroDrift Mk2 ready, encoders="));
   Serial.print(panEnc && tiltEnc ? F("yes") : panEnc ? F("pan") : tiltEnc ? F("tilt") : F("no"));
-  Serial.println(F(", belts=4:4"));
+  Serial.print(F(", belts="));
+  Serial.print((int)PAN_GEAR_RATIO); Serial.print(':'); Serial.println((int)TILT_GEAR_RATIO);
 }
 
 void loop() {

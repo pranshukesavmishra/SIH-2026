@@ -52,7 +52,10 @@ of a judge.
 | **91.6%** | Lock retention, **campaign worst** | same → `.min` |
 | **98.3%** | Lock retention, **featured demo run only** | `docs/media/telemetry_run.json` |
 | **768 µrad** | Median of p95 pointing error | same → `pointing_error_p95_urad.p50` |
-| **198 µrad** | Median pointing error, demo run | replay console / demo run |
+| **198 µrad** | Median pointing error, **ISS-pass run** | `docs/media/telemetry_run.json` → `pointing_error_urad.p50` |
+| **1.07 s** | Acquisition time, **decoy-field run** (3,900 frames). Shown on Home, About, SOP and as the Console's default replay | `docs/media/telemetry_decoys.json` → `acquisition_time_s` |
+| **178 µrad** | Median pointing error, **decoy-field run** | same → `pointing_error_urad.p50` |
+| **99.3%** (lock held) | Lock retention, **decoy-field run** (99.28%). Same digits as link closure below, a different metric | same → `lock_retention_pct` |
 | **0 / 64** | Runs with any decoy lock | same → `runs_with_any_decoy_lock` |
 | **99.3%** | Link closure **with modelled fine stage** | `docs/technical_report.md` L281–283 |
 | **14.7%** | Link closure, **coarse stage alone** | `docs/technical_report.md` L281 |
@@ -63,6 +66,8 @@ of a judge.
 | **₹0.22** | Electricity, full 64-run campaign | `docs/economic_feasibility.md` |
 | **207×** | Throughput vs hardware bench | `docs/economic_feasibility.md` |
 
+> ⚠️ **Which run?** The website quotes the decoy-field run (1.07 s · 178 µrad · 99.3% held). The ISS-pass run (1.27 s · 198 µrad · 98.3% held) and the 64-run campaign median (1.27 s) are different, true numbers. Always say which run a number belongs to.
+>
 > ⚠️ **The known trap:** 98.3% (demo-run lock retention) and 99.3%
 > (link closure) get confused. They are different metrics. Fixed in the
 > v3 deck (18 Sept): slide 5 now carries 99.3% with bars to scale.

@@ -1,0 +1,96 @@
+{
+ "z_tilt": 100.15,
+ "parts": [
+  {
+   "name": "01_tripod_base",
+   "group": "fixed",
+   "colour": "#9aa3ad",
+   "printed": true,
+   "note": "Three legs + square pad. Flat print."
+  },
+  {
+   "name": "02_tower_sleeve",
+   "group": "fixed",
+   "colour": "#b8bfc7",
+   "printed": true,
+   "note": "Square tower that holds the pan motor. Foot flange bolts to the base."
+  },
+  {
+   "name": "03_tower_cap",
+   "group": "fixed",
+   "colour": "#c6ccd2",
+   "printed": true,
+   "note": "Top plate. The pan motor screws to its underside."
+  },
+  {
+   "name": "m_pan_motor",
+   "group": "fixed",
+   "colour": "#2b2f36",
+   "printed": false,
+   "note": "NEMA17 (pan), hangs inside the tower"
+  },
+  {
+   "name": "m_pan_shaft",
+   "group": "pan",
+   "colour": "#d4d8dd",
+   "printed": false,
+   "note": "pan motor shaft"
+  },
+  {
+   "name": "04_pan_hub",
+   "group": "pan",
+   "colour": "#6d9bd1",
+   "printed": true,
+   "note": "Clamps on the pan shaft. Set screw onto the shaft flat."
+  },
+  {
+   "name": "05_tilt_mount",
+   "group": "pan",
+   "colour": "#5b8ac4",
+   "printed": true,
+   "note": "Plate + wall. The tilt motor is screwed to the wall, on its side."
+  },
+  {
+   "name": "m_tilt_motor",
+   "group": "pan",
+   "colour": "#2b2f36",
+   "printed": false,
+   "note": "NEMA17 (tilt), lying on the plate"
+  },
+  {
+   "name": "m_tilt_boss",
+   "group": "pan",
+   "colour": "#d4d8dd",
+   "printed": false,
+   "note": "pilot boss"
+  },
+  {
+   "name": "m_tilt_shaft",
+   "group": "tilt",
+   "colour": "#d4d8dd",
+   "printed": false,
+   "note": "tilt motor shaft"
+  },
+  {
+   "name": "06_head",
+   "group": "tilt",
+   "colour": "#3fae7a",
+   "printed": true,
+   "note": "Clamps on the tilt shaft. Holds the camera and the laser."
+  },
+  {
+   "name": "m_camera",
+   "group": "tilt",
+   "colour": "#1c1f26",
+   "printed": false,
+   "note": "USB camera board 38 x 38 mm"
+  },
+  {
+   "name": "m_laser",
+   "group": "tilt",
+   "colour": "#8a2be2",
+   "printed": false,
+   "note": "12 mm laser module"
+  }
+ ]
+}

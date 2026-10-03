@@ -239,7 +239,7 @@ body.ap { margin: 0; background: var(--bg); color: var(--ink); font-family: var(
 .chips span { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 500; color: var(--ink); padding: 8px 14px; border-radius: 980px; background: var(--card2); border: 1px solid var(--line); }
 .chips svg { width: 16px; height: 16px; fill: var(--acc); }
 
-/* ---------- product cards (MK1 / MK2) ---------- */
+/* ---------- product cards (MK1) ---------- */
 .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .pc { border-radius: var(--r-xl); background: var(--card); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
 .pc-media { position: relative; aspect-ratio: 4 / 3; background: #050608; }
@@ -297,7 +297,7 @@ body.ap { margin: 0; background: var(--bg); color: var(--ink); font-family: var(
   .hl-dots button.on i { animation: none; width: 100%; }
 }
 
-/* ---------- MK1 / MK2 media views (PHOTO · VIDEO · 3D) ---------- */
+/* ---------- MK1 media views (PHOTO · VIDEO · 3D) ---------- */
 .rig-view { position: relative; width: 100%; height: 100%; background: radial-gradient(ellipse at 50% 40%, #10151f, #050608 70%); }
 .rig-view canvas { width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
 .rig-view canvas:active { cursor: grabbing; }
@@ -312,10 +312,6 @@ body.ap { margin: 0; background: var(--bg); color: var(--ink); font-family: var(
   background: radial-gradient(ellipse at center, #16161a, #050608 72%); color: #a1a1a6; font-size: 15px; }
 .rig-empty b { display: block; color: #f5f5f7; font-size: 22px; font-weight: 700; letter-spacing: -.01em; margin-bottom: 6px; }
 .rig-empty.show { display: flex; }
-.rig-soon { display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 980px;
-  background: rgba(40,40,44,.72); backdrop-filter: blur(14px); color: var(--warn); font: 600 12px/1 var(--sans); }
-.rig-soon i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; animation: soonPulse 1.6s ease-in-out infinite; }
-@keyframes soonPulse { 50% { opacity: .3; } }
 .rig-legend { position: absolute; top: 60px; right: 14px; z-index: 3; font: 12px/1.7 var(--sans); color: #d2d2d7; padding: 8px 12px; border-radius: 12px; background: rgba(20,20,22,.6); backdrop-filter: blur(10px); }
 .rig-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; }
 .rig-legend .lg-b { background: #fff; box-shadow: 0 0 8px #fff; } .rig-legend .lg-d { background: #ff3b30; }
@@ -560,17 +556,6 @@ html.zd-intro .gn, html.zd-intro .pn, html.zd-intro .hero-in, html.zd-intro .her
 html.zd-in .gn, html.zd-in .pn, html.zd-in .hero-down, html.zd-in .mnav { animation: zdFadeIn 1s ease both; }
 @keyframes zdFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* MK2 is a proposed idea: its media is dimmed and blurred under a diagonal ribbon */
-.pc.proposed .pc-media { position: relative; }
-.pc.proposed .rig-view, .cz.proposed .cz-img img { filter: blur(3px) brightness(.55) saturate(.7); }
-.pc.proposed .rig-top, .pc.proposed .rig-legend, .pc.proposed .rig-read { display: none; }
-.pc.proposed .pc-body { opacity: .72; }
-.proposed-ribbon { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; overflow: hidden; pointer-events: none; border-radius: inherit; }
-.proposed-ribbon span { display: block; width: 150%; transform: rotate(-13deg); text-align: center; padding: 13px 0; background: rgba(255,200,90,.94); color: #1a1200;
-  font: 700 12.5px/1 var(--mono); letter-spacing: .2em; box-shadow: 0 12px 34px rgba(0,0,0,.45); }
-.cz.proposed .cz-img { position: relative; }
-.light .proposed-ribbon span { background: rgba(255,170,40,.95); }
-
 /* ---------- Home: software screen recording (video left, text right) ---------- */
 #software .feat-media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
 #software .feat-side { gap: 16px; }
@@ -596,3 +581,7 @@ html.zd-in .gn, html.zd-in .pn, html.zd-in .hero-down, html.zd-in .mnav { animat
 .dz-ctl button.on { background: rgba(255,200,90,.18); color: #FFC85A; }
 @media (max-width: 900px) { .wd-side { display: grid; grid-template-columns: 1fr 1fr; } .wd-side .wd-card:first-child { grid-column: span 2; } .wd-plot { min-height: 120px; } }
 @media (max-width: 900px) { .wd .dz-view { height: 78vw; min-height: 300px; max-height: 520px; } }
+
+/* Home hardware: a single card (MK1) */
+.duo.one { grid-template-columns: minmax(0, 760px); justify-content: center; }
+.czs:has(.cz:only-child) { grid-template-columns: minmax(0, 640px); justify-content: center; }

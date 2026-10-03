@@ -61,7 +61,7 @@
   }));
 })();
 
-/* MK1 / MK2 views: PHOTO · VIDEO · 3D tabs (a missing file shows the "coming soon" panel).
+/* MK1 views: PHOTO · VIDEO · 3D tabs (a missing file shows the "coming soon" panel).
    data-cycle="video,3d,photo" plays the tabs in turn while the card is on screen:
    the video runs to its end, 3D shows for 10 s, the photo for 5 s, then round again.
    Clicking a tab stops the cycle on that card. */

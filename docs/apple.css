@@ -239,7 +239,7 @@ body.ap { margin: 0; background: var(--bg); color: var(--ink); font-family: var(
 .chips span { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 500; color: var(--ink); padding: 8px 14px; border-radius: 980px; background: var(--card2); border: 1px solid var(--line); }
 .chips svg { width: 16px; height: 16px; fill: var(--acc); }
 
-/* ---------- product cards (MK1 / MK2) ---------- */
+/* ---------- product cards (MK1) ---------- */
 .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .pc { border-radius: var(--r-xl); background: var(--card); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
 .pc-media { position: relative; aspect-ratio: 4 / 3; background: #050608; }
@@ -297,7 +297,7 @@ body.ap { margin: 0; background: var(--bg); color: var(--ink); font-family: var(
   .hl-dots button.on i { animation: none; width: 100%; }
 }
 
-/* ---------- MK1 / MK2 media views (PHOTO · VIDEO · 3D) ---------- */
+/* ---------- MK1 media views (PHOTO · VIDEO · 3D) ---------- */
 .rig-view { position: relative; width: 100%; height: 100%; background: radial-gradient(ellipse at 50% 40%, #10151f, #050608 70%); }
 .rig-view canvas { width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
 .rig-view canvas:active { cursor: grabbing; }
@@ -312,10 +312,6 @@ body.ap { margin: 0; background: var(--bg); color: var(--ink); font-family: var(
   background: radial-gradient(ellipse at center, #16161a, #050608 72%); color: #a1a1a6; font-size: 15px; }
 .rig-empty b { display: block; color: #f5f5f7; font-size: 22px; font-weight: 700; letter-spacing: -.01em; margin-bottom: 6px; }
 .rig-empty.show { display: flex; }
-.rig-soon { display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 980px;
-  background: rgba(40,40,44,.72); backdrop-filter: blur(14px); color: var(--warn); font: 600 12px/1 var(--sans); }
-.rig-soon i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; animation: soonPulse 1.6s ease-in-out infinite; }
-@keyframes soonPulse { 50% { opacity: .3; } }
 .rig-legend { position: absolute; top: 60px; right: 14px; z-index: 3; font: 12px/1.7 var(--sans); color: #d2d2d7; padding: 8px 12px; border-radius: 12px; background: rgba(20,20,22,.6); backdrop-filter: blur(10px); }
 .rig-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; }
 .rig-legend .lg-b { background: #fff; box-shadow: 0 0 8px #fff; } .rig-legend .lg-d { background: #ff3b30; }
@@ -560,17 +556,6 @@ html.zd-intro .gn, html.zd-intro .pn, html.zd-intro .hero-in, html.zd-intro .her
 html.zd-in .gn, html.zd-in .pn, html.zd-in .hero-down, html.zd-in .mnav { animation: zdFadeIn 1s ease both; }
 @keyframes zdFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* MK2 is a proposed idea: its media is dimmed and blurred under a diagonal ribbon */
-.pc.proposed .pc-media { position: relative; }
-.pc.proposed .rig-view, .cz.proposed .cz-img img { filter: blur(3px) brightness(.55) saturate(.7); }
-.pc.proposed .rig-top, .pc.proposed .rig-legend, .pc.proposed .rig-read { display: none; }
-.pc.proposed .pc-body { opacity: .72; }
-.proposed-ribbon { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; overflow: hidden; pointer-events: none; border-radius: inherit; }
-.proposed-ribbon span { display: block; width: 150%; transform: rotate(-13deg); text-align: center; padding: 13px 0; background: rgba(255,200,90,.94); color: #1a1200;
-  font: 700 12.5px/1 var(--mono); letter-spacing: .2em; box-shadow: 0 12px 34px rgba(0,0,0,.45); }
-.cz.proposed .cz-img { position: relative; }
-.light .proposed-ribbon span { background: rgba(255,170,40,.95); }
-
 /* ---------- Home: software screen recording (video left, text right) ---------- */
 #software .feat-media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
 #software .feat-side { gap: 16px; }
@@ -579,3 +564,24 @@ html.zd-in .gn, html.zd-in .pn, html.zd-in .hero-down, html.zd-in .mnav { animat
 .sw-steps li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: baseline; font-size: 16px; line-height: 1.45; color: var(--mute); }
 .sw-steps li span { font: 600 12px/1 var(--mono); letter-spacing: .1em; color: var(--acc); }
 .sw-steps li b { color: var(--ink); font-weight: 600; }
+
+/* ---------- Home: Watch it decide (camera view, watch.js) ---------- */
+.wd-side { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.wd-card { padding: 14px 16px; border-radius: 20px; background: #161618; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+.wd-card small { display: block; font: 600 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--mute); margin-bottom: 10px; }
+.wd-card strong { display: block; font: 700 26px/1 var(--mono); letter-spacing: .04em; color: var(--mute2); transition: color .3s; }
+.wd-card strong[data-tone="ok"] { color: #5DE08A; } .wd-card strong[data-tone="warn"] { color: #FFC85A; } .wd-card strong[data-tone="acc"] { color: #4FC7EA; }
+.wd-card p { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--mute); min-height: 3.9em; }
+.wd-live div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,.06); font-size: 13px; color: var(--mute); }
+.wd-live b { font: 600 13px/1.2 var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; } .wd-live b.ok { color: #5DE08A; }
+.wd-plot { flex: 1; display: flex; flex-direction: column; min-height: 90px; }
+.wd-plot canvas { flex: 1; width: 100%; min-height: 60px; display: block; }
+.dz-state[data-s="LOCK"] { color: var(--ok); } .dz-state[data-s="LOCK"] i { box-shadow: 0 0 10px currentColor; }
+.dz-state[data-s="TRACK"] { color: var(--acc); } .dz-state[data-s="ACQUIRE"], .dz-state[data-s="PREDICT"] { color: var(--warn); }
+.dz-ctl button.on { background: rgba(255,200,90,.18); color: #FFC85A; }
+@media (max-width: 900px) { .wd-side { display: grid; grid-template-columns: 1fr 1fr; } .wd-side .wd-card:first-child { grid-column: span 2; } .wd-plot { min-height: 120px; } }
+@media (max-width: 900px) { .wd .dz-view { height: 78vw; min-height: 300px; max-height: 520px; } }
+
+/* Home hardware: a single card (MK1) */
+.duo.one { grid-template-columns: minmax(0, 760px); justify-content: center; }
+.czs:has(.cz:only-child) { grid-template-columns: minmax(0, 640px); justify-content: center; }

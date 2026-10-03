@@ -1,0 +1,305 @@
+{
+ "parts": {
+  "01_tripod_base": {
+   "group": "fixed",
+   "printed": true,
+   "note": "Three legs + square pad. Flat print.",
+   "volume_cm3": 50.34,
+   "bbox_mm": [
+    190.5,
+    167.3,
+    6.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    190.5,
+    167.3,
+    6.0
+   ],
+   "grams_petg": 52.0
+  },
+  "02_tower_sleeve": {
+   "group": "fixed",
+   "printed": true,
+   "note": "Square tower that holds the pan motor. Foot flange bolts to the base.",
+   "volume_cm3": 79.49,
+   "bbox_mm": [
+    74.0,
+    74.0,
+    46.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    74.0,
+    74.0,
+    46.0
+   ],
+   "grams_petg": 66.0
+  },
+  "03_tower_cap": {
+   "group": "fixed",
+   "printed": true,
+   "note": "Top plate. The pan motor screws to its underside.",
+   "volume_cm3": 12.56,
+   "bbox_mm": [
+    60.0,
+    60.0,
+    4.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    60.0,
+    60.0,
+    4.0
+   ],
+   "grams_petg": 15.9
+  },
+  "m_pan_motor": {
+   "group": "fixed",
+   "printed": false,
+   "note": "NEMA17 (pan), hangs inside the tower",
+   "volume_cm3": 70.29,
+   "bbox_mm": [
+    42.3,
+    42.3,
+    40.0
+   ],
+   "watertight": true
+  },
+  "m_pan_shaft": {
+   "group": "pan",
+   "printed": false,
+   "note": "pan motor shaft",
+   "volume_cm3": 1.19,
+   "bbox_mm": [
+    22.0,
+    21.9,
+    24.0
+   ],
+   "watertight": true
+  },
+  "04_pan_hub": {
+   "group": "pan",
+   "printed": true,
+   "note": "Clamps on the pan shaft. Set screw onto the shaft flat.",
+   "volume_cm3": 9.57,
+   "bbox_mm": [
+    34.0,
+    33.9,
+    16.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    34.0,
+    33.9,
+    16.0
+   ],
+   "grams_petg": 8.7
+  },
+  "05_tilt_mount": {
+   "group": "pan",
+   "printed": true,
+   "note": "Plate + wall. The tilt motor is screwed to the wall, on its side.",
+   "volume_cm3": 23.29,
+   "bbox_mm": [
+    52.0,
+    47.2,
+    51.2
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    52.0,
+    47.2,
+    51.2
+   ],
+   "grams_petg": 25.9
+  },
+  "m_tilt_motor": {
+   "group": "pan",
+   "printed": false,
+   "note": "NEMA17 (tilt), lying on the plate",
+   "volume_cm3": 70.29,
+   "bbox_mm": [
+    42.3,
+    40.0,
+    42.3
+   ],
+   "watertight": true
+  },
+  "m_tilt_boss": {
+   "group": "pan",
+   "printed": false,
+   "note": "pilot boss",
+   "volume_cm3": 0.76,
+   "bbox_mm": [
+    22.0,
+    2.0,
+    21.9
+   ],
+   "watertight": true
+  },
+  "m_tilt_shaft": {
+   "group": "tilt",
+   "printed": false,
+   "note": "tilt motor shaft",
+   "volume_cm3": 0.47,
+   "bbox_mm": [
+    5.0,
+    24.0,
+    5.0
+   ],
+   "watertight": true
+  },
+  "06_head": {
+   "group": "tilt",
+   "printed": true,
+   "note": "Clamps on the tilt shaft. Holds the camera and the laser.",
+   "volume_cm3": 30.95,
+   "bbox_mm": [
+    70.0,
+    40.3,
+    58.5
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    58.5,
+    40.3,
+    70.0
+   ],
+   "grams_petg": 29.1
+  },
+  "m_camera": {
+   "group": "tilt",
+   "printed": false,
+   "note": "USB camera board 38 x 38 mm",
+   "volume_cm3": 4.39,
+   "bbox_mm": [
+    13.4,
+    38.0,
+    38.0
+   ],
+   "watertight": true
+  },
+  "m_laser": {
+   "group": "tilt",
+   "printed": false,
+   "note": "12 mm laser module",
+   "volume_cm3": 4.28,
+   "bbox_mm": [
+    38.0,
+    12.0,
+    12.0
+   ],
+   "watertight": true
+  },
+  "00_test_coupon": {
+   "group": "none",
+   "printed": true,
+   "note": "Print first. Checks every fit in 10 minutes.",
+   "volume_cm3": 30.57,
+   "bbox_mm": [
+    100.0,
+    46.0,
+    8.0
+   ],
+   "watertight": true,
+   "print_bbox_mm": [
+    100.0,
+    46.0,
+    8.0
+   ],
+   "grams_petg": 28.1
+  }
+ },
+ "clearance": {
+  "static @pan0 tilt0": [],
+  "fixed-vs-pan+tilt @pan-90": [],
+  "fixed-vs-pan+tilt @pan-60": [],
+  "fixed-vs-pan+tilt @pan-30": [],
+  "fixed-vs-pan+tilt @pan30": [],
+  "fixed-vs-pan+tilt @pan60": [],
+  "fixed-vs-pan+tilt @pan90": [],
+  "pan-vs-tilt @tilt-45": [],
+  "fixed-vs-tilt @tilt-45": [],
+  "pan-vs-tilt @tilt-30": [],
+  "fixed-vs-tilt @tilt-30": [],
+  "pan-vs-tilt @tilt-15": [],
+  "fixed-vs-tilt @tilt-15": [],
+  "pan-vs-tilt @tilt15": [],
+  "fixed-vs-tilt @tilt15": [],
+  "pan-vs-tilt @tilt30": [],
+  "fixed-vs-tilt @tilt30": [],
+  "pan-vs-tilt @tilt45": [],
+  "fixed-vs-tilt @tilt45": []
+ },
+ "params": {
+  "HOLE_CLEAR": 0.25,
+  "NEMA": 42.3,
+  "NEMA_HOLES": 31.0,
+  "NEMA_PILOT": 22.0,
+  "NEMA_LEN": 40.0,
+  "NEMA_SHAFT": 5.0,
+  "NEMA_SHAFT_LEN": 24.0,
+  "M3": 3.2,
+  "M3_TAP": 2.7,
+  "M3_HEAD": 6.2,
+  "M3_NUT_AF": 5.9,
+  "M3_NUT_T": 2.6,
+  "BORE": 5.2,
+  "BASE_T": 6.0,
+  "PAD": 80.0,
+  "ARM_LEN": 108.0,
+  "ARM_W0": 36.0,
+  "ARM_W1": 18.0,
+  "FL": 74.0,
+  "FL_T": 4.0,
+  "FL_HOLE": 33.0,
+  "SL_OUT": 60.0,
+  "SL_IN": 44.599999999999994,
+  "Z_SL0": 6.0,
+  "Z_SL1": 52.0,
+  "CAP_T": 4.0,
+  "Z_CAP1": 56.0,
+  "CORNER": 26.3,
+  "HUB_H": 16.0,
+  "HUB_R": 13.0,
+  "HUB_FL_R": 17.0,
+  "Z_HUB0": 57.0,
+  "Z_HUB1": 73.0,
+  "HUB_SCREW_R": 11.5,
+  "PLATE_T": 6.0,
+  "Z_PL0": 73.0,
+  "Z_PL1": 79.0,
+  "PLATE_X": 26.0,
+  "PLATE_Y0": -24.0,
+  "PLATE_Y1": 23.2,
+  "WALL_T": 3.2,
+  "Y_FLANGE": 20.0,
+  "Z_TILT": 100.15,
+  "WALL_Y0": 20.0,
+  "WALL_Y1": 23.2,
+  "WALL_TOP": 124.15,
+  "HB_Y0": 25.0,
+  "HB_Y1": 43.0,
+  "HB_R": 10.0,
+  "ARM_X1": 30.0,
+  "CAM": 38.6,
+  "CAM_Y0": 25.5,
+  "CAM_Y1": 65.3,
+  "CAM_YC": 45.4,
+  "PLATE_X0": 30.0,
+  "PLATE_X1": 34.0,
+  "LASER_D": 12.3,
+  "LASER_Z": 27.0
+ },
+ "clearance_ok": true,
+ "assembly_bbox_mm": [
+  190.5,
+  167.3,
+  136.6
+ ],
+ "tilt_axis_height_mm": 100.15,
+ "total_print_grams": 198,
+ "head_mass_g": 47,
+ "steps_per_deg_1_16": 8.89
+}

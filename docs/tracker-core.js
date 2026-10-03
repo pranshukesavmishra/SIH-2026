@@ -868,7 +868,7 @@
     return this;
   };
 
-  /* Ego-motion: when the camera itself turns (MK2 -- it rides the gimbal),
+  /* Ego-motion: when the camera itself turns (stepper rig -- it rides the gimbal),
      everything in the image slides by the same pixel amount. Shifting every
      remembered position by that amount keeps tracks, the lock and the
      steady-light memory aligned with the scene instead of reading the

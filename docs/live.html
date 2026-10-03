@@ -457,16 +457,14 @@ label.row { font: 500 13px var(--font-sans); }
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>START CAMERA</button>
         <button class="btn ghost" id="rigBtn" title="Chrome or Edge only">
           <svg viewBox="0 0 24 24"><path d="M15 7v4h1v2h-3V5h2l-3-4-3 4h2v8H8v-2.07A1.99 1.99 0 0 0 9 9.2a2 2 0 1 0-3 1.73V13a2 2 0 0 0 2 2h3v3.05A2.5 2.5 0 1 0 13 18.05V15h3a2 2 0 0 0 2-2v-2h1V7h-4z"/></svg>CONNECT RIG</button>
-        <button class="btn ghost" id="usbCamBtn" title="Show and track from the MK2's USB camera">
-          <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg><span id="usbCamTxt">MK2 CAMERA (USB)</span></button>
+        <button class="btn ghost" id="usbCamBtn" title="Show and track from the rig's USB camera">
+          <svg viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg><span id="usbCamTxt">RIG CAMERA (USB)</span></button>
         <button class="btn ghost" id="testRigBtn" disabled>
           <svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>TEST MOTION</button>
         <button class="btn ghost" id="beaconBtn">
           <svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM4.2 4.2a1 1 0 0 1 1.4 0l2.1 2.1a1 1 0 1 1-1.4 1.4L4.2 5.6a1 1 0 0 1 0-1.4zm15.6 0a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 1 1-1.4-1.4l2.1-2.1a1 1 0 0 1 1.4 0z"/></svg>USE AS BEACON</button>
         <button class="btn ghost" id="mk1Btn">
           <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>MK1 DEMO VIDEO</button>
-        <button class="btn ghost" id="mk2Btn">
-          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>MK2 DEMO VIDEO</button>
       </div>
 
       <div class="card">
@@ -488,12 +486,12 @@ label.row { font: 500 13px var(--font-sans); }
           <select id="rigType" style="margin-top:6px">
             <option value="auto">Auto-detect</option>
             <option value="mk1">MK1 · servos, fixed camera</option>
-            <option value="mk2">MK2 · steppers, camera on gimbal</option>
+            <option value="mk2">Stepper rig · camera on gimbal</option>
           </select>
         </div>
         <div class="field" id="ratioField">
-          <div class="lbl"><span>MK2 DRIVE</span></div>
-          <select id="ratioSel" style="margin-top:6px" title="Must match PAN/TILT_GEAR_RATIO in rig_firmware_v2.ino">
+          <div class="lbl"><span>STEPPER DRIVE</span></div>
+          <select id="ratioSel" style="margin-top:6px" title="Must match PAN/TILT_GEAR_RATIO in the rig firmware">
             <option value="1:1">Direct drive (1:1)</option>
             <option value="1:3">Pan direct · tilt belt 20T→60T (3:1)</option>
             <option value="1:4">Pan direct · tilt belt 20T→80T (4:1)</option>
@@ -520,7 +518,7 @@ label.row { font: 500 13px var(--font-sans); }
             <input type="range" id="trimPan" min="-20" max="20" step="0.5" value="0"></div>
           <div class="field"><div class="lbl"><span>TILT TRIM</span><b id="trimTiltVal">0°</b></div>
             <input type="range" id="trimTilt" min="-20" max="20" step="0.5" value="0"></div>
-          <p class="hint">Wrong direction: INVERT. Wrong axis: SWAP. MK1 lands off the beacon: TRIM. MK2: SET AIM on the laser dot.</p>
+          <p class="hint">Wrong direction: INVERT. Wrong axis: SWAP. MK1 lands off the beacon: TRIM. Stepper rig: SET AIM on the laser dot.</p>
         </details>
         <div class="rig-log" id="rigLog"></div>
       </div>
@@ -569,7 +567,7 @@ label.row { font: 500 13px var(--font-sans); }
 const $ = id => document.getElementById(id);
 const els = {
   view: $('view'), placeholder: $('placeholder'), start: $('startBtn'),
-  mk1: $('mk1Btn'), mk2: $('mk2Btn'), beacon: $('beaconBtn'), rig: $('rigBtn'), usbCam: $('usbCamBtn'), usbCamTxt: $('usbCamTxt'),
+  mk1: $('mk1Btn'), beacon: $('beaconBtn'), rig: $('rigBtn'), usbCam: $('usbCamBtn'), usbCamTxt: $('usbCamTxt'),
   chip: $('stateChip'), chipText: $('stateText'),
   freq: $('rFreq'), off: $('rOff'), spd: $('rSpd'), fps: $('rFps'), ms: $('rMs'), rigState: $('rRig'),
   hz: $('hzSel'), note: $('noteSlot'), rec: $('recBtn'), recTxt: $('recTxt'),
@@ -673,7 +671,7 @@ els.rec.onclick = () => {
 
 /* ---------------- rig calibration ----------------
    A fact about each mount, so persisted -- and kept separately per rig:
-   MK1's laptop webcam sees ~60 deg, MK2's 12 mm lens ~22 deg, and their
+   MK1's laptop webcam sees ~60 deg, the stepper rig's 12 mm lens ~22 deg, and their
    axis directions have nothing to do with each other. */
 const CAL_DEFAULTS = { mk1: { fovH: 60, fovV: 45 }, mk2: { fovH: 22, fovV: 16 } };
 const cal = { mode: 'mk1' };
@@ -699,11 +697,9 @@ for (const [k, el, out, fmt] of CAL_FIELDS) {
 }
 loadCal(store.get('zd_rigType', 'auto') === 'mk2' ? 'mk2' : 'mk1');
 
-/* ---------------- demo videos: MK1 and MK2 ---------------- */
+/* ---------------- demo video: MK1 ---------------- */
 const VIDEOS = {
   mk1: { src: 'demo-video.mp4', alt: 'demo-video.webm', tag: 'MK1 · SERVO RIG, LAPTOP CAMERA' },
-  mk2: { src: 'demo-mk2.mp4', tag: 'MK2 DEMO',
-         missing: '<b>MK2 DEMO</b>Coming soon: demo will be added when the MK2 rig is running.' },
 };
 const CANT_PLAY = '<b>VIDEO</b>This browser could not play the file.<br>Open it directly: ';
 function openDemoVideo(which) {
@@ -741,7 +737,6 @@ function closeDemoVideo() {
   }
 }
 els.mk1.onclick = () => openDemoVideo('mk1');
-els.mk2.onclick = () => openDemoVideo('mk2');
 els.videoExit.onclick = closeDemoVideo;
 document.addEventListener('fullscreenchange', () => {
   if (!document.fullscreenElement && els.videoOverlay.classList.contains('on')) closeDemoVideo();
@@ -750,7 +745,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && els.videoO
 
 /* ---------------- camera ---------------- */
 // The laptop camera is shown mirrored, so a hand moving left moves left on
-// screen. The MK2's USB camera looks OUT along the laser, so it is shown as
+// screen. The stepper rig's USB camera looks OUT along the laser, so it is shown as
 // it sees. Tracking and every servo command stay in true camera coordinates.
 let MIRROR_VIEW = true, camKind = 'laptop', camLabel = '';
 let video = null, stream = null, work, workCtx, outCtx;
@@ -781,7 +776,7 @@ async function start() {
   camLabel = (trk && trk.label) || '';
   camKind = store.get('zd_camkind', 'laptop') === 'usb' && store.get('zd_cam', '') ? 'usb' : 'laptop';
   MIRROR_VIEW = camKind === 'laptop';
-  els.usbCamTxt.textContent = camKind === 'usb' ? 'LAPTOP CAMERA' : 'MK2 CAMERA (USB)';
+  els.usbCamTxt.textContent = camKind === 'usb' ? 'LAPTOP CAMERA' : 'RIG CAMERA (USB)';
   els.usbCam.classList.toggle('on', camKind === 'usb');
   const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
   // Processed at up to 640 wide: plenty for a beacon, and it keeps every
@@ -817,7 +812,7 @@ els.camSel.onchange = async () => {
   if (stream) { stop(true); await start(); }
 };
 
-/* MK2 CAMERA: switch the view -- and the tracker -- to the USB webcam on the
+/* RIG CAMERA: switch the view -- and the tracker -- to the USB webcam on the
    gimbal instead of the laptop's own camera, and back. Built-in cameras are
    told apart by name (FaceTime, Integrated, iPhone Continuity...). */
 const BUILTIN_CAM = /facetime|built.?in|integrated|internal|isight|front|rear|back camera|iphone|continuity|desk view|virtual|obs|snap|manycam|droidcam/i;
@@ -849,7 +844,7 @@ async function toggleUsbCam() {
     const pick = toUsb ? (others.find(d => !isBuiltIn(d.label)) || others[0])
                        : (others.find(d => isBuiltIn(d.label)) || others[0]);
     if (!pick) {
-      note(toUsb ? 'No second camera found. Plug the MK2 camera into a USB port, then press <b>MK2 CAMERA</b> again.'
+      note(toUsb ? 'No second camera found. Plug the rig camera into a USB port, then press <b>RIG CAMERA</b> again.'
                  : 'Only one camera is connected.', true);
       return;
     }
@@ -857,7 +852,7 @@ async function toggleUsbCam() {
     store.set('zd_camkind', toUsb ? 'usb' : 'laptop');
     if (stream) stop(true);
     await start();
-    if (camKind === 'usb') note('Showing the MK2 camera: <b>' + camLabel.replace(/</g, '') + '</b>. Tracking runs on this view.');
+    if (camKind === 'usb') note('Showing the rig camera: <b>' + camLabel.replace(/</g, '') + '</b>. Tracking runs on this view.');
   } finally { els.usbCam.disabled = false; }
 }
 els.usbCam.onclick = toggleUsbCam;
@@ -993,7 +988,7 @@ function draw() {
   c.moveTo(cx, cy - a); c.lineTo(cx, cy - g); c.moveTo(cx, cy + g); c.lineTo(cx, cy + a);
   c.stroke();
 
-  // MK2's aim point: where its own laser lands in the image.
+  // The stepper rig's aim point: where its own laser lands in the image.
   const aimP = work && rig.type === 'mk2' ? aimPoint() : null;
   if (aimP && cal.aim2) {
     const ax = X(aimP.x), ay = Yc(aimP.y), r = 7 * u;
@@ -1090,7 +1085,7 @@ function draw() {
   const st = tracker.state;
   const sc = st === 'LOCKED' ? COL.lock : st === 'COASTING' || st === 'REACQUIRING' ? COL.coast : st === 'CONFIRMING' ? COL.cand : '#8EA4C4';
   c.font = `600 ${Math.round(11 * u)}px ui-monospace, monospace`;
-  const txt = `${st}   ${(tracker.fps || 0).toFixed(0)} FPS   ${camKind === 'usb' ? 'MK2 CAM' : 'LAPTOP CAM'}`;
+  const txt = `${st}   ${(tracker.fps || 0).toFixed(0)} FPS   ${camKind === 'usb' ? 'RIG CAM' : 'LAPTOP CAM'}`;
   const w = c.measureText(txt).width + 30 * u, h = 24 * u;
   c.fillStyle = 'rgba(4,9,21,0.72)'; c.fillRect(10 * u, 10 * u, w, h);
   c.fillStyle = sc; c.beginPath(); c.arc(20 * u, 22 * u, 3.5 * u, 0, 2 * Math.PI); c.fill();
@@ -1150,13 +1145,13 @@ function readouts() {
      MK1  servos, camera FIXED beside the rig.  P<deg> T<deg>, servo degrees
           centred on 90, L0/L1. A pixel offset IS an angle off the camera
           axis, so the laser is commanded absolutely.
-     MK2  steppers, camera ON the gimbal.  P<steps> T<steps> from centre,
+     stepper rig: steppers, camera ON the gimbal.  P<steps> T<steps> from centre,
           3200 steps/rev; L7.0 = laser modulated at 7 Hz; ? = status;
           C = centre. The camera turns with the laser, so this is a closed
           loop: nudge the gimbal until the beacon sits on the aim point.
    The rig type is read from the firmware's own start-up line. */
 // Motor steps per OUTPUT degree: 1/16 microstepping (3200 steps/rev) times
-// the belt reduction, which must match *_GEAR_RATIO in the MK2 firmware.
+// the belt reduction, which must match *_GEAR_RATIO in the stepper firmware.
 // Pan and tilt carry their own ratio: the usual belted build reduces tilt
 // only (PAN_GEAR_RATIO 1.0, TILT_GEAR_RATIO 3.0).
 let SPD_PAN = 3200 / 360, SPD_TILT = 3200 / 360;
@@ -1197,8 +1192,8 @@ function rigLogLine(t) {
 }
 function setRigType(t, why) {
   rig.type = t;
-  els.rigTypeVal.textContent = t === 'mk2' ? 'MK2 · steppers' : 'MK1 · servos';
-  els.rigState.textContent = (t === 'mk2' ? 'MK2' : 'MK1') + (rig.enc === null ? '' : rig.enc ? ' · encoders' : ' · no encoders');
+  els.rigTypeVal.textContent = t === 'mk2' ? 'Stepper rig' : 'MK1 · servos';
+  els.rigState.textContent = (t === 'mk2' ? 'STEPPER' : 'MK1') + (rig.enc === null ? '' : rig.enc ? ' · encoders' : ' · no encoders');
   els.rigState.className = 'good';
   els.scanRow.style.display = t === 'mk2' ? 'flex' : 'none';
   loadCal(t);
@@ -1219,12 +1214,12 @@ async function readLoop(port) {
         if (!line) continue;
         if (line.startsWith('# ZeroDrift Mk2')) {
           rig.enc = /encoders=(yes|pan|tilt)/.test(line);
-          if (els.rigType.value === 'auto') setRigType('mk2', 'MK2 firmware detected');
+          if (els.rigType.value === 'auto') setRigType('mk2', 'stepper firmware detected');
         }
         if (line.startsWith('S ')) {
           const f = line.split(/\s+/);
           rig.fbPan = +f[1]; rig.fbTilt = +f[2]; rig.fbSrc = f[3]; rig.moving = f[4] === '1';
-          if (!rig.type && els.rigType.value === 'auto') setRigType('mk2', 'MK2 answered a status query');
+          if (!rig.type && els.rigType.value === 'auto') setRigType('mk2', 'stepper rig answered a status query');
         } else if (line.startsWith('#')) rigLogLine(line);
       }
     }
@@ -1241,14 +1236,14 @@ async function openPort(port, silent) {
   els.rig.classList.add('good');
   els.rig.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>RIG CONNECTED';
   // The Nano reboots when the port opens and prints its banner ~2 s later.
-  // No MK2 banner and no answer to "?" means the older MK1 firmware.
+  // No stepper banner and no answer to "?" means the older MK1 firmware.
   const forced = els.rigType.value;
   if (forced !== 'auto') setRigType(forced, 'type set manually');
   setTimeout(() => { if (!rig.type) rigSend('?'); }, 2300);
   setTimeout(() => {
-    if (!rig.type) setRigType('mk1', 'no MK2 banner: MK1 servo firmware');
+    if (!rig.type) setRigType('mk1', 'no stepper banner: MK1 servo firmware');
     rigCentre();
-    if (!silent) note('Rig connected (<b>' + (rig.type === 'mk2' ? 'MK2' : 'MK1') + '</b>). Press <b>TEST MOTION</b> once, then show it the beacon.');
+    if (!silent) note('Rig connected (<b>' + (rig.type === 'mk2' ? 'Stepper rig' : 'MK1') + '</b>). Press <b>TEST MOTION</b> once, then show it the beacon.');
   }, 3000);
 }
 async function connectRig() {
@@ -1307,7 +1302,7 @@ async function testRig() {
 }
 
 /* Where the laser lands in the image. MK1: the camera is fixed, so this is
-   only used for display. MK2: this is the point the loop drives the beacon
+   only used for display. Stepper rig: this is the point the loop drives the beacon
    onto -- the image centre until SET AIM puts it on the actual laser dot,
    which removes the camera-to-laser parallax. */
 function aimPoint() {
@@ -1326,7 +1321,7 @@ els.view.addEventListener('click', ev => {
   if (MIRROR_VIEW) fx = 1 - fx;                        // back to true camera coordinates
   cal.aim2 = { x: fx, y: fy }; store.set('zd_aim2', JSON.stringify(cal.aim2));
   rig.aimArm = false; els.viewport.classList.remove('aiming');
-  note('Aim point set. MK2 now drives the beacon onto the laser dot.');
+  note('Aim point set. The stepper rig now drives the beacon onto the laser dot.');
 });
 
 /* Called once per processed frame. */
@@ -1348,7 +1343,7 @@ function steer() {
     return;
   }
 
-  // ---- MK2: camera on the gimbal, closed loop on the image ----
+  // ---- Stepper rig: camera on the gimbal, closed loop on the image ----
   rigLaser(!!L);
   if (!locked) { mk2Scan(now); return; }
   rig.searchSince = 0;
@@ -1374,7 +1369,7 @@ function steer() {
   egoPending.x += px; egoPending.y += py;
 }
 
-/* MK2 search: dwell long enough to identify the blink, then step on. */
+/* Stepper search: dwell long enough to identify the blink, then step on. */
 function mk2Scan(now) {
   if (!els.scanChk.checked || tracker.state === 'CONFIRMING' || tracker.state === 'COASTING') return;
   if (!rig.searchSince) { rig.searchSince = now; rig.scanUntil = now + 2500; return; }

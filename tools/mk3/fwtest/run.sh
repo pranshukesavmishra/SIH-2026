@@ -8,3 +8,6 @@ for board in 1 0; do
   g++ -std=c++17 -O1 -Wall -Wno-unused-variable -DBOARD_CNC_SHIELD=$board -Imock -o /tmp/zd_fwtest test_fw.cpp
   /tmp/zd_fwtest
 done
+echo "=== TOWER (DRIVE_DIRECT=1) ==="
+g++ -std=c++17 -O1 -Wall -Wno-unused-variable -DBOARD_CNC_SHIELD=1 -DDRIVE_DIRECT=1 -Imock -o /tmp/zd_fwtest_tower test_tower.cpp
+/tmp/zd_fwtest_tower
